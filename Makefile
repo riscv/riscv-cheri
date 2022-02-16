@@ -18,4 +18,4 @@ build:
     $(HEADER_SOURCE)
 
 clean:
-	rm example-spec.pdf
+	rm $(PDF_RESULT)
