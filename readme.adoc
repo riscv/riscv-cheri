@@ -51,3 +51,29 @@ in the PDF build fail with an error message like the following:
 = Building the document
 
 The final specification form of PDF can be generated using the `make` command.
+
+= Build the document from a container
+
+To avoid dealing with configurations and dependencies, you can easily build this documentation from within a base container image which contains everything you need. Here are the steps:
+
+NOTE: https://docs.docker.com/engine/install/[ensure you have Docker installed]
+
+```
+$ git clone https://github.com/riscv/docs-dev-guide.git
+
+$ docker pull riscvintl/riscv-docs-base-container-image:latest
+
+$ docker run -it -v $(pwd)/docs-spec-template:/build riscvintl/riscv-docs-base-container-image:latest /bin/sh -c 'make'
+
+Building asciidoc
+asciidoctor-pdf \
+    --attribute=mathematical-format=svg \
+    --attribute=pdf-fontsdir=docs-resources/fonts \
+    --attribute=pdf-style=docs-resources/themes/riscv-pdf.yml \
+    --failure-level=ERROR \
+    --require=asciidoctor-bibtex \
+    --require=asciidoctor-diagram \
+    --require=asciidoctor-mathematical \
+    --out-file=example-spec.pdf \
+    header.adoc
+```
