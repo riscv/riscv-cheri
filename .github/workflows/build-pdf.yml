@@ -1,79 +1,42 @@
-# This workflow installs dependencies for PDF generation, generates the PDF,
-# and uploads the PDF as an artifact.
-
-name: Build Document PDF
+name: Build RISC-V Doc Spec Template
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
   pull_request:
     branches:
       - main
-  workflow_dispatch:
-  workflow_call:
-    outputs:
-      name:
-        description: "The base name of the pdf file (without .pdf extensions)"
-        value: ${{ jobs.build.outputs.name }}
-      pdf-name:
-        description: "The name of the pdf file (with .pdf extensions)"
-        value: ${{ jobs.build.outputs.pdf-name }}
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
-          
-    env:
-      NAME: example-spec
-      APT_PACKAGES_FILE: ${{ github.workspace }}/dependencies/apt_packages.txt
-      BUNDLE_GEMFILE: ${{ github.workspace }}/dependencies/Gemfile
-      BUNDLE_BIN: ${{ github.workspace }}/bin
-      NPM_PACKAGE_FOLDER: ${{ github.workspace }}/dependencies
-    outputs:
-      name: ${{ steps.step1.outputs.name }}
-      pdf-name: ${{ steps.step2.outputs.pdf-name }}
+    runs-on: ubuntu-latest
+
     steps:
-    - name: Set outputs.name
-      id: step1
-      run: echo "name=$NAME" >> $GITHUB_OUTPUT
-    - name: Set outputs.pdf-name
-      id: step2
-      run: echo "pdf-name=$NAME.pdf" >> $GITHUB_OUTPUT
+    # Checkout the repository
     - name: Checkout repository
       uses: actions/checkout@v3
-      with:
-        submodules: 'true'
-    - name: Install Ubuntu packages
+
+    # Pull the latest RISC-V Docs container image
+    # https://github.com/riscv/riscv-docs-base-container-image
+    # https://hub.docker.com/r/riscvintl/riscv-docs-base-container-image
+    - name: Pull Container
       run: |
-        sudo apt-get update
-        grep -vE '^#' ${APT_PACKAGES_FILE} | xargs sudo apt-get install --yes --no-install-recommends
-    # Ruby for asciidoctor
-    - name: Setup Ruby and Gemfile content
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: "3.2.0"
-        bundler-cache: true
-    # Node.js for wavedrom
-    - uses: actions/cache@v3
-      with:
-        path: ~/.npm
-        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-node-
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'
-    - name: Install Node.js dependencies
-      run: npm install ${NPM_PACKAGE_FOLDER}
-    - name: Generate PDF
+        docker pull riscvintl/riscv-docs-base-container-image:latest
+    # Build PDF file using the container
+    - name: Build Files
       run: |
-        PATH=${PATH}:${BUNDLE_BIN}:$(npm bin) \
-        make
-    - name: Archive PDF result
+        docker run --rm -v ${{ github.workspace }}:/build riscvintl/riscv-docs-base-container-image:latest \
+        /bin/sh -c 'make'
+    # Set the short SHA for use in artifact names
+    - name: Set short SHA
+      run: echo "SHORT_SHA=$(echo ${GITHUB_SHA::7})" >> $GITHUB_ENV
+
+    # Upload the built PDF file as artifact
+    - name: Upload Build Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.NAME }}.pdf
-        path: ${{ env.NAME }}.pdf
+        name: spec-sample-${{ env.SHORT_SHA }}.pdf
+        path: ${{ github.workspace }}/spec-sample.pdf
         retention-days: 7

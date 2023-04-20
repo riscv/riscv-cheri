@@ -1,70 +1,43 @@
 = RISC-V docs-spec-template
 
-This repository is used to prime GitHub repos for the RISC-V organization which will be used
-to create specifications.
+This repository serves as a template for creating GitHub repositories within the RISC-V organization that are intended for developing specifications.
 
-**If you are reading this in a specification repo, please update the title for this section and
-provide your introduction to your repository.**
+**If you are reading this in a specification repository, please update the title for this section and provide a relevant introduction to your repository.**
 
-= License
+== License
 
 This work is licensed under a Creative Commons Attribution 4.0 International License (CC-BY-4.0).
 See the link:LICENSE[LICENSE] file for details.
 
-= Contributors
+== Contributors
 
 Contributors to this specification are contained in the link:contributors.adoc[contributors] file.
 
 For instructions on how to contribute please see the link:CONTRIBUTING.md[CONTRIBUTING] file.
 
-= Dependencies
+== Building the Document
 
-This project is built using AsciiDoctor (Ruby). The repository has been setup to build the PDF on
-checkin using GitHub actions.  Workflow dependencies are located in the `dependencies` directory.
+=== Building on Container
 
-For more information on AsciiDoctor, specification guidelines, or building locally, see the
-https://github.com/riscv/docs-dev-guide[RISC-V Documentation Developer Guide].
+To simplify the building process and avoid dealing with configurations and dependencies, you can build this documentation using a base container image, which contains everything you need. Follow these steps:
 
-= Cloning the project
+Prerequisite: https://docs.docker.com/engine/install/[ensure you have Docker installed]
 
-This project uses https://git-scm.com/book/en/v2/Git-Tools-Submodules[GitHub Submodules]
-to include the https://github.com/riscv/docs-resources[RISC-V docs-resources project]
-to achieve a common look and feel.
-
-When cloning this repository for the first time, you must either use
-`git clone --recurse-submodules` or execute `git submodule init` and `git submodule update` after the clone to populate the docs-resources directory.  Failure to clone the submodule, will result
-in the PDF build fail with an error message like the following:
-
-    $ make
-    asciidoctor-pdf \
-    -a toc \
-    -a compress \
-    -a pdf-style=docs-resources/themes/riscv-pdf.yml \
-    -a pdf-fontsdir=docs-resources/fonts \
-    --failure-level=ERROR \
-    -o profiles.pdf profiles.adoc
-    asciidoctor: ERROR: could not locate or load the built-in pdf theme `docs-resources/themes/riscv-pdf.yml'; reverting to default theme
-    No such file or directory - notoserif-regular-subset.ttf not found in docs-resources/fonts
-      Use --trace for backtrace
-    make: *** [Makefile:7: profiles.pdf] Error 1
-
-= Building the document
-
-The final specification form of PDF can be generated using the `make` command.
-
-= Build the document from a container
-
-To avoid dealing with configurations and dependencies, you can easily build this documentation from within a base container image which contains everything you need. Here are the steps:
-
-NOTE: https://docs.docker.com/engine/install/[ensure you have Docker installed]
-
+1 - Clone the repository
 ```
 $ git clone https://github.com/riscv/docs-dev-guide.git
-
+$ cd ./docs-dev-guide
+```
+2 - Pull the RISC-V documentation base container image:
+```
 $ docker pull riscvintl/riscv-docs-base-container-image:latest
-
+```
+3 - Run the container and execute the build:
+```
 $ docker run -it -v $(pwd)/docs-spec-template:/build riscvintl/riscv-docs-base-container-image:latest /bin/sh -c 'make'
-
+```
+Output:
+```
 Building asciidoc
 asciidoctor-pdf \
     --attribute=mathematical-format=svg \
@@ -77,3 +50,47 @@ asciidoctor-pdf \
     --out-file=example-spec.pdf \
     header.adoc
 ```
+4 - Clean
+```
+docker run -it -v $(pwd):/build riscvintl/riscv-docs-base-container-image:latest /bin/sh -c 'make clean'
+```
+=== Buidling on Local Machine
+
+==== Dependencies
+
+This project is built using AsciiDoctor (Ruby). The repository has been setup to build the PDF on
+checkin using GitHub actions.  Workflow dependencies are located in the `dependencies` directory.
+
+For more information on AsciiDoctor, specification guidelines, or building locally, see the
+https://github.com/riscv/docs-dev-guide[RISC-V Documentation Developer Guide].
+
+==== Cloning the project
+
+This project uses https://git-scm.com/book/en/v2/Git-Tools-Submodules[GitHub Submodules]
+to include the https://github.com/riscv/docs-resources[RISC-V docs-resources project]
+to achieve a common look and feel.
+
+When cloning this repository for the first time, you must either use
+`git clone --recurse-submodules` or execute `git submodule init` and `git submodule update` after the clone to populate the docs-resources directory.  Failure to clone the submodule, will result
+in the PDF build fail with an error message like the following:
+
+```
+$ make
+asciidoctor-pdf \
+-a toc \
+-a compress \
+-a pdf-style=docs-resources/themes/riscv-pdf.yml \
+-a pdf-fontsdir=docs-resources/fonts \
+--failure-level=ERROR \
+-o profiles.pdf profiles.adoc
+
+asciidoctor: ERROR: could not locate or load the built-in pdf theme `docs-resources/themes/riscv-pdf.yml'; reverting to default theme
+No such file or directory - notoserif-regular-subset.ttf not found in docs-resources/fonts
+  Use --trace for backtrace
+
+make: *** [Makefile:7: profiles.pdf] Error 1
+```
+
+==== Building the document
+
+The final specification form of PDF can be generated using the `make` command.
