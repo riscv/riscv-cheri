@@ -1,4 +1,4 @@
-name: Build RISC-V Doc Spec Template
+name: Build Specification
 
 on:
   workflow_dispatch:
@@ -29,14 +29,16 @@ jobs:
       run: |
         docker run --rm -v ${{ github.workspace }}:/build riscvintl/riscv-docs-base-container-image:latest \
         /bin/sh -c 'make'
-    # Set the short SHA for use in artifact names
-    - name: Set short SHA
-      run: echo "SHORT_SHA=$(echo ${GITHUB_SHA::7})" >> $GITHUB_ENV
+    # Set the short SHA and repo name for use in artifact names
+    - name: Set short SHA and repo name
+      run: |
+        echo "SHORT_SHA=$(echo ${GITHUB_SHA::7})" >> $GITHUB_ENV
+        echo "REPO_NAME=$(echo ${GITHUB_REPOSITORY##*/})" >> $GITHUB_ENV
 
     # Upload the built PDF file as artifact
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: spec-sample-${{ env.SHORT_SHA }}.pdf
-        path: ${{ github.workspace }}/spec-sample.pdf
+        name: ${{ env.REPO_NAME }}-${{ env.SHORT_SHA }}.pdf
+        path: ${{ github.workspace }}/*.pdf
         retention-days: 7
