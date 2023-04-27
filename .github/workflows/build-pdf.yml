@@ -16,6 +16,12 @@ on:
         description: 'Target branch to run the workflow on'
         required: true
         default: 'main'
+  pull_request:
+    branches:
+      - '*'
+  push:
+    branches:
+      - '*'
 
 jobs:
   build:
@@ -50,7 +56,6 @@ jobs:
     - name: Upload Build Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.REPO_NAME }}-${{ env.SHORT_SHA }}
         path: |
           ${{ github.workspace }}/*.pdf
         retention-days: 7
