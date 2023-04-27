@@ -52,12 +52,21 @@ jobs:
         echo "SHORT_SHA=$(echo ${GITHUB_SHA::7})" >> $GITHUB_ENV
         echo "REPO_NAME=$(echo ${GITHUB_REPOSITORY##*/})" >> $GITHUB_ENV
 
-    # Upload the built PDF file as artifact
-    - name: Upload Build Artifact
+    # Upload the built PDF files as individual artifacts
+    - name: Upload Build Artifacts
+      run: |
+        for file in ${{ github.workspace }}/*.pdf; do
+          filename=$(basename "$file")
+          echo "Uploading $filename"
+          echo "ARTIFACT_NAME=$filename" >> $GITHUB_ENV
+          echo "ARTIFACT_PATH=$file" >> $GITHUB_ENV
+        done
+
+    - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        path: |
-          ${{ github.workspace }}/*.pdf
+        name: ${{ env.ARTIFACT_NAME }}
+        path: ${{ env.ARTIFACT_PATH }}
         retention-days: 7
 
     - name: Create Release
