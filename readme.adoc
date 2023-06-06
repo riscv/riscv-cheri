@@ -1,96 +1,59 @@
-= RISC-V docs-spec-template
+= RISC-V Specification Template
 
-This repository serves as a template for creating GitHub repositories within the RISC-V organization that are intended for developing specifications.
+This repository serves as a blueprint for creating GitHub repositories within the RISC-V organization for the purpose of developing specifications. The template aims to facilitate and standardize the process of specification development.
 
-**If you are reading this in a specification repository, please update the title for this section and provide a relevant introduction to your repository.**
+NOTE: If you are viewing this in a specification repository, kindly update the title for this section and provide an introduction relevant to your repository.
 
 == License
 
-This work is licensed under a Creative Commons Attribution 4.0 International License (CC-BY-4.0).
-See the link:LICENSE[LICENSE] file for details.
+This work is licensed under a Creative Commons Attribution 4.0 International License (CC-BY-4.0). For details, see the link:LICENSE[LICENSE] file.
 
 == Contributors
 
-Contributors to this specification are contained in the link:contributors.adoc[contributors] file.
+The list of contributors to this specification is maintained in the link:contributors.adoc[contributors] file.
 
-For instructions on how to contribute please see the link:CONTRIBUTING.md[CONTRIBUTING] file.
+For guidelines on how to contribute, refer to the link:CONTRIBUTING.md[CONTRIBUTING] file.
 
 == Building the Document
 
-=== Building on Container
+=== Prerequisites
 
-To simplify the building process and avoid dealing with configurations and dependencies, you can build this documentation using a base container image, which contains everything you need. Follow these steps:
+To build the document, you'll need the following tools installed on your system:
 
-Prerequisite: https://docs.docker.com/engine/install/[ensure you have Docker installed]
+* Make
+* asciiDoctor-pdf, asciidoctor-bibtex, asciidoctor-diagram and asciidoctor-mathematical
+* Docker
 
-1 - Clone the repository
-```
-$ git clone https://github.com/riscv/docs-dev-guide.git
-$ cd ./docs-dev-guide
-```
-2 - Pull the RISC-V documentation base container image:
-```
-$ docker pull riscvintl/riscv-docs-base-container-image:latest
-```
-3 - Run the container and execute the build:
-```
-$ docker run -it -v $(pwd)/docs-spec-template:/build riscvintl/riscv-docs-base-container-image:latest /bin/sh -c 'make'
-```
-Output:
-```
-Building asciidoc
-asciidoctor-pdf \
-    --attribute=mathematical-format=svg \
-    --attribute=pdf-fontsdir=docs-resources/fonts \
-    --attribute=pdf-style=docs-resources/themes/riscv-pdf.yml \
-    --failure-level=ERROR \
-    --require=asciidoctor-bibtex \
-    --require=asciidoctor-diagram \
-    --require=asciidoctor-mathematical \
-    --out-file=example-spec.pdf \
-    header.adoc
-```
-4 - Clean
-```
-docker run -it -v $(pwd):/build riscvintl/riscv-docs-base-container-image:latest /bin/sh -c 'make clean'
-```
-=== Buidling on Local Machine
+=== Clonning the Repository
 
-==== Dependencies
+`git clone --recurse-submodules https://github.com/riscv/docs-spec-template.git`
 
-This project is built using AsciiDoctor (Ruby). The repository has been setup to build the PDF on
-checkin using GitHub actions.  Workflow dependencies are located in the `dependencies` directory.
+=== Building the Documentation
 
-For more information on AsciiDoctor, specification guidelines, or building locally, see the
-https://github.com/riscv/docs-dev-guide[RISC-V Documentation Developer Guide].
+To start the build process, run `cd ./docs-spec-template && make build`.
 
-==== Cloning the project
+The Makefile script will check the availability of Docker on your system:
 
-This project uses https://git-scm.com/book/en/v2/Git-Tools-Submodules[GitHub Submodules]
-to include the https://github.com/riscv/docs-resources[RISC-V docs-resources project]
-to achieve a common look and feel.
+* If Docker is available, the documentation will be built inside a Docker container using the image riscvintl/riscv-docs-base-container-image:latest. This ensures a consistent build environment across different systems.
+* If Docker is not available, the documentation will be built directly on your system using the installed tools.
 
-When cloning this repository for the first time, you must either use
-`git clone --recurse-submodules` or execute `git submodule init` and `git submodule update` after the clone to populate the docs-resources directory.  Failure to clone the submodule, will result
-in the PDF build fail with an error message like the following:
+The documentation is generated from the AsciiDoctor source files in your project. The primary source file is specified by the `HEADER_SOURCE` variable in the Makefile.
 
-```
-$ make
-asciidoctor-pdf \
--a toc \
--a compress \
--a pdf-style=docs-resources/themes/riscv-pdf.yml \
--a pdf-fontsdir=docs-resources/fonts \
---failure-level=ERROR \
--o profiles.pdf profiles.adoc
+The build process utilizes several options, including theming and font settings, and generates a PDF document as output.
 
-asciidoctor: ERROR: could not locate or load the built-in pdf theme `docs-resources/themes/riscv-pdf.yml'; reverting to default theme
-No such file or directory - notoserif-regular-subset.ttf not found in docs-resources/fonts
-  Use --trace for backtrace
+=== Cleaning up
 
-make: *** [Makefile:7: profiles.pdf] Error 1
-```
+To clean up the generated files, run `make clean`. This will remove the generated PDF file.
 
-==== Building the document
+== Versioning
 
-The final specification form of PDF can be generated using the `make` command.
+The `VERSION` variable is used to specify the revision number for the generated documentation. The default revision number is "v0.0.0".
+
+== Customization
+
+You can customize the build process by modifying the following variables in the Makefile:
+
+* `DATE`: Specifies the revision date for the generated documentation. The default value is the current date.
+* `REVMARK`: Specifies the revision remark for the generated documentation. The default value is "Draft".
+* `PDF_RESULT`: Specifies the name of the output PDF file.
+* `DOCKER_RUN`: Defines the Docker run command used when Docker is available.
