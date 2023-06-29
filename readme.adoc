@@ -28,6 +28,26 @@ To build the document, you'll need the following tools installed on your system:
 
 `git clone --recurse-submodules https://github.com/riscv/docs-spec-template.git`
 
+=== Versioning, Customization and Makefile Variables
+
+This section provides an overview of the environment variables used in our Makefile. These variables include DATE, VERSION, and REVMARK.
+
+* `DATE`: Represents the current date. The default value is generated using the date command on Unix-based systems, formatted as "YYYY-MM-DD".
+* `VERSION`: Represents the version of the specification being built. By default, this is set to 'v0.0.0'. You can change this to a different value, like 'v1.0.0', 'v1.1.0', etc., based on the current version of your specification.
+* `REVMARK`: This represents a revision marker for the project. Its default value is 'Draft'. You may want to change this to something like 'Release' or  'Stable'.
+* `PDF_RESULT`: Specifies the name of the output PDF file.
+* `DOCKER_RUN`: Defines the Docker run command used when Docker is available.
+
+==== Setting Environment Variables
+
+These variables can be overridden by setting environment variables on your system. Here's how you can do it in Linux and MacOS:
+
+```bash
+export VERSION=v1.2.3
+export REVMARK=Release
+export PDF_RESULT=spec.pdf
+```
+
 === Building the Documentation
 
 To start the build process, run `cd ./docs-spec-template && make build`.
@@ -44,16 +64,3 @@ The build process utilizes several options, including theming and font settings,
 === Cleaning up
 
 To clean up the generated files, run `make clean`. This will remove the generated PDF file.
-
-== Versioning
-
-The `VERSION` variable is used to specify the revision number for the generated documentation. The default revision number is "v0.0.0".
-
-== Customization
-
-You can customize the build process by modifying the following variables in the Makefile:
-
-* `DATE`: Specifies the revision date for the generated documentation. The default value is the current date.
-* `REVMARK`: Specifies the revision remark for the generated documentation. The default value is "Draft".
-* `PDF_RESULT`: Specifies the name of the output PDF file.
-* `DOCKER_RUN`: Defines the Docker run command used when Docker is available.
