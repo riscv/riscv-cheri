@@ -38,6 +38,50 @@ This section provides an overview of the environment variables used in our Makef
 * `PDF_RESULT`: Specifies the name of the output PDF file.
 * `DOCKER_RUN`: Defines the Docker run command used when Docker is available.
 
+==== Versioning Strategy
+
+In a nutshell, the versioning strategy is as follows:
+
+```bash
+[Start]
+  |
+  V
+1.0.0-draft[#] --> (Revisions) --> 1.0.0-draft[#] (last draft)
+  |
+  V
+1.0.0-rc[#] --> (Revisions) --> 1.0.0-rc[#] (last release candidate)
+  |
+  V
+[Approval]
+  |
+  V
+1.0.0 (Approved/Ratified)
+  |
+  V
+(Minor changes, Fixes, Compatible extensions) --> 1.1.0
+  |
+  V
+(Corrections, Editorial changes) --> 1.1.1
+  |
+  V
+(Incompatible changes, Major new features) --> 2.0.0
+```
+
+link:https://docs.google.com/document/d/1ZO3clTdgbm-t6r8GMDQ7CypWl68_3ZeYuHl4e-cS280/edit[RISC-V International has a policy for versioning]
+. The purpose of this policy is to ensure consistency and clarity in the versioning of RISC-V artifacts, which can be comprehended by both the RISC-V community and external parties. This policy adheres to Semantic Versioning 2.0.0 (MAJOR.MINOR.PATCH).
+
+The first ratified version of any artifact is expected to be 1.0.0. The policy outlines specific versioning conventions for different stages of specification development: 1.0.0-draft1 for drafts, 1.0.0-rc1 for release candidates, and 1.0.0 for approved and ratified specifications. Furthermore, the use of build-date metadata is encouraged for non-release versions. 
+
+The MAJOR.MINOR.PATCH paradigm is explained as: PATCH for corrections or editorial changes, MINOR for fixes and compatible extensions with limited new functionality, and MAJOR for incompatible changes or significant new features. The policy is effective immediately upon approval.
+
+Examples:
+
+* Specification Development - Suppose a new RISC-V specification is being developed. Its version might start as 1.0.0-draft1 for the first draft, then proceed to 1.0.0-rc1 when it reaches the release candidate stage (1.0.0-rc2, 1.0.0-rc3, etc...), and finally settle at 1.0.0 when it's approved and ratified.
+
+* Update Types - If the ratified specification undergoes a minor update, incorporating fixes or compatible extensions with limited new functionality, it would change to 1.1.0. If there are only corrections or editorial modifications, the version would move to 1.0.1. For incompatible changes or major new features, the version would leap to 2.0.0.
+
+* Metadata Tagging - Non-release versions of the specification can be tagged with the build date. For example, if a draft version is prepared on June 29, 2023, it could be tagged as 1.0.0-draft1+20230629.
+
 ==== Setting Environment Variables
 
 These variables can be overridden by setting environment variables on your system. Here's how you can do it in Linux and MacOS:
