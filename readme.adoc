@@ -1,53 +1,110 @@
-= RISC-V docs-spec-template
+= RISC-V Specification Template
 
-This repository is used to prime GitHub repos for the RISC-V organization which will be used
-to create specifications.
+This repository serves as a blueprint for creating GitHub repositories within the RISC-V organization for the purpose of developing specifications. The template aims to facilitate and standardize the process of specification development.
 
-**If you are reading this in a specification repo, please update the title for this section and
-provide your introduction to your repository.**
+NOTE: If you are viewing this in a specification repository, kindly update the title for this section and provide an introduction relevant to your repository.
 
-= License
+== License
 
-This work is licensed under a Creative Commons Attribution 4.0 International License (CC-BY-4.0).
-See the link:LICENSE[LICENSE] file for details.
+This work is licensed under a Creative Commons Attribution 4.0 International License (CC-BY-4.0). For details, see the link:LICENSE[LICENSE] file.
 
-= Contributors
+== Contributors
 
-Contributors to this specification are contained in the link:contributors.adoc[contributors] file.
+The list of contributors to this specification is maintained in the link:contributors.adoc[contributors] file.
 
-For instructions on how to contribute please see the link:CONTRIBUTING.md[CONTRIBUTING] file.
+For guidelines on how to contribute, refer to the link:CONTRIBUTING.md[CONTRIBUTING] file.
 
-= Dependencies
+== Building the Document
 
-This project is built using AsciiDoctor (Ruby). The repository has been setup to build the PDF on
-checkin using GitHub actions.  Workflow dependencies are located in the `dependencies` directory.
+=== Prerequisites
 
-For more information on AsciiDoctor, specification guidelines, or building locally, see the
-https://github.com/riscv/docs-dev-guide[RISC-V Documentation Developer Guide].
+To build the document, you'll need the following tools installed on your system:
 
-= Cloning the project
+* Make
+* asciiDoctor-pdf, asciidoctor-bibtex, asciidoctor-diagram and asciidoctor-mathematical
+* Docker
 
-This project uses https://git-scm.com/book/en/v2/Git-Tools-Submodules[GitHub Submodules]
-to include the https://github.com/riscv/docs-resources[RISC-V docs-resources project]
-to achieve a common look and feel.
+=== Cloning the Repository
 
-When cloning this repository for the first time, you must either use
-`git clone --recurse-submodules` or execute `git submodule init` and `git submodule update` after the clone to populate the docs-resources directory.  Failure to clone the submodule, will result
-in the PDF build fail with an error message like the following:
+`git clone --recurse-submodules https://github.com/riscv/docs-spec-template.git`
 
-    $ make
-    asciidoctor-pdf \
-    -a toc \
-    -a compress \
-    -a pdf-style=docs-resources/themes/riscv-pdf.yml \
-    -a pdf-fontsdir=docs-resources/fonts \
-    --failure-level=ERROR \
-    -o profiles.pdf profiles.adoc
-    asciidoctor: ERROR: could not locate or load the built-in pdf theme `docs-resources/themes/riscv-pdf.yml'; reverting to default theme
-    No such file or directory - notoserif-regular-subset.ttf not found in docs-resources/fonts
-      Use --trace for backtrace
-    make: *** [Makefile:7: profiles.pdf] Error 1
+=== Versioning, Customization and Makefile Variables
 
-= Building the document
+This section provides an overview of the environment variables used in our Makefile. These variables include DATE, VERSION, and REVMARK.
 
-The final specification form of PDF can be generated using the `make` command.
+* `DATE`: Represents the current date. The default value is generated using the date command on Unix-based systems, formatted as "YYYY-MM-DD".
+* `VERSION`: Represents the version of the specification being built. By default, this is set to 'v0.0.0'. You can change this to a different value, like 'v1.0.0', 'v1.1.0', etc., based on the current version of your specification.
+* `REVMARK`: This represents a revision marker for the project. Its default value is 'Draft'. You may want to change this to something like 'Release' or  'Stable'.
+* `PDF_RESULT`: Specifies the name of the output PDF file.
+* `DOCKER_RUN`: Defines the Docker run command used when Docker is available.
+
+==== Versioning Strategy
+
+In a nutshell, the versioning strategy is as follows:
+
+```bash
+[Start]
+  |
+  V
+1.0.0-draft[#] --> (Revisions) --> 1.0.0-draft[#] (last draft)
+  |
+  V
+1.0.0-rc[#] --> (Revisions) --> 1.0.0-rc[#] (last release candidate)
+  |
+  V
+[Approval]
+  |
+  V
+1.0.0 (Approved/Ratified)
+  |
+  V
+(Minor changes, Fixes, Compatible extensions) --> 1.1.0
+  |
+  V
+(Corrections, Editorial changes) --> 1.1.1
+  |
+  V
+(Incompatible changes, Major new features) --> 2.0.0
+```
+
+link:https://docs.google.com/document/d/1ZO3clTdgbm-t6r8GMDQ7CypWl68_3ZeYuHl4e-cS280/edit[RISC-V International has a policy for versioning]
+. The purpose of this policy is to ensure consistency and clarity in the versioning of RISC-V artifacts, which can be comprehended by both the RISC-V community and external parties. This policy adheres to Semantic Versioning 2.0.0 (MAJOR.MINOR.PATCH).
+
+The first ratified version of any artifact is expected to be 1.0.0. The policy outlines specific versioning conventions for different stages of specification development: 1.0.0-draft1 for drafts, 1.0.0-rc1 for release candidates, and 1.0.0 for approved and ratified specifications. Furthermore, the use of build-date metadata is encouraged for non-release versions. 
+
+The MAJOR.MINOR.PATCH paradigm is explained as: PATCH for corrections or editorial changes, MINOR for fixes and compatible extensions with limited new functionality, and MAJOR for incompatible changes or significant new features. The policy is effective immediately upon approval.
+
+Examples:
+
+* Specification Development - Suppose a new RISC-V specification is being developed. Its version might start as 1.0.0-draft1 for the first draft, then proceed to 1.0.0-rc1 when it reaches the release candidate stage (1.0.0-rc2, 1.0.0-rc3, etc...), and finally settle at 1.0.0 when it's approved and ratified.
+
+* Update Types - If the ratified specification undergoes a minor update, incorporating fixes or compatible extensions with limited new functionality, it would change to 1.1.0. If there are only corrections or editorial modifications, the version would move to 1.0.1. For incompatible changes or major new features, the version would leap to 2.0.0.
+
+* Metadata Tagging - Non-release versions of the specification can be tagged with the build date. For example, if a draft version is prepared on June 29, 2023, it could be tagged as 1.0.0-draft1+20230629.
+
+==== Setting Environment Variables
+
+These variables can be overridden by setting environment variables on your system. Here's how you can do it in Linux and MacOS:
+
+```bash
+export VERSION=v1.2.3
+export REVMARK=Release
+export PDF_RESULT=spec.pdf
+```
+
+=== Building the Documentation
+
+To start the build process, run `cd ./docs-spec-template && make build`.
+
+The Makefile script will check the availability of Docker on your system:
+
+* If Docker is available, the documentation will be built inside a Docker container using the image riscvintl/riscv-docs-base-container-image:latest. This ensures a consistent build environment across different systems.
+* If Docker is not available, the documentation will be built directly on your system using the installed tools.
+
+The documentation is generated from the AsciiDoctor source files in your project. The primary source file is specified by the `HEADER_SOURCE` variable in the Makefile.
+
+The build process utilizes several options, including theming and font settings, and generates a PDF document as output.
+
+=== Cleaning up
+
+To clean up the generated files, run `make clean`. This will remove the generated PDF file.
