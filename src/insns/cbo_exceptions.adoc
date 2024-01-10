@@ -1,0 +1,51 @@
+Exceptions::
+CHERI fault exceptions when the authorising capability fails one of the checks
+listed below; in this case, _CHERI data fault_ is reported in the <<mtval>> or
+<<stval>> TYPE field and the corresponding code is written to CAUSE.
++
+ifdef::cbo_inval[]
+The CBIE bit in <<menvcfg>> and <<senvcfg>> indicates whether
+CBO.INVAL.CAP and CBO.INVAL perform cache block flushes instead of
+invalidations for less privileged modes. The instruction checks shown in the
+table below remain unchanged regardless of the value of CBIE and the privilege
+mode.
+endif::[]
+
+[%autowidth,options=header,align=center]
+|==============================================================================
+| CAUSE                 | Reason
+| Tag violation         | The tag set to 0
+| Seal violation        | It is sealed
+
+ifdef::cbo_clean_flush[]
+| Permission violation  | It does not grant <<w_perm>> and <<r_perm>>
+| Length violation      | At least one byte accessed is within the bounds
+endif::cbo_clean_flush[]
+
+ifdef::cbo_inval[]
+| Permission violation  | It does not grant <<w_perm>>, <<r_perm>> or <<asr_perm>>
+| Length violation      | At least one byte accessed is outside the bounds
+endif::[]
+
+ifdef::prefetch_i[]
+| Permission violation  | It does not grant <<x_perm>>
+| Length violation      | At least one byte accessed is within the bounds
+endif::[]
+
+ifdef::prefetch_r[]
+| Permission violation  | It does not grant <<r_perm>>
+| Length violation      | At least one byte accessed is within the bounds
+endif::[]
+
+ifdef::prefetch_w[]
+| Permission violation  | It does not grant <<w_perm>>
+| Length violation      | At least one byte accessed is within the bounds
+endif::[]
+|==============================================================================
+
+
+:!cbo_clean_flush:
+:!cbo_inval:
+:!prefetch_r:
+:!prefetch_w:
+:!prefetch_i:

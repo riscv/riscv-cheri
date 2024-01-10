@@ -1,0 +1,37 @@
+<<<
+
+[#SRET,reftext="SRET"]
+==== SRET
+
+See <<MRET>>.
+
+[#MRET,reftext="MRET"]
+==== MRET
+
+Synopsis::
+Trap Return (MRET, SRET)
+
+Mnemonics::
+`mret` +
+`sret`
+
+Encoding::
+include::wavedrom/trap-return.adoc[]
+
+Description::
+Return from machine mode (<<MRET>>) or supervisor mode (<<SRET>>) trap handler
+as defined by cite:[riscv-priv-spec]. MRET unseals <<mepcc>> and writes the
+result into <<pcc>>. SRET unseals <<sepcc>> and writes the result into <<pcc>>.
+
+Exceptions::
+CHERI fault exceptions occur when <<pcc>> does not grant <<asr_perm>> because
+<<MRET>> and <<SRET>> require access to privileged CSRs. When that exception
+occurs, _CHERI instruction access fault_ is reported in the TYPE field and the
+Permission Violation codes is reported in the CAUSE field of <<mtval>> or
+<<stval>>.
+
+Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--

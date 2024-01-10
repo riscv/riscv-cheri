@@ -1,0 +1,34 @@
+<<<
+
+[#C_FLW,reftext="C.FLW"]
+==== C.FLW
+
+See <<C.FLWSP>>.
+
+[#C_FLWSP,reftext="C.FLWSP"]
+==== C.FLWSP
+
+Synopsis::
+Floating point load (C.FLW, C.FLWSP), 16-bit encodings
+
+Legacy Mode Mnemonics (RV32)::
+`c.flw rd', offset(rs1'/sp)`
+
+Legacy Mode Expansions (RV32)::
+`flw rd', offset(rs1'/sp)`
+
+Encoding (RV32)::
+include::wavedrom/c-sp-load-css-fp.adoc[]
+include::wavedrom/c-sp-load-css-fp-sprel.adoc[]
+
+Legacy Mode Description::
+Standard floating point load instructions, authorised by the capability in <<ddc>>. Note that these instructions are not available in Capability Mode, as they have been remapped to <<C.CLC>>, <<C.CLCSP>>.
+
+include::load_exceptions.adoc[]
+
+Prerequisites::
+{c_cheri_legacy_ext_names}, and F
+
+Operation (after expansion to 32-bit encodings)::
+ See <<FLW>>
+

@@ -1,0 +1,59 @@
+<<<
+//[#insns-sh4add-32bit,reftext="CSR access (CSH4ADD, SH4ADD), 32-bit encoding"]
+
+[#SH4ADD,reftext="SH4ADD"]
+==== SH4ADD
+
+See <<CSH4ADD>>.
+
+[#CSH4ADD,reftext="CSH4ADD"]
+==== CSH4ADD
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* This instruction is *new*.
+endif::[]
+
+Synopsis::
+Shift by 4 and add for address generation (CSH4ADD, SH4ADD)
+
+Capability Mode Mnemonics::
+`csh4add cd, rs1, cs2`
+
+Legacy Mode Mnemonics::
+`sh4add rd, rs1, rs2`
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x7, attr: ['CSH4ADD','SH4ADD'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 16, attr: ['CSH4ADD','SH4ADD'] },
+]}
+....
+
+Capability Mode Description::
+Increment the address field of `cs1` by `rs2` shifted left by 4 bit positions. Clear the tag if the resulting capability is unrepresentable or `cs1` is sealed.
+
+Legacy Mode Description::
+Increment the address field of `rs1` by `rs2` shifted left by 4 bit positions.
+
+Prerequisites CSH4ADD::
+{cheri_base_ext_name}
+
+Prerequisites for SH4ADD::
+{cheri_legacy_ext_name}
+
+Capability Mode Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--
+
+Legacy Mode Operation::
+--
+TBD
+--

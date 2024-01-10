@@ -1,0 +1,204 @@
+== Introduction
+
+=== CHERI Concepts and Terminology
+
+Current CPU architectures (including RISC-V) allow memory access solely by
+specifying and dereferencing a memory address stored as an integer value in
+a register or in memory. Any accidental or malicious action that modifies
+such an integer value can result in unrestricted access to the memory that
+it addresses. Unfortunately, this weak memory protection model has resulted
+in the majority of software security vulnerabilities present in software
+today.
+
+CHERI enables software to efficiently implement fine-grained memory protection
+and scalable software compartmentalization by providing strong, efficient
+hardware mechanisms to support software execution and enable it to prevent
+and mitigate vulnerabilities.
+
+Design goals include incremental adoptability from current ISAs and software
+stacks, low performance overhead for memory protection, significant performance
+improvements for software compartmentalization, formal grounding, and
+programmer-friendly underpinnings. It has been designed to provide strong,
+non-probabilistic protection rather than depending on short random numbers or
+truncated cryptographic hashes that can be leaked and reinjected, or that could
+be brute forced.
+
+CHERI enhances the CPU to add hardware memory access control. It has an
+additional memory access mechanism that protects _references to code and data_
+(pointers), rather than the _location of code and data_ (integer addresses).
+This mechanism is implemented by providing a new primitive, called a
+*capability*, that software components can use to implement strongly protected
+pointers within an address space.
+
+Capabilities are unforgeable and delegatable tokens of authority that grant
+software the ability to perform a specific set of operations. In CHERI,
+integer-based pointers can be replaced by capabilities to provide memory access
+control. In this case, a memory access capability contains an integer memory
+address that is extended with metadata to protect its integrity, limit how it
+is manipulated, and control its use. This metadata includes:
+
+*  an out-of-band _tag_ implementing strong integrity protection
+(differentiating valid and invalid capabilities), This prevents confusion
+between data and capabilities.
+* _bounds_ limiting the range of addresses that may be dereferenced
+* _permissions_ controlling the specific operations that may be performed
+* _sealing_ which is used to support higher-level software encapsulation
+
+The CHERI model is motivated by the _principle of least privilege_, which
+argues that greater security can be obtained by minimizing the privileges
+accessible to running software. A second guiding principle is the _principle of
+intentional use_, which argues that, where many privileges are available to a
+piece of software, the privilege to use should be explicitly named rather than
+implicitly selected. While CHERI does not prevent the expression of vulnerable
+software designs, it provides strong vulnerability mitigation: attackers have a
+more limited vocabulary for attacks, and should a vulnerability be successfully
+exploited, they gain fewer rights, and have reduced access to further attack
+surfaces.
+
+Protection properties for capabilities include the ISA ensuring that
+capabilities are always derived via valid manipulations of other capabilities
+(_provenance_), that corrupted in-memory capabilities cannot be dereferenced
+(_integrity_), and that rights associated with capabilities shall only ever be
+equal or less permissive (_monotonicity_).Tampering or modifying capabilities
+in an attempt to elevate their rights will yield an invalid capability as the
+tag will be cleared. Attempting to dereference via an invalid capability
+will result in a hardware exception.
+
+CHERI capabilities may be held in registers or in memories, and are loaded,
+stored, and dereferenced using CHERI-aware instructions that expect capability
+operands rather than integer addresses. On hardware reset, initial capabilities
+are made available to software via special and general-purpose capability
+registers. All other capabilities will be derived from these initial valid
+capabilities through valid capability transformations.
+
+Developers can use CHERI to build fine-grained spatial and temporal memory
+protection into their system software and applications and significantly
+improve their security.
+
+=== CHERI Extensions to RISC-V
+
+This specification is based on publicly available documentation including
+cite:[cheri-v9-spec] and cite:[woodruff2019cheri]. It defines the following
+extensions to support CHERI alongside RISC-V:
+
+{cheri_base_ext_name}:: Introduces key, minimal CHERI concepts and features to
+the RISC-V ISA. The resulting extended ISA is not
+backwards-compatible with RISC-V
+{cheri_legacy_ext_name}:: Extends {cheri_base_ext_name} with features to ensure
+that the ISA extended with CHERI allows backwards binary compatibility with
+RISC-V
+{cheri_mode_ext_name}:: Adds a mode bit in the encoding of capabilities to
+allow changing the current CHERI execution mode using indirect jump
+instructions
+{cheri_pte_ext_name}:: CHERI extension for RISC-V harts supporting page-based
+virtual-memory
+{cheri_vectorcap_ext_name}:: CHERI extension for the RISC-V Vector (V)
+extension. It adds support for storing CHERI capabilities in
+vector registers, intended for vectorised memory copying
+
+CAUTION: The extension names are provisional and subject to change.
+
+{cheri_base_ext_name} is defined as the base extension which all CHERI RISC-V
+implementations must support. {cheri_legacy_ext_name}, {cheri_mode_ext_name}
+and {cheri_pte_ext_name} are optional extensions in addition to
+{cheri_base_ext_name}. {cheri_mode_ext_name} requires supporting both
+{cheri_base_ext_name} and {cheri_legacy_ext_name}.
+
+If a standard vector extension is present (indicated in this document as "V",
+but it could equally be one of the subsets defined by a Zve* extension) then
+{cheri_vectorcap_ext_name} may optionally be added in addition to
+{cheri_base_ext_name}.
+
+We refer to software as _purecap_ if it utilizes CHERI capabilities for all
+memory accesses -- including loads, stores and instruction fetches -- rather
+than integer addresses. Purecap software requires the CHERI RISC-V hart to
+support {cheri_base_ext_name}. We refer to software as _hybrid_ if it uses
+integer addresses *or* CHERI capabilities for memory accesses. Hybrid software
+requires the CHERI RISC-V hart to support {cheri_base_ext_name},
+{cheri_legacy_ext_name} and {cheri_mode_ext_name}.
+
+See xref:riscv-extensions[xrefstyle=short] for compatibility with other RISC-V
+extensions.
+
+=== Risks and Known Uncertainty
+
+* All extensions could be divided up differently in future, including after
+ratification
+* The RISC-V Architecture Review Committee (ARC) are likely to update all
+encodings
+* The ARC are likely to update all CSR addresses
+* Instruction mnemonics may be renamed
+    ** The instruction mnemonics could be the same regardless of CHERI mode
+    ** Any changes will affect assembly code, but assembler aliases can provide
+backwards compatibility
+* There is no clarity on how the new Page Table Entry (PTE) bits from
+{cheri_pte_ext_name} will be implemented
+    ** The PTE bits introduce a dependency between exceptions and the stored
+tag bit
+* There is debate on whether different permission encodings are needed for
+XLENMAX=32 and XLENMAX=64
+
+==== Pending Extensions
+
+The base RISC-V ISAs, along with most extensions, have been reviewed for
+compatibility with CHERI. However, the following extensions are yet to be
+reviewed:
+
+* "V" Standard Extension for Vector Operations
+* "H" Hypervisor Extension
+* Core-Local Interrupt Controller (CLIC)
+
+CAUTION: The list above is not complete!
+
+==== Incompatible Extensions
+
+There are RISC-V extensions in development that may duplicate some aspects of
+CHERI functionality or directly conflict with CHERI and should not be
+available on a CHERI-enabled hart. These include:
+
+* RISC-V CFI specification
+* "J" Pointer Masking
+
+CAUTION: The list above is not complete!
+
+==== Suggested Mnemonic Renaming
+
+xref:suggested_insn_names[xrefstyle=short] lists the currently proposed
+renames. Please update the table when new renames are proposed or confirmed.
+
+.Suggested instruction names
+[#suggested_insn_names]
+[width="100%",options=header]
+|=============================
+| Current Name      | Suggestion
+| CMOVE             | CMV
+| CINCOFFSET        | CADD
+| CINCOFFSETIMM     | CADDI
+| C.CINCOFFSET16CSP | C.CADDI16SP
+| C.CINCOFFSET4CSPN | C.CADDI4SPN
+| CLC/LC            | CLCAP/LCAP
+| CSC/SC            | CSCAP/SCAP
+|=============================
+
+NOTE: Renaming SC is not a choice. The store capability instruction must be
+renamed because it conflicts with store conditional from the RISC-V A
+extension.
+
+Further to the new proposed mnemonics in
+xref:suggested_insn_names[xrefstyle=short], the following general proposals
+have been discussed:
+
+* Do not use the letter 'c' to indicate 'capability' or 'CHERI' because this
+conflicts with the already ratified RISC-V C extension
+    ** We previously discussed using other letters like 'p' for 'pointer' or
+'f' for 'fat pointer' although 'f' is already used for floating point
+* Do not change instruction mnemonics based on the current CHERI execution mode
+    ** For example, LW is always load word regardless of the CHERI mode, so the
+mnemonic CLW disappears
+    ** This facilitates writing the ISA specification as well as code
+maintenance in systems software like Linux
+    ** However, it also goes against intentionality and can make assembly code
+(which occurs very infrequently in real-world code) more difficult to
+understand without additional context
+    ** Both options could be supported by using assembler aliases
+

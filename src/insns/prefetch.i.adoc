@@ -1,0 +1,62 @@
+<<<
+
+[#PREFETCH_I,reftext="PREFETCH.I"]
+==== PREFETCH.I
+See <<PREFETCH_I_CAP>>.
+
+[#PREFETCH_I_CAP,reftext="PREFETCH.I.CAP"]
+==== PREFETCH.I.CAP
+
+Synopsis::
+Provide a HINT to hardware that a cache block is likely to be accessed by an
+instruction fetch in the near future
+
+Capability Mode Mnemonic::
+`prefetch.i.cap offset(cs1)`
+
+Legacy Mode Mnemonic::
+`prefetch.i offset(rs1)`
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg: [
+  {bits: 7,  name: 'opcode',    attr: ['7','OP-IMM=0010011'],  type: 8},
+  {bits: 5,  name: 'imm[4:0]',  attr: ['5','zero'],     type: 2},
+  {bits: 3,  name: 'funct3',    attr: ['3','ORI=110'],  type: 8},
+  {bits: 5,  name: 'cs1/rs1',   attr: ['5','base'],     type: 4},
+  {bits: 5,  name: 'funct5',    attr: ['5','cap: PREFETCH.I.CAP=00000', 'leg: PREFETCH.I=00000'],   type: 3},
+  {bits: 7,  name: 'imm[11:5]', attr: ['7','offset[11:5]'],   type: 3},
+]}
+....
+
+Capability Mode Description::
+A PREFETCH.I.CAP instruction indicates to hardware that the cache block whose
+effective address is the sum of the base address specified in `cs1` and the
+sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
+likely to be accessed by an instruction fetch in the near future. The encoding
+is only valid if imm[4:0]=0. The authorising capability for this operation is
+`cs1`.
+
+Legacy Mode Description::
+A PREFETCH.I instruction indicates to hardware that the cache block whose
+effective address is the sum of the base address specified in `rs1` and the
+sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
+likely to be accessed by an instruction fetch in the near future. The encoding
+is only valid if imm[4:0]=0. The authorising capability for this operation is
+<<ddc>>.
+
+:prefetch_i:
+include::cbo_exceptions.adoc[]
+
+Prerequisites for PREFETCH.I.CAP::
+Zicbop, {cheri_base_ext_name}
+
+Prerequisites for PREFETCH.I::
+Zicbop, {cheri_legacy_ext_name}
+
+Operation::
+[source,sail]
+--
+TODO
+--

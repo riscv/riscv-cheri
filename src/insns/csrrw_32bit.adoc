@@ -1,0 +1,52 @@
+<<<
+//[#insns-csrr-32bit,reftext="CSR access (CSRRW[I], CSRRS[I], CSRRC[I]), 32-bit encoding"]
+
+[#CSRRW,reftext="CSRRW"]
+==== CSRRW
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* CSpecialRW is removed and this functionality replaces it
+endif::[]
+
+
+Synopsis::
+CSR access (CSRRW) 32-bit encodings
+
+Mnemonic (XLEN-wide target, and XLEN-wide aliases of CLEN-wide CSRs)::
+`csrrw rd, rs1, csr`
+
+Mnemonics (CLEN-wide target)::
+`csrrw cd, cs1, csr`
+
+Encoding::
+include::wavedrom/csrw-instr.adoc[]
+
+Description::
+This is a standard RISC-V CSR instructions with extended functionality for
+accessing CLEN-wide CSRs, such as <<mtvec>>/<<mtvecc>> which can be
+accessed through either the RISC-V address or the capability address alias.
++
+See xref:aliased_CSRs[xrefstyle=short] for a list of CLEN-wide CSRs and
+xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing each one.
++
+CSRRW writes `cs1` to the CLEN-wide alias of extended CSRs, and reads a full capability into `cd`.
++
+CSRRW writes `rs1` to the XLEN-wide alias of extended CSRs, and reads the address field into `rd`.
++
+Access to XLEN-wide CSRs from other extensions is as specified by RISC-V.
+
+
+Permissions::
+All non-user mode accessible CSRs require <<asr_perm>>, including existing RISC-V CSRs.
+
+Prerequisites for capability address aliases::
+{cheri_base_ext_name}
+
+Prerequisites for legacy address aliases::
+{cheri_legacy_ext_name}
+
+Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--

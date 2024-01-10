@@ -1,0 +1,1134 @@
+[#section_rv_integration]
+== Integrating Zcheri_purecap with the RISC-V Base Integer Instruction Set
+
+{cheri_base_ext_name} is an extension to the RISC-V ISA. The extension adds a
+carefully selected set of instructions and CSRs that are sufficient to
+implement new security features in the ISA. To ensure compatibility,
+{cheri_base_ext_name} also requires some changes to the primary base integer
+variants: RV32I, providing 32-bit addresses with 64-bit capabilities, and
+RV64I, providing 64-bit addresses with 128-bit capabilities. The remainder of
+this chapter describes these changes for both the unprivileged and privileged
+components of the base integer RISC-V ISAs.
+
+NOTE: The changes described in this specification also ensure that
+{cheri_base_ext_name} is compatible with RV32E.
+
+=== Memory
+
+A hart supporting {cheri_base_ext_name} has a single byte-addressable address
+space of 2^XLEN^ bytes for all memory accesses. Each memory region capable of
+holding a capability also stores a tag bit for each naturally aligned CLEN bits
+(e.g. 16 bytes in RV64), so that capabilities with their tag set can only be
+stored in naturally aligned addresses. Tags must be atomically bound to the
+data they protect.
+
+The memory address space is circular, so the byte at address
+2^XLEN^ - 1 is adjacent to the byte at address zero. A capability's
+representable region described in xref:section_cap_encoding[xrefstyle=short] is
+also circular, so address 0 is within the representable region of a capability
+where address 2^XLENMAX^ - 1 is within the bounds.
+
+[#section_riscv_programmers_model]
+=== Programmer's Model for Zcheri_purecap
+
+For {cheri_base_ext_name}, the 32 unprivileged *x* registers of the base
+integer ISA are extended so that they are able to hold a capability. Therefore,
+each *x* register is CLEN bits wide and has an out of band tag bit. The *x*
+notation refers to the address field of the capability in an unprivileged
+register while the *c* notation is used to refer to the full capability (i.e.
+address, metadata and tag) held in the same unprivileged register.
+
+Register *c0* is hardwired with all bits, including the capability metadata and
+tag, equal to 0. In other words, *c0* is hardwired to the <<null-cap>>
+capability.
+
+An authorising capability with appropriate permissions is required to execute
+instructions in {cheri_base_ext_name}. Therefore, the unprivileged program
+counter (*pc*) register is extended so that it is able to hold a capability.
+The extended register is called the program counter capability (<<pcc>>). The
+<<pcc>> address field is effectively the *pc* in the base RISC-V ISA that the
+hardware automatically increments as instructions are executed. The <<pcc>>'s
+metadata and tag are reset to the <<infinite-cap>> capability metadata and tag.
+
+The hardware performs the following checks on <<pcc>> for each instruction
+executed in addition to the checks already required by the base RISC-V ISA. A
+failing check causes a CHERI exception.
+
+* The tag must be set
+* The capability must not be sealed
+* The capability must grant execute permission
+* All bytes of the instruction must be in bounds
+
+[#section_cap_instructions]
+=== Capability Instructions
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* Some instructions from the original CHERI
+specification were removed to save encoding space, or because they relate
+to features which are not yet in this specification. Instructions were removed
+if they do not harm performance and can be emulated using other instructions.
+endif::[]
+
+{cheri_base_ext_name} introduces new instructions to the base RISC-V integer
+ISA to inspect and operate on capabilities held in registers.
+
+==== Capability Inspection Instructions
+
+These instructions allow software to inspect the fields of a capability held
+in a *c* register. The output is an integer value written to an *x* register
+representing the decoded field of the capability, such as the permissions or
+bounds. These instructions do not cause exceptions.
+
+* <<CGETTAG>>: inspects the tag of the input capability. The output is 1 if the
+tag is set and 0 otherwise
+* <<CGETPERM>>: outputs the architectural (AP) and software-defined (SDP)
+permission fields of the input capability
+* <<CGETBASE>>: outputs the expanded base address of the input capability
+* <<CGETLEN>>: outputs the length of the input capability. Length is defined as
+`top - base`. The output is 2^XLEN^-1 when the capability's length is
+2^XLENMAX^
+* <<CRAM>>: outputs the nearest bounds alignment that a valid capability can
+represent
+* <<CGETHIGH>>: outputs the compressed capability metadata
+* <<CSETEQUALEXACT>>: compares two capabilities including tag, metadata and
+address
+* <<CTESTSUBSET>>: tests whether the bounds and permissions of a capability are a
+subset of those from another capability
+
+NOTE: <<CGETBASE>> and <<CGETLEN>> output 0 when a capability with malformed
+bounds is provided as an input (see
+xref:section_cap_malformed[xrefstyle=short]).
+
+==== Capability Manipulation Instructions
+
+These instructions allow software to manipulate the fields of a capability held
+in a *c* register. The output is a capability written to a *c* register with
+its fields modified. The output capability has its tag set to 0 if the
+input capability did not have a tag set, the output capability has more
+permissions or larger bounds compared to the input capability, or the operation
+results in a capability with malformed bounds. These instructions do not give
+rise to exceptions.
+
+* <<CSETADDR>>: set the address of a capability to an arbitrary address
+* <<CINCOFFSET>>, <<CINCOFFSETIMM>>: increment the address of the input capability
+by an arbitrary offset
+* <<CSETHIGH>>: replace a capability's metadata with an arbitrary value. The
+output tag is always 0
+* <<CANDPERM>>: bitwise AND of a mask value with a bit map representation of the
+architectural (AP) and software-defined (SDP) permissions fields
+* <<CSETBOUNDS>>: set the base and length of a capability. The tag is
+cleared, if the encoding cannot represents the bounds exactly
+* <<CSETBOUNDSINEXACT>>: set the base and length of a capability. The base will be
+rounded down and/or the length will be rounded up if the encoding cannot represent
+the bounds exactly
+* <<CSEAL>>: seal capability
+* <<CBUILDCAP>>: replace the base, top, address, permissions and mode fields of a
+capability with the fields from another capability
+* <<CMOVE>>: move a capability from a *c* register to another *c* register
+
+NOTE: <<CBUILDCAP>> outputs a capability with tag set to 0 if the input
+capability's bounds are malformed.
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* <<CSETBOUNDS>> and <<CSETBOUNDSIMM>> perform the role
+of the old CSETBOUNDSEXACT while the new <<CSETBOUNDSINEXACT>> is the old
+CSETBOUNDS.
+endif::[]
+
+==== Capability Load and Store Instructions
+
+A load capability instruction, <<CLC>>, reads CLEN bits from memory together with
+its tag and writes the result to a *c* register. The capability authorising the
+memory access is provided in a *c* source register, so the effective address is
+obtained by incrementing that capability with the sign-extended 12-bit offset.
+
+A store capability instruction, <<CSC>>, writes CLEN bits and the tag in a *c* register
+to memory. The capability authorising the memory access is provided in a *c*
+source register, so the effective address is obtained by incrementing that
+capability with the sign-extended 12-bit offset.
+
+<<CLC>> and <<CSC>> instructions cause CHERI exceptions if the
+authorising capability fails any of the following checks:
+
+* The tag is zero
+* The capability is sealed
+* At least one byte of the memory access is outside the capability's bounds
+* For loads, the read permission must be set in AP
+* For stores, the write permission must be set in AP
+
+Capability load and store instructions also cause load or store/AMO address
+misaligned exceptions if the address is not naturally aligned to a CLEN
+boundary.
+
+For loads, the tag of the capability loaded from memory is cleared if the
+authorising capability does not grant permission to read capabilities (i.e.
+both <<r_perm>> and <<c_perm>> must be set in AP). For stores, the tag of the
+capability written to memory is cleared if the authorising capability does not
+grant permission to write capabilities (i.e. both <<w_perm>> and <<c_perm>>
+must be set in AP).
+
+WARNING: #TODO: these cases may cause exceptions in the future - we need a way
+for software to discover and/or control the behaviour#
+
+[#section_uncond_integer_addr_jump]
+==== Unconditional Integer Address Jumps
+
+The indirect jump and link <<pcc>> (<<JALR_PCC>>) instruction allows unconditional
+jumps to a target address. The target address is provided in an *x* register;
+the new address is installed in the address field of the <<pcc>>. The address of
+the instruction following the jump (*pc* + 4) is written to an *x* register.
+<<JALR_PCC>> causes an exceptions when a minimum sized instruction at the
+target address is not within the bounds of the <<pcc>> or the target address is
+misaligned.
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* This instruction is now modal and shares the same
+encoding with <<JALR_CAP>> when both {cheri_base_ext_name} and
+{cheri_legacy_ext_name} are supported.
+endif::[]
+
+[#section_existing_riscv_insns]
+=== Existing RISC-V Instructions
+
+The operands or behavior of some instructions in the base RISC-V ISA changes in
+{cheri_base_ext_name}.
+
+==== Integer Computational Instructions
+
+Most integer computational instructions operate on XLEN bits of values held in
+*x* registers. Therefore, these instructions only operate on the address field
+if the input register of the instruction holds a capability. The output is XLEN
+bits written to an *x* register; the tag and capability metadata of that
+register are zeroed.
+
+The add upper immediate to <<pcc>> instruction (<<AUIPCC>>) replaces the add upper
+immediate to *pc* instruction (<<AUIPC>>) at the same encoding. <<AUIPCC>> is used to
+build <<pcc>>-relative capabilities. <<AUIPCC>> forms a 32-bit offset from the 20-bit
+immediate and filling the lowest 12 bits with zeros. The <<pcc>> address is then
+incremented by the offset and a representability check is performed so the
+capability's tag is cleared if the new address is outside the <<pcc>>'s
+representable region. The resulting CLEN value along with the new tag are
+written to a *c* register.
+
+==== Control Transfer Instructions
+
+Control transfer instructions operate as described in the base RISC-V
+ISA. They also may cause metadata updates and/or cause exceptions in addition
+to the base behaviour as described below.
+
+===== Unconditional Jumps
+
+The capability jump and link (<<CJAL>>) instruction replaces jump and link (<<JAL>>) at
+the same encoding. <<CJAL>> sign-extends the offset and adds it to the address of
+the jump instruction to form the target address. The target address is
+installed in the address field of <<pcc>>. The capability with the address of the
+instruction following the jump (<<pcc>> + 4) is written to a *c* register.
+
+The capability jump and link register (<<CJALR>>) instruction replaces the jump
+and link register (<<JALR>>) instruction at the same encoding. This instruction
+allows unconditional jumps to a target capability. The target capability is
+obtained by incrementing the capability in the *c* register operand by the
+sign-extended 12-bit immediate, then setting the least significant bit of the
+result to zero. The capability with the address of the instruction following
+the jump (<<pcc>> + 4) is written to a *c* register.
+
+All jumps cause CHERI exceptions when a minimum sized instruction
+at the target address is not within the bounds of the <<pcc>>.
+
+<<CJALR>> causes a CHERI exception when:
+
+* The target capability's tag is zero
+* A minimum sized instruction at the target capability's address is not
+within bounds
+* The target capability does not grant execute permission
+
+<<CJAL>> and <<CJALR>> can also cause instruction address misaligned exceptions
+following the standard RISC-V rules for <<JAL>> and <<JALR>>.
+
+[#condbr-purecap]
+===== Conditional Branches
+
+Branch instructions (see xref:insns-conbr-32bit[xrefstyle=short]) encode signed
+offsets in multiples of 2 bytes. The offset is sign-extended and added to the
+address of the branch instruction to form the target address.
+
+Branch instructions compare two *x* registers as described in the base RISC-V
+ISA, so the metadata and tag values are disregarded in the comparison if the
+operand registers hold capabilities. If the comparison evaluates to true, then
+the target address is installed in the <<pcc>>'s address field. These instructions cause CHERI exceptions
+when a minimum sized instruction at the target address is not within the
+<<pcc>>'s bounds.
+
+==== Integer Load and Store Instructions
+
+Integer load and store instructions transfer the amount of integer data described in
+the base RISC-V ISA between the registers and memory. For example, <<LD>> and
+<<LW>> load 64-bit and 32-bit values respectively from memory into an *x*
+register.  However, the address operands for load and store instructions are
+interpreted differently in {cheri_base_ext_name}: the capability authorising
+the access is in the *c* register operand and the memory address is given by
+incrementing the address of that capability by the sign-extended 12-bit
+immediate offset.  For clarity, the mnemonics of these instructions are
+prefixed with the letter 'C' (e.g. <<LD>> becomes <<CLD>>, <<SW>> becomes
+<<CSW>>, etc) to distinguish them from the standard RISC-V instructions that do
+not have a *c* register operand.
+
+All load and store instructions cause CHERI exceptions if the
+authorising capability fails any of the following checks:
+
+* The tag is set
+* The capability is unsealed
+* All bytes of accessed memory are inside the capability's bounds
+* For loads, the read permission must be set in AP
+* For stores, the write permission must be set in AP
+
+Integer load instructions always zero the tag and metadata of the result register.
+
+Integer stores write zero to the tag associated with the memory locations that
+are naturally aligned to CLEN. Therefore, misaligned stores may clear up to
+two tag bits in memory.
+
+=== Zicsr, Control and Status Register (CSR) Instructions
+
+{cheri_base_ext_name} requires that RISC-V CSRs intended to hold addresses,
+like <<mtvec>>, are now able to hold capabilities. Therefore, such registers are
+removed in {cheri_base_ext_name} and analogous CLEN-bit
+versions of those CSRs are added to the ISA as described in
+xref:csr-numbers-section[xrefstyle=short].
+
+Reading or writing any part of a CLEN-bit CSR may cause
+side-effects. For example, the CSR's tag bit may be cleared if a new address
+is outside the representable region of a CSR capability being written.
+
+This section describes how the CSR instructions operate on these CSRs in
+{cheri_base_ext_name}.
+
+The CLEN-bit CSRs are summarised in xref:clen_csr_summary[xrefstyle=short].
+
+[#zicsr-section-purecap]
+==== CSR Instructions
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by
+<<CSRRW>>.
+endif::[]
+
+All CSR instructions atomically read-modify-write a single CSR. If the CSR
+accessed is of capability size then the
+capability's tag, metadata and address are all accessed atomically.
+
+When the <<CSRRW>> instruction is accessing a capability width CSR, then the source
+and destination operands are *c* registers and it atomically swaps the values in the
+whole CSR with the CLEN width register operand.
+
+There are special rules for updating specific CLEN-wide CSRs as shown in <<extended_CSR_writing>>.
+
+{non-csrrw-and} specify *x* registers and so only access the address field
+of the capability when specifying a capability CSR such as <<mtvecc>>.
+They calculate the final address using the standard
+RISC-V behaviour (set bits, clear bits etc.) and that final address is
+updated in the capability. The update typically uses the semantics of a <<CSETADDR>>
+instruction which clears the tag if the capability is sealed, or if the
+updated address is not representable. <<extended_CSR_writing>> shows the
+exact action taken for each capability width CSR.
+
+All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
+<<asr_perm>> and the CSR accessed is privileged.
+
+[#csr-numbers-section]
+=== Control and Status Registers (CSRs)
+
+{cheri_base_ext_name} removes the CSRs listed in
+xref:dcsrnames-removed[xrefstyle=short],
+xref:mcsrnames-removed[xrefstyle=short],
+xref:scsrnames-removed[xrefstyle=short] and
+xref:ucsrnames-removed[xrefstyle=short] from the base RISC-V ISA and its
+extensions. The CSRs are removed because they are designated to hold addresses,
+but are only XLEN bits wide. The removed registers are replaced with CLEN+1
+bits wide registers. The new CSRs are analogous to the original, removed RISC-V
+CSRs although at different CSR numbers as shown in
+xref:dcsrnames-replaced[xrefstyle=short],
+xref:mcsrnames-replaced[xrefstyle=short],
+xref:scsrnames-replaced[xrefstyle=short] and
+xref:ucsrnames-replaced[xrefstyle=short]. Therefore, the specification of the
+address field for the new capability CSRs remains the same as the
+corresponding, removed CSR which is described in cite:[riscv-priv-spec] and
+the specifications of relevant RISC-V extensions.
+
+[[dcsrnames-removed]]
+.Debug-mode CSRs removed in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+include::generated/csr_removed_purecap_mode_d_table_body.adoc[]
+|===
+
+[[mcsrnames-removed]]
+.Machine-mode CSRs removed in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+include::generated/csr_removed_purecap_mode_m_table_body.adoc[]
+|===
+
+[[scsrnames-removed]]
+.Supervisor-mode CSRs removed in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+include::generated/csr_removed_purecap_mode_s_table_body.adoc[]
+|===
+
+[[ucsrnames-removed]]
+.User-mode CSRs removed in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+include::generated/csr_removed_purecap_mode_u_table_body.adoc[]
+|===
+
+[[dcsrnames-replaced]]
+.New debug-mode CSRs in {cheri_base_ext_name} replacing RISC-V CSRs
+[%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
+|===
+include::generated/csr_replaced_purecap_mode_d_table_body.adoc[]
+|===
+
+[[mcsrnames-replaced]]
+.New machine-mode CSRs in {cheri_base_ext_name} replacing RISC-V CSRs
+[%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
+|===
+include::generated/csr_replaced_purecap_mode_m_table_body.adoc[]
+|===
+
+[[scsrnames-replaced]]
+.New supervisor-mode CSRs in {cheri_base_ext_name} replacing RISC-V CSRs
+[%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
+|===
+include::generated/csr_replaced_purecap_mode_s_table_body.adoc[]
+|===
+
+[[ucsrnames-replaced]]
+.New user-mode CSRs in {cheri_base_ext_name} replacing RISC-V CSRs
+[%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
+|===
+include::generated/csr_replaced_purecap_mode_u_table_body.adoc[]
+|===
+
+{cheri_base_ext_name} also introduces the new unprivileged CSRs shown in
+xref:ucsrnames-added[xrefstyle=short].
+
+[[ucsrnames-added]]
+.User-mode CSRs added in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+include::generated/csr_added_purecap_mode_u_table_body.adoc[]
+|===
+
+=== Machine-Level CSRs
+
+{cheri_base_ext_name} adds new M-mode capability CSRs and extends some of the
+existing RISC-V CSRs with new functions. <<pcc>> must grant <<asr_perm>>
+to access M-mode CSRs regardless of the RISC-V privilege mode.
+
+==== Machine ISA Register (misa)
+
+The *misa* register operates as described in cite:[riscv-priv-spec] except for
+the MXL (Machine XLEN) field. The MXL field encodes the native base integer ISA
+width as shown in xref:misa_mxl_field[xrefstyle=short]. Only 1 and 2 are
+supported values for MXL and the field must be read-only in implementations
+supporting {cheri_base_ext_name}. The effective XLEN in M-mode, MXLEN, is given
+by the setting of MXL, or has a fixed value if *misa* is zero.
+
+.Encoding of MXL field in *misa*
+[#misa_mxl_field]
+[float="center",align="center",cols="1,1",options="header",width=20%]
+|==============================================================================
+^| MXL | XLEN
+^| 1   | 32
+^| 2   | 64
+^| 3   | [line-through]#128#
+|==============================================================================
+
+NOTE: RV128 is not currently supported by any CHERI extension
+
+NOTE: A further CHERI extension, {cheri_legacy_ext_name}, optionally makes
+MXL writeable, so implementations that support multiple base ISAs must support
+both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
+
+[#mstatus,reftext="mstatus"]
+==== Machine Status Registers (mstatus and mstatush)
+
+The *mstatus* and *mstatush* registers operate as described in
+cite:[riscv-priv-spec] except for the SXL and UXL fields that control the
+value of XLEN for S-mode and U-mode, respectively.
+
+The encoding of the SXL and UXL fields is the same as the MXL field of *misa*,
+shown in xref:misa_mxl_field[xrefstyle=short]. Only 1 and 2 are supported
+values for SXL and UXL and the fields must be read-only in implementations
+supporting {cheri_base_ext_name}. The effective XLEN in S-mode and U-mode are
+termed SXLEN and UXLEN, respectively.
+
+NOTE: A further CHERI extension, {cheri_legacy_ext_name}, optionally makes SXL
+and UXL writeable, so implementations that support multiple base ISAs must
+support both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
+
+[#mtvec, reftext="mtvec"]
+==== Machine Trap-Vector Base-Address Registers (mtvec)
+
+The <<mtvec>> register is as defined in cite:[riscv-priv-spec]. It is an
+MXLEN-bit register used as the executable vector jumped to when taking traps
+into machine mode. It is extended into <<mtvecc>>.
+
+
+.Machine-mode trap-vector base-address register
+include::img/mtvecreg.edn[]
+
+[#mtvecc,reftext="mtvecc"]
+==== Machine Trap-Vector Base-Address Capability Registers (mtvecc)
+
+The <<mtvecc>> register is an extension to <<mtvec>> that holds a capability.
+Its reset value is the <<infinite-cap>> capability. The capability represents
+an executable vector.
+
+.Machine-mode trap-vector base-capability register
+include::img/mtveccreg.edn[]
+
+The metadata is WARL as not all fields need to be implemented, for example the
+reserved fields will always read as zero.
+
+When interpreting <<mtvecc>> as a capability, as for <<mtvec>>, address bits
+[1:0] are always zero (as they are reused by the MODE field).
+
+When MODE=Vectored, all synchronous exceptions into machine mode
+cause the <<pcc>> to be set to the capability, whereas
+interrupts cause the <<pcc>> to be set to the capability with
+its address incremented by four times the interrupt cause number.
+
+Capabilities written to <<mtvecc>> also include writing the MODE field in
+**mtvecc.address[1:0]**. As a result, a representability and sealing check is
+performed on the capability with the legalized (WARL) MODE field included in
+the address. The tag of the capability written to <<mtvecc>> is cleared if
+either check fails.
+
+Additionally, when MODE=Vectored the capability has its tag bit cleared if the
+capability address + 4 x HICAUSE is not within the representable bounds.
+HICAUSE is the largest exception cause value that the implementation can write
+to to <<mcause>> when an interrupt is taken.
+
+NOTE: When MODE=Vectored, it is only required that address + 4 x HICAUSE is
+within representable bounds instead of the capability's bounds. This ensures
+that software is not forced to allocate a capability granting access to more
+memory for the trap-vector than necessary to handle the trap causes that
+actually occur in the system.
+
+[#mscratch, reftext="mscratch"]
+==== Machine Scratch Register (mscratch)
+
+The <<mscratch>> register is as defined in cite:[riscv-priv-spec]. It is an
+MXLEN-bit read/write register dedicated for use by machine mode. Typically, it
+is used to hold a pointer to a machine-mode hart-local context space and
+swapped with a user register upon entry to an M-mode trap handler. <<mscratch>>
+is extended into <<mscratchc>>.
+
+.Machine-mode scratch register
+include::img/mscratchreg.edn[]
+
+[#mscratchc, reftext="mscratchc"]
+==== Machine Scratch Register Capability (mscratchc)
+
+The <<mscratchc>> register is an extension to <<mscratch>> that is able to hold
+a capability. Its reset value is the <<null-cap>> capability.
+
+It is not WARL, all capability fields must be implemented.
+
+.Machine-mode scratch capability register
+include::img/mscratchcreg.edn[]
+
+[#mepc,reftext="mepc"]
+==== Machine Exception Program Counter (mepc)
+
+The <<mepc>> register is as defined in cite:[riscv-priv-spec]. It is extended
+into <<mepcc>>.
+
+.Machine exception program counter register
+include::img/mepcreg.edn[]
+
+[#mepcc,reftext="mepcc"]
+==== Machine Exception Program Counter Capability (mepcc)
+
+The <<mepcc>> register is an extension to <<mepc>> that is able to hold a
+capability. Its reset value is the <<null-cap>> capability.
+
+.Machine exception program counter capability register
+include::img/mepccreg.edn[]
+
+Capabilities written to <<mepcc>> must be legalised by implicitly zeroing bit
+**mepcc[0]**. Additionally, if an implementation allows IALIGN to be
+either 16 or 32, then whenever IALIGN=32, the capability read from <<mepcc>>
+must be legalised by implicitly zeroing bit **mepcc[1]**. Therefore, the
+capability read or written has its tag bit cleared if the legalised address is
+not within the representable region.
+
+NOTE: When reading or writing a sealed capability in <<mepcc>>, the
+tag is not cleared if the original address equals the legalized
+address.
+
+When a trap is taken into M-mode, <<mepcc>> is written with the <<pcc>>
+including the virtual address of the instruction that was interrupted or that
+encountered an exception. Otherwise, <<mepcc>> is never written by the
+implementation, though it may be explicitly written by software.
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<mepcc>> is an executable
+vector, so it need not be able to hold all possible invalid addresses.
+Additionally the capability in <<mepcc>> is unsealed when it is installed in
+<<pcc>> on execution of an <<MRET>> instruction.
+
+[#mcause,reftext="mcause"]
+==== Machine Cause Register (mcause)
+
+{cheri_base_ext_name} adds a new exception code for CHERI exceptions that
+<<mcause>> must be able to represent. The new exception code and its
+priority are listed in xref:mcauses[xrefstyle=short] and
+xref:exception-priority[xrefstyle=short] respectively. The behavior and usage
+of <<mcause>> otherwise remains as described in cite:[riscv-priv-spec].
+
+.Machine cause register
+include::img/mcausereg.edn[]
+
+[[mcauses]]
+.Machine cause register (mcause) values after trap. Entries added in {cheri_base_ext_name} are in *bold*
+[%autowidth,float="center",align="center",cols=">,>,<",options="header",]
+|===
+|Interrupt |Exception Code |Description
+|1 +
+1 +
+1 +
+1
+|0 +
+1 +
+2 +
+3
+|_Reserved_ +
+Supervisor software interrupt +
+_Reserved_ +
+Machine software interrupt
+
+|1 +
+1 +
+1 +
+1
+|4 +
+5 +
+6 +
+7
+|_Reserved_ +
+Supervisor timer interrupt +
+_Reserved_ +
+Machine timer interrupt
+|1 +
+1 +
+1 +
+1
+|8 +
+9 +
+10 +
+11
+|_Reserved_ +
+Supervisor external interrupt +
+_Reserved_ +
+Machine external interrupt
+|1 +
+1
+|12-15 +
+&#8805;16
+|_Reserved_ +
+_Designated for platform use_
+|0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+*0* +
+0 +
+0 +
+0
+|0 +
+1 +
+2 +
+3 +
+4 +
+5 +
+6 +
+7 +
+8 +
+9 +
+10 +
+11 +
+12 +
+13 +
+14 +
+15 +
+16-23 +
+24-27 +
+*{cheri_excep_mcause}* +
+29-31 +
+32-47 +
+48-63 +
+&#8805;64
+|Instruction address misaligned +
+Instruction access fault +
+Illegal instruction +
+Breakpoint +
+Load address misaligned +
+Load access fault +
+Store/AMO address misaligned +
+Store/AMO access fault +
+Environment call from U-mode +
+Environment call from S-mode +
+_Reserved_ +
+Environment call from M-mode +
+Instruction page fault +
+Load page fault +
+_Reserved_ +
+Store/AMO page fault +
+_Reserved_ +
+_Designated for custom use_ +
+*CHERI fault* +
+_Designated for custom use_ +
+_Reserved_ +
+_Designated for custom use_ +
+_Reserved_
+|===
+
+[[exception-priority]]
+.Synchronous exception priority in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
+[%autowidth,float="center",align="center",cols="<,>,<",options="header"]
+|===
+|Priority |Exc.Code |Description
+|_Highest_ |3 |Instruction address breakpoint
+| .>|*{cheri_excep_mcause}* .<|*Prior to instruction address translation:* +
+*CHERI fault*
+| .>|12, 1 .<|During instruction address translation: +
+First encountered page fault or access fault
+| .>|1 .<|With physical address for instruction: +
+Instruction access fault
+
+| .>|2 +
+0 +
+8,9,11 +
+3 +
+3 .<|Illegal instruction +
+Instruction address misaligned +
+Environment call +
+Environment break +
+Load/store/AMO address breakpoint
+
+| .>|*{cheri_excep_mcause}* .<|*Prior to address translation for an explicit memory access or jump:* +
+*CHERI fault*
+| .>|4,6 .<|Optionally: +
+Load/store/AMO address misaligned
+| .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
+First encountered page fault or access fault
+| .>|5,7 .<|With physical address for an explicit memory access: +
+Load/store/AMO access fault
+.>|_Lowest_ .>|4,6 .<|If not higher priority: +
+Load/store/AMO address misaligned
+|===
+
+[#medeleg,reftext="medeleg"]
+==== Machine Trap Delegation Register (medeleg)
+
+Bit 28 of <<medeleg>> now refers to a valid exception and so can be used to
+delegate CHERI exceptions to supervisor mode.
+
+[#mtval,reftext="mtval"]
+==== Machine Trap Value Register (mtval)
+
+ifdef::cheri_v9_annotations[]
+WARNING: *CHERI v9 Note:* Encoding and values changed, and generally were
+simplified.
+endif::[]
+
+The <<mtval>> register is an MXLEN-bit read-write register. When a CHERI fault
+is taken into M-mode, <<mtval>> is written with additional CHERI-specific
+exception information with the format shown in
+xref:mtval-format[xrefstyle=short] to assist software in handling the trap.
+
+If the hardware platform specifies that no exceptions set <<mtval>> to a
+nonzero value, then <<mtval>> is read-only zero.
+
+.Machine trap value register
+[#mtval-format]
+include::img/mtvalreg.edn[]
+
+TYPE is a CHERI-specific fault type that caused the exception while CAUSE
+is the cause of the fault. The possible CHERI types and causes are encoded as
+shown in xref:mtval-cheri-type[xrefstyle=short] and
+xref:mtval-cheri-causes[xrefstyle=short] respectively.
+
+.Encoding of TYPE field
+[#mtval-cheri-type,width=60%,float="center",align="center",options=header,cols="30%,70%"]
+|==============================================================================
+| CHERI Type Code | Description
+| 0               | CHERI instruction access fault
+| 1               | CHERI data fault due to load, store or AMO
+| 2               | CHERI jump or branch fault
+| 3-15            | Reserved
+|==============================================================================
+
+.Encoding of CAUSE field
+[#mtval-cheri-causes,width=40%,float="center",align="center",options=header]
+|==============================================================================
+| CHERI Cause Code | Description
+| 0                | Tag violation
+| 1                | Seal violation
+| 2                | Permission violation
+| 3                | Length violation
+| 4-15             | Reserved
+|==============================================================================
+
+[#supervisor-level-csrs-section]
+=== Supervisor-Level CSRs
+
+{cheri_base_ext_name} adds new S-mode capability CSRs and extends some of the
+existing RISC-V CSRs with new functions. <<pcc>> must grant <<asr_perm>> to
+access S-mode CSRs regardless of the RISC-V privilege mode.
+
+[#stvec,reftext="stvec"]
+==== Supervisor Trap Vector Base Address Registers (stvec)
+
+The <<stvec>> register is as defined in cite:[riscv-priv-spec]. It is an
+SXLEN-bit register used as the executable vector jumped to when taking traps
+into supervisor mode. It is extended into <<stvecc>>.
+
+.Supervisor trap-vector base-address register
+include::img/stvecreg.edn[]
+
+[#stvecc,reftext="stvecc"]
+==== Supervisor Trap Vector Base Address Registers (stvecc)
+
+The <<stvec>> register is an SXLEN-bit WARL read/write register that holds the
+trap vector configuration, consisting of a vector base address (BASE) and a
+vector mode (MODE). The <<stvecc>> register is an
+extension to <<stvec>> that is able to hold a capability. Its reset value is
+the <<infinite-cap>> capability.
+
+.Supervisor trap-vector base-capability register
+include::img/stveccreg.edn[]
+
+The handling of <<stvecc>> is otherwise identical to <<mtvecc>>, but in
+supervisor mode.
+
+[#sscratch, reftext="sscratch"]
+==== Supervisor Scratch Register (sscratch)
+
+The <<sscratch>> register is as defined in cite:[riscv-priv-spec]. It is an
+MXLEN-bit read/write register dedicated for use by supervisor mode. Typically,
+it is used to hold a pointer to a supervisor-mode hart-local context space and
+swapped with a user register upon entry to an S-mode trap handler. <<sscratch>>
+is extended into <<sscratchc>>.
+
+.Supervisor-mode scratch register
+include::img/sscratchreg.edn[]
+
+[#sscratchc, reftext="sscratchc"]
+==== Supervisor Scratch Registers (sscratchc)
+
+The <<sscratchc>> register is an extension to <<sscratch>> that is able to hold
+a capability. Its reset value is the <<null-cap>> capability.
+
+It is not WARL, all capability fields must be implemented.
+
+.Supervisor scratch capability register
+include::img/sscratchcreg.edn[]
+
+[#sepc,reftext="sepc"]
+==== Supervisor Exception Program Counter (sepc)
+
+The <<sepc>> register is as defined in cite:[riscv-priv-spec]. It is extended
+into <<sepcc>>.
+
+.Supervisor exception program counter register
+include::img/sepcreg.edn[]
+
+[#sepcc,reftext="sepcc"]
+==== Supervisor Exception Program Counter Capability (sepcc)
+
+The <<sepcc>> register is an extension to <<sepc>> that is able to hold a
+capability. Its reset value is the <<null-cap>> capability.
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<sepcc>> is an executable
+vector, so it need not be able to hold all possible invalid addresses.
+Additionally, the capability in <<sepcc>> is unsealed when it is installed in
+<<pcc>> on execution of an <<SRET>> instruction. The handling of <<sepcc>> is
+otherwise identical to <<mepcc>>, but in supervisor mode.
+
+.Supervisor exception program counter capability register
+include::img/sepccreg.edn[]
+
+[#scause,reftext="scause"]
+==== Supervisor Cause Register (scause)
+
+{cheri_base_ext_name} adds a new exception code for CHERI exceptions that
+<<scause>> must be able to represent. The new exception code and its priority
+are listed in xref:scauses[xrefstyle=short] and
+xref:exception-priority[xrefstyle=short] respectively. The behavior and usage
+of <<scause>> otherwise remains as described in cite:[riscv-priv-spec].
+
+.Supervisor cause register
+include::img/scausereg.edn[]
+
+[[scauses]]
+.Supervisor cause register (scause) values after trap. Causes added in {cheri_base_ext_name} are in *bold*
+[%autowidth,float="center",align="center",cols=">,>,3",options="header"]
+|===
+|Interrupt |Exception Code |Description
+|1 +
+1 +
+1 +
+1 +
+1 +
+1 +
+1 +
+1
+|0 +
+1 +
+2-4 +
+5 +
+6-8 +
+9 +
+10-15 +
+&#8805;16
+|_Reserved_ +
+Supervisor software interrupt +
+_Reserved_ +
+Supervisor timer interrupt +
+_Reserved_ +
+Supervisor external interrupt +
+_Reserved_ +
+_Designated for platform use_
+
+|0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+0 +
+*0* +
+0 +
+0 +
+0
+|0 +
+1 +
+2 +
+3 +
+4 +
+5 +
+6 +
+7 +
+8 +
+9 +
+10-11 +
+12 +
+13 +
+14 +
+15 +
+16-23 +
+24-27 +
+*28* +
+29-31 +
+32-47 +
+48-63 +
+&#8805;64
+|Instruction address misaligned +
+Instruction access fault +
+Illegal instruction +
+Breakpoint +
+Load address misaligned +
+Load access fault +
+Store/AMO address misaligned +
+Store/AMO access fault +
+Environment call from U-mode +
+Environment call from S-mode +
+_Reserved_ +
+Instruction page fault +
+Load page fault +
+_Reserved_ +
+Store/AMO page fault +
+_Reserved_ +
+_Designated for custom use_ +
+*CHERI fault* +
+_Designated for custom use_ +
+_Reserved_ +
+_Designated for custom use_ +
+_Reserved_
+|===
+
+[#stval,reftext="stval"]
+==== Supervisor Trap Value Register (stval)
+
+The <<stval>> register is an SXLEN-bit read-write register. When a CHERI fault
+is taken into S-mode, <<stval>> is written with additional CHERI-specific
+exception information with the format shown in
+xref:stval-format[xrefstyle=short] to assist software in handling the trap.
+
+.Supervisor trap value register
+[#stval-format]
+include::img/stvalreg.edn[]
+
+TYPE is a CHERI-specific fault type that caused the exception while CAUSE
+is the cause of the fault. The possible CHERI types and causes are encoded as
+shown in xref:mtval-cheri-type[xrefstyle=short] and
+xref:mtval-cheri-causes[xrefstyle=short] respectively.
+
+=== Unprivileged CSRs
+
+Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
+<<pcc>> to grant <<asr_perm>> to access privileged CSRs.
+
+[#pcc,reftext="pcc"]
+==== Program Counter Capability (pcc)
+
+The <<pcc>> is made visible in a CSR. This provides access to an
+<<infinite-cap>> capability while in debug mode without executing <<AUIPCC>>.
+
+NOTE: It is common for implementations to not allow executing *pc* relative
+instructions, such as <<AUIPC>> or <<JAL>>, in debug mode.
+
+.Program Counter Capability
+[#pcc-format]
+include::img/pccreg.edn[]
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<pcc>> is an executable
+vector, so it need not be able to hold all possible invalid addresses.
+
+=== CHERI Exception handling
+
+NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
+
+.Valid CHERI exception combination description
+[#cheri_exception_combs_descriptions]
+[width="100%",options=header,cols="2,1,1,1,3,4"]
+|=========================================================================================
+| Instructions | Xcause | Xtval. TYPE | Xtval. CAUSE | Description | Check
+6+| *All instructions have these exception checks first*
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}    | <<pcc>> tag  | not(<<pcc>>.tag)
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}   | <<pcc>> seal | isCapSealed(<<pcc>>)
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}   | <<pcc>> permission | not(<<pcc>>.<<x_perm>>)
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_length} | <<pcc>> length | Any byte of current instruction out of <<pcc>> bounds
+6+| *CSR/Xret additional exception check*
+| CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
+6+| *direct jumps additional exception check*
+| <<CJAL>>, <<JAL>>, <<insns-conbr-32bit>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} | <<pcc>> length | any byte of 16-bit instruction at target out of <<pcc>> bounds
+6+| *indirect jumps and conditional branches additional exception checks*
+| indirect jumps and conditional branches | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}    |`cs1` tag       | not(`cs1.tag`)
+| indirect jumps and conditional branches | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}   |`cs1` seal      | isCapSealed(`cs1`)
+| indirect jumps and conditional branches | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}   |`cs1` permission| not(`cs1`.<<x_perm>>)
+| indirect jumps and conditional branches | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} |`cs1` length    | any byte of 16-bit instruction at target out of `cs1` bounds
+6+| *Load additional exception checks*
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    | `auth_cap` tag          | not(`auth_cap.tag`)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   | `auth_cap` seal         | isCapSealed(`auth_cap`)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   | `auth_cap` permission   | not(`auth_cap`.<<r_perm>>)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} | `auth_cap` length       | Any byte of load access out of `auth_cap` bounds
+| capability loads | 4                    | N/A                     | N/A                        | load address misaligned | Misaligned capability load
+6+| *Store/atomic/cache-block-operation additional exception checks*
+| all stores, all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    |`auth_cap` tag        | not(`auth_cap.tag`)
+| all stores, all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   |`auth_cap` seal       | isCapSealed(`auth_cap`)
+|             all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | AMO only: not(`auth_cap`.<<r_perm>>)
+| all stores, all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(auto_cap.<<w_perm>>)
+| all stores, all atomics           | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of access^!^ out of `auth_cap` bounds
+| capability stores, all atomics    |6                     | N/A                     | N/A                        |Misaligned store/AMO| Misaligned capability store or AMO
+|=========================================================================================
+
+NOTE: Indirect branches are <<CJALR>>, <<JALR>>, <<JALR.PCC>>, <<JALR.CAP>>, conditional branches are <<insns-conbr-32bit>>.
+
+NOTE: <<CBO.ZERO.CAP>>, <<CBO.ZERO>> issues as a cache line wide store
+
+NOTE: ^1^Other CBOs (<<CBO.FLUSH.CAP>>, <<CBO.FLUSH>>, <<CBO.CLEAN.CAP>>, <<CBO.CLEAN>>, <<CBO.INVAL.CAP>>, <<CBO.INVAL>>) require at least one byte of the access to be in `auth_cap` bounds
+
+=== Physical Memory Attributes (PMA)
+
+Typically, the entire memory space need not support tagged data. Therefore, it
+is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a
+_taggable_ attribute indicating whether a memory region allows storing tagged
+data.
+
+When the hart attempts to store or load data with the tag set to memory regions
+that are not taggable, the implementation may:
+
+* Cause an access fault exception
+* Implicitly set the stored tag to 0
+
+=== Page-Based Virtual-Memory Systems
+
+RISC-V's page-based virtual-memory management is generally orthogonal to CHERI.
+In {cheri_base_ext_name}, capability addresses are interpreted with respect to
+the privilege level of the processor in line with RISC-V's handling of integer
+addresses. In machine mode, capability addresses are generally interpreted as
+physical addresses; if the <<mstatus>> MPRV flag is asserted, then data
+accesses (but not instruction accesses) will be interpreted as if performed by
+the privilege mode in mstatus's MPP. In supervisor and user modes, capability
+addresses are interpreted as dictated by the current *satp* configuration:
+addresses are virtual if paging is enabled and physical if not.
+
+{cheri_base_ext_name} requires that the <<pcc>> grants the <<asr_perm>> to
+change the page-table root *satp* and other virtual-memory parameters as
+described in xref:supervisor-level-csrs-section[xrefstyle=short].
+
+[#section_invalid_addr_conv,reftext="Invalid address conversion"]
+==== Invalid Address Handling
+
+When address translation is in effect and XLEN=64, the upper bits of virtual
+memory addresses must match for the address to be valid:
+
+* For Sv39, bits [63:39] must equal bit 38
+* For Sv48, bits [63:48] must equal bit 47
+* For Sv57, bits [63:57] must equal bit 56
+
+RISC-V permits that some CSRs, such as <<mtvec>> and <<mepc>> (see
+xref:CSR_exevectors[xrefstyle=short]), need not be able to hold all possible
+invalid addresses. Prior to writing these CSRs, implementations may convert an
+invalid address into some other invalid address that the register is capable of
+holding. However, these registers hold capabilities in {cheri_base_ext_name}
+and the bounds encoding depends on the address value, so implementations must
+not convert invalid addresses to other arbitrary invalid address in an
+unrestricted manner.
+The following procedure must be used instead when writing a capability A to
+these CSRs:
+
+. If A's address cannot be held then convert it to another address that the CSR can
+hold
+. If conversion _was_ required, then A's tag is cleared if A is
+sealed or if the new address is not representable -- this is equivalent to the
+semantics of <<CSETADDR>>
+. Write the final (potentially modified) version of capability A to the CSR e.g.
+<<mtvecc>>, <<mepcc>>, etc.
+
+This implies that sealed capabilities will always get their tags cleared when
+written to these CSRs unless the specification explicitly states that the CSR
+behaves otherwise (see <<mepcc>> and <<sepcc>>). Also notes that <<pcc>> is
+available in a read-only CSR. It can be written with <<CJALR>> instruction
+which automatically unseals the capability _before_ the invalid address
+conversion above.
+

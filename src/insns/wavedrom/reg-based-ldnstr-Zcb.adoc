@@ -1,0 +1,36 @@
+//Register-Based loads and Stores
+
+[wavedrom, ,svg]
+....
+{reg: [
+  {bits: 2, name: 'op',          attr: ['2', 'C0=00'], type: 8},
+  {bits: 3, name: 'rd\'/cd\'',   attr: ['3', 'dest'], type: 3},
+  {bits: 1, name: 'uimm[1]',     attr: ['1', 'offset[1]'], type: 2},
+  {bits: 1, name: 'funct1',      attr: ['1', '1'], type: 2},
+  {bits: 3, name: 'rs1\'/cs1\'', attr: ['3', 'base'], type: 2},
+  {bits: 6, name: 'funct6',      attr: ['6', 'cap: C.CLH=100001', 'leg: C.LH=100001'], type: 8},
+], config: {bits: 16}}
+....
+
+[wavedrom, ,svg]
+....
+{reg: [
+  {bits: 2, name: 'op',          attr: ['2', 'C0=00'], type: 8},
+  {bits: 3, name: 'rd\'/cd\'',   attr: ['3', 'dest'], type: 3},
+  {bits: 1, name: 'uimm[1]',     attr: ['1', 'offset[1]'], type: 2},
+  {bits: 1, name: 'funct1',      attr: ['1', '0'], type: 2},
+  {bits: 3, name: 'rs1\'/cs1\'', attr: ['3', 'base'], type: 2},
+  {bits: 6, name: 'funct6',      attr: ['6', 'cap: C.CLHU=100001', 'leg: C.LHU=100001'], type: 8},
+], config: {bits: 16}}
+....
+
+[wavedrom, ,svg]
+....
+{reg: [
+  {bits: 2, name: 'op',          attr: ['2', 'C0=00'], type: 8},
+  {bits: 3, name: 'rd\'/cd\'',   attr: ['3', 'dest'], type: 3},
+  {bits: 2, name: 'uimm[0|1]',   attr: ['2', 'offset[0|1]'], type: 2},
+  {bits: 3, name: 'rs1\'/cs1\'', attr: ['3', 'base'], type: 2},
+  {bits: 6, name: 'funct6',      attr: ['6', 'cap: C.CLBU=100000', 'leg: C.LBU=100000'], type: 8},
+], config: {bits: 16}}
+....

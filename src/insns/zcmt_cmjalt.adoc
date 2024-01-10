@@ -1,0 +1,70 @@
+<<<
+
+[#CM_JALT,reftext="CM.JALT"]
+==== CM.JALT
+
+See <<CM.CJALT>> and cite:[riscv-code-size-spec].
+
+[#CM_CJALT,reftext="CM.CJALT"]
+==== CM.CJALT
+
+Synopsis::
+Jump via table with link (CM.CJALT, CM.JALT), 16-bit encodings
+
+Capability Mode Mnemonic::
+`cm.cjalt _index_`
+
+Legacy Mode Mnemonics::
+`cm.jalt _index_`
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  2, name: 0x2,      attr: ['C2'] },
+    { bits:  8, name: 'index',  attr: [] },
+    { bits:  3, name: 0x0,      attr: [] },
+    { bits:  3, name: 0x5,      attr: ['FUNCT3'] },
+],config:{bits:16}}
+....
+
+[NOTE]
+
+  For this encoding to decode as <<CM.CJALT>>/<<CM.JALT>>, _index>=32_, otherwise it decodes as <<CM.CJT>>/<<CM.JT>>.
+
+Capability Mode Description::
+Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>. Link to `cra`.
+
+Legacy Mode Description::
+Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>. Link to `ra`.
+
+Permissions::
+Requires <<jvtc>> to be tagged, not sealed, have <<x_perm>> and for the full XLEN-wide access to be in <<jvtc>> bounds.
+
+Exceptions::
+When these instructions cause CHERI exceptions, _CHERI instruction access fault_
+is reported in the TYPE field and the following codes may be
+reported in the CAUSE field of <<mtval>> or <<stval>>:
+
+[width="50%",options=header,cols="2,^1",align=center]
+|==============================================================================
+| CAUSE                 |
+| Tag violation         |  ✔
+| Seal violation        |  ✔
+| Permission violation  |  ✔
+| Length violation      |  ✔
+|==============================================================================
+
+include::pcrel_debug_warning.adoc[]
+
+Prerequisites for CM.CJALT::
+{c_cheri_base_ext_names}, Zcmt
+
+Prerequisites for CM.JALT::
+{c_cheri_legacy_ext_names}, Zcmt
+
+Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--

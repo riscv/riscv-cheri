@@ -1,0 +1,523 @@
+[#section_cap_description]
+== Anatomy of Capabilities in Zcheri_purecap
+
+RISC-V defines variants of the base integer instruction set characterized by
+the width of the integer registers and the corresponding size of the address
+space. There are two primary ISA variants, RV32I and RV64I, which provide
+32-bit and 64-bit address spaces respectively. The term XLEN refers to the
+width of an integer register in bits (either 32 or 64). The value of XLEN may
+change dynamically at run-time depending on the values written to CSRs, so we
+define XLENMAX to be widest XLEN that the implementation supports.
+
+
+{cheri_base_ext_name} defines capabilities of size CLEN corresponding to 2 *
+XLENMAX without including the tag bit. The value of CLEN is always calculated
+based on XLENMAX regardless of the effective XLEN value.
+
+=== Components of a Capability
+
+Capabilities contain the software accessible fields described in this section.
+
+[#section_tag]
+==== Tag
+
+An additional hardware managed bit added to addressable memory and registers.
+It is stored separately and may be referred to as "out of band". It indicates
+whether a register or CLEN-aligned memory location contains a valid capability.
+If the tag is set, the capability is valid and can be dereferenced (contingent
+on checks such as permissions or bounds).
+
+The capability is invalid if the tag is clear. Using an invalid capability to
+dereference memory or authorize any operation gives rise to exceptions. All
+capabilities derived from invalid capabilities are themselves invalid i.e.
+their tags are 0.
+
+
+All locations in registers or memory able to hold a capability are CLEN+1 bits
+wide including the tag bit. Those locations are referred as being _CLEN-bit_ or
+_capability_ wide in this specification.
+
+[#section_cap_perms]
+==== Architectural Permissions (AP)
+
+ifdef::cheri_v9_annotations[]
+WARNING: *CHERI v9 Note:* The permissions are encoded differently in this
+specification.
+endif::[]
+
+This field encodes architecturally defined permissions of the capability.
+Permissions grant access subject to the tag being set, the capability being
+unsealed (see xref:section_cap_sealed[xrefstyle=short]), and bounds checks (see
+xref:section_cap_bounds[xrefstyle=short]). An operation is also contingent on
+requirements imposed by other RISC-V architectural features, such as virtual
+memory, PMP and PMAs, even if the capability grants sufficient permissions. The
+permissions currently defined in {cheri_base_ext_name} are listed in
+below.
+
+[#r_perm,reftext="R-permission"]
+Read Permission \(R):: Allow reading integer data from memory. Tags are always
+read as zero when reading integer data.
+
+[#w_perm,reftext="W-permission"]
+Write Permission (W):: Allow writing integer data to memory. Tags are always
+written as zero when writing integer data. Every CLEN aligned word in memory
+has a tag, if any byte is overwritten with integer data then the tag for all
+CLEN-bits is cleared.
+
+[#c_perm,reftext="C-permission"]
+Capability Permission \(C):: Allow reading capability data from memory if the
+authorising capability also grants <<r_perm>>. Allow writing capability data to
+memory if the authorising capability also grants <<w_perm>>.
+
+[#x_perm,reftext="X-permission"]
+Execute Permission (X):: Allow instruction execution.
+
+[#asr_perm,reftext="ASR-permission"]
+Access System Registers Permission (ASR):: Allow access to privileged CSRs.
+
+===== Permission Encoding
+
+The bit width of the permissions field depends on the value of XLENMAX as shown
+in xref:perms_bit_width[xrefstyle=short]. A {cap_rv32_perms_width}-bit vector
+encodes the permissions when XLENMAX=32. For this case, the legal encodings of
+permissions are listed in xref:cap_perms_encoding32[xrefstyle=short]. Certain
+combinations of permissions are impractical. For example, <<c_perm>> is
+superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
+Therefore, it is only possible to encode a subset of all combinations.
+
+.Permissions widths depending on XLENMAX
+[#perms_bit_width,options=header,align="center",width="55%"]
+|==============================================================================
+^| XLENMAX ^| Permissions width
+^| 32      ^| {cap_rv32_perms_width}
+^| 64      ^| {cap_rv64_perms_width}
+|==============================================================================
+
+.Encoding of architectural permissions for XLENMAX=32
+[#cap_perms_encoding32,width="60%",options=header,cols="^2,^1,^1,^1,^1,^1",align="center"]
+|==============================================================================
+| Encoding | R | W | C | X | ASR
+| 0b0000   |   |   |   |   |
+| 0b0001   5+| *reserved*
+| 0b0010   |   | ✔ |   |   |
+| 0b0011   |   | ✔ | ✔ |   |
+| 0b0100   | ✔ |   |   |   |
+| 0b0101   | ✔ |   | ✔ |   |
+| 0b0110   | ✔ | ✔ |   |   |
+| 0b0111   | ✔ | ✔ | ✔ |   |
+| 0b1000   | ✔ |   |   | ✔ |
+| 0b1001   | ✔ |   | ✔ | ✔ |
+| 0b1010   | ✔ | ✔ |   | ✔ |
+| 0b1011   | ✔ | ✔ | ✔ | ✔ |
+| 0b1100   | ✔ |   |   | ✔ | ✔
+| 0b1101   | ✔ |   | ✔ | ✔ | ✔
+| 0b1110   | ✔ | ✔ |   | ✔ | ✔
+| 0b1111   | ✔ | ✔ | ✔ | ✔ | ✔
+|==============================================================================
+
+The encoding in xref:cap_perms_encoding32[xrefstyle=short] is chosen to
+facilitate hardware implementations. Therefore, it can be worked out if the
+permissions are granted as follows:
+
+* <<c_perm>>: bit 0 is set
+* <<w_perm>>: bit 1 is set
+* <<x_perm>>: bit 3 is set
+* <<r_perm>>: bits 3 or 2 are set
+* <<asr_perm>>: bits 3 and 2 are set
+
+A {cap_rv64_perms_width}-bit vector encodes the permissions when XLENMAX=64. In
+this case, there is a bit per permission as shown in
+xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
+corresponding bit is set, otherwise the capability does not grant that
+permission.
+
+.Encoding of architectural permissions for XLENMAX=64
+[#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="55%"]
+|==============================================================================
+| Bit | Name
+| 0   | <<c_perm>>
+| 1   | <<w_perm>>
+| 2   | <<r_perm>>
+| 3   | <<x_perm>>
+| 4   | <<asr_perm>>
+|==============================================================================
+
+WARNING: #TODO: Confirm that we need a separate permissions format for 32-bit
+and 64-bit.#
+
+NOTE: Valid capabilities must not have the permissions field set to a reserved
+value according to xref:cap_perms_encoding32[xrefstyle=short] when XLENMAX=32.
+
+[#section_cap_sdp]
+==== Software-Defined Permissions (SDP)
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* CHERI v9 had no software-defined permissions for RV32
+endif::[]
+
+A bit vector used by the kernel or application programs for software-defined
+permissions (SDP).
+
+NOTE: Software is completely free to define the usage of these bits. For
+example, a program may decide to use an SDP bit to indicate the "ownership" of
+objects. Therefore, a capability grants permission to free the memory it
+references if that SDP bit is set because it "owns" that object.
+
+.SDP widths depending on XLENMAX
+[#sdp_bit_width,options=header,align="center",width="55%"]
+|==============================================================================
+^| XLENMAX ^| SDP width
+^| 32      ^| {cap_rv32_sdp_width}
+^| 64      ^| {cap_rv64_sdp_width}
+|==============================================================================
+
+[#section_cap_sealed]
+==== Sealed (S) Bit
+
+ifdef::cheri_v9_annotations[]
+WARNING: *CHERI v9:* The sealing bit is new (1-bit otype) and the old CHERI v9 otype no longer exists.
+endif::[]
+
+Indicates that a capability is sealed if the bit is 1 or unsealed if it is 0.
+Sealed capabilities cannot be dereferenced to access memory and are immutable
+such that modifying any of its fields clears the tag of the output capability.
+
+In {cheri_base_ext_name}, the sealing bit is used to implement immutable
+capabilities that describe function entry points. A program may jump to a
+sealed capability to begin executing the instructions it references. The jump
+instruction automatically unseals the capability and installs it to the
+program counter capability (see
+xref:section_riscv_programmers_model[xrefstyle=short]). The <<CJALR>> instruction
+also seals the return address capability (if any) since it is the entry point
+to the caller function.
+
+[#section_cap_bounds]
+==== Bounds
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The bounds mantissa width is different in XLENMAX=32.
+Also, the old IE bit is renamed to Exponent Format (EF); the function of IE
+is the inverse of EF i.e. IE=0 has the same effect as EF=1.
+
+NOTE: *CHERI v9 Note:* The mantissa width for RV32 was increased to 10.
+
+NOTE: *CHERI v9 Note:* The sense of the exponent is reversed, so an encoded
+value of 0 represents CAP_MAX_E, and CAP_MAX_E represents 0 from the previous
+specification.
+endif::[]
+
+The bounds encode the base and top addresses that constrain memory accesses.
+The capability can be used to access any memory location A in the range base
+&#8804; A < top. The bounds are encoded in compressed format, so it is not
+possible to encode any arbitrary combination of base and top addresses. An
+invalid capability with tag cleared is produced when attempting to construct a
+capability that is not _representable_ because its bounds cannot be correctly
+encoded. The bounds are decoded as described in
+xref:section_cap_encoding[xrefstyle=short].
+
+The bounds field has the following components:
+
+* *T:* Value substituted into the capability's address to decode the top
+address
+* *B:* Value substituted into the capability's address to decode the base
+address
+* *E:* Exponent that determines the position at which B and T are substituted
+into the capability's address
+* *EF:* Exponent format flag indicating the encoding for T, B and E
+    ** The exponent is stored in T and B if EF=0, so it is 'internal'
+    ** The exponent is zero if EF=1, so it is 'embedded'
+
+The bit width of T and B are defined in terms of the mantissa width (MW) which
+is set depending on the value of XLENMAX as shown in
+xref:mantissa_bit_width[xrefstyle=short].
+
+.Mantissa width (MW) values depending on XLENMAX
+[#mantissa_bit_width,options=header,align="center",width="55%"]
+|==============================================================================
+^| XLENMAX ^| MW
+^| 32      ^| {cap_rv32_mw_width}
+^| 64      ^| {cap_rv64_mw_width}
+|==============================================================================
+
+The exponent E indicates the position of T and B within the capability's
+address as described in xref:section_cap_encoding[xrefstyle=short]. The bit
+width of the exponent (EW) is set depending on the value of XLENMAX. The
+maximum value of the exponent is calculated as follows:
+
+```
+CAP_MAX_E = XLENMAX - MW + 2
+```
+
+The possible values for EW and CAP_MAX_E are shown in
+xref:exp_bit_width[xrefstyle=short].
+
+.Exponent widths and CAP_MAX_E depending on XLENMAX
+[#exp_bit_width,options=header,align="center",width="55%"]
+|==============================================================================
+^| XLENMAX ^| EW                   ^| CAP_MAX_E
+^| 32      ^| {cap_rv32_exp_width} ^| 24
+^| 64      ^| {cap_rv64_exp_width} ^| 52
+|==============================================================================
+
+NOTE: The address and bounds must be representable in valid capabilities i.e.
+when the tag is set (see xref:section_cap_malformed[xrefstyle=short]).
+
+==== Address
+
+XLENMAX integer value that encodes the byte-address of a memory location.
+
+.Address widths depending on XLENMAX
+[#address_bit_width,options=header,align="center",width="55%"]
+|==============================================================================
+^| XLENMAX ^| Address width
+^| 32      ^| {cap_rv32_addr_width}
+^| 64      ^| {cap_rv64_addr_width}
+|==============================================================================
+
+==== Reserved Bits
+
+Reserved bits available for future extensions to {cheri_base_ext_name}.
+
+NOTE: Reserved bits must be 0 in valid capabilities.
+
+[#section_cap_encoding]
+=== Capability Encoding
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the
+in-memory format, and also increase precision for RV32. When EF=0, T and B
+are now shifted right rather than left within the address. Also, the bounds
+decoding for XLENMAX=32 uses a trick (see bit T8) to save one bit when encoding
+the exponent.
+endif::[]
+
+The components of a capability are encoded as shown in
+xref:cap_encoding_xlen32[xrefstyle=short] and
+xref:cap_encoding_xlen64[xrefstyle=short] when XLENMAX=32 and XLENMAX=64
+respectively.
+
+.Capability encoding when XLENMAX=32
+[#cap_encoding_xlen32]
+include::img/cap-encoding-xlen32.edn[]
+
+.Capability encoding when XLENMAX=64
+[#cap_encoding_xlen64]
+include::img/cap-encoding-xlen64.edn[]
+
+Each memory location or register able to hold a capability must also store the
+tag as out of band information that software cannot directly set or clear. The
+capability metadata is held in the most significant bits and the address
+is held in the least significant bits.
+
+The metadata is encoded in a compressed format cite:[woodruff2019cheri]. It
+uses a floating point representation to encode the bounds relative to the
+capability address. The base and top addresses from the bounds are decoded as
+shown below.
+
+WARNING: #TODO: The pseudo-code below does not have a formal notation. It is
+simply a place-holder while the Sail implementation is available. In this
+notation, / means "integer division", [] are the bit-select operators, and
+arithmetic is signed.#
+
+```
+EW        = (XLENMAX == 32) ? 5 : 6
+CAP_MAX_E = XLENMAX - MW + 2
+
+If EF = 1:
+    E               = 0
+    T[EW / 2 - 1:0] = TE
+    B[EW / 2 - 1:0] = BE
+    LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
+    LMSB            = (XLENMAX == 32) ? T8 : 0
+else:
+    E               = CAP_MAX_E - ( (XLENMAX == 32) ? { T8, TE, BE } : { TE, BE } )
+    T[EW / 2 - 1:0] = 0
+    B[EW / 2 - 1:0] = 0
+    LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
+    LMSB            = 1
+```
+
+Reconstituting the top two bits of T:
+
+```
+T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
+```
+
+Decoding the bounds:
+
+```
+top:    t = { a[XLENMAX - 1:E + MW] + ct, T[MW - 1:0]    , {E{1'b0}} }
+base:   b = { a[XLENMAX - 1:E + MW] + cb, B[MW - 1:0]    , {E{1'b0}} }
+```
+
+The corrections c~t~ and c~b~ are calculated as as shown below using the
+definitions in xref:cap_encoding_ct[xrefstyle=short] and
+xref:cap_encoding_cb[xrefstyle=short].
+
+```
+Ac = a[E + MW - 1:E + MW - 3]
+Bc = B[MW - 1:MW - 3]
+Tc = T[MW - 1:MW - 3]
+R  = Bc - 1
+```
+
+.Calculation of top address correction
+[#cap_encoding_ct,options=header,cols="^1,^1,^1",width="40%",align="center"]
+|==============================================================================
+| A~c~ < R | T~c~ < R | c~t~
+| false    | false    | 0
+| false    | true     | +1
+| true     | false    | -1
+| true     | true     | 0
+|==============================================================================
+
+.Calculation of base address correction
+[#cap_encoding_cb,options=header,cols="^1,^1,^1",width="40%",align="center"]
+|==============================================================================
+| A~c~ < R | B~c~ < R | c~b~
+| false    | false    | 0
+| false    | true     | +1
+| true     | false    | -1
+| true     | true     | 0
+|==============================================================================
+
+The base, _b_, and top, _t_, addresses are derived from the address by
+substituting _a_[E + MW - 1:E] with B and T respectively and clearing the
+lower E bits.  The most significant bits of _a_ may be adjusted up or down by 1
+using corrections _c~b~_ and _c~t~_ to allow encoding memory regions that span
+alignment boundaries.
+
+The EF bit selects between two cases:
+
+1. EF = 1: The exponent is 0 for regions less than 2^MW-2^ bytes long
+2. EF = 0: The exponent is _internal_ with E stored in the lower bits of T and
+B along with T~8~ when XLENMAX=32. E is chosen so that the most significant
+non-zero bit of the length of the region aligns with T[MW - 2] in the decoded
+top. Therefore, the most significant two bits of T can be derived from B using
+the equality `T = B + L`, where L[MW - 2] is known from the values of EF and E
+and a carry out is implied if `T[MW - 3:0] < B[MW - 3:0]` since it is
+guaranteed that the top is larger than the base.
+
+The compressed bounds encoding allows the address to roam over a large
+_representable_ region while maintaining the original bounds. This relies on
+using the 'spare' encodings where `T < B` to define a space boundary R,
+relative to the base, calculated by subtracting 1 from the top three bits of B.
+If B, T or _a_[E + MW - 1:E] is less than R, it is inferred that they lie in the
+2^E+MW^ aligned region above R labelled space~U~ in
+xref:cap_bounds_map[xrefstyle=short] and the corrections _c~t~_ and _c~b~_ are
+computed accordingly. The overall effect is that at least 2^E+MW^/8 bytes below
+the base address and 2^E+MW^/4 bytes above the top address can roam
+out-of-bounds while still allowing the bounds to be correctly decoded.
+
+[#cap_bounds_map]
+.Memory address bounds encoded within a capability
+image::cap-bounds-map.png[width=80%,align=center]
+
+A capability whose bounds cover the entire address space has 0 base and top
+equals 2^XLENMAX^, i.e. _t_ is a XLENMAX + 1 bit value. However, _b_ is a
+XLENMAX bit value and the size mismatch introduces additional complications
+when decoding, so the following condition is required to correct _t_ for
+capabilities whose representable region wraps the edge of the address
+space:
+
+```
+if ( (E < (CAP_MAX_E - 1)) & (t[XLENMAX: XLENMAX - 1] - b[XLENMAX - 1] > 1) )
+    t[XLENMAX] = !t[XLENMAX]
+```
+That is, invert the most significant bit of _t_ if the decoded length of the
+capability is larger than E.
+
+[#section_null_inf_cap]
+=== NULL and Infinite Capabilities
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
+the difference between in-memory and architectural format.
+endif::[]
+
+The <<null-cap>> capability is represented with 0 in all fields.  This implies
+that <<null-cap>> has no permissions and its exponent E is CAP_MAX_E e.g. 52
+when XLENMAX=64, so its bounds cover the entire address space such that the
+expanded base is 0 and top is 2^XLENMAX^. In contrast, the <<infinite-cap>>
+capability grants all permissions while its bounds also cover the whole address
+space.
+
+NOTE: The <<infinite-cap>> capability is also known as 'default', 'almighty',
+or 'root' capability.
+
+.Field values of the NULL capability
+[#null-cap,reftext="NULL",options=header,align=center,width="55%",cols="1,1,3"]
+|==============================================================================
+| Field   | Value | Comment
+| SDP     | zeros | Grants no permissions
+| AP      | zeros | Grants no permissions
+| S       | zero  | Unsealed
+| EF      | zero  | Internal exponent format
+| T~8~    | zeros | Top address bit (XLENMAX=32 only)
+| T       | zeros | Top address bits
+| T~E~    | zeros | Exponent bits
+| B       | zeros | Base address bits
+| B~E~    | zeros | Exponent bits
+| Address | zeros | Capability address
+|==============================================================================
+
+.Field values of the Infinite capability
+[#infinite-cap,reftext="Infinity"]
+[options=header,width="100%",align=center,width="55%",cols="1,1,3"]
+|==============================================================================
+| Field   | Value | Comment
+| SDP     | ones  | Grants all permissions
+| AP      | ones  | Grants all permissions
+| S       | zero  | Unsealed
+| EF      | zero  | Internal exponent format
+| T~8~    | zeros | Top address bit (XLENMAX=32 only)
+| T       | zeros | Top address bits
+| T~E~    | zeros | Exponent bits
+| B       | zeros | Base address bits
+| B~E~    | zeros | Exponent bits
+| Address | zeros | Capability address
+|==============================================================================
+
+[#section_cap_representable_check]
+=== Representable Limit Check
+
+Pointer arithmetic on capabilities must be checked to ensure that the new
+address is within the capability's representable region described in
+xref:section_cap_encoding[xrefstyle=short]. The new address, after pointer
+arithmetic, is within the representable region if decompressing the
+capability's bounds with the original and new addresses yields the same base
+and top addresses. In other words, given a capability with address _a_ and the
+new address `a' = a + x`, the bounds _b_ and _t_ are decoded using _a_ and the
+new bounds _b'_ and _t'_ are decoded using _a'_. The new address is within the
+capability's representable region if `b == b' && t == t'`.
+
+Changing a capability's address to a value outside the representable region
+unconditionally clears the capability's tag.
+
+NOTE: The encoding of the bounds depends upon the leading 1 of the address
+which is used to determine the exponent. If the leading 1 of the address moves
+then the bounds will need to be recalculated. Instructions like <<CINCOFFSET>>
+and <<CSETADDR>> update the address field but do not recalculate the bounds.
+Therefore, if the leading 1 moves relative to when the bounds were calculated
+then the tag is cleared on the result as the encoding has been invalidated.
+
+[#section_cap_malformed]
+=== Malformed Capability Bounds
+
+A capability is _malformed_ if its encoding does not describe a valid
+capability because its bounds cannot be correctly decoded. The following check
+indicates whether a capability is malformed.
+
+```
+malformedMSB =  (E == CAP_MAX_E     && B[MW - 1:MW - 2] != 0)
+             || (E == CAP_MAX_E - 1 && B[MW - 1]        != 0)
+malformedLSB =  (E  < 0)
+malformed    =  !EF && (malformedMSB || malformedLSB)
+```
+
+NOTE: The check is for malformed _bounds_, so it does not include reserved
+bits!
+
+Capabilities with malformed bounds are always invalid anywhere in the system
+i.e. their tags are always 0.
+

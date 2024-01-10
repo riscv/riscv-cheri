@@ -1,0 +1,67 @@
+<<<
+//[#insns-amo-32bit,reftext="Atomic (CAMO<OP>.W, CAMO<OP>.D, AMO<OP>.W, AMO<OP>.D), 32-bit encodings"]
+
+
+[#CAMOOPW,reftext="CAMO<OP>.W"]
+==== CAMO<OP>.W
+
+See <<AMOOPD>>.
+
+[#CAMOOPD,reftext="CAMO<OP>.D"]
+==== CAMO<OP>.D
+
+See <<AMOOPD>>.
+
+[#AMOOPW,reftext="AMO<OP>.W"]
+==== AMO<OP>.W
+
+See <<AMOOPD>>.
+
+<<<
+
+[#AMOOPD,reftext="AMO<OP>.D"]
+==== CAMO<OP>.W
+
+Synopsis::
+Atomic Operations (CAMO<OP>.W, CAMO<OP>.D, AMO<OP>.W, AMO<OP>.D), 32-bit encodings
+
+Capability Mode Mnemonics (RV64)::
+`camo<op>.[w|d], offset(cs1)`
+
+Capability Mode Mnemonics (RV32)::
+`camo<op>.w, offset(cs1)`
+
+Legacy Mode Mnemonics (RV64)::
+`amo<op>.[w|d], offset(rs1)`
+
+Legacy Mode Mnemonics (RV32)::
+`amo<op>.w, offset(rs1)`
+
+Encoding::
+include::wavedrom/amo.adoc[]
+
+Capability Mode Description::
+Standard atomic instructions, authorised by the capability in `cs1`.
+
+Legacy Mode Description::
+Standard atomic instructions, authorised by the capability in <<ddc>>.
+
+include::atomic_exceptions.adoc[]
+
+Prerequisites for CAMO<OP>.W, CAMO<OP>.D::
+{cheri_base_ext_name}
+
+Prerequisites for AMO<OP>.W, AMO<OP>.D::
+{cheri_legacy_ext_name}
+
+Capability Mode Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--
+
+Legacy Mode Operation::
++
+--
+TODO
+--

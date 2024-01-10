@@ -1,0 +1,46 @@
+<<<
+//[#insns-cj_j-16bit,reftext="Conditional branches (C.CJ,C.J), 16-bit encodings"]
+
+[#C_J,reftext="C.J"]
+==== C.J
+
+See <<C.CJ>>.
+
+[#C_CJ,reftext="C.CJ"]
+==== C.CJ
+
+Synopsis::
+Register based jumps without link, 16-bit encodings
+
+Capability Mode Mnemonic::
+`c.cj offset`
+
+Capability Mode Expansion::
+`cjal c0, offset`
+
+Legacy Mode Mnemonic::
+`c.j offset`
+
+Legacy Mode Expansion::
+`jal x0, offset`
+
+Encoding::
+include::wavedrom/c-cj-format-ls.adoc[]
+
+Description::
+Set the next PC following the standard `jal` definition.
+ Check a minimum length instruction is in <<pcc>> bounds at the target PC, take a CHERI Length Violation exception on error.
+ *There is no difference in Capability Mode or Legacy Mode execution for this instruction.*
+
+Exceptions::
+CHERI Length Violation
+
+Prerequisites for C.CJ::
+{c_cheri_base_ext_names}
+
+Prerequisites for C.J::
+{c_cheri_legacy_ext_names}
+
+Operation (after expansion to 32-bit encodings)::
+ See <<CJAL>>, <<JAL>>
+

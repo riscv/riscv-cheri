@@ -1,0 +1,73 @@
+== "Zcheri_mode" Extension for CHERI Execution Mode
+
+{cheri_mode_ext_name} is an optional extension to {cheri_legacy_ext_name}.
+Implementations that support {cheri_mode_ext_name} allow fine-grained switching
+between Capability and Legacy modes using indirect jump instructions.
+
+[#section-cheri-execution-mode]
+=== CHERI Execution Mode
+
+{cheri_mode_ext_name} adds a new CHERI execution mode bit (M) to capabilities.
+The mode bit is encoded as shown in
+xref:cap_encoding_xlen32_mode[xrefstyle=short] and
+xref:cap_encoding_xlen64_mode[xrefstyle=short]. The current CHERI execution
+mode is give by the M bit of the <<pcc>> and the CME bits in <<menvcfg>> and
+<<senvcfg>> as follows:
+
+* The mode is Capability when the M bit of the <<pcc>> is 1 and the effective
+CME=1 for the current privilege level
+* The mode is Legacy when the effective CME=0 for the current privilege level
+* The mode is Legacy when the M bit of the <<pcc>> is 0 and the effective CME=1
+for the current privilege level
+
+.Capability encoding when XLENMAX=32 and {cheri_mode_ext_name} is supported
+[#cap_encoding_xlen32_mode]
+include::img/cap-encoding-xlen32-mode.edn[]
+
+.Capability encoding when XLENMAX=64 and {cheri_mode_ext_name} is supported
+[#cap_encoding_xlen64_mode]
+include::img/cap-encoding-xlen64-mode.edn[]
+
+{cheri_mode_ext_name} allows the M bit to be set to 1 when the capability does
+not grant <<x_perm>>. In this case, the M bit is superfluous, so the encoding
+may be used to support additional features in future extensions.
+
+[#section_mode_cap_instructions]
+=== Zcheri_mode Instructions
+
+{cheri_mode_ext_name} introduces new instructions to the base RISC-V integer
+ISA in addition to the instructions added in {cheri_base_ext_name}. The new
+instructions in {cheri_mode_ext_name} allows inspecting the CHERI mode bit in
+capabilities and changing the current CHERI execution mode.
+
+==== Capability Manipulation Instructions
+
+A new <<CSETMODE>> instruction allows setting a capability's CHERI execution
+mode to the indicated value. The output is written to an unprivileged *c*
+register, not <<pcc>>.
+
+==== Mode Change Instructions
+
+A new CHERI execution mode switch (<<CMODESWITCH>>) instruction allows software
+to toggle the hart's current CHERI execution mode. If the current mode in the
+<<pcc>> is Legacy, then the mode after executing <<CMODESWITCH>> is Capability
+and vice-versa. This instruction effectively writes the CHERI execution mode
+bit M of the capability currently installed in the <<pcc>>.
+
+==== Unconditional Capability Jumps
+
+{cheri_mode_ext_name} allows changing the current CHERI execution mode when
+executing <<CJALR>> or <<JALR_CAP>>.
+
+=== Integrating Zcheri_mode with Sdext
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The mode change instruction <<CMODESWITCH>> is new
+and the requirement to optionally support it in debug mode is also new.
+endif::[]
+
+In addition to the changes described in
+xref:section_debug_integration[xrefstyle=short] and
+xref:section_legacy_debug_integration[xrefstyle=short], {cheri_mode_ext_name}
+allows <<CMODESWITCH>> to act as an illegal instruction when it is executed
+while in debug mode.

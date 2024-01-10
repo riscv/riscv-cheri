@@ -1,0 +1,33 @@
+Permissions::
+ifdef::cap_atomic[]
+Requires the authorising capability to be tagged and not sealed.
++
+Requires <<r_perm>> and <<w_perm>> in the authorising capability.
++
+If <<c_perm>> is not granted then store the memory tag as zero, and load `cd.tag` as zero.
++
+(_This tag clearing behaviour may become a data dependent exception in future._)
+endif::[]
+ifndef::cap_atomic[]
+Requires <<r_perm>> and <<w_perm>> in the authorising capability.
+endif::[]
++
+Requires all bytes of the access to be in capability bounds.
+
+Exceptions::
+All misaligned atomics cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a store/AMO access fault exception.
++
+When these instructions cause CHERI exceptions, _CHERI data fault_
+is reported in the TYPE field and the following codes may be
+reported in the CAUSE field of <<mtval>> or <<stval>>:
+
+[width="50%",options=header,cols="2,^1",align=center]
+|==============================================================================
+| CAUSE                 | Reason
+| Tag violation         | Authority capability tag set to 0
+| Seal violation        | Authority capability is sealed
+| Permission violation  | Authority capability does not grant <<r_perm>> or <<w_perm>>
+| Length violation      | At least one byte accessed is outside the authority capability bounds
+|==============================================================================
+
+:!cap_atomic:

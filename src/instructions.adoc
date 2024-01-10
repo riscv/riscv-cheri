@@ -1,0 +1,255 @@
+[#riscv-extensions]
+== RISC-V Instructions and Extensions Reference
+
+These instruction pages are for the new CHERI instructions, and some existing RISC-V
+instructions where the effect of CHERI needs specific details.
+
+For existing RISC-V instructions, note that:
+
+. In Legacy mode, every byte of each memory access access is bounds
+checked against <<ddc>>
+. In Legacy mode, a minimum length instruction at the target of all indirect
+jumps is bounds checked against <<pcc>>
+. In Capability mode a minimum length instruction at the target of all indirect
+jumps is bounds checked against `cs1` (e.g. <<CJALR>>)
+. A minimum length instruction at the taken target of all direct
+jumps and conditional branches is bounds checked against <<pcc>> regardless of
+CHERI execution mode
+
+NOTE: Not all RISC-V extensions have been checked against CHERI. Compatible
+extensions, will eventually be listed in a CHERI profile.
+
+<<<
+=== "Zcheri_purecap", "Zcheri_legacy" and "Zcheri_mode" Extensions for CHERI
+
+include::insns/jalr_cap_32bit.adoc[]
+
+include::insns/cmove_32bit.adoc[]
+
+include::insns/modeswitch_32bit.adoc[]
+
+include::insns/cincoffset_32bit.adoc[]
+include::insns/csetaddr_32bit.adoc[]
+include::insns/candperm_32bit.adoc[]
+include::insns/csetmode_32bit.adoc[]
+include::insns/csethigh_32bit.adoc[]
+include::insns/csetequalexact_32bit.adoc[]
+include::insns/cseal_32bit.adoc[]
+
+include::insns/ctestsubset_32bit.adoc[]
+include::insns/cbuildcap_32bit.adoc[]
+
+include::insns/cgettag_32bit.adoc[]
+include::insns/cgetperm_32bit.adoc[]
+include::insns/cgethigh_32bit.adoc[]
+include::insns/cgetbase_32bit.adoc[]
+include::insns/cgetlen_32bit.adoc[]
+
+include::insns/csetbounds_32bit.adoc[]
+include::insns/csetboundsinexact_32bit.adoc[]
+include::insns/cram_32bit.adoc[]
+
+include::insns/load_32bit_cap.adoc[]
+include::insns/store_32bit_cap.adoc[]
+
+<<<
+=== RV32I/E and RV64I/E Base Integer Instruction Sets
+
+include::insns/auipcc_32bit.adoc[]
+
+include::insns/condbr_32bit.adoc[]
+
+include::insns/cjalr_jalr_32bit.adoc[]
+include::insns/cjal_jal_32bit.adoc[]
+
+include::insns/load_32bit.adoc[]
+include::insns/store_32bit.adoc[]
+
+include::insns/mret_sret.adoc[]
+include::insns/dret.adoc[]
+
+<<<
+=== "A" Standard Extension for Atomic Instructions
+
+include::insns/amo_32bit.adoc[]
+include::insns/amoswap_32bit_cap.adoc[]
+
+include::insns/load_res_32bit.adoc[]
+include::insns/load_res_cap_32bit.adoc[]
+
+include::insns/store_cond_32bit.adoc[]
+include::insns/store_cond_cap_32bit.adoc[]
+
+<<<
+=== "Zicsr", Control and Status Register (CSR) Instructions
+
+include::insns/csrrw_32bit.adoc[]
+include::insns/csrr_32bit.adoc[]
+
+<<<
+=== "Zfh", "Zfhmin", "F" and "D" Standard Extension for Floating-Point
+
+include::insns/load_32bit_fp.adoc[]
+include::insns/store_32bit_fp.adoc[]
+
+<<<
+=== "C" Standard Extension for Compressed Instructions
+
+include::insns/condbr_16bit.adoc[]
+
+include::insns/cmove_cmv_16bit.adoc[]
+
+include::insns/addi16sp_16bit.adoc[]
+include::insns/addi4spn_16bit.adoc[]
+
+include::insns/modeswitch_16bit.adoc[]
+
+include::insns/cjalr_jalr_16bit.adoc[]
+include::insns/cjr_jr_16bit.adoc[]
+include::insns/cjal_jal_16bit.adoc[]
+include::insns/cj_j_16bit.adoc[]
+
+include::insns/load_16bit.adoc[]
+include::insns/load_16bit_sprel.adoc[]
+include::insns/load_16bit_fp_sp.adoc[]
+include::insns/load_16bit_fp_dp.adoc[]
+include::insns/load_16bit_cap_sprel.adoc[]
+
+include::insns/store_16bit.adoc[]
+include::insns/store_16bit_sprel.adoc[]
+include::insns/store_16bit_fp_sp.adoc[]
+include::insns/store_16bit_fp_dp.adoc[]
+include::insns/store_16bit_cap_sprel.adoc[]
+
+<<<
+=== "Zicbom", "Zicbop", "Zicboz" Standard Extensions for Base Cache Management Operations
+
+include::insns/cbo.clean.adoc[]
+include::insns/cbo.flush.adoc[]
+include::insns/cbo.inval.adoc[]
+include::insns/cbo.zero.adoc[]
+
+include::insns/prefetch.i.adoc[]
+include::insns/prefetch.r.adoc[]
+include::insns/prefetch.w.adoc[]
+
+<<<
+=== "Zba" Extension for Bit Manipulation Instructions
+
+include::insns/sh123add_32bit.adoc[]
+include::insns/sh123adduw_32bit.adoc[]
+include::insns/sh4add_32bit.adoc[]
+include::insns/sh4adduw_32bit.adoc[]
+
+<<<
+=== "Zcb" Standard Extension For Code-Size Reduction
+
+include::insns/load_16bit_Zcb.adoc[]
+
+include::insns/store_16bit_Zcb.adoc[]
+
+<<<
+=== "Zcmp" Standard Extension For Code-Size Reduction
+
+The push (<<CM.PUSH>>) and pop (<<CM.POP>>, <<CM.POPRET>>, <<CM.POPRETZ>>) instructions are redefined in capability mode to save/restore full capabilities.
+
+The double move instructions (<<CM.MVSA01>>, <<CM.MVA01S>>) are redefined in capability mode to move full capabilities between registers. The saved register mapping is as shown in
+
+.saved register mapping for Zcmp
+[#saved_register_mapping]
+[width="100%",options=header, align="center"]
+|====================================
+| saved register specifier | xreg | integer ABI | CHERI ABI
+| 0                       | x8  | s0 | cs0
+| 1                       | x9  | s1 | cs1
+| 2                       | x18 | s2 | cs2
+| 3                       | x19 | s3 | cs3
+| 4                       | x20 | s4 | cs4
+| 5                       | x21 | s5 | cs5
+| 6                       | x22 | s6 | cs6
+| 7                       | x23 | s7 | cs7
+|====================================
+
+
+All instructions are defined in cite:[riscv-code-size-spec].
+
+include::insns/zcmp_cmpush.adoc[]
+include::insns/zcmp_cmpop.adoc[]
+include::insns/zcmp_cmpopret.adoc[]
+include::insns/zcmp_cmpopretz.adoc[]
+include::insns/zcmp_cmvsa01.adoc[]
+include::insns/zcmp_cmva01s.adoc[]
+
+
+<<<
+=== "Zcmt" Standard Extension For Code-Size Reduction
+
+The table jump instructions (<<CM.JT>>, <<CM.JALT>>) defined in cite:[riscv-code-size-spec] are _not_ redefined in capability mode to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.
+
+In the future, new jump table modes or new encodings can be added to have capabilities in the jump table.
+
+The jump vector table CSR <<jvt>> has a capability alias <<jvtc>> so that it can only be configured to point to accessible memory. All accesses to the jump table are checked against <<jvtc>>, and _not_ against <<pcc>>. This allows the jump table to be accessed
+when the <<pcc>> bounds are set narrowly to the local function only.
+
+NOTE: the implementation doesn't need to expand and bounds check against <<jvtc>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvtc>>, and then check that the accessed entry is in that range.
+
+[#jvt,reftext="jvt"]
+==== Jump Vector Table CSR (jvt)
+
+The JVT CSR is exactly as defined by cite:[riscv-code-size-spec]. It is aliased to <<jvtc>>.
+
+[#jvtc,reftext="jvtc"]
+==== Jump Vector Table CSR (jvtc)
+
+<<jvtc>> extends <<jvt>> to be a capability width CSR, as shown in xref:ucsrnames-replaced[xrefstyle=short].
+
+.Jump Vector Table Capability register
+include::img/jvtcreg.edn[]
+
+All instruction fetches from the jump vector table are checked against <<jvtc>>.
+
+See <<CM.CJALT>>, <<CM.JALT>>, <<CM.CJT>>, <<CM.JT>>.
+
+include::insns/zcmt_cmjalt.adoc[]
+include::insns/zcmt_cmjt.adoc[]
+
+<<<
+
+ifdef::vector_section[]
+
+=== "V" Standard Extension for Vector Operations
+
+include::cheri-vector.adoc[]
+
+include::cheri-vectorcap-ext.adoc[]
+
+include::insns/cvle_ew.adoc[]
+include::insns/cvse_ew.adoc[]
+include::insns/cvlm.adoc[]
+include::insns/cvsm.adoc[]
+include::insns/cvlse_ew.adoc[]
+include::insns/cvsse_ew.adoc[]
+include::insns/cvluxei_ew.adoc[]
+include::insns/cvsuxei_ew.adoc[]
+include::insns/cvloxei_ew.adoc[]
+include::insns/cvsoxei_ew.adoc[]
+include::insns/cvle_ew_ff.adoc[]
+include::insns/cvlseg_nf_e_ew.adoc[]
+include::insns/cvsseg_nf_e_ew.adoc[]
+include::insns/cvlseg_nf_e_ew_ff.adoc[]
+include::insns/cvlsseg_nf_e_ew.adoc[]
+include::insns/cvssseg_nf_e_ew.adoc[]
+include::insns/cvluxseg_nf_ei_ew.adoc[]
+include::insns/cvsuxseg_nf_ei_ew.adoc[]
+include::insns/cvloxseg_nf_ei_ew.adoc[]
+include::insns/cvsoxseg_nf_ei_ew.adoc[]
+include::insns/cvl_nr_re_ew.adoc[]
+include::insns/cvs_nr_r.adoc[]
+
+include::insns/cvlce_ew.adoc[]
+include::insns/cvsce_ew.adoc[]
+// Should whole vector register load capability be supported?
+// Should whole vector register store capability be supported?
+include::insns/cvmv_nr_r.adoc[]
+
+endif::[]

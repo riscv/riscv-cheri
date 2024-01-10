@@ -1,0 +1,25 @@
+Exceptions::
+ifdef::store_cond[]
+All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a store/AMO access fault exception.
++
+endif::[]
+ifdef::has_cap_data[]
+Misaligned address fault exception when the effective address is not aligned
+to CLEN/8.
++
+endif::[]
+CHERI fault exception when the authorising capability fails one of the checks
+listed below; in this case, _CHERI data fault_ is reported in the <<mtval>> or
+<<stval>> TYPE field and the corresponding code is written to CAUSE.
+
+[%autowidth,options=header,align=center]
+|==============================================================================
+| CAUSE                 | Reason
+| Tag violation         | Authority capability tag set to 0
+| Seal violation        | Authority capability is sealed
+| Permission violation  | Authority capability does not grant <<w_perm>>
+| Length violation      | At least one byte accessed is outside the authority capability bounds
+|==============================================================================
+
+:!store_cond:
+:!has_cap_data:
