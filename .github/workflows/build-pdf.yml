@@ -8,7 +8,7 @@ on:
         description: 'Release version, e.g. X.Y.Z:'
         required: true
         type: string
-      revision_mark: 
+      revision_mark:
           description: 'Set revision mark as Draft, Release or Stable:'
           required: true
           type: string
@@ -57,7 +57,7 @@ jobs:
         name: Build Artifacts
         path: ${{ github.workspace }}/*.pdf
         retention-days: 30
-      
+
     # Create Release
     - name: Create Release
       uses: softprops/action-gh-release@v1
@@ -69,5 +69,5 @@ jobs:
         prerelease: ${{ github.event.inputs.prerelease }}
       env:
         GITHUB_TOKEN: ${{ secrets.GHTOKEN }}
-      if: github.event_name == 'workflow_dispatch' 
+      if: github.event_name == 'workflow_dispatch'
       # This condition ensures this step only runs for workflow_dispatch events.
