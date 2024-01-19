@@ -8,8 +8,8 @@
 # SPDX-License-Identifier: CC-BY-SA-4.0
 #
 # Description:
-# 
-# This Makefile is designed to automate the process of building and packaging 
+#
+# This Makefile is designed to automate the process of building and packaging
 # the Doc Template for RISC-V Extensions.
 
 DATE ?= $(shell date +%Y-%m-%d)
@@ -39,7 +39,7 @@ REQUIRES := --require=asciidoctor-bibtex \
 
 all: build
 
-build: 
+build:
 	@echo "Checking if Docker is available..."
 	@if command -v docker >/dev/null 2>&1 ; then \
 		echo "Docker is available, building inside Docker container..."; \
