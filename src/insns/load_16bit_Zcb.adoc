@@ -1,0 +1,67 @@
+<<<
+//[#insns-load-16bit-Zcb,reftext="Load (C.CLH, C.CLHU, C.CLBU, C.LH, C.LHU, C.LBU), 16-bit encodings"]
+
+
+
+[#C_CLH,reftext="C.CLH"]
+==== C.CLH
+See <<C.LBU>>.
+
+[#C_CLHU,reftext="C.CLHU"]
+==== C.CLHU
+See <<C.LBU>>.
+
+[#C_CLBU,reftext="C.CLBU"]
+==== C.CLBU
+See <<C.LBU>>.
+
+[#C_LH,reftext="C.LH"]
+==== C.LH
+See <<C.LBU>>.
+
+[#C_LHU,reftext="C.LHU"]
+==== C.LHU
+See <<C.LBU>>.
+
+<<<
+
+[#C_LBU,reftext="C.LBU"]
+==== C.LBU
+
+Synopsis::
+Load (C.CLH, C.CLHU, C.CLBU, C.LH, C.LHU, C.LBU), 16-bit encodings
+
+Capability Mode Mnemonics::
+`c.clh/c.clhu/c.clbu rd', offset(cs1')`
+
+Capability Mode Expansions::
+`clh/clhu/clbu rd, offset(cs1)`
+
+Legacy Mode Mnemonics::
+`c.lh/c.lhu/c.lbu rd', offset(rs1')`
+
+Legacy Mode Expansions::
+`lh/lhu/lbu rd, offset(rs1)`
+
+Encoding::
+
+include::wavedrom/reg-based-ldnstr-Zcb.adoc[]
+
+Capability Mode Description::
+Subword load instructions, authorised by the capability in `cs1`.
+
+Legacy Mode Description::
+Subword load instructions, authorised by the capability in <<ddc>>.
+
+include::load_exceptions.adoc[]
+
+Prerequisites C.CLH, C.CLHU, C.CLBU::
+{c_cheri_base_ext_names}, and Zcb
+
+Prerequisites C.LH, C.LHU, C.LBU::
+{c_cheri_legacy_ext_names}, and Zcb
+
+Operation (after expansion to 32-bit encodings)::
+ See <<C.CLH>>, <<CLHU>>, <<CLBU>>, <<LH>>, <<LHU>>, <<LBU>>
+
+

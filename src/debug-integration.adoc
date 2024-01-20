@@ -1,0 +1,106 @@
+[#section_debug_integration]
+== Integrating Zcheri_purecap with Sdext
+
+This section describes changes to integrate the Sdext ISA and
+{cheri_base_ext_name}. It must be implemented to make external debug compatible
+with {cheri_base_ext_name}. Modifications to Sdext are kept to a minimum.
+
+=== Debug Mode
+
+When executing code due to an abstract command, the hart stays in debug mode
+and the rules outlined in Section 4.1 of cite:[riscv-debug-spec]
+apply.
+
+=== Core Debug Registers
+
+{cheri_base_ext_name} removes debug CSRs that are designated to hold addresses
+and replaces them with analogous CSRs able to hold capabilities. The removed
+debug CSRs are listed in xref:dcsrnames-removed[xrefstyle=short] and the
+new CSRs are listed in xref:dcsrnames-replaced[xrefstyle=short].
+
+The <<pcc>> must grant <<asr_perm>> to access debug CSRs. This permission is
+automatically provided when the hart enters debug mode as described
+in the <<dpcc>> section. The <<pcc>> metadata can only be changed if the
+implementation supports executing control transfer instructions from the
+program buffer -- this is an optional feature according to
+cite:[riscv-debug-spec].
+
+[#dpc,reftext="dpc"]
+==== Debug Program Counter (dpc)
+
+The <<dpc>> register is as defined in cite:[riscv-debug-spec]. It is a
+DXLEN-bit register used as the PC saved when entering debug mode. <<dpc>> is
+extended into <<dpcc>>.
+
+.Debug program counter
+include::img/dpcreg.edn[]
+
+[#dpcc,reftext="dpcc"]
+==== Debug Program Counter Capability (dpcc)
+
+The <<dpcc>> register is a extension to <<dpc>> that is able to hold a
+capability. Its reset value is the <<null-cap>> capability.
+
+.Debug program counter capability
+include::img/dpccreg.edn[]
+
+Upon entry to debug mode, cite:[riscv-debug-spec], does not specify how to
+update the PC, and says PC relative instructions may be illegal. This concept
+is extended to include any instruction which updates <<pcc>>.
+
+<<dpcc>> (and consequently <<dpc>>) are updated with the
+capability in <<pcc>> whose address field is set to the address of the next
+instruction to be executed as described in cite:[riscv-debug-spec].
+
+Additionally, the <<pcc>> is updated as follows:
+
+* All metadata is set to the <<infinite-cap>> capability
+  ** The <<pcc>> may be used as a source of the <<infinite-cap>> capability in
+debug mode to allow other capabilities to be created and written into memory.
+
+When resuming, the hart's <<pcc>> is updated to the capability stored in
+<<dpcc>>. A debugger may write <<dpcc>> to change where the hart resumes and
+its mode, permissions, sealing or bounds.
+
+[#dscratch0,reftext="dscratch0"]
+==== Debug Scratch Register 0 (dscratch0)
+
+The <<dscratch0>> register is as defined in cite:[riscv-debug-spec]. It is an
+optional DXLEN-bit scratch register that can be used by implementations which
+need it. Its reset value is the <<null-cap>> capability. <<dscratch0>> is
+extended into <<dscratch0c>>.
+
+.Debug scratch 0 register
+include::img/dscratch0reg.edn[]
+
+[#dscratch0c,reftext="dscratch0c"]
+==== Debug Scratch Register 0 (dscratch0c)
+
+The <<dscratch0c>> register is a CLEN-bit plus tag bit extension to
+<<dscratch0>> that is able to hold a capability. Its reset value is the
+<<null-cap>> capability.
+
+.Debug scratch 0 capability register
+include::img/dscratch0creg.edn[]
+
+[#dscratch1,reftext="dscratch1"]
+==== Debug Scratch Register 1 (dscratch1)
+
+The <<dscratch1>> register is as defined in cite:[riscv-debug-spec]. It is an
+optional DXLEN-bit scratch register that can be used by implementations which
+need it. Its reset value is the <<null-cap>> capability. <<dscratch1>> is
+extended into <<dscratch1c>>.
+
+.Debug scratch 0 register
+include::img/dscratch1reg.edn[]
+
+[#dscratch1c,reftext="dscratch1c"]
+==== Debug Scratch Register 1 (dscratch1c)
+
+The <<dscratch1c>> register is a CLEN-bit plus tag bit extension to
+<<dscratch1>> that is able to hold a capability. Its reset value is the
+<<null-cap>> capability.
+
+.Debug scratch 1 capability register
+include::img/dscratch1creg.edn[]
+

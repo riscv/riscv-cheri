@@ -1,0 +1,62 @@
+<<<
+//[#insns-load-16bit-fp-sprel,reftext="Load (C.CFLD, C.FLD, C.CFLDSP, C.FLDSP), 16-bit encodings"]
+
+[#C_CFLD,reftext="C.CFLD"]
+==== C.CFLD
+
+See <<C.FLDSP>>.
+
+[#C_FLD,reftext="C.FLD"]
+==== C.FLD
+
+See <<C.FLDSP>>.
+
+[#C_CFLDSP,reftext="C.CFLDSP"]
+==== C.CFLDSP
+
+See <<C.FLDSP>>.
+
+<<<
+
+[#C_FLDSP,reftext="C.FLDSP"]
+==== C.FLDSP
+
+Synopsis::
+Double precision floating point loads (C.CFLD, C.FLD, C.CFLDSP, C.FLDSP), 16-bit encodings
+
+Capability Mode Mnemonics (RV32)::
+`c.cfld frd', offset(cs1'/csp)`
+
+Capability Mode Expansions (RV32)::
+`cfld frd', offset(csp)`
+
+Legacy Mode Mnemonics (RV32)::
+`c.fld fs2, offset(rs1'/sp)`
+
+Legacy Mode Expansions (RV32)::
+`fld fs2, offset(rs1'/sp)`
+
+Legacy Mode Mnemonics (RV64)::
+`c.fld fs2, offset(rs1'/sp)`
+
+Legacy Mode Expansion (RV64)::
+`fld fs2, offset(rs1'/sp)`
+
+Encoding::
+include::wavedrom/c-sp-load-css-dp.adoc[]
+include::wavedrom/c-sp-load-css-dp-sprel.adoc[]
+
+Legacy Mode Description::
+Standard floating point stack pointer relative load instructions, authorised by the capability in <<ddc>>. Note that these instructions are not available in Capability Mode, as they have been remapped to <<C.CLC>>, <<C.CLCSP>>.
+
+include::load_exceptions.adoc[]
+
+Prerequisites for C.CFLD, C.CFLDSP::
+{c_cheri_base_ext_names}, and D
+
+Prerequisites for C.FLD, C.FLDSP::
+{c_cheri_legacy_ext_names}, and D
+
+Operation (after expansion to 32-bit encodings)::
+ See <<FLD>>
+

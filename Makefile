@@ -1,4 +1,4 @@
-# Makefile for RISC-V Doc Template
+# Makefile for RISC-V specification for CHERI extensions
 #
 # This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
 # International License. To view a copy of this license, visit
@@ -8,38 +8,111 @@
 # SPDX-License-Identifier: CC-BY-SA-4.0
 #
 # Description:
-# 
-# This Makefile is designed to automate the process of building and packaging 
-# the Doc Template for RISC-V Extensions.
+#
+# This Makefile is designed to automate the process of building and packaging
+# the specification document.
 
-DATE ?= $(shell date +%Y-%m-%d)
-VERSION ?= v0.0.0
+# Tools
+DOCKER_IMAGE = riscvintl/riscv-docs-base-container-image:latest
+GEN_SCRIPT   = $(SCRIPTS_DIR)/generate_tables.py
+
+# Version and date
+DATE    ?= $(shell date +%Y-%m-%d)
+VERSION ?= v0.7.0
 REVMARK ?= Draft
-DOCKER_RUN := docker run --rm -v ${PWD}:/build -w /build \
-riscvintl/riscv-docs-base-container-image:latest
 
-HEADER_SOURCE := header.adoc
-PDF_RESULT := spec-sample.pdf
+# URLs for downloaded CSV files
+URL_BASE = https://docs.google.com/spreadsheets/d/1nyxKamsYZaeTyG8qP-JX4_oQwcuQ_4nZ_Ihm3RK0NEY/gviz/tq?tqx=out:csv
+URL_ISA  = $(URL_BASE)&gid=0
+URL_CSR  = $(URL_BASE)&gid=1927549494
 
-ASCIIDOCTOR_PDF := asciidoctor-pdf
-OPTIONS := --trace \
-           -a compress \
-           -a mathematical-format=svg \
-           -a revnumber=${VERSION} \
-           -a revremark=${REVMARK} \
-           -a revdate=${DATE} \
-           -a pdf-fontsdir=docs-resources/fonts \
-           -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
-           --failure-level=ERROR
-REQUIRES := --require=asciidoctor-bibtex \
-            --require=asciidoctor-diagram \
-            --require=asciidoctor-mathematical
+# Directories and files
+BUILD_DIR   = build
+SRC_DIR     = src
+SRCS        = $(wildcard $(SRC_DIR)/*.adoc)     \
+              $(wildcard $(SRC_DIR)/*/*.adoc)   \
+              $(wildcard $(SRC_DIR)/*/*.bib)    \
+              $(wildcard $(SRC_DIR)/*/*/*.adoc) \
+              $(VERSION_FILE)
+IMG_DIR     = $(SRC_DIR)/img
+IMGS        = $(wildcard $(IMG_DIR)/*.png) \
+              $(wildcard $(IMG_DIR)/*.svg) \
+              $(wildcard $(IMG_DIR)/*.edn)
+CSV_DIR	    = $(SRC_DIR)/csv
+CSVS	    = $(wildcard $(CSV_DIR)/*.csv)
+GEN_DIR     = $(SRC_DIR)/generated
+SCRIPTS_DIR = $(SRC_DIR)/scripts
 
-.PHONY: all build clean build-container build-no-container
+# Output file
+PDF_RESULT    := $(BUILD_DIR)/riscv-cheri.pdf
 
-all: build
+# Top asciidoc file of the document
+HEADER_SOURCE := $(SRC_DIR)/riscv-cheri.adoc
 
-build: 
+# Generated files
+GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
+          $(GEN_DIR)/cap_mode_insns_table_body.adoc                \
+          $(GEN_DIR)/csr_added_legacy_table_body.adoc              \
+          $(GEN_DIR)/csr_added_purecap_mode_d_table_body.adoc      \
+          $(GEN_DIR)/csr_added_purecap_mode_m_table_body.adoc      \
+          $(GEN_DIR)/csr_added_purecap_mode_s_table_body.adoc      \
+          $(GEN_DIR)/csr_added_purecap_mode_u_table_body.adoc      \
+          $(GEN_DIR)/csr_alias_action_table_body.adoc              \
+          $(GEN_DIR)/csr_aliases_table_body.adoc                   \
+          $(GEN_DIR)/csr_exevectors_table_body.adoc                \
+          $(GEN_DIR)/csr_metadata_table_body.adoc                  \
+          $(GEN_DIR)/csr_permission_table_body.adoc                \
+          $(GEN_DIR)/csr_removed_purecap_mode_d_table_body.adoc    \
+          $(GEN_DIR)/csr_removed_purecap_mode_m_table_body.adoc    \
+          $(GEN_DIR)/csr_removed_purecap_mode_s_table_body.adoc    \
+          $(GEN_DIR)/csr_removed_purecap_mode_u_table_body.adoc    \
+          $(GEN_DIR)/csr_replaced_purecap_mode_d_table_body.adoc   \
+          $(GEN_DIR)/csr_replaced_purecap_mode_m_table_body.adoc   \
+          $(GEN_DIR)/csr_replaced_purecap_mode_s_table_body.adoc   \
+          $(GEN_DIR)/csr_replaced_purecap_mode_u_table_body.adoc   \
+          $(GEN_DIR)/illegal_insns_table_body.adoc                 \
+          $(GEN_DIR)/legacy_mnemonic_insns_table_body.adoc         \
+          $(GEN_DIR)/legacy_mode_insns_table_body.adoc             \
+          $(GEN_DIR)/xlen_dependent_encoding_insns_table_body.adoc \
+          $(GEN_DIR)/Zbh_lr_sc_insns_table_body.adoc               \
+          $(GEN_DIR)/Zcheri_legacy_insns_table_body.adoc           \
+          $(GEN_DIR)/Zcheri_mode_insns_table_body.adoc             \
+          $(GEN_DIR)/Zcheri_purecap_insns_table_body.adoc
+
+# Docker command
+DOCKER = docker run --rm -v $(PWD):/build -w /build $(DOCKER_IMAGE)
+
+# AsciiDoctor command
+ASCIIDOC_PDF      = asciidoctor-pdf
+ASCIIDOC_OPTIONS  = --trace                                          \
+                    -a compress                                      \
+                    -a mathematical-format=svg                       \
+                    -a revnumber=$(VERSION)                          \
+                    -a revremark=$(REVMARK)                          \
+                    -a revdate=$(DATE)                               \
+                    -a buildir=$(BUILD_DIR)                          \
+                    -a srcdir=$(SRC_DIR)                             \
+                    -a imagesdir=img                                 \
+                    -a imagesoutdir=$(BUILD_DIR)/img                 \
+                    -a cheri_v9_annotations=''                       \
+                    -a pdf-fontsdir=docs-resources/fonts             \
+                    -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
+                    --failure-level=ERROR
+ASCIIDOC_REQUIRES = --require=asciidoctor-bibtex       \
+                    --require=asciidoctor-diagram      \
+                    --require=asciidoctor-mathematical
+
+# Convenience targets
+all: $(PDF_RESULT)
+generate: $(GEN_SRC)
+download: $(CSVS)
+
+$(BUILD_DIR):
+	@echo "  DIR $@"
+	@mkdir -p $@
+
+%.pdf: $(SRCS) $(IMGS) $(GEN_SRC) | $(BUILD_DIR)
+	@echo "  DOC $@"
 	@echo "Checking if Docker is available..."
 	@if command -v docker >/dev/null 2>&1 ; then \
 		echo "Docker is available, building inside Docker container..."; \
@@ -51,15 +124,29 @@ build:
 
 build-container:
 	@echo "Starting build inside Docker container..."
-	$(DOCKER_RUN) /bin/sh -c "$(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)"
+	$(DOCKER) /bin/sh -c "$(ASCIIDOC_PDF) $(ASCIIDOC_OPTIONS) $(ASCIIDOC_REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)"
 	@echo "Build completed successfully inside Docker container."
 
 build-no-container:
 	@echo "Starting build..."
-	$(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)
+	$(ASCIIDOC_PDF) $(ASCIIDOR_OPTIONS) $(ASCIIDOC_REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)
 	@echo "Build completed successfully."
 
+# Rule to generate all the src/generated/*.adoc from the downloaded CSVs using a Python script.
+$(GEN_SRC) &: $(CSVS) $(GEN_SCRIPT)
+	@echo "  GEN"
+	@$(GEN_SCRIPT) -o $(GEN_DIR) --csr $(CSV_DIR)/CHERI_CSR.csv --isa $(CSV_DIR)/CHERI_ISA.csv
+
+# Rule to download CSVs. These files are checked in and only re-downloaded when you `make download`.
+$(CSVS) &:
+	@echo "  DOWN CSV (isa)"
+	@curl -Lo src/csv/CHERI_ISA.csv "$(URL_ISA)"
+	@echo "  DOWN CSV (csr)"
+	@curl -Lo src/csv/CHERI_CSR.csv "$(URL_CSR)"
+
+# Clean
 clean:
-	@echo "Cleaning up generated files..."
-	rm -f $(PDF_RESULT)
-	@echo "Cleanup completed."
+	@echo "  CLEAN"
+	@$(RM) -r $(PDF_RESULT) $(GEN_SRC)
+
+.PHONY: all generate download clean

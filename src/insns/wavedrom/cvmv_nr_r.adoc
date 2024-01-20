@@ -1,0 +1,17 @@
+[wavedrom, ,svg]
+....
+{reg: [
+  {bits: 7,  name: 'opcode',  attr: ['7', 87, '(VECTOR)'], type: 8},
+  {bits: 5,  name: 'vd',      attr: ['5'],     type: 2},
+  {bits: 3,                   attr: ['3', 3, '(OPIVI)'], type: 8},
+  {bits: 3,  name: 'nr',      attr: ['3', '1 = 000', '2 = 001', '4 = 011', '8 = 111'], type: 8},
+  {bits: 2,                   attr: ['2', 3],  type: 8},
+  {bits: 5,  name: 'vs2',     attr: ['5'],     type: 4},
+  {bits: 1,  name: 'vm',      attr: ['1', 1],  type: 8},
+  {bits: 6,  name: 'funct6',  attr: ['6', 39], type: 8}
+]}
+....
+
+NOTE: This encoding is **TBC**. The proposal here is to use essentially the same
+      encoding as `vmv<nr>.v`, where the lower 3 bits of the `imm[4:0]` field encode
+      `<nr>`. However, here the the upper 2 bits of the `imm[4:0]` are set to '11'.

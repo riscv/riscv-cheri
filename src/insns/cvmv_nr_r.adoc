@@ -1,0 +1,33 @@
+<<<
+//[#insns-cvm_nr_r,reftext="Whole vector register move (CVMV<NR>R.V)"]
+
+[#CVMV_NR_R_V],reftext="CVMV<NR>R.V"]
+==== CVMV<NR>R.V
+
+Synopsis::
+Whole vector register move capabilities
+
+Mnemonics::
+`cvmv<nr>r.v vd, vs2`
+
+Encoding::
+include::wavedrom/cvmv_nr_r.adoc[]
+
+Description::
+Whole vector register move capabilities
++
+Other than the support for CHERI capabilities, these instructions operate in the same way as the corresponding
+vector whole vector register move, `vmv<nr>r.v`. The tag bits associated with the destination are
+updated by copying the corresponding tag bit associated with the source.
++
+Traps on these instructions will always be reported with a value of `vstart` that is a multiple of `CLEN` / `EEW`,
+and will raise an illegal instruction exception if `vstart` does not meet this condition.
+
+Prerequisites::
+{cheri_base_ext_name}, V, {cheri_vectorcap_ext_name}
+
+Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--

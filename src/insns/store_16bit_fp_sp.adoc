@@ -1,0 +1,37 @@
+<<<
+//[#insns-store-16bit-fp-sp,reftext="Store (C.FSW, C.FSWSP), 16-bit encodings"]
+
+[#C_FSW,reftext="C.FSW"]
+==== C.FSW
+
+See <<C.FSWSP>>.
+
+[#C_FSWSP,reftext="C.FSWSP"]
+==== C.FSWSP
+
+Synopsis::
+Floating point stores (C.FSW, C.FSWSP), 16-bit encodings
+
+Legacy Mode Mnemonics (RV32)::
+`c.fsw rs2', offset(rs1'/sp)`
+
+Legacy Mode Expansions (RV32)::
+`fsw rs2', offset(rs1'/sp)`
+
+Encoding (RV32)::
+include::wavedrom/c-sp-store-css-fp.adoc[]
+include::wavedrom/c-sp-store-css-fp-sprel.adoc[]
+
+Legacy Mode Description::
+Standard floating point store instructions, authorised by the capability in <<ddc>>.
+
+NOTE: these instructions are not available in Capability Mode, as they have been remapped to <<C.CSC>>, <<C.CSCSP>>.
+
+include::store_exceptions.adoc[]
+
+Prerequisites for C.FSW, C.FSWSP::
+{c_cheri_legacy_ext_names}
+
+Operation (after expansion to 32-bit encodings)::
+ See <<FSW>>
+

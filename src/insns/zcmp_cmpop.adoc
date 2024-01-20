@@ -1,0 +1,54 @@
+<<<
+
+[#CM_POP,reftext="CM.POP"]
+==== CM.POP
+
+See <<CM.CPOP>> and cite:[riscv-code-size-spec].
+
+[#CM_CPOP,reftext="CM.CPOP"]
+==== CM.CPOP
+
+Synopsis::
+Destroy stack frame (CM.CPOP, CM.POP): load the return address register and 0 to 12 saved registers from the stack frame, deallocate the stack frame. 16-bit encodings.
+
+Capability Mode Mnemonic::
+`cm.cpop \{creg_list\}, -stack_adj`
+
+Legacy Mode Mnemonics::
+`cm.pop \{reg_list\}, -stack_adj`
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  2, name: 0x2,             attr: ['C2'] },
+    { bits:  2, name: 'spimm\[5:4\]',  attr: [] },
+    { bits:  4, name: 'rlist',         attr: [] },
+    { bits:  5, name: 0x1a,            attr: [] },
+    { bits:  3, name: 0x5,             attr: ['FUNCT3'] },
+],config:{bits:16}}
+....
+
+[NOTE]
+
+_rlist_ values 0 to 3 are reserved for a future EABI variant
+
+Capability Mode Description::
+Load capability registers as specified in _creg_list_. Deallocate stack frame. All accesses are checked against `csp`.
+
+Legacy Mode Description::
+Load integer registers as specified in _reg_list_. Deallocate stack frame. All accesses are checked against <<ddc>>.
+
+include::load_exceptions.adoc[]
+
+Prerequisites for CM.CPOP::
+{c_cheri_base_ext_names}, Zcmp
+
+Prerequisites for CM.POP::
+{c_cheri_legacy_ext_names}, Zcmp
+
+Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--

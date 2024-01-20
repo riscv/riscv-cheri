@@ -1,0 +1,105 @@
+<<<
+
+[#CSW,reftext="CSW"]
+==== CSW
+
+See <<CSD>>
+
+[#CSH,reftext="CSH"]
+==== CSH
+
+See <<CSD>>
+
+[#CSB,reftext="CSB"]
+==== CSB
+
+See <<CSD>>
+
+[#SD,reftext="SD"]
+==== SD
+
+See <<CSD>>
+
+[#SW,reftext="SW"]
+==== SW
+
+See <<CSD>>
+
+[#SH,reftext="SH"]
+==== SH
+
+See <<CSD>>
+
+[#SB,reftext="SB"]
+==== SB
+
+See <<CSD>>
+
+<<<
+
+[#CSD,reftext="CSD"]
+==== CSD
+
+Synopsis::
+Stores (CSD, CSW, CSH, CSB, SD, SW, SH, SB)
+
+Capability Mode Mnemonics (RV64)::
+`csd rs2, offset(cs1)` +
+`csw rs2, offset(cs1)` +
+`csh rs2, offset(cs1)` +
+`csb rs2, offset(cs1)`
+
+Legacy Mode Mnemonics (RV64)::
+`sd rs2, offset(rs1)` +
+`sw rs2, offset(rs1)` +
+`sh rs2, offset(rs1)` +
+`sb rs2, offset(rs1)`
+
+Capability Mode Mnemonics (RV32)::
+`csw rs2, offset(cs1)` +
+`csh rs2, offset(cs1)` +
+`csb rs2, offset(cs1)`
+
+Legacy Mode Mnemonics (RV32)::
+`sw rs2, offset(rs1)` +
+`sh rs2, offset(rs1)` +
+`sb rs2, offset(rs1)`
+
+Encoding::
+include::wavedrom/store.adoc[]
+
+Capability Mode Description::
+Store integer data of the indicated size (byte, halfword, word, double-word) to
+memory. The effective address of the store is obtained by adding the
+sign-extended 12-bit offset to the address of `cs1`. The authorising capability
+for the operation is `cs1`. A copy of `rs2` is written to memory at the
+location indicated by the effective address and the tag bit of each block of
+memory naturally aligned to CLEN/8 is cleared.
+
+Legacy Mode Description::
+Store integer data of the indicated size (byte, halfword, word, double-word) to
+memory. The effective address of the store is obtained by adding the
+sign-extended 12-bit offset to `rs1`. The authorising capability for the
+operation is <<ddc>>. A copy of `rs2` is written to memory at the location
+indicated by the effective address and the tag bit of each block of memory
+naturally aligned to CLEN/8 is cleared.
+
+include::store_exceptions.adoc[]
+
+Prerequisites for CSD::
+RV64, {cheri_base_ext_name}
+
+Prerequisites for CSW, CSH, CSB::
+{cheri_base_ext_name}
+
+Prerequisites for SD::
+RV64, {cheri_legacy_ext_name}
+
+Prerequisites for SW, SH, SB::
+{cheri_legacy_ext_name}
+
+Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--

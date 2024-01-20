@@ -1,0 +1,73 @@
+<<<
+//[#insns-sh123add-32bit,reftext="CSR access (CSH1ADD, CSH2ADD, CSH3ADD, SH1ADD, SH2ADD, SH3ADD), 32-bit encoding"]
+
+[#CSH1ADD,reftext="CSH1ADD"]
+==== CSH1ADD
+See <<SH3ADD>>.
+
+[#CSH2ADD,reftext="CSH2ADD"]
+==== CSH2ADD
+See <<SH3ADD>>.
+
+[#CSH3ADD,reftext="CSH3ADD"]
+==== CSH3ADD
+See <<SH3ADD>>.
+
+[#SH1ADD,reftext="SH1ADD"]
+==== SH1ADD
+See <<SH3ADD>>.
+
+[#SH2ADD,reftext="SH2ADD"]
+==== SH2ADD
+See <<SH3ADD>>.
+
+<<<
+
+[#SH3ADD,reftext="SH3ADD"]
+==== SH3ADD
+
+Synopsis::
+Shift by _n_ and add for address generation
+
+Capability Mode Mnemonics::
+`csh[1|2|3]add cd, rs1, cs2`
+
+Legacy Mode Mnemonics::
+`sh[1|2|3]add rd, rs1, rs2`
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  7, name: 0x33, attr: ['OP'] },
+    { bits:  5, name: 'rd' },
+    { bits:  3, name: 0x2, attr: ['SH1ADD=010', 'CSH1ADD=010', 'SH2ADD=100', 'CSH2ADD=100', 'SH3ADD=110', 'CSH3ADD=110'] },
+    { bits:  5, name: 'rs1' },
+    { bits:  5, name: 'rs2' },
+    { bits:  7, name: 0x10, attr: ['SH[1|2|3]ADD', 'CSH[1|2|3]ADD'] },
+]}
+....
+
+Capability Mode Description::
+Increment the address field of `cs1` by `rs2` shifted left by _n_ bit positions. Clear the tag if the resulting capability is unrepresentable or `cs1` is sealed.
+
+Legacy Mode Description::
+Increment the address field of `rs1` by `rs2` shifted left by _n_ bit positions.
+
+Prerequisites CSH[1|2|3]ADD::
+{cheri_base_ext_name}, Zba
+
+Prerequisites for SH[1|2|3]ADD::
+{cheri_legacy_ext_name}, Zba
+
+Capability Mode Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--
+
+Legacy Mode Operation::
++
+--
+TODO
+--

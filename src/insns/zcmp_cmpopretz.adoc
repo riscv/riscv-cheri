@@ -1,0 +1,77 @@
+<<<
+
+[#CM_POPRETZ,reftext="CM.POPRETZ"]
+==== CM.POPRETZ
+
+See <<CM.CPOPRETZ>> and cite:[riscv-code-size-spec].
+
+[#CM_CPOPRETZ,reftext="CM.CPOPRETZ"]
+==== CM.CPOPRETZ
+
+Synopsis::
+Destroy stack frame (CM.CPOPRETZ, CM.POPRETZ): load the return address register and 0 to 12 saved registers from the stack frame, deallocate the stack frame. Move zero into argument register zero. Return through the return address register. 16-bit encodings.
+
+Capability Mode Mnemonic::
+`cm.cpopretz \{creg_list\}, -stack_adj`
+
+Legacy Mode Mnemonics::
+`cm.popretz \{reg_list\}, -stack_adj`
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg:[
+    { bits:  2, name: 0x2,             attr: ['C2'] },
+    { bits:  2, name: 'spimm\[5:4\]',  attr: [] },
+    { bits:  4, name: 'rlist',         attr: [] },
+    { bits:  5, name: 0x1c,            attr: [] },
+    { bits:  3, name: 0x5,             attr: ['FUNCT3'] },
+],config:{bits:16}}
+....
+
+[NOTE]
+
+_rlist_ values 0 to 3 are reserved for a future EABI variant
+
+Capability Mode Description::
+Load capability registers as specified in _creg_list_. Deallocate stack frame. Move zero into `ca0`. Return by calling <<CJALR>> to `cra`. All data accesses are checked against `csp`. The return destination is checked against `cra`.
+
+Legacy Mode Description::
+Load integer registers as specified in _reg_list_. Deallocate stack frame. Move zero into `a0`. Return by calling <<JALR>> to `ra`. All data accesses are checked against <<ddc>>. The return destination is checked against <<pcc>>.
+
+Permissions::
+Loads are checked as for <<CLC>> for Capability Mode or <<LC>> for Legacy Mode.
++
+The return is checked as for <<CJALR>> for Capability Mode, or <<JALR>> for Legacy Mode.
+
+Exceptions::
+When these instructions cause CHERI exceptions, _CHERI data fault_
+is reported in the TYPE field if a load causes an exception, or
+_CHERI instruction access fault_ if the return causes an exception.
+The following codes may be
+reported in the CAUSE field of <<mtval>> or <<stval>>:
+
+[width="50%",options=header,cols="2,^1",align=center]
+|==============================================================================
+| CAUSE                 |
+| Tag violation         |  ✔
+| Seal violation        |  ✔
+| Permission violation  |  ✔
+| Length violation      |  ✔
+|==============================================================================
+
+:!cap_load:
+
+include::pcrel_debug_warning.adoc[]
+
+Prerequisites for CM.CPOPRETZ::
+{c_cheri_base_ext_names}, Zcmp
+
+Prerequisites for CM.POPRETZ::
+{c_cheri_legacy_ext_names}, Zcmp
+
+Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--

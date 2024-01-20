@@ -1,0 +1,160 @@
+== Extension summary
+
+=== Zbhlrsc
+
+{lr_sc_bh_ext_name} is a separate extension independent of CHERI, but is required for CHERI software.
+
+.{lr_sc_bh_ext_name} instruction extension
+[#Zbh_lr_sc_instruction_extension]
+[width="100%",options=header,cols="2,2,2,10"]
+|==============================================================================
+include::generated/Zbh_lr_sc_insns_table_body.adoc[]
+|==============================================================================
+
+=== Zcheri_purecap
+
+{cheri_base_ext_name} defines the set of instructions used by a purecap core.
+
+Some instructions depend on the presence of other extensions, as listed in xref:Zcheri_purecap_instruction_extension[xrefstyle=short]
+
+.{cheri_base_ext_name} instruction extension - Pure Capability Mode instructions
+[#Zcheri_purecap_instruction_extension]
+[width="100%",options=header,cols="3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4"]
+|==============================================================================
+include::generated/Zcheri_purecap_insns_table_body.adoc[]
+|==============================================================================
+
+=== Zcheri_legacy
+
+{cheri_legacy_ext_name} defines the set of instructions added by the legacy mode, in addition to {cheri_base_ext_name}.
+
+NOTE: {cheri_legacy_ext_name} implies {cheri_base_ext_name}
+
+.{cheri_legacy_ext_name} instruction extension - legacy mode instructions
+[#Zcheri_legacy_instruction_extension]
+[width="100%",options=header,cols="3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4"]
+|==============================================================================
+include::generated/Zcheri_legacy_insns_table_body.adoc[]
+|==============================================================================
+
+=== Zcheri_mode
+
+{cheri_legacy_ext_name} defines the set of instructions added by the mode switching  mode, in addition to {cheri_legacy_ext_name}.
+
+NOTE: {cheri_mode_ext_name} implies {cheri_legacy_ext_name}
+
+.{cheri_mode_ext_name} instruction extension - mode switching instructions
+[#Zcheri_mode_instruction_extension]
+[width="100%",options=header,cols="3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4"]
+|==============================================================================
+include::generated/Zcheri_mode_insns_table_body.adoc[]
+|==============================================================================
+
+[#instruction-modes]
+=== Instruction Modes
+
+The tables summarise which operating modes each instruction may be executed in.
+
+.Instructions valid for execution in capability mode only
+[#cap_mode_insns]
+[width="100%",options=header,cols="3,1,1,1,3"]
+|==============================================================================
+include::generated/cap_mode_insns_table_body.adoc[]
+|==============================================================================
+
+<<<
+
+.Instructions valid for execution in legacy mode only
+[#legacy_mode_insns]
+[width="100%",options=header,cols="3,1,1,1,3"]
+|==============================================================================
+include::generated/legacy_mode_insns_table_body.adoc[]
+|==============================================================================
+
+.Instructions valid for execution in both capability and legacy modes
+[#both_mode_insns]
+[width="100%",options=header,cols="3,1,1,1,3"]
+|==============================================================================
+include::generated/both_mode_insns_table_body.adoc[]
+|==============================================================================
+
+[#clen_csr_summary]
+== Capability Width CSR Summary
+
+.CSRs extended to capability width, accessible through an alias
+[#aliased_CSRs]
+[width="100%",options=header,cols="1,1,1"]
+|==============================================================================
+include::generated/csr_aliases_table_body.adoc[]
+|==============================================================================
+
+.Action taken on writing to extended CSRs.
+[#extended_CSR_writing]
+[width="100%",options=header,cols="1,2,2"]
+|==============================================================================
+include::generated/csr_alias_action_table_body.adoc[]
+|==============================================================================
+
+^*^ The vector range check is to ensure that vectored entry to the handler
+ in within bounds of the capability written to `Xtvecc`. The check on writing
+ must include the lowest (0 offset) and highest possible offset (e.g. 64 * XLENMAX bits where HICAUSE=16).
+
+NOTE: Implementations which allow misa.C to be writable need to legalise *Xepcc*
+ on _reading_ if the misa.C value has changed since the value was written as this
+ can cause the read value of bit [1] to change state.
+
+NOTE: <<CSRRW>> make an XLEN-wide access to the XLEN-wide CSR aliases or a CLEN-wide access to the CLEN-wide aliases for all extended CSRs.
+ {non-csrrw-and} only make XLEN-wide accesses even if the CLEN-wide alias is specified.
+
+.CLEN-wide CSRs storing executable vectors
+[#CSR_exevectors]
+[width="100%",options=header,cols="1,1,1"]
+|==============================================================================
+include::generated/csr_exevectors_table_body.adoc[]
+|==============================================================================
+
+Some CSRs store executable vectors as shown in xref:CSR_exevectors[xrefstyle=short]. These CSRs do not need to store the full width address on RV64.
+If they store fewer address bits then writes are subject to the invalid address
+check in <<section_invalid_addr_conv>>.
+
+.CLEN-wide CSRs which store all CLEN+1 bits
+[#CSR_metadata]
+[width="100%",options=header,cols="1,1"]
+|==============================================================================
+include::generated/csr_metadata_table_body.adoc[]
+|==============================================================================
+
+xref:CSR_metadata[xrefstyle=short] shows which CLEN-wide CSRs store all CLEN+1 bits. No other CLEN-wide CSRs store any reserved bits. All CLEN-wide CSRs store _all_ non-reserved metadata fields.
+
+.All CLEN-wide CSRs
+[#extended_CSRs]
+[width="100%",options=header,cols="2,1,1,1,1,3,2"]
+|==============================================================================
+include::generated/csr_permission_table_body.adoc[]
+|==============================================================================
+
+=== Other tables
+
+.Mnemonics with the same encoding but mapped to different instructions in Legacy and Capability Mode
+[#legacy_mnemonics]
+[width="100%",options=header]
+|==============================================================================
+include::generated/legacy_mnemonic_insns_table_body.adoc[]
+|==============================================================================
+
+.Instruction encodings which vary depending on the current XLEN
+[#xlen_dependent_encodings]
+[width="100%",options=header,cols="1,3"]
+|==============================================================================
+include::generated/xlen_dependent_encoding_insns_table_body.adoc[]
+|==============================================================================
+
+NOTE: <<CMODESWITCH>> and <<CSETMODE>> only exist in capability mode if legacy mode is _also_ present. A purecap core does not implement the mode bit in the capability.
+
+.Illegal instruction detect for CHERI instructions
+[#cheri_illegals]
+[width="100%",options=header,cols="2,2,2,2"]
+|==============================================================================
+include::generated/illegal_insns_table_body.adoc[]
+|==============================================================================
+

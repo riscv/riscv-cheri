@@ -1,0 +1,77 @@
+<<<
+//[#insns-load-16bit-sprel,reftext="Load (C.CLWSP, C.CLDSP, C.LWSP, C.LDSP), 16-bit encodings"]
+
+[#C_CLWSP,reftext="C.CLWSP"]
+==== C.CLWSP
+
+See <<C_LDSP>>.
+
+[#C_CLDSP,reftext="C.CLDSP"]
+==== C.CLDSP
+
+See <<C_LDSP>>.
+
+[#C_LWSP,reftext="C.LWSP"]
+==== C.LWSP
+
+See <<C_LDSP>>.
+
+<<<
+
+[#C_LDSP,reftext="C.LDSP"]
+==== C.LDSP
+
+Synopsis::
+Load (C.CLWSP, C.CLDSP, C.LWSP, C.LDSP), 16-bit encodings
+
+Capability Mode Mnemonics (RV64)::
+`c.cld/c.clw rd, offset(csp)`
+
+Capability Mode Expansions (RV64)::
+`cld/clw rd, offset(csp)`
+
+Legacy Mode Mnemonics (RV64)::
+`c.ld/c.lw rd, offset(sp)`
+
+Legacy Mode Expansions (RV64)::
+`ld/lw rd, offset(sp)`
+
+Capability Mode Mnemonics (RV32)::
+`c.clw rd, offset(csp)`
+
+Capability Mode Expansions (RV32)::
+`clw rd, offset(csp)`
+
+Legacy Mode Mnemonics (RV32)::
+`c.lw rd, offset(sp)`
+
+Legacy Mode Expansions (RV32)::
+`lw rd, offset(sp)`
+
+Encoding::
+include::wavedrom/c-sp-load-store.adoc[]
+
+Capability Mode Description::
+Standard stack pointer relative load instructions, authorised by the capability in `csp`.
+
+Legacy Mode Description::
+Standard stack pointer relative load instructions, authorised by the capability in <<ddc>>.
+
+include::load_exceptions.adoc[]
+
+Prerequisites for C.CLDSP::
+RV64, and {c_cheri_base_ext_names}
+
+Prerequisites for C.CLWSP::
+{c_cheri_base_ext_names}
+
+Prerequisites for C.LDSP::
+RV64, and {c_cheri_legacy_ext_names}
+
+Prerequisites for C.LWSP::
+{c_cheri_legacy_ext_names}
+
+Operation (after expansion to 32-bit encodings)::
+ See <<CLW>>, <<CLD>>, <<LW>>, <<LD>>
+
+

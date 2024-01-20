@@ -1,0 +1,71 @@
+<<<
+//[#insns-store-32bit-fp,reftext="Floating point store (CFSD, CFSW, CFSH, FSD, FSW, FSH), 32-bit encodings"]
+
+[#CFSD,reftext="CFSD"]
+==== CFSD
+See <<FLH>>.
+
+[#CFSW,reftext="CFSW"]
+==== CFSW
+See <<FLH>>.
+
+[#CFSH,reftext="CFSH"]
+==== CFSH
+See <<FSH>>.
+
+[#FSD,reftext="FSD"]
+==== FSD
+See <<FSH>>.
+
+[#FSW,reftext="FSW"]
+==== FSW
+See <<FSH>>.
+
+<<<
+
+[#FSH,reftext="FSH"]
+==== FSH
+
+Synopsis::
+Floating point stores (CFSD, CFSW, CFSH, FSD, FSW, FSH), 32-bit encodings
+
+Capability Mode Mnemonics::
+`cfsd/cfsw/cfsh fs2, offset(cs1)`
+
+Legacy Mode Mnemonics::
+`fsd/fsw/fsh fs2, offset(rs1)`
+
+Encoding::
+include::wavedrom/fpstore.adoc[]
+
+Capability Mode Description::
+Standard floating point store instructions, authorised by the capability in `cs1`.
+
+Legacy Mode Description::
+Standard floating point store instructions, authorised by the capability in <<ddc>>.
+
+include::store_exceptions.adoc[]
+
+Prerequisites for CFSD::
+{cheri_base_ext_name}, and D
+
+Prerequisites for CFSW::
+{cheri_base_ext_name}, and F
+
+Prerequisites for CFSH::
+{cheri_base_ext_name}, and Zfh or Zfhmin
+
+Prerequisites for FSD::
+{cheri_legacy_ext_name}, and D
+
+Prerequisites for FSW::
+{cheri_legacy_ext_name}, and F
+
+Prerequisites for FSH::
+{cheri_legacy_ext_name}, and Zfh or Zfhmin
+
+Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--

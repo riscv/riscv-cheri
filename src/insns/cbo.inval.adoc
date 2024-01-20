@@ -1,0 +1,55 @@
+<<<
+
+[#CBO_INVAL,reftext="CBO.INVAL"]
+==== CBO.INVAL
+
+See <<CBO.INVAL.CAP>>.
+
+[#CBO_INVAL_CAP,reftext="CBO.INVAL.CAP"]
+==== CBO.INVAL.CAP
+
+Synopsis::
+Perform an invalidate operation on a cache block
+
+Capability Mode Mnemonic::
+`cbo.inval.cap 0(cs1)`
+
+Legacy Mode Mnemonic::
+`cbo.inval 0(rs1)`
+
+Encoding::
+[wavedrom, , svg]
+....
+{reg: [
+  {bits: 7,  name: 'opcode',    attr: ['7','MISC-MEM=0001111'],  type: 8},
+  {bits: 5,  name: 'funct5',    attr: ['5','CBO=0000'],     type: 2},
+  {bits: 3,  name: 'funct3',    attr: ['3','CBO=010'],  type: 8},
+  {bits: 5,  name: 'cs1/rs1',   attr: ['5','base'],     type: 4},
+  {bits: 12, name: 'funct12',   attr: ['12','cap: CBO.INVAL.CAP=00.0000', 'leg: CBO.INVAL=00.0000'],   type: 3},
+]}
+....
+
+Capability Mode Description::
+A CBO.INVAL.CAP instruction performs an invalidate operation on the cache block
+whose effective address is the base address specified in `cs1`. The authorising
+capability for this operation is `cs1`.
+
+Legacy Mode description::
+A CBO.INVAL instruction performs an invalidate operation on the cache block
+whose effective address is the base address specified in `rs1`. The
+authorising capability for this operation in <<ddc>>.
+
+:cbo_inval:
+include::cbo_exceptions.adoc[]
+
+Prerequisites for CBO.INVAL.CAP::
+Zicbom, {cheri_base_ext_name}
+
+Prerequisites for CBO.INVAL::
+Zicbom, {cheri_legacy_ext_name}
+
+Operation::
+[source,SAIL,subs="verbatim,quotes"]
+--
+TBD
+--
