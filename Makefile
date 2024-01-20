@@ -20,8 +20,10 @@ riscvintl/riscv-docs-base-container-image:latest
 
 HEADER_SOURCE := header.adoc
 PDF_RESULT := spec-sample.pdf
+HTML_RESULT := spec-sample.html
 
 ASCIIDOCTOR_PDF := asciidoctor-pdf
+ASCIIDOCTOR_HTML := asciidoctor
 OPTIONS := --trace \
            -a compress \
            -a mathematical-format=svg \
@@ -52,14 +54,16 @@ build:
 build-container:
 	@echo "Starting build inside Docker container..."
 	$(DOCKER_RUN) /bin/sh -c "$(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)"
+	$(DOCKER_RUN) /bin/sh -c "$(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) --out-file=$(HTML_RESULT) $(HEADER_SOURCE)"
 	@echo "Build completed successfully inside Docker container."
 
 build-no-container:
 	@echo "Starting build..."
 	$(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)
+	$(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) --out-file=$(HTML_RESULT) $(HEADER_SOURCE)
 	@echo "Build completed successfully."
 
 clean:
 	@echo "Cleaning up generated files..."
-	rm -f $(PDF_RESULT)
+	rm -f $(PDF_RESULT) $(HTML_RESULT)
 	@echo "Cleanup completed."
