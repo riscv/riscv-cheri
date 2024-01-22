@@ -1067,6 +1067,13 @@ NOTE: <<CBO.ZERO.CAP>>, <<CBO.ZERO>> issues as a cache line wide store
 
 NOTE: ^1^Other CBOs (<<CBO.FLUSH.CAP>>, <<CBO.FLUSH>>, <<CBO.CLEAN.CAP>>, <<CBO.CLEAN>>, <<CBO.INVAL.CAP>>, <<CBO.INVAL>>) require at least one byte of the access to be in `auth_cap` bounds
 
+[#CHERI_SPEC,reftext="CHERI Exceptions and speculative execution"]
+=== CHERI Exceptions and speculative execution
+
+CHERI adds architectural guarantees that can prove to be microarchitecturally useful.
+Speculative-execution attacks can -- among other factors -- rely on instructions that fail CHERI permission checks not to take effect.
+When implementing any of the extension proposed here, microarchitects need to carefully consider the interaction of late-exception raising and side-channel attacks.
+
 === Physical Memory Attributes (PMA)
 
 Typically, the entire memory space need not support tagged data. Therefore, it
