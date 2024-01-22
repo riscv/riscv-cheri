@@ -38,8 +38,8 @@ likely to be accessed by an instruction fetch in the near future. The encoding
 is only valid if imm[4:0]=0. The authorising capability for this operation is
 `cs1`. This instruction does not throw any exceptions. However, following
 <<CHERI_SPEC>>, this instruction does not perform a prefetch if it is
-not authorized by `cs1`. This instruction does not issue a prefetch if one or
-more of the following conditions of `cs1` are met:
+not authorized by `cs1`. This instruction does not perform a memory access
+if one or more of the following conditions of `cs1` are met:
 * The tag is not set
 * The sealed bit is set
 * No bytes of the cache line requested is in bounds
