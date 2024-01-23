@@ -349,6 +349,12 @@ Decoding the bounds:
 top:    t = { a[XLENMAX - 1:E + MW] + ct, T[MW - 1:0]    , {E{1'b0}} }
 base:   b = { a[XLENMAX - 1:E + MW] + cb, B[MW - 1:0]    , {E{1'b0}} }
 ```
+NOTE: The representable range
+ is defined by the space beneath the bottom address bit (`a[E + MW]`)
+ in the expression above. If the capability address changes causing that address bit
+ to change, then the representable range is violated and so the tag will be cleared
+ by an instruction such as <<CINCOFFSET>>. This is represented by a range
+ of `s=2^E+MW^` in xref:cap_bounds_map[xrefstyle=short].
 
 The corrections c~t~ and c~b~ are calculated as as shown below using the
 definitions in xref:cap_encoding_ct[xrefstyle=short] and
