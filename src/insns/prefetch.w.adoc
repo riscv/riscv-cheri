@@ -36,7 +36,14 @@ effective address is the sum of the base address specified in `cs1` and the
 sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
 likely to be accessed by a data write (i.e. store) in the near future. The
 encoding is only valid if imm[4:0]=0. The authorising capability for this
-operation is `cs1`.
+operation is `cs1`. This instruction does not throw any exceptions. However,
+following <<CHERI_SPEC>>, this instruction does not perform a prefetch if it
+is not authorized by `cs1`. This instruction does not perform a memory access
+if one or more of the following conditions of `cs1` are met:
+* The tag is not set
+* The sealed bit is set
+* No bytes of the cache line requested is in bounds
+* The <<w_perm>> is not set
 
 Legacy Mode Description::
 A PREFETCH.W instruction indicates to hardware that the cache block whose
@@ -47,10 +54,10 @@ encoding is only valid if imm[4:0]=0. The authorising capability for this
 operation is <<ddc>>.
 
 Prerequisites for PREFETCH.W.CAP::
-{cheri_base_ext_name}
+Zicbop, {cheri_base_ext_name}
 
 Prerequisites for PREFETCH.W::
-{cheri_legacy_ext_name}
+Zicbop, {cheri_legacy_ext_name}
 
 Operation::
 [source,sail]
