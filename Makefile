@@ -18,9 +18,11 @@ REVMARK ?= Draft
 DOCKER_RUN := docker run --rm -v ${PWD}:/build -w /build \
 riscvintl/riscv-docs-base-container-image:latest
 
-HEADER_SOURCE := header.adoc
-PDF_RESULT := spec-sample.pdf
-HTML_RESULT := spec-sample.html
+SRC_DIR := src
+BUILD_DIR := build
+HEADER_SOURCE := $(SRC_DIR)/header.adoc
+PDF_RESULT := $(BUILD_DIR)/spec-sample.pdf
+HTML_RESULT := $(BUILD_DIR)/spec-sample.html
 
 ASCIIDOCTOR_PDF := asciidoctor-pdf
 ASCIIDOCTOR_HTML := asciidoctor
@@ -65,5 +67,5 @@ build-no-container:
 
 clean:
 	@echo "Cleaning up generated files..."
-	rm -f $(PDF_RESULT) $(HTML_RESULT)
+	rm -rf $(BUILD_DIR)
 	@echo "Cleanup completed."
