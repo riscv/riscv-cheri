@@ -43,8 +43,9 @@ CSVS	    = $(wildcard $(CSV_DIR)/*.csv)
 GEN_DIR     = $(SRC_DIR)/generated
 SCRIPTS_DIR = $(SRC_DIR)/scripts
 
-# Output file
+# Output files
 PDF_RESULT    := $(BUILD_DIR)/riscv-cheri.pdf
+HTML_RESULT   := $(BUILD_DIR)/riscv-cheri.html
 
 # Top asciidoc file of the document
 HEADER_SOURCE := $(SRC_DIR)/riscv-cheri.adoc
@@ -79,11 +80,9 @@ GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
           $(GEN_DIR)/Zcheri_mode_insns_table_body.adoc             \
           $(GEN_DIR)/Zcheri_purecap_insns_table_body.adoc
 
-# Docker command
-DOCKER = docker run --rm -v $(PWD):/build -w /build $(DOCKER_IMAGE)
-
 # AsciiDoctor command
-ASCIIDOC_PDF      = asciidoctor-pdf
+ASCIIDOC          = asciidoctor-pdf
+
 ASCIIDOC_OPTIONS  = --trace                                          \
                     -a compress                                      \
                     -a mathematical-format=svg                       \
@@ -102,8 +101,39 @@ ASCIIDOC_REQUIRES = --require=asciidoctor-bibtex       \
                     --require=asciidoctor-diagram      \
                     --require=asciidoctor-mathematical
 
+# File extension to backend map.
+ASCIIDOC_BACKEND_.html = html5
+ASCIIDOC_BACKEND_.pdf  = pdf
+
+# Command to run Asciidoc to build a PDF or HTML document, depending on
+# the output file ($@).
+ASCIIDOC_BUILD_COMMAND = $(ASCIIDOC) \
+                         $(ASCIIDOC_OPTIONS) \
+                         $(ASCIIDOC_REQUIRES) \
+                         $(HEADER_SOURCE) \
+                         --backend=$(ASCIIDOC_BACKEND_$(suffix $@)) \
+                         --out-file=$@
+
+DOCKER_PATH  := $(shell command -v docker)
+STDIN_IS_TTY := $(shell test -t 0 && echo yes)
+
+ifdef DOCKER_PATH
+    DOCKER_RUN_ARGS = --rm -v $(PWD):/build -w /build $(DOCKER_IMAGE) /bin/sh -c "$(ASCIIDOC_BUILD_COMMAND)"
+    # `-it` is necessary so that ctrl-c works when running locally, however it
+    # does not work in CI ("the input device is not a TTY") so we test for that too.
+    ifdef STDIN_IS_TTY
+        BUILD_COMMAND = docker run -it $(DOCKER_RUN_ARGS)
+    else
+        BUILD_COMMAND = docker run $(DOCKER_RUN_ARGS)
+    endif
+else
+    BUILD_COMMAND = $(ASCIIDOC_BUILD_COMMAND)
+endif
+
 # Convenience targets
-all: $(PDF_RESULT)
+pdf: $(PDF_RESULT)
+html: $(HTML_RESULT)
+all: pdf html
 generate: $(GEN_SRC)
 download: $(CSVS)
 
@@ -113,24 +143,11 @@ $(BUILD_DIR):
 
 %.pdf: $(SRCS) $(IMGS) $(GEN_SRC) | $(BUILD_DIR)
 	@echo "  DOC $@"
-	@echo "Checking if Docker is available..."
-	@if command -v docker >/dev/null 2>&1 ; then \
-		echo "Docker is available, building inside Docker container..."; \
-		$(MAKE) build-container; \
-	else \
-		echo "Docker is not available, building without Docker..."; \
-		$(MAKE) build-no-container; \
-	fi
+	$(BUILD_COMMAND)
 
-build-container:
-	@echo "Starting build inside Docker container..."
-	$(DOCKER) /bin/sh -c "$(ASCIIDOC_PDF) $(ASCIIDOC_OPTIONS) $(ASCIIDOC_REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)"
-	@echo "Build completed successfully inside Docker container."
-
-build-no-container:
-	@echo "Starting build..."
-	$(ASCIIDOC_PDF) $(ASCIIDOR_OPTIONS) $(ASCIIDOC_REQUIRES) --out-file=$(PDF_RESULT) $(HEADER_SOURCE)
-	@echo "Build completed successfully."
+%.html: $(SRCS) $(IMGS) $(GEN_SRC) | $(BUILD_DIR)
+	@echo "  DOC $@"
+	$(BUILD_COMMAND)
 
 # Rule to generate all the src/generated/*.adoc from the downloaded CSVs using a Python script.
 $(GEN_SRC) &: $(CSVS) $(GEN_SCRIPT)
@@ -147,6 +164,6 @@ $(CSVS) &:
 # Clean
 clean:
 	@echo "  CLEAN"
-	@$(RM) -r $(PDF_RESULT) $(GEN_SRC)
+	@$(RM) -r $(PDF_RESULT) $(HTML_RESULT) $(GEN_SRC)
 
 .PHONY: all generate download clean
