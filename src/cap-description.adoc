@@ -349,13 +349,6 @@ Decoding the bounds:
 top:    t = { a[XLENMAX - 1:E + MW] + ct, T[MW - 1:0]    , {E{1'b0}} }
 base:   b = { a[XLENMAX - 1:E + MW] + cb, B[MW - 1:0]    , {E{1'b0}} }
 ```
-NOTE: The representable range
- is defined by the space beneath the bottom address bit (`a[E + MW]`)
- in the expression above. If the capability address changes causing that address bit
- to change, then the representable range is violated and so the tag will be cleared
- by an instruction such as <<CINCOFFSET>>. This is represented by a range
- of `s=2^E+MW^` in xref:cap_bounds_map[xrefstyle=short].
-
 The corrections c~t~ and c~b~ are calculated as as shown below using the
 definitions in xref:cap_encoding_ct[xrefstyle=short] and
 xref:cap_encoding_cb[xrefstyle=short].
@@ -423,7 +416,7 @@ A capability whose bounds cover the entire address space has 0 base and top
 equals 2^XLENMAX^, i.e. _t_ is a XLENMAX + 1 bit value. However, _b_ is a
 XLENMAX bit value and the size mismatch introduces additional complications
 when decoding, so the following condition is required to correct _t_ for
-capabilities whose representable region wraps the edge of the address
+capabilities whose <<section_cap_representable_check>> wraps the edge of the address
 space:
 
 ```
@@ -484,28 +477,60 @@ or 'root' capability.
 | Address | zeros | Capability address
 |==============================================================================
 
-[#section_cap_representable_check]
-=== Representable Limit Check
+[#section_cap_representable_check, reftext="Representable Range"]
+=== Representable Range Check
 
-Pointer arithmetic on capabilities must be checked to ensure that the new
-address is within the capability's representable region described in
-xref:section_cap_encoding[xrefstyle=short]. The new address, after pointer
-arithmetic, is within the representable region if decompressing the
-capability's bounds with the original and new addresses yields the same base
-and top addresses. In other words, given a capability with address _a_ and the
+The new address, after updating the address of a capability, is within the
+_representable range_ if decompressing the capability's bounds with the
+original and new addresses yields the same base and top addresses.
+
+In other words, given a capability with address _a_ and the
 new address `a' = a + x`, the bounds _b_ and _t_ are decoded using _a_ and the
 new bounds _b'_ and _t'_ are decoded using _a'_. The new address is within the
-capability's representable region if `b == b' && t == t'`.
+capability's _representable range_ if `b == b' && t == t'`.
 
-Changing a capability's address to a value outside the representable region
-unconditionally clears the capability's tag.
+Changing a capability's address to a value outside the _representable range_
+unconditionally clears the capability's tag. Examples are:
 
-NOTE: The encoding of the bounds depends upon the leading 1 of the address
-which is used to determine the exponent. If the leading 1 of the address moves
-then the bounds will need to be recalculated. Instructions like <<CINCOFFSET>>
-and <<CSETADDR>> update the address field but do not recalculate the bounds.
-Therefore, if the leading 1 moves relative to when the bounds were calculated
-then the tag is cleared on the result as the encoding has been invalidated.
+* Instructions such as <<CINCOFFSET>> which include pointer arithmetic.
+* The <<CSETADDR>> instruction which updates the capability address field.
+
+==== Practical Information
+
+In the bounds encoding in this specification, the top and bottom capability
+bounds are formed of two or three sections:
+
+* Upper bits from the address
+* Middle bits from T and B decoded from the metadata
+* Lower bits are set to zero
+** This is only if there is an embedded exponent (EF=0)
+
+.Composition of address bounds
+[#comp_addr_bounds,options=header,align="center"]
+|==============================================================================
+| Configuration  | Upper section | Middle Section | Lower section
+| EF=0, E varies | address[XLENMAX-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
+| EF=1, i.e. E=0 | address[XLENMAX:MW] + ct     2+| T[MW - 1:0]
+|==============================================================================
+
+The _representable range_ defines the range of addresses which do not corrupt
+the bounds encoding. The encoding was first introduced in
+xref:section_cap_encoding[xrefstyle=short], and is repeated in a different
+form in xref:comp_addr_bounds[xrefstyle=short] to aid this description.
+
+For the address to be valid for the current bounds encoding, the address
+bits in the _Upper Section_ of xref:comp_addr_bounds[xrefstyle=short] _must
+not change_ as this will change the meaning of the bounds.
+
+This gives a range of `s=2^E+MW^`, which as shown in
+xref:cap_bounds_map[xrefstyle=short].
+
+The gap between the bounds of the representable range is always guaranteed
+to be at least 1/8 of `s`. This is represented by `R = Bc - 1` in
+xref:section_cap_encoding[xrefstyle=short].
+This gives useful guarantees, such that if an executed instruction is in
+<<pcc>> bounds, then it is also guaranteed that the next linear instruction
+is _representable_.
 
 [#section_cap_malformed]
 === Malformed Capability Bounds
