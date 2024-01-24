@@ -32,11 +32,12 @@ where address 2^XLENMAX^ - 1 is within the bounds.
 === Programmer's Model for Zcheri_purecap
 
 For {cheri_base_ext_name}, the 32 unprivileged *x* registers of the base
-integer ISA are extended so that they are able to hold a capability. Therefore,
-each *x* register is CLEN bits wide and has an out of band tag bit. The *x*
-notation refers to the address field of the capability in an unprivileged
-register while the *c* notation is used to refer to the full capability (i.e.
-address, metadata and tag) held in the same unprivileged register.
+integer ISA are extended so that they are able to hold a capability as well
+as renamed to *c* registers. Therefore, each *c* register is CLEN bits wide
+and has an out of band tag bit. The *x* notation refers to the address field
+of the capability in an unprivileged register while the *c* notation is used
+to refer to the full capability (i.e. address, metadata and tag) held in the
+same unprivileged register.
 
 Register *c0* is hardwired with all bits, including the capability metadata and
 tag, equal to 0. In other words, *c0* is hardwired to the <<null-cap>>
@@ -117,7 +118,7 @@ output tag is always 0
 * <<CANDPERM>>: bitwise AND of a mask value with a bit map representation of the
 architectural (AP) and software-defined (SDP) permissions fields
 * <<CSETBOUNDS>>: set the base and length of a capability. The tag is
-cleared, if the encoding cannot represents the bounds exactly
+cleared, if the encoding cannot represent the bounds exactly
 * <<CSETBOUNDSINEXACT>>: set the base and length of a capability. The base will be
 rounded down and/or the length will be rounded up if the encoding cannot represent
 the bounds exactly
@@ -177,7 +178,7 @@ The indirect jump and link <<pcc>> (<<JALR_PCC>>) instruction allows uncondition
 jumps to a target address. The target address is provided in an *x* register;
 the new address is installed in the address field of the <<pcc>>. The address of
 the instruction following the jump (*pc* + 4) is written to an *x* register.
-<<JALR_PCC>> causes an exceptions when a minimum sized instruction at the
+<<JALR_PCC>> causes an exception when a minimum sized instruction at the
 target address is not within the bounds of the <<pcc>> or the target address is
 misaligned.
 
@@ -1057,7 +1058,7 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 | all stores, all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   |`auth_cap` seal       | isCapSealed(`auth_cap`)
 |             all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | AMO only: not(`auth_cap`.<<r_perm>>)
 | all stores, all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(auto_cap.<<w_perm>>)
-| all stores, all atomics           | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of access^!^ out of `auth_cap` bounds
+| all stores, all atomics           | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of access^1^ out of `auth_cap` bounds
 | capability stores, all atomics    |6                     | N/A                     | N/A                        |Misaligned store/AMO| Misaligned capability store or AMO
 |=========================================================================================
 
@@ -1119,7 +1120,7 @@ invalid addresses. Prior to writing these CSRs, implementations may convert an
 invalid address into some other invalid address that the register is capable of
 holding. However, these registers hold capabilities in {cheri_base_ext_name}
 and the bounds encoding depends on the address value, so implementations must
-not convert invalid addresses to other arbitrary invalid address in an
+not convert invalid addresses to other arbitrary invalid addresses in an
 unrestricted manner.
 The following procedure must be used instead when writing a capability A to
 these CSRs:
