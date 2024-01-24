@@ -43,16 +43,16 @@ Encoding::
     { bits:  5, name: 'rd' },
     { bits:  3, name: 0x2, attr: ['SH1ADD=010', 'CSH1ADD=010', 'SH2ADD=100', 'CSH2ADD=100', 'SH3ADD=110', 'CSH3ADD=110'] },
     { bits:  5, name: 'rs1' },
-    { bits:  5, name: 'rs2' },
+    { bits:  5, name: 'cs2/rs2' },
     { bits:  7, name: 0x10, attr: ['SH[1|2|3]ADD', 'CSH[1|2|3]ADD'] },
 ]}
 ....
 
 Capability Mode Description::
-Increment the address field of `cs1` by `rs2` shifted left by _n_ bit positions. Clear the tag if the resulting capability is unrepresentable or `cs1` is sealed.
+Increment the address field of `cs2` by `rs1` shifted left by _n_ bit positions. Clear the tag if the resulting capability is unrepresentable or `cs2` is sealed.
 
 Legacy Mode Description::
-Increment the address field of `rs1` by `rs2` shifted left by _n_ bit positions.
+Increment the address field of `rs2` by `rs1` shifted left by _n_ bit positions.
 
 Prerequisites CSH[1|2|3]ADD::
 {cheri_base_ext_name}, Zba
