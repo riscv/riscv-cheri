@@ -99,6 +99,8 @@ include::generated/csr_alias_action_table_body.adoc[]
  in within bounds of the capability written to `Xtvecc`. The check on writing
  must include the lowest (0 offset) and highest possible offset (e.g. 64 * XLENMAX bits where HICAUSE=16).
 
+NOTE: _XLEN writing_ is only available if {cheri_mode_ext_name} is implemented.
+
 NOTE: Implementations which allow misa.C to be writable need to legalise *Xepcc*
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.

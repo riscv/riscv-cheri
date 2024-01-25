@@ -24,8 +24,8 @@ data they protect.
 
 The memory address space is circular, so the byte at address
 2^XLEN^ - 1 is adjacent to the byte at address zero. A capability's
-representable region described in xref:section_cap_encoding[xrefstyle=short] is
-also circular, so address 0 is within the representable region of a capability
+<<section_cap_representable_check>> described in xref:section_cap_encoding[xrefstyle=short] is
+also circular, so address 0 is within the <<section_cap_representable_check>> of a capability
 where address 2^XLENMAX^ - 1 is within the bounds.
 
 [#section_riscv_programmers_model]
@@ -208,7 +208,7 @@ build <<pcc>>-relative capabilities. <<AUIPCC>> forms a 32-bit offset from the 2
 immediate and filling the lowest 12 bits with zeros. The <<pcc>> address is then
 incremented by the offset and a representability check is performed so the
 capability's tag is cleared if the new address is outside the <<pcc>>'s
-representable region. The resulting CLEN value along with the new tag are
+<<section_cap_representable_check>>. The resulting CLEN value along with the new tag are
 written to a *c* register.
 
 ==== Control Transfer Instructions
@@ -299,7 +299,7 @@ xref:csr-numbers-section[xrefstyle=short].
 
 Reading or writing any part of a CLEN-bit CSR may cause
 side-effects. For example, the CSR's tag bit may be cleared if a new address
-is outside the representable region of a CSR capability being written.
+is outside the <<section_cap_representable_check>> of a CSR capability being written.
 
 This section describes how the CSR instructions operate on these CSRs in
 {cheri_base_ext_name}.
@@ -565,7 +565,7 @@ Capabilities written to <<mepcc>> must be legalised by implicitly zeroing bit
 either 16 or 32, then whenever IALIGN=32, the capability read from <<mepcc>>
 must be legalised by implicitly zeroing bit **mepcc[1]**. Therefore, the
 capability read or written has its tag bit cleared if the legalised address is
-not within the representable region.
+not within the <<section_cap_representable_check>>.
 
 NOTE: When reading or writing a sealed capability in <<mepcc>>, the
 tag is not cleared if the original address equals the legalized
@@ -1013,6 +1013,8 @@ Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
 
 The <<pcc>> is made visible in a CSR. This provides access to an
 <<infinite-cap>> capability while in debug mode without executing <<AUIPCC>>.
+
+<<pcc>> resets to the <<infinite-cap>> capability with the address field set to the core boot address.
 
 NOTE: It is common for implementations to not allow executing *pc* relative
 instructions, such as <<AUIPC>> or <<JAL>>, in debug mode.
