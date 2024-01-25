@@ -7,16 +7,70 @@ space. There are two primary ISA variants, RV32I and RV64I, which provide
 32-bit and 64-bit address spaces respectively. The term XLEN refers to the
 width of an integer register in bits (either 32 or 64). The value of XLEN may
 change dynamically at run-time depending on the values written to CSRs, so we
-define XLENMAX to be widest XLEN that the implementation supports.
+define *XLENMAX* to be widest XLEN that the implementation supports.
 
+{cheri_base_ext_name} defines capabilities which act on virtual addresses of
+size XLENMAX, which will also be called *CXLEN* to indicate its link to
+capabilities.  {cheri_base_ext_name} capabilities occupy space in memory and
+registers equal to 2 * CXLEN bits, henceforth *CLEN*, and may be stored in
+memory only at addresses aligned to CLEN bits.  Provenance and integrity are
+provided by means of *tagged memory*: for every aligned CLEN-bit region of a
+register or memory that is permitted to hold a capability, there is a single
+extra bit, called the *tag*, which is 1 if the location currently holds a
+capability and 0 if it holds non-capability data.
 
-{cheri_base_ext_name} defines capabilities of size CLEN corresponding to 2 *
-XLENMAX without including the tag bit. The value of CLEN is always calculated
-based on XLENMAX regardless of the effective XLEN value.
+It is expected that "normal" memory will be able to hold capabilites, however
+memory that cannot hold capabilities may exist.  The details of this are
+determined by the environment.
+
+A tag, together with a capability or CLEN bits of non-capability data, is
+called a *capability value*.  A capability value with a tag of 1 will be
+considered interchangeable with the capability it holds; a capability value
+with a tag of 0 is an *untagged value*.  Capability values occupy CLEN+1 bits
+of physical storage in memory or registers.  {cheri_base_ext_name} redefines
+all integer registers, and a subset of CSRs if they are implemented, to hold a
+single capability value.
+
+There are two basic types of capability.  An *unsealed capability* represents
+the authority to perform a set of operations on a set of bytes in memory and
+can be used freely if it is accessible, although it may have other meanings.  A
+*sealed capability* is created from an underlying source of authority but
+cannot be modified and can only be used in specific ways checked by the
+execution environment.
 
 === Components of a Capability
 
-Capabilities contain the software accessible fields described in this section.
+Two views are provided to software of a capability value.
+
+A capability value can be viewed physically, resulting in a 1-bit tag, a
+CXLEN-bit *metadata*, and a CXLEN-bit *address*.  A capability value can be
+deconstructed physically, using the CGETTAG instruction to extract the tag and
+CGETHIGH to extract the metadata; integer instructions automatically extract
+the address from a capability value used as a source.  If the tag is zero, the
+metadata and address are two independent CXLEN-bit values.  In a little endian
+environment, a capability value in memory stores its address at the
+lower-addressed location and its metadata at the higher.  An untagged value can
+be constructed in any context using the CSETHIGH instruction.
+
+A capability value with a tag of 1 is a *tagged capability*, or just a
+*capability*.  Capabilities cannot be constructed arbitrarily.  Capabilities
+are partially ordered by strength, and a capability can be constructed from a
+stronger capabilty using the CBUILDCAP instruction.  A special capability
+called Infinity is provided at reset; a capability can be constructed, by any
+means, if and only if it is weaker than Infinity.
+
+Capabilities which are undefined and nonconstructable in {cheri_base_ext_name}
+may be given meaning and made constructable by later extensions.
+
+A capability value may also be viewed in terms of the access it provides.  In
+this view, a capability value has a *tag*, an *address*, a *base*, a *length*,
+*permissions*, and a *sealed state*; the CGETBASE, CGETLEN, and CGETPERM
+instructions can be used to view a capability value's base, length, and
+permissions, respectively.  A capability value with a tag of 0 is not a
+capability and does not provide access, but the accessors are still defined and
+have deterministic behavior.  The base and length are collectively known as the
+*bounds*; not all combinations of bounds and address are representable by a
+capability value.
 
 [#section_tag]
 ==== Tag
@@ -36,6 +90,56 @@ their tags are 0.
 All locations in registers or memory able to hold a capability are CLEN+1 bits
 wide including the tag bit. Those locations are referred as being _CLEN-bit_ or
 _capability_ wide in this specification.
+
+==== Bounds
+
+A capability represents an interval portion of the address space.  This is
+expressed using a *base*, which is an unsigned integer less than 2^CXLEN^, and
+a *length*, which is an unsigned integer less than or equal to 2^CXLEN^.  The
+sum of the base and the length is also called the *top*, and will be no more
+than 2^XLEN^ for a well-formed capability.  A capability with base *B* and
+length *L* authorizes access to all bytes of the address space whose address
+*A* satisfies *B* <= *A* < *B* + *L*, as further defined by the sealing and
+architectural permission fields.  In other words, a capability represents a
+half-open interval.
+
+Capability operations always treat addresses as unsigned.  A capability's valid
+region can span the gap between 2^CXLEN-1^-1 and 2^CXLEN-1^, but cannot wrap
+around from 2^CXLEN^-1 to 0.
+
+Subset and equality operations treat capability bounds as intervals, not as
+sets.  Two capabilities with length 0 and different bases are not equal and not
+subsets of each other.  A capability of length 0 can be constructed only inside
+an existing capability for an interval which surrounds the base.
+
+The bounds and address of a capability are subject to alignment and
+representability constraints.  Informally, a large capability must have a
+highly aligned base and length, and a capability's address cannot wander too
+far outside its bounds.  The precise conditions depend on the length.  For each
+length, there is a bounds alignment and a representability block (R); these
+obey a simple formula except for the smallest.
+
+.Bounds alignment and representability block by XLEN and length
+[#bounds_align,options=header,align="center",width="55%"]
+|==============================================================================
+^| CXLEN ^| Length           ^| Bounds alignment (Q) ^| Representability block (R)
+
+^| 32    ^| 0 to 511         ^| 1      ^| 128
+^| 32    ^| 512 to 1023      ^| 8      ^| 256
+^| 32    ^| 1024 to 2047     ^| 16     ^| 512
+^| 32    ^| 2^N^ to 2^N+1^-1 ^| 2^N-6^ ^| 2^N-1^
+^| 64    ^| 0 to 4095        ^| 1      ^| 2048
+^| 64    ^| 4096 to 8191     ^| 8      ^| 2048
+^| 64    ^| 8192 to 16383    ^| 16     ^| 4096
+^| 64    ^| 2^N^ to 2^N+1^-1 ^| 2^N-9^ ^| 2^N-1^
+|==============================================================================
+
+A capability can have a base of B and a length of L only if B and L are
+divisible by the corresponding Q.  A capability with a base of B and a length
+of L can have an address of A only if (A/R - B/R) mod (2^CXLEN^/R) is in the
+range -1 to 6.  The set of addresses a capability can have is called the
+capability's *representable region*; it is not necessarily a numeric interval
+and can wrap around address 0.
 
 [#section_cap_perms]
 ==== Architectural Permissions (AP)
@@ -192,7 +296,7 @@ also seals the return address capability (if any) since it is the entry point
 to the caller function.
 
 [#section_cap_bounds]
-==== Bounds
+==== Bounds (details of binary encoding)
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The bounds mantissa width is different in XLENMAX=32.
