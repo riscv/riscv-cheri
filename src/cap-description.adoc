@@ -21,17 +21,16 @@ Capabilities contain the software accessible fields described in this section.
 [#section_tag]
 ==== Tag
 
-An additional hardware managed bit added to addressable memory and registers.
-It is stored separately and may be referred to as "out of band". It indicates
-whether a register or CLEN-aligned memory location contains a valid capability.
-If the tag is set, the capability is valid and can be dereferenced (contingent
-on checks such as permissions or bounds).
+The tag is an additional hardware managed bit added to addressable memory and
+registers. It is stored separately and may be referred to as "out of band". It
+indicates whether a register or CLEN-aligned memory location contains a valid
+capability. If the tag is set, the capability is valid and can be dereferenced
+(contingent on checks such as permissions or bounds).
 
 The capability is invalid if the tag is clear. Using an invalid capability to
 dereference memory or authorize any operation gives rise to exceptions. All
 capabilities derived from invalid capabilities are themselves invalid i.e.
 their tags are 0.
-
 
 All locations in registers or memory able to hold a capability are CLEN+1 bits
 wide including the tag bit. Those locations are referred as being _CLEN-bit_ or
