@@ -86,7 +86,7 @@ tag is set and 0 otherwise
 permission fields of the input capability
 * <<CGETBASE>>: outputs the expanded base address of the input capability
 * <<CGETLEN>>: outputs the length of the input capability. Length is defined as
-`top - base`. The output is 2^XLEN^-1 when the capability's length is
+`top - base`. The output is 2^XLENMAX^-1 when the capability's length is
 2^XLENMAX^
 * <<CRAM>>: outputs the nearest bounds alignment that a valid capability can
 represent
@@ -243,9 +243,10 @@ The capability jump and link register (<<CJALR>>) instruction replaces the jump
 and link register (<<JALR>>) instruction at the same encoding. This instruction
 allows unconditional jumps to a target capability. The target capability is
 obtained by incrementing the capability in the *c* register operand by the
-sign-extended 12-bit immediate, then setting the least significant bit of the
-result to zero. The capability with the address of the instruction following
-the jump (<<pcc>> + 4) is written to a *c* register.
+sign-extended 12-bit immediate if the immediate is not zero, then setting the
+least significant bit of the result to zero, then unsealing. The capability
+with the address of the instruction following the jump (<<pcc>> + 4) is sealed
+and written to a *c* register.
 
 All jumps cause CHERI exceptions when a minimum sized instruction
 at the target address is not within the bounds of the <<pcc>>.
@@ -253,6 +254,7 @@ at the target address is not within the bounds of the <<pcc>>.
 <<CJALR>> causes a CHERI exception when:
 
 * The target capability's tag is zero
+* The target capability is sealed and the immediate is not zero
 * A minimum sized instruction at the target capability's address is not
 within bounds
 * The target capability does not grant execute permission
@@ -1020,7 +1022,7 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 === Unprivileged CSRs
 
 Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
-<<pcc>> to grant <<asr_perm>> to access privileged CSRs.
+<<pcc>> to grant <<asr_perm>> to access unprivileged CSRs.
 
 [#pcc,reftext="pcc"]
 ==== Program Counter Capability (pcc)
@@ -1057,12 +1059,12 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 6+| *CSR/Xret additional exception check*
 | CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
 6+| *direct jumps additional exception check*
-| <<CJAL>>, <<JAL>>, <<insns-conbr-32bit>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} | <<pcc>> length | any byte of 16-bit instruction at target out of <<pcc>> bounds
-6+| *indirect jumps and conditional branches additional exception checks*
-| indirect jumps and conditional branches | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}    |`cs1` tag       | not(`cs1.tag`)
-| indirect jumps and conditional branches | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}   |`cs1` seal      | isCapSealed(`cs1`)
-| indirect jumps and conditional branches | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}   |`cs1` permission| not(`cs1`.<<x_perm>>)
-| indirect jumps and conditional branches | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} |`cs1` length    | any byte of 16-bit instruction at target out of `cs1` bounds
+| <<CJAL>>, <<JAL>>, <<insns-conbr-32bit>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} | <<pcc>> length | any byte of minimum length instruction at target out of <<pcc>> bounds
+6+| *indirect jumps additional exception checks*
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}    |`cs1` tag       | not(`cs1.tag`)
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}   |`cs1` seal      | isCapSealed(`cs1`) and imm12 != 0
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}   |`cs1` permission| not(`cs1`.<<x_perm>>)
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} |`cs1` length    | any byte of minimum length instruction at target out of `cs1` bounds
 6+| *Load additional exception checks*
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    | `auth_cap` tag          | not(`auth_cap.tag`)
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   | `auth_cap` seal         | isCapSealed(`auth_cap`)
@@ -1070,19 +1072,26 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} | `auth_cap` length       | Any byte of load access out of `auth_cap` bounds
 | capability loads | 4                    | N/A                     | N/A                        | load address misaligned | Misaligned capability load
 6+| *Store/atomic/cache-block-operation additional exception checks*
-| all stores, all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    |`auth_cap` tag        | not(`auth_cap.tag`)
-| all stores, all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   |`auth_cap` seal       | isCapSealed(`auth_cap`)
-|             all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | AMO only: not(`auth_cap`.<<r_perm>>)
-| all stores, all atomics, all cbos | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(auto_cap.<<w_perm>>)
-| all stores, all atomics           | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of access^1^ out of `auth_cap` bounds
-| capability stores, all atomics    |6                     | N/A                     | N/A                        |Misaligned store/AMO| Misaligned capability store or AMO
+| all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    |`auth_cap` tag        | not(`auth_cap.tag`)
+| all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   |`auth_cap` seal       | isCapSealed(`auth_cap`)
+| all atomics, CBO.INVAL*                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>)
+| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<w_perm>>)
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
+| all stores, all atomics                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of access out of `auth_cap` bounds
+| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of cache block out of `auth_cap` bounds
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | all bytes of cache block out of `auth_cap` bounds
+| CBO.INVAL*                                     | {cheri_excep_mcause} | {cheri_excep_type_pcc}  | {cheri_excep_cause_perm}   |<<pcc>> permission    | not(<<pcc>>.<<asr_perm>>)
+| capability stores                              | 6                    | N/A                     | N/A                        |capability alignment  | Misaligned capability store
 |=========================================================================================
 
 NOTE: Indirect branches are <<CJALR>>, <<JALR>>, <<JALR.PCC>>, <<JALR.CAP>>, conditional branches are <<insns-conbr-32bit>>.
 
-NOTE: <<CBO.ZERO.CAP>>, <<CBO.ZERO>> issues as a cache line wide store
-
-NOTE: ^1^Other CBOs (<<CBO.FLUSH.CAP>>, <<CBO.FLUSH>>, <<CBO.CLEAN.CAP>>, <<CBO.CLEAN>>, <<CBO.INVAL.CAP>>, <<CBO.INVAL>>) require at least one byte of the access to be in `auth_cap` bounds
+NOTE: <<CBO.ZERO.CAP>>, <<CBO.ZERO>> issues as a cache block wide store.  All
+CMOs operate on the cache block which contains the address.  Prefetches check
+that the capability is tagged, not sealed, has the permission (<<r_perm>>,
+<<w_perm>>, <<x_perm>>) corresponding to the instruction, and has bounds which
+include at least one byte of the cache block; if any check fails, the prefetch
+is not performed but no exception is generated.
 
 [#CHERI_SPEC,reftext="CHERI Exceptions and speculative execution"]
 === CHERI Exceptions and speculative execution
@@ -1098,7 +1107,8 @@ is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a
 _taggable_ attribute indicating whether a memory region allows storing tagged
 data.
 
-When the hart attempts to store or load data with the tag set to memory regions
+Data loaded from memory regions that are not taggable will always have the tag
+cleared. When the hart attempts to store data with the tag set to memory regions
 that are not taggable, the implementation may:
 
 * Cause an access fault exception

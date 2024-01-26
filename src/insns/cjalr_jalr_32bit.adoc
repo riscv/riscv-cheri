@@ -32,8 +32,9 @@ include::wavedrom/ct-unconditional-2.adoc[]
 
 Capability Mode Description::
 CJALR allows unconditional, indirect jumps to a target capability. The
-target capability is obtained by unsealing `cs1` and incrementing its address by the
-sign-extended 12-bit immediate, and then setting the least-significant bit of the
+target capability is obtained by unsealing `cs1` if the immediate is zero and
+incrementing its address by the sign-extended 12-bit immediate otherwise,
+and then setting the least-significant bit of the
 result to zero. The target capability may have
 xref:section_invalid_addr_conv[xrefstyle=short]
 performed and is then installed in <<pcc>>. The <<pcc>>
