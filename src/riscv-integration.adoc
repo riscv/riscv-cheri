@@ -161,6 +161,20 @@ Capability load and store instructions also cause load or store/AMO address
 misaligned exceptions if the address is not naturally aligned to a CLEN
 boundary.
 
+Misaligned capability loads and stores are errors.  Implementations must
+generate exceptions for misaligned capability loads and stores even if they
+allow misaligned integer loads and stores to complete normally.  Execution
+environments must report misaligned capability loads and stores as errors
+and not attempt to emulate them using byte access.  The Zicclsm extension
+does not affect capability loads and stores.  Software which uses capability
+loads and stores to copy data other than capabilities must ensure that
+addresses are aligned.
+
+NOTE: Since there is only one tag per CLEN bit block in memory, it is not
+possible to represent a capability value complete with its tag at an
+address not aligned to CLEN.  To transfer CLEN unaligned bits without a tag,
+use integer loads and stores.
+
 For loads, the tag of the capability loaded from memory is cleared if the
 authorising capability does not grant permission to read capabilities (i.e.
 both <<r_perm>> and <<c_perm>> must be set in AP). For stores, the tag of the
