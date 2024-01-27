@@ -56,14 +56,14 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: Build Artifacts
-          path: ${{ github.workspace }}/*.pdf
+          path: ${{ github.workspace }}/build/*.pdf
           retention-days: 30
 
       # Create Release
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: ${{ github.workspace }}/*.pdf
+          files: ${{ github.workspace }}/build/*.pdf
           tag_name: v${{ github.event.inputs.version }}
           name: Release ${{ github.event.inputs.version }}
           draft: ${{ github.event.inputs.draft }}
