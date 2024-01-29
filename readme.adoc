@@ -31,7 +31,11 @@ git clone --recurse-submodules https://github.com/riscv/riscv-cheri.git
 
 === Building the Documentation
 
-To start the build process, run `cd ./riscv-cheri && make all`.
+To start the build process, run:
+
+```shell
+cd ./riscv-cheri && make all
+```
 
 The link:Makefile[] script will check the availability of Docker on your system:
 
@@ -44,4 +48,24 @@ The build process utilizes several options, including theming and font settings,
 
 === Cleaning up
 
-To clean up the generated files, run `make clean`. This will remove the generated PDF file.
+To clean up the generated files, run:
+
+```shell
+make clean
+```
+
+This will remove the generated PDF file.
+
+== Enabling pre-commit checks locally
+The repository has some basic commit checks set up with https://pre-commit.com/[pre-commit] that will be enforced by the GitHub CI.
+To ensure these checks are also run in the local repository while making changes the following command can be run:
+[source,shell]
+----
+pip3 install pre-commit && pre-commit install
+----
+
+When enabling additional checks https://pre-commit.com/#plugins[by editing .pre-commit-config.yaml], it is recommended to run to newly added check on all files in the repository. This can be done with the following command:
+[source,shell]
+----
+pre-commit run --all-files
+----
