@@ -158,8 +158,10 @@ $(GEN_SRC) &: $(CSVS) $(GEN_SCRIPT)
 $(CSVS) &:
 	@echo "  DOWN CSV (isa)"
 	@curl -Lo src/csv/CHERI_ISA.csv "$(URL_ISA)"
+	@echo >> src/csv/CHERI_ISA.csv
 	@echo "  DOWN CSV (csr)"
 	@curl -Lo src/csv/CHERI_CSR.csv "$(URL_CSR)"
+	@echo >> src/csv/CHERI_CSR.csv
 
 # Clean
 clean:
