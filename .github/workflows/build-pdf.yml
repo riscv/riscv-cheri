@@ -53,12 +53,16 @@ jobs:
       - name: Pull Container
         run: docker pull riscvintl/riscv-docs-base-container-image:latest
 
+      # Override VERSION and REVMARK for manual workflow dispatch
+      - name: Update environment variables
+        run: |
+          echo "VERSION=v${{ github.event.inputs.version }}" >> "$GITHUB_ENV"
+          echo "REVMARK=${{ github.event.inputs.revision_mark }}" >> "$GITHUB_ENV"
+        if: github.event_name == 'workflow_dispatch'
+
       # Build PDF and HTML.
       - name: Build Files
         run: make all
-        env:
-          VERSION: v${{ github.event.inputs.version }}
-          REVMARK: ${{ github.event.inputs.revision_mark }}
 
       # Upload the built PDF and HTML files as a single artifact
       - name: Upload Build Artifacts
