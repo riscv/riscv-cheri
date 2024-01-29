@@ -39,24 +39,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           submodules: recursive
 
-    # Pull the latest RISC-V Docs container image
+      # Pull the latest RISC-V Docs container image
       - name: Pull Container
         run: docker pull riscvintl/riscv-docs-base-container-image:latest
 
-    # Build PDF and HTML.
+      # Build PDF and HTML.
       - name: Build Files
         run: make all
         env:
           VERSION: v${{ github.event.inputs.version }}
           REVMARK: ${{ github.event.inputs.revision_mark }}
 
-    # Upload the built PDF and HTML files as a single artifact
+      # Upload the built PDF and HTML files as a single artifact
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -66,7 +66,7 @@ jobs:
             build/*.html
           retention-days: 30
 
-    # Upload gitlab pages artefact.
+      # Upload GitHub pages artefacts.
       - name: Make gitlab pages directory
         run: mkdir dist && cp build/*.html dist/index.html
         if: github.event_name == 'workflow_dispatch'
@@ -77,7 +77,7 @@ jobs:
           path: dist
         if: github.event_name == 'workflow_dispatch'
 
-    # Create Release
+      # Create Release
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
@@ -91,7 +91,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GHTOKEN }}
         if: github.event_name == 'workflow_dispatch'
-      # This condition ensures this step only runs for workflow_dispatch events.
+        # This condition ensures this step only runs for workflow_dispatch events.
 
   # Deploy HTML to Github pages.
   deploy:
