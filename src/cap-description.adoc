@@ -425,23 +425,21 @@ if ( (E < (CAP_MAX_E - 1)) & (t[XLENMAX: XLENMAX - 1] - b[XLENMAX - 1] > 1) )
 That is, invert the most significant bit of _t_ if the decoded length of the
 capability is larger than E.
 
-[#section_null_inf_cap]
-=== NULL and Infinite Capabilities
+[#section_special_caps]
+=== Special Capabilities
+
+[#section_null_cap]
+==== NULL Capability
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
 the difference between in-memory and architectural format.
 endif::[]
 
-The <<null-cap>> capability is represented with 0 in all fields.  This implies
-that <<null-cap>> has no permissions and its exponent E is CAP_MAX_E e.g. 52
-when XLENMAX=64, so its bounds cover the entire address space such that the
-expanded base is 0 and top is 2^XLENMAX^. In contrast, the <<infinite-cap>>
-capability grants all permissions while its bounds also cover the whole address
-space.
-
-NOTE: The <<infinite-cap>> capability is also known as 'default', 'almighty',
-or 'root' capability.
+The <<null-cap>> capability is represented with 0 in all fields. This implies
+that it has no permissions and its exponent E is CAP_MAX_E (52 for XLENMAX=64,
+24 for XLENMAX=32), so its bounds cover the entire address space such that the
+expanded base is 0 and top is 2^XLENMAX^.
 
 .Field values of the NULL capability
 [#null-cap,reftext="NULL",options=header,align=center,width="55%",cols="1,1,3"]
@@ -459,6 +457,15 @@ or 'root' capability.
 | Address | zeros | Capability address
 | Reserved| zeros | All reserved fields
 |==============================================================================
+
+[#section_infinite_cap]
+==== Infinite Capability
+
+The <<infinite-cap>> capability grants all permissions while its bounds also
+cover the whole address space.
+
+NOTE: The <<infinite-cap>> capability is also known as 'default', 'almighty',
+or 'root' capability.
 
 .Field values of the Infinite capability
 [#infinite-cap,reftext="Infinite"]
