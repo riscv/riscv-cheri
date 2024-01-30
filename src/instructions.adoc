@@ -210,6 +210,15 @@ All instruction fetches from the jump vector table are checked against <<jvtc>>.
 
 See <<CM.CJALT>>, <<CM.JALT>>, <<CM.CJT>>, <<CM.JT>>.
 
+If the access to the jump table succeeds, then the instructions execute as follows:
+
+* In capability mode
+** <<cm.jt>> executes as <<cj>> or <<auipcc>>+<<cjr>>
+** <<cm.jalt>> executes as <<cjal>> or <<auipcc>>+<<cjalr>>
+* In legacy mode
+** <<cm.jt>> executes as <<j>> or <<auipc>>+<<jr>>
+** <<cm.jalt>> executes as <<jal>> or <<auipc>>+<<jalr>>
+
 include::insns/zcmt_cmjalt.adoc[]
 include::insns/zcmt_cmjt.adoc[]
 
