@@ -16,7 +16,7 @@ Expands to <<JALR>> following the expansion rule from cite:[riscv-unpriv-spec].
 See <<JALR>>
 
 [#JALR,reftext="JALR"]
-==== CJAL, JALR
+==== CJALR, JALR
 
 Synopsis::
 Jump and link register
@@ -60,7 +60,7 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 | Tag violation         |      | ✔     | `cs1` has tag set to 0
 | Seal violation        |      | ✔     | `cs1` is sealed and the immediate is not 0
 | Permission violation  |      | ✔     | `cs1` does not grant <<x_perm>>
-| Length violation      | ✔    | ✔     | Minimum length instruction is not within the target capability's bounds
+| Length violation      | ✔    | ✔     | Minimum length instruction is not within the target capability's bounds. This check uses the address after it has undergone xref:section_invalid_addr_conv[xrefstyle=short] but with the original bounds.
 |==============================================================================
 
 include::pcrel_debug_warning.adoc[]
