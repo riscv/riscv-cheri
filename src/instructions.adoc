@@ -208,16 +208,18 @@ include::img/jvtcreg.edn[]
 
 All instruction fetches from the jump vector table are checked against <<jvtc>>.
 
-See <<CM.CJALT>>, <<CM.JALT>>, <<CM.CJT>>, <<CM.JT>>.
+See <<CM_CJALT>>, <<CM_JALT>>, <<CM_CJT>>, <<CM_JT>>.
 
 If the access to the jump table succeeds, then the instructions execute as follows:
 
 * In capability mode
-** <<cm.jt>> executes as <<cj>> or <<auipcc>>+<<cjr>>
-** <<cm.jalt>> executes as <<cjal>> or <<auipcc>>+<<cjalr>>
+** <<CM_JT>> executes as <<CJ>> or <<AUIPCC>>+<<CJR>>
+** <<CM_JALT>> executes as <<CJAL>> or <<AUIPCC>>+<<CJALR>>
 * In legacy mode
-** <<cm.jt>> executes as <<j>> or <<auipc>>+<<jr>>
-** <<cm.jalt>> executes as <<jal>> or <<auipc>>+<<jalr>>
+** <<CM_JT>> executes as <<J>> or <<AUIPC>>+<<JR>>
+** <<CM_JALT>> executes as <<JAL>> or <<AUIPC>>+<<JALR>>
+
+As a result the capability metadata is retained in the <<pcc>> during execution.
 
 include::insns/zcmt_cmjalt.adoc[]
 include::insns/zcmt_cmjt.adoc[]
