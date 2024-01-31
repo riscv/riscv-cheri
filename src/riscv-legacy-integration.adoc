@@ -26,8 +26,8 @@ used to authorise all data memory accesses when the current CHERI mode is
 Legacy.
 
 The current CHERI execution mode is given by the current privilege level and
-the value of the CME bit in <<menvcfg>> and <<senvcfg>> for S-mode and U-mode.
-M-mode is always in Capability mode.
+the value of the CME bit in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> for
+M-mode, S-mode, and U-mode, respectively.
 
 The CHERI execution mode impacts the instruction set in the following ways:
 
@@ -53,8 +53,9 @@ The CHERI execution mode is key in providing backwards compatibility with the
 base RISC-V ISA. RISC-V software is able to execute unchanged in
 implementations supporting both {cheri_base_ext_name} and
 {cheri_legacy_ext_name} provided that the configured CHERI execution mode is
-Legacy by setting CME=0 in <<menvcfg>> or <<senvcfg>> as required, and the
-<<infinite-cap>> capability is installed in the <<pcc>> and <<ddc>> such that:
+Legacy by setting CME=0 in <<mseccfg>>, <<menvcfg>> or <<senvcfg>> as required,
+and the <<infinite-cap>> capability is installed in the <<pcc>> and <<ddc>>
+such that:
 
 * Tags are set
 * Capabilities are unsealed
@@ -262,8 +263,8 @@ cause illegal instruction exceptions
 addresses (xref:csr-numbers-section[xrefstyle=short]) cause illegal
 instruction exceptions
 * All allowed instructions execute as if the CHERI execution mode is Legacy.
-The CME bits in <<menvcfg>> and <<senvcfg>> have no effect whilst CHERI is
-disabled.
+The CME bits in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> have no effect whilst
+CHERI is disabled.
 
 Security checks continue to be enforced when CHERI is disabled regardless of
 the reason. The last capability installed in <<pcc>> and <<ddc>> before
@@ -330,6 +331,20 @@ value is the <<null-cap>> capability.
 
 .Machine-mode trap data capability register
 include::img/mtdcreg.edn[]
+
+[#mseccfg,reftext="mseccfg"]
+==== Machine Security Configuration Register (mseccfg)
+
+{cheri_legacy_ext_name} adds a new enable bit to <<mseccfg>> as shown in
+xref:mseccfgmodereg[xrefstyle=short].
+
+.Machine security configuration register (*mseccfg*)
+[#mseccfgmodereg]
+include::img/mseccfgreg.edn[]
+
+The CHERI Mode Enable (CME) bit controls whether M-mode executes in Capability
+or Legacy mode. When CME=1, the CHERI execution mode is Capability. When CME=0,
+the mode is Legacy.  Its reset value is 0.
 
 [#menvcfg,reftext="menvcfg"]
 ==== Machine Environment Configuration Register (menvcfg)
