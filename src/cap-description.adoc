@@ -144,8 +144,13 @@ permission.
 WARNING: #TODO: Confirm that we need a separate permissions format for 32-bit
 and 64-bit.#
 
-NOTE: Valid capabilities must not have the permissions field set to a reserved
-value according to xref:cap_perms_encoding32[xrefstyle=short] when XLENMAX=32.
+NOTE: When XLENMAX=32 there is a single reserved permission encoding (see
+xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
+capability to have this value since <<CANDPERM>> will never create it. It is
+possible for untagged capabilities to have it. <<CGETPERM>> will interpret it
+as if it were 0b0000 (no permissions). Future extensions may assign meaning to
+the reserved bit pattern, in which case <<CGETPERM>> is allowed to report a
+non-zero value.
 
 [#section_cap_sdp]
 ==== Software-Defined Permissions (SDP)
