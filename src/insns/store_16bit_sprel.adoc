@@ -1,15 +1,4 @@
 <<<
-//[#insns-store-16bit-sprel,reftext="Store (C.CSWSP, C.CSDSP, C.SWSP, C.SDSP), 16-bit encodings"]
-
-[#C_CSWSP,reftext="C.CSWSP"]
-==== C.CSWSP
-
-See <<C_SDSP>>.
-
-[#C_CSDSP,reftext="C.CSDSP"]
-==== C.CSDSP
-
-See <<C_SDSP>>.
 
 [#C_SWSP,reftext="C.SWSP"]
 ==== C.SWSP
@@ -22,13 +11,13 @@ See <<C_SDSP>>.
 ==== C.SDSP
 
 Synopsis::
-Stack pointer relative stores (C.CSWSP, C.CSDSP, C.SWSP, C.SDSP), 16-bit encodings
+Stack pointer relative stores (C.SWSP, C.SDSP), 16-bit encodings
 
 Capability Mode Mnemonics (RV64)::
-`c.csw/c.csd rs2, offset(csp)`
+`c.sw/c.sd rs2, offset(csp)`
 
 Capability Mode Expansions (RV64)::
-`csd/csw rs2, offset(csp)`
+`sd/csw rs2, offset(csp)`
 
 Legacy Mode Mnemonics (RV64)::
 `c.sd/c.sw rs2, offset(sp)`
@@ -37,10 +26,10 @@ Legacy Mode Expansions (RV64)::
 `sd/sw rs2, offset(sp)`
 
 Capability Mode Mnemonics (RV32)::
-`c.csw rs2, offset(csp)`
+`c.sw rs2, offset(csp)`
 
 Capability Mode Expansion (RV32)::
-`csw rs2, offset(csp)`
+`sw rs2, offset(csp)`
 
 Legacy Mode Mnemonics (RV32)::
 `c.sw rs2, offset(sp)`
@@ -59,17 +48,13 @@ Standard stack pointer relative store instructions, authorised by the capability
 
 include::store_exceptions.adoc[]
 
-Prerequisites for C.CSDSP::
-RV64, and {c_cheri_base_ext_names}
-
-Prerequisites for C.CSWSP::
-{c_cheri_base_ext_names}
-
 Prerequisites for C.SDSP::
+RV64, and {c_cheri_base_ext_names}, or +
 RV64, and {c_cheri_base_ext_names}
 
 Prerequisites for C.SWSP::
+{c_cheri_base_ext_names}, or +
 {c_cheri_base_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
- See <<CSD>>, <<CSW>>, <<SD>>, <<SW>>
+ See <<SD>>, <<SW>>

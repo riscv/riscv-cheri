@@ -1,13 +1,4 @@
 <<<
-//[#insns-load-16bit,reftext="Load (C.CLD, C.CLW, C.LD, C.LW), 16-bit encodings"]
-
-[#C_CLD,reftext="C.CLD"]
-==== C.CLD
-See <<C_LW>>.
-
-[#C_CLW,reftext="C.CLW"]
-==== C.CLW
-See <<C_LW>>.
 
 [#C_LD,reftext="C.LD"]
 ==== C.LD
@@ -19,13 +10,13 @@ See <<C_LW>>.
 ==== C.LW
 
 Synopsis::
-Load (C.CLD, C.CLW, C.LD, C.LW), 16-bit encodings
+Load (C.LD, C.LW), 16-bit encodings
 
 Capability Mode Mnemonics (RV64)::
-`c.cld/c.clw rd', offset(cs1')`
+`c.ld/c.lw rd', offset(cs1')`
 
 Capability Mode Expansions (RV64)::
-`cld/clw rd', offset(cs1')`
+`ld/lw rd', offset(cs1')`
 
 Legacy Mode Mnemonics (RV64)::
 `c.ld/c.lw rd', offset(rs1')`
@@ -34,10 +25,10 @@ Legacy Mode Expansions (RV64)::
 `ld/lw rd', offset(rs1')`
 
 Capability Mode Mnemonics (RV32)::
-`c.clw rd', offset(cs1')`
+`c.lw rd', offset(cs1')`
 
 Capability Mode Expansions (RV32)::
-`clw rd', offset(cs1')`
+`lw rd', offset(cs1')`
 
 Legacy Mode Mnemonics (RV32)::
 `c.lw rd', offset(rs1')`
@@ -56,17 +47,13 @@ Standard load instructions, authorised by the capability in <<ddc>>.
 
 include::load_exceptions.adoc[]
 
-Prerequisites C.CLD::
-RV64, and {c_cheri_base_ext_names}
-
-Prerequisites C.CLW::
-{c_cheri_base_ext_names}
-
 Prerequisites C.LD::
+RV64, and {c_cheri_base_ext_names}, or +
 RV64, {c_cheri_legacy_ext_names}
 
 Prerequisites C.LW::
+{c_cheri_base_ext_names}, or +
 {c_cheri_legacy_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
- See <<CLD>>, <<CLW>>, <<LD>>, <<LW>>
+ See <<LD>>, <<LW>>

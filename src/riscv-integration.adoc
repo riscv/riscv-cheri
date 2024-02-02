@@ -138,17 +138,17 @@ endif::[]
 
 ==== Capability Load and Store Instructions
 
-A load capability instruction, <<CLC>>, reads CLEN bits from memory together with
+A load capability instruction, <<LC>>, reads CLEN bits from memory together with
 its tag and writes the result to a *c* register. The capability authorising the
 memory access is provided in a *c* source register, so the effective address is
 obtained by incrementing that capability with the sign-extended 12-bit offset.
 
-A store capability instruction, <<CSC>>, writes CLEN bits and the tag in a *c* register
+A store capability instruction, <<SC>>, writes CLEN bits and the tag in a *c* register
 to memory. The capability authorising the memory access is provided in a *c*
 source register, so the effective address is obtained by incrementing that
 capability with the sign-extended 12-bit offset.
 
-<<CLC>> and <<CSC>> instructions cause CHERI exceptions if the
+<<LC>> and <<SC>> instructions cause CHERI exceptions if the
 authorising capability fails any of the following checks:
 
 * The tag is zero
@@ -285,10 +285,7 @@ register.  However, the address operands for load and store instructions are
 interpreted differently in {cheri_base_ext_name}: the capability authorising
 the access is in the *c* register operand and the memory address is given by
 incrementing the address of that capability by the sign-extended 12-bit
-immediate offset.  For clarity, the mnemonics of these instructions are
-prefixed with the letter 'C' (e.g. <<LD>> becomes <<CLD>>, <<SW>> becomes
-<<CSW>>, etc) to distinguish them from the standard RISC-V instructions that do
-not have a *c* register operand.
+immediate offset.
 
 All load and store instructions cause CHERI exceptions if the
 authorising capability fails any of the following checks:
