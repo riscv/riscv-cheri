@@ -4,28 +4,17 @@
 [#LR_C,reftext="LR.C"]
 ==== LR.C
 
-See <<CLR.C>>.
-
-[#CLR_C,reftext="CLR.C"]
-==== CLR.C
-
 NOTE: The RV64 encoding is intended to also allocate the encoding for LR.Q for RV128.
 
 Synopsis::
-Load Reserved (CLR.C, LR.C), 32-bit encodings
+Load Reserved Capability (LR.C), 32-bit encodings
 
 include::xlen_variable_warning.adoc[]
 
-Capability Mode Mnemonics (RV64)::
-`clr.c cd, 0(cs1)`
+Capability Mode Mnemonics::
+`lr.c cd, 0(cs1)`
 
-Capability Mode Mnemonics (RV32)::
-`clr.c cd, 0(cs1)`
-
-Legacy Mode Mnemonics (RV64)::
-`lr.c cd, 0(rs1)`
-
-Legacy Mode Mnemonics (RV32)::
+Legacy Mode Mnemonics::
 `lr.c cd, 0(rs1)`
 
 Encoding::
@@ -43,11 +32,11 @@ Load reserved instructions, authorised by the capability in <<ddc>>.
 
 include::load_exceptions.adoc[]
 
-Prerequisites for CLR::
-{cheri_base_ext_name}
+Prerequisites for Capability Mode::
+{cheri_base_ext_name}, and A
 
-Prerequisites for LR::
-{cheri_legacy_ext_name}
+Prerequisites for Legacy Mode::
+{cheri_legacy_ext_name}, and A
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

@@ -14,7 +14,7 @@ Synopsis::
 Stack pointer relative stores (C.SWSP, C.SDSP), 16-bit encodings
 
 Capability Mode Mnemonics (RV64)::
-`c.sw/c.sd rs2, offset(csp)`
+`c.sd/c.sw rs2, offset(csp)`
 
 Capability Mode Expansions (RV64)::
 `sd/csw rs2, offset(csp)`
@@ -48,13 +48,17 @@ Standard stack pointer relative store instructions, authorised by the capability
 
 include::store_exceptions.adoc[]
 
-Prerequisites for C.SDSP::
-RV64, and {c_cheri_base_ext_names}, or +
+Prerequisites for Capability Mode C.SDSP::
 RV64, and {c_cheri_base_ext_names}
 
-Prerequisites for C.SWSP::
-{c_cheri_base_ext_names}, or +
+Prerequisites for Legacy Mode C.SDSP::
+RV64, and {c_cheri_legacy_ext_names}
+
+Prerequisites for Capability Mode C.SWSP::
 {c_cheri_base_ext_names}
+
+Prerequisites for Legacy Mode C.SWSP::
+{c_cheri_legacy_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
  See <<SD>>, <<SW>>
