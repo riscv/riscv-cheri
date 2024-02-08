@@ -241,6 +241,9 @@ When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated t
 the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
 hart's context.
 
+As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
+so it does not need to be able to hold all possible invalid addresses.
+
 [#section_cheri_disable]
 === Disabling CHERI Features
 
@@ -377,6 +380,9 @@ The <<ddc>> CSR is a read-write capability register implicitly used as an
 operand to authorise all data memory accesses when the current CHERI mode is
 Legacy. This register must be readable in any implementation. Its reset value
 is the <<infinite-cap>> capability.
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<ddc>> is a data pointer,
+so it does not need to be able to hold all possible invalid addresses.
 
 .Unprivileged default data capability register
 include::img/ddcreg.edn[]
