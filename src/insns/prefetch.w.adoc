@@ -2,17 +2,13 @@
 
 [#PREFETCH_W,reftext="PREFETCH.W"]
 ==== PREFETCH.W
-See <<PREFETCH_W_CAP>>.
-
-[#PREFETCH_W_CAP,reftext="PREFETCH.W.CAP"]
-==== PREFETCH.W.CAP
 
 Synopsis::
 Provide a HINT to hardware that a cache block is likely to be accessed by a
 data write in the near future
 
 Capability Mode Mnemonic::
-`prefetch.w.cap offset(cs1)`
+`prefetch.w offset(cs1)`
 
 Legacy Mode Mnemonic::
 `prefetch.w offset(rs1)`
@@ -25,13 +21,13 @@ Encoding::
   {bits: 5,  name: 'imm[4:0]',  attr: ['5','zero'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','ORI=110'],  type: 8},
   {bits: 5,  name: 'cs1/rs1',   attr: ['5','base'],     type: 4},
-  {bits: 5,  name: 'funct5',    attr: ['5','cap: PREFETCH.W.CAP=00011', 'leg: PREFETCH.W=00011'],   type: 3},
+  {bits: 5,  name: 'funct5',    attr: ['5','PREFETCH.W=00011'],   type: 3},
   {bits: 7,  name: 'imm[11:5]', attr: ['7','offset[11:5]'],   type: 3},
 ]}
 ....
 
 Capability Mode Description::
-A PREFETCH.W.CAP instruction indicates to hardware that the cache block whose
+A PREFETCH.W instruction indicates to hardware that the cache block whose
 effective address is the sum of the base address specified in `cs1` and the
 sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
 likely to be accessed by a data write (i.e. store) in the near future. The
@@ -53,10 +49,10 @@ likely to be accessed by a data write (i.e. store) in the near future.  The
 encoding is only valid if imm[4:0]=0. The authorising capability for this
 operation is <<ddc>>.
 
-Prerequisites for PREFETCH.W.CAP::
+Prerequisites for Capability Mode::
 Zicbop, {cheri_base_ext_name}
 
-Prerequisites for PREFETCH.W::
+Prerequisites for Legacy Mode::
 Zicbop, {cheri_legacy_ext_name}
 
 Operation::

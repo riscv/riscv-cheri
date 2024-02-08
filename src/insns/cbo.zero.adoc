@@ -3,16 +3,11 @@
 [#CBO_ZERO,reftext="CBO.ZERO"]
 ==== CBO.ZERO
 
-See <<CBO.ZERO.CAP>>.
-
-[#CBO_ZERO_CAP,reftext="CBO.ZERO.CAP"]
-==== CBO.ZERO.CAP
-
 Synopsis::
 Store zeros to the full set of bytes corresponding to a cache block
 
 Capability Mode Mnemonic::
-`cbo.zero.cap 0(cs1)`
+`cbo.zero 0(cs1)`
 
 Legacy Mode Mnemonic::
 `cbo.zero 0(rs1)`
@@ -25,12 +20,12 @@ Encoding::
   {bits: 5,  name: 'funct5',    attr: ['5','CBO=0000'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','CBO=010'],  type: 8},
   {bits: 5,  name: 'cs1/rs1',   attr: ['5','base'],     type: 4},
-  {bits: 12, name: 'funct12',   attr: ['12','cap: CBO.ZERO.CAP=00.0100', 'leg: CBO.ZERO=00.0100'],   type: 3},
+  {bits: 12, name: 'funct12',   attr: ['12','CBO.ZERO=00.0100'],   type: 3},
 ]}
 ....
 
 Capability Mode Description::
-A `cbo.zero.cap` instruction performs stores of zeros to the full set of bytes
+A `cbo.zero` instruction performs stores of zeros to the full set of bytes
 corresponding to the cache block whose effective address is the base address
 specified in `cs1`. An implementation may or may not update the entire set of
 bytes atomically although each individual write must atomically clear the tag
@@ -47,10 +42,10 @@ for this operation is <<ddc>>.
 
 include::store_exceptions.adoc[]
 
-Prerequisites for CBO.ZERO.CAP::
+Prerequisites for Capability Mode::
 Zicboz, {cheri_base_ext_name}
 
-Prerequisites for CBO.ZERO::
+Prerequisites for Legacy Mode::
 Zicboz, {cheri_legacy_ext_name}
 
 Operation::
