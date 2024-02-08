@@ -45,9 +45,8 @@ implementations that support {cheri_base_ext_name}, but not
 The CHERI execution mode is effectively an extension to some RISC-V instruction
 encodings. For example, the encoding of an instruction like <<LW>> remains
 unchanged, but the mode indicates whether the capability authorising the load
-is the register operand `cs1` (Capability mode), so the instruction is <<CLW>>
-from {cheri_base_ext_name}, or <<ddc>> (Legacy mode), so the instruction is
-simply <<LW>>.
+is the register operand `cs1` (Capability mode). The mode is shown in the assembly
+syntax.
 
 The CHERI execution mode is key in providing backwards compatibility with the
 base RISC-V ISA. RISC-V software is able to execute unchanged in
@@ -74,17 +73,17 @@ depending on the current CHERI execution mode.
 The load and store capability instructions change behaviour depending on the
 CHERI execution mode although the instruction's encoding remains unchanged.
 
-The load capability instruction is <<CLC>> when the CHERI execution mode is
+The load capability instruction is <<LC>>. When the CHERI execution mode is
 Capability; the instruction behaves as described in
-xref:section_cap_instructions[xrefstyle=short]. That encoding is <<LC>> when
-the mode is Legacy. In this case, the capability authorising the memory access
+xref:section_cap_instructions[xrefstyle=short].
+In legacy mode, the capability authorising the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
 the sign-extended offset.
 
-The store capability instruction is <<CSC>> when the CHERI execution mode is
+The store capability instruction is <<SC>>. When the CHERI execution mode is
 Capability; the instruction behaves as described in
-xref:section_cap_instructions[xrefstyle=short]. That encoding is <<SC>> when
-the mode is Legacy. In this case, the capability authorising the memory access
+xref:section_cap_instructions[xrefstyle=short].
+In legacy mode, the capability authorising the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
 the sign-extended offset.
 

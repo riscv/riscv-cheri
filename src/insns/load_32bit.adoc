@@ -1,83 +1,48 @@
 <<<
 
-[#CLWU,reftext="CLWU"]
-==== CLWU
-
-See <<CLD>>.
-
-[#CLW,reftext="CLW"]
-==== CLW
-
-See <<CLD>>.
-
-[#CLHU,reftext="CLHU"]
-==== CLHU
-
-See <<CLD>>.
-
-[#CLH,reftext="CLH"]
-==== CLH
-
-See <<CLD>>.
-
-[#CLBU,reftext="CLBU"]
-==== CLBU
-
-See <<CLD>>.
-
-[#CLB,reftext="CLB"]
-==== CLB
-
-See <<CLD>>.
-
 [#LD,reftext="LD"]
 ==== LD
 
-See <<CLD>>.
+See <<LB>>.
 
 [#LWU,reftext="LWU"]
 ==== LWU
 
-See <<CLD>>.
+See <<LB>>.
 
 [#LW,reftext="LW"]
 ==== LW
 
-See <<CLD>>.
+See <<LB>>.
 
 [#LHU,reftext="LHU"]
 ==== LHU
 
-See <<CLD>>.
+See <<LB>>.
 
 [#LH,reftext="LH"]
 ==== LH
 
-See <<CLD>>.
+See <<LB>>.
 
 [#LBU,reftext="LBU"]
 ==== LBU
 
-See <<CLD>>.
+See <<LB>>.
+
+<<<
 
 [#LB,reftext="LB"]
 ==== LB
 
-See <<CLD>>.
-
-<<<
-
-[#CLD,reftext="CLD"]
-==== CLD
-
 Synopsis::
-Load (CLD, CLW[U], CLH[U], CLB[U], LD, LW[U], LH[U], LB[U])
+Load (LD, LW[U], LH[U], LB[U])
 
 Capability Mode Mnemonics (RV64)::
-`cld    rd, offset(cs1)` +
-`clw[u] rd, offset(cs1)` +
-`clh[u] rd, offset(cs1)` +
-`clb[u] rd, offset(cs1)`
+`ld    rd, offset(cs1)` +
+`lw[u] rd, offset(cs1)` +
+`lh[u] rd, offset(cs1)` +
+`lb[u] rd, offset(cs1)`
 
 Legacy Mode Mnemonics (RV64)::
 `ld    rd, offset(rs1)` +
@@ -86,9 +51,9 @@ Legacy Mode Mnemonics (RV64)::
 `lb[u] rd, offset(rs1)`
 
 Capability Mode Mnemonics (RV32)::
-`clw    rd, offset(cs1)` +
-`clh[u] rd, offset(cs1)` +
-`clb[u] rd, offset(cs1)`
+`lw    rd, offset(cs1)` +
+`lh[u] rd, offset(cs1)` +
+`lb[u] rd, offset(cs1)`
 
 Legacy Mode Mnemonics (RV32)::
 `lw    rd, offset(rs1)` +
@@ -112,16 +77,14 @@ operation is <<ddc>>. A copy of the loaded value is written to `rd`.
 
 include::load_exceptions.adoc[]
 
-Prerequisites for CLD::
+Prerequisites for Capability Mode LD::
 RV64, {cheri_base_ext_name}
 
-Prerequisites for CLW[U], CLH[U], CLB[U]::
-{cheri_base_ext_name}
-
-Prerequisites for LD::
+Prerequisites for Legacy Mode LD::
 RV64, {cheri_legacy_ext_name}
 
-Prerequisites for LW[U], LH[U], LB[U]::
+Prerequisites for Capability Mode LW[U], LH[U], LB[U]::
+{cheri_base_ext_name}, OR +
 {cheri_legacy_ext_name}
 
 Capability Mode Operation::

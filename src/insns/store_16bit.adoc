@@ -1,15 +1,4 @@
 <<<
-//[#insns-store-16bit,reftext="Store (C.CSD, C.CSW, C.SD, C.SW), 16-bit encodings"]
-
-[#C_CSD,reftext="C.CSD"]
-==== C.CSD
-
-See <<C.SW>>.
-
-[#C_CSW,reftext="C.CSW"]
-==== C.CSW
-
-See <<C.SW>>.
 
 [#C_SD,reftext="C.SD"]
 ==== C.SD
@@ -22,13 +11,13 @@ See <<C.SW>>.
 ==== C.SW
 
 Synopsis::
-Stores (C.CSD, C.CSW, C.SD, C.SW), 16-bit encodings
+Stores (C.SD, C.SW), 16-bit encodings
 
 Capability Mode Mnemonics (RV64)::
-`c.csd/c.csw rs2', offset(cs1')`
+`c.sd/c.sw rs2', offset(cs1')`
 
 Capability Mode Expansions (RV64)::
-`csd/csw rs2', offset(cs1')`
+`sd/sw rs2', offset(cs1')`
 
 Legacy Mode Mnemonics (RV64)::
 `c.sd/c.sw rs2', offset(rs1')`
@@ -37,10 +26,10 @@ Legacy Mode Expansions (RV64)::
 `sd/sw rs2', offset(rs1')`
 
 Capability Mode Mnemonics (RV32)::
-`c.csw rs2', offset(cs1')`
+`c.sw rs2', offset(cs1')`
 
 Capability Mode Expansion (RV32)::
-`csw rs2', offset(cs1')`
+`sw rs2', offset(cs1')`
 
 Legacy Mode Mnemonics (RV32)::
 `c.sw rs2', offset(rs1')`
@@ -59,17 +48,17 @@ Standard store instructions, authorised by the capability in <<ddc>>.
 
 include::store_exceptions.adoc[]
 
-Prerequisites for C.CSD::
+Prerequisites for Capability Mode C.SD::
 RV64, and {c_cheri_base_ext_names}
 
-Prerequisites for C.CSW::
-{c_cheri_base_ext_names}
-
-Prerequisites for C.SD::
+Prerequisites for Legacy Mode C.SD::
 RV64, and {c_cheri_legacy_ext_names}
 
-Prerequisites for C.SW::
+Prerequisites for Capability Mode C.SW::
+{c_cheri_base_ext_names}
+
+Prerequisites for Legacy Mode C.SW::
 {c_cheri_legacy_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
- See <<CSD>>, <<CSW>>, <<SD>>, <<SW>>
+ See <<SD>>, <<SW>>

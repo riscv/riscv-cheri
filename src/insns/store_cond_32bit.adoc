@@ -1,21 +1,4 @@
 <<<
-//[#insns-store-cond-32bit,reftext="store conditional (CSC.D, CSC.W, CSC.H, CSC.B, SC.D, SC.W, SC.H, SC.B), 32-bit encodings"]
-
-[#CSC_D,reftext="CSC.D"]
-==== CSC.D
-See <<SC.B>>.
-
-[#CSC_W,reftext="CSC.W"]
-==== CSC.W
-See <<SC.B>>.
-
-[#CSC_H,reftext="CSC.H"]
-==== CSC.H
-See <<SC.B>>.
-
-[#CSC_B,reftext="CSC.B"]
-==== CSC.B
-See <<SC.B>>.
 
 [#SC_D,reftext="SC.D"]
 ==== SC.D
@@ -35,13 +18,13 @@ See <<SC.B>>.
 ==== SC.B
 
 Synopsis::
-Store Conditional (CSC.D, CSC.W, CSC.H, CSC.B, SC.D, SC.W, SC.H, SC.B), 32-bit encodings
+Store Conditional (SC.D, SC.W, SC.H, SC.B), 32-bit encodings
 
 Capability Mode Mnemonics (RV64)::
-`csc.[d|w|h|b] rd, rs2, 0(cs1)`
+`sc.[d|w|h|b] rd, rs2, 0(cs1)`
 
 Capability Mode Mnemonics (RV32)::
-`csc.[w|h|b] rd, rs2, 0(cs1)`
+`sc.[w|h|b] rd, rs2, 0(cs1)`
 
 Legacy Mode Mnemonics (RV64)::
 `sc.[d|w|h|b] rd, rs2, 0(rs1)`
@@ -62,22 +45,22 @@ Store conditional instructions, authorised by the capability in <<ddc>>.
 
 include::store_exceptions.adoc[]
 
-Prerequisites for CSC.D::
-RV64, and {cheri_base_ext_name}
+Prerequisites for Capability Mode SC.D::
+RV64, and {cheri_base_ext_name}, and A
 
-Prerequisites for CSC.W::
-{cheri_base_ext_name}
+Prerequisites for Legacy Mode SC.D::
+RV64, and {cheri_legacy_ext_name}, and A
 
-Prerequisites for CSC.H, CSC.B::
+Prerequisites for Capability Mode SC.W::
+{cheri_base_ext_name}, and A
+
+Prerequisites for Legacy Mode SC.W::
+{cheri_legacy_ext_name}, and A
+
+Prerequisites for Capability Mode SC.H, SC.B::
 {cheri_base_ext_name}, and {lr_sc_bh_ext_name}
 
-Prerequisites for SC.D::
-RV64, and {cheri_legacy_ext_name}
-
-Prerequisites for SC.W::
-{cheri_legacy_ext_name}
-
-Prerequisites for SC.H, SC.B::
+Prerequisites for Legacy Mode SC.H, SC.B::
 {cheri_legacy_ext_name}, and {lr_sc_bh_ext_name}
 
 Operation::
