@@ -3,16 +3,11 @@
 [#CM_POP,reftext="CM.POP"]
 ==== CM.POP
 
-See <<CM.CPOP>> and cite:[riscv-code-size-spec].
-
-[#CM_CPOP,reftext="CM.CPOP"]
-==== CM.CPOP
-
 Synopsis::
-Destroy stack frame (CM.CPOP, CM.POP): load the return address register and 0 to 12 saved registers from the stack frame, deallocate the stack frame. 16-bit encodings.
+Destroy stack frame (CM.POP): load the return address register and 0 to 12 saved registers from the stack frame, deallocate the stack frame. 16-bit encodings.
 
 Capability Mode Mnemonic::
-`cm.cpop \{creg_list\}, -stack_adj`
+`cm.pop \{creg_list\}, -stack_adj`
 
 Legacy Mode Mnemonics::
 `cm.pop \{reg_list\}, -stack_adj`
@@ -41,10 +36,10 @@ Load integer registers as specified in _reg_list_. Deallocate stack frame. All a
 
 include::load_exceptions.adoc[]
 
-Prerequisites for CM.CPOP::
+Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}, Zcmp
 
-Prerequisites for CM.POP::
+Prerequisites for Legacy Mode::
 {c_cheri_legacy_ext_names}, Zcmp
 
 Operation::

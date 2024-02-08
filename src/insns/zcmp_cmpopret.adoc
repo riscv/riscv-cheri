@@ -3,16 +3,11 @@
 [#CM_POPRET,reftext="CM.POPRET"]
 ==== CM.POPRET
 
-See <<CM.CPOPRET>> and cite:[riscv-code-size-spec].
-
-[#CM_CPOPRET,reftext="CM.CPOPRET"]
-==== CM.CPOPRET
-
 Synopsis::
-Destroy stack frame (CM.CPOPRET, CM.POPRET): load the return address register and 0 to 12 saved registers from the stack frame, deallocate the stack frame. Return through the return address register. 16-bit encodings.
+Destroy stack frame (CM.POPRET): load the return address register and 0 to 12 saved registers from the stack frame, deallocate the stack frame. Return through the return address register. 16-bit encodings.
 
 Capability Mode Mnemonic::
-`cm.cpopret \{creg_list\}, -stack_adj`
+`cm.popret \{creg_list\}, -stack_adj`
 
 Legacy Mode Mnemonics::
 `cm.popret \{reg_list\}, -stack_adj`
@@ -64,10 +59,10 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for CM.CPOPRET::
+Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}, Zcmp
 
-Prerequisites for CM.POPRET::
+Prerequisites for Legacy Mode::
 {c_cheri_legacy_ext_names}, Zcmp
 
 Operation::
