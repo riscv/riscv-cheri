@@ -28,11 +28,6 @@ on:
         required: false
         type: boolean
         default: false
-      pages:
-        description: Deploy HTML to Github pages?
-        required: false
-        type: boolean
-        default: false
   pull_request:
   push:
     branches:
@@ -54,11 +49,16 @@ jobs:
         run: docker pull riscvintl/riscv-docs-base-container-image:latest
 
       # Override VERSION and REVMARK for manual workflow dispatch
-      - name: Update environment variables
+      - name: Update environment variables for releases
         run: |
           echo "VERSION=v${{ github.event.inputs.version }}" >> "$GITHUB_ENV"
           echo "REVMARK=${{ github.event.inputs.revision_mark }}" >> "$GITHUB_ENV"
         if: github.event_name == 'workflow_dispatch'
+
+      - name: Update environment variables for push events
+        run: |
+          echo "EXTRA_ASCIIDOC_OPTIONS=-a github_commit_sha=$GITHUB_SHA" >> "$GITHUB_ENV"
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
       # Build PDF and HTML.
       - name: Build Files
@@ -77,13 +77,13 @@ jobs:
       # Upload GitHub pages artefacts.
       - name: Make gitlab pages directory
         run: mkdir dist && cp build/*.html dist/index.html
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push'
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
 
       # Create Release
       - name: Create Release
@@ -103,7 +103,7 @@ jobs:
 
   # Deploy HTML to Github pages.
   deploy:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.pages
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     needs: build
 
