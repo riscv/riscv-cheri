@@ -24,8 +24,12 @@ sealed, `cs1` 's permissions and bounds are equal or a superset of `cs2` 's,
 `cs2` 's bounds are not malformed (see
 xref:section_cap_malformed[xrefstyle=short]), and all reserved bits in `cs2` 's
 metadata are 0. <<CBUILDCAP>> is typically used alongside <<CSETHIGH>> to build
-capabilities from integer values. The case `cs1 == 0` trivially leads to the tag
-of `cd` being stripped.
+capabilities from integer values.
+
+NOTE: The case `cs1 == 0` trivially leads to the tag of `cd` being stripped.
+We opted to not make this a pseudo instruction to clear the tag of capability.
+`cbuildcap cd, c0, cs2` will behave differently in the case of otypes being
+added. Thus we reserve the encoding `cs1 == 0` for now.
 
 Prerequisites::
 {cheri_base_ext_name}
