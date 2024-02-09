@@ -216,9 +216,8 @@ if the input register of the instruction holds a capability. The output is XLEN
 bits written to an *x* register; the tag and capability metadata of that
 register are zeroed.
 
-The add upper immediate to <<pcc>> instruction (<<AUIPCC>>) replaces the add upper
-immediate to *pc* instruction (<<AUIPC>>) at the same encoding. <<AUIPCC>> is used to
-build <<pcc>>-relative capabilities. <<AUIPCC>> forms a 32-bit offset from the 20-bit
+The add upper immediate to <<pcc>> instruction (<<AUIPC>>) is used to
+build <<pcc>>-relative capabilities. <<AUIPC>> forms a 32-bit offset from the 20-bit
 immediate and filling the lowest 12 bits with zeros. The <<pcc>> address is then
 incremented by the offset and a representability check is performed so the
 capability's tag is cleared if the new address is outside the <<pcc>>'s
@@ -1025,7 +1024,7 @@ Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
 ==== Program Counter Capability (pcc)
 
 The <<pcc>> is made visible in a CSR. This provides access to an
-<<infinite-cap>> capability while in debug mode without executing <<AUIPCC>>.
+<<infinite-cap>> capability while in debug mode without executing <<AUIPC>>.
 
 <<pcc>> resets to the <<infinite-cap>> capability with the address field set to the core boot address.
 

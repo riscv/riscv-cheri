@@ -3,16 +3,11 @@
 [#AUIPC,reftext="AUIPC"]
 ==== AUIPC
 
-See <<AUIPCC>>
-
-[#AUIPCC,reftext="AUIPCC"]
-==== AUIPCC
-
 Synopsis::
 Add upper immediate to *pc*/<<pcc>>
 
 Capability Mode Mnemonic::
-`auipcc cd, imm`
+`auipc cd, imm`
 
 Legacy Mode Mnemonic::
 `auipc rd, imm`
@@ -22,7 +17,7 @@ include::wavedrom/rv64_lui-auipc.adoc[]
 
 Capability Mode Description::
 Form a 32-bit offset from the 20-bit immediate filling the lowest 12 bits with
-zeros. Increment the address of the <<AUIPCC>> instruction's <<pcc>> by the
+zeros. Increment the address of the AUIPC instruction's <<pcc>> by the
 32-bit offset, then write the output capability to `cd`. The tag bit of the
 output capability is 0 if the incremented address is outside the <<pcc>>'s
 <<section_cap_representable_check>>.
@@ -34,13 +29,13 @@ the result in register `rd`.
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for AUIPCC::
+Prerequisites for Capability Mode::
 {cheri_base_ext_name}
 
-Prerequisites for AUIPC::
+Prerequisites for Legacy Mode::
 {cheri_legacy_ext_name}
 
-Operation for AUIPCC::
+Operation for AUIPC::
 +
 --
 TODO
