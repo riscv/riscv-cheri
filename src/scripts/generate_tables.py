@@ -685,7 +685,7 @@ class csr_perms(table):
         return row[self.header.index("Extended CSR")] != ""
 
 class csr_exevectors(table):
-    cols = ["Extended CSR", "Executable Vector", "Unseal On Execution"]
+    cols = ["Extended CSR", "Executable Vector", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -707,7 +707,9 @@ class csr_exevectors(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Executable Vector")] == "✔" or row[self.header.index("Unseal On Execution")] == "✔"
+        return row[self.header.index("Executable Vector")] == "✔" or \
+            row[self.header.index("Unseal On Execution")] == "✔" or \
+            row[self.header.index("Data Pointer")] == "✔"
 
 class csr_metadata(table):
     cols = ["Extended CSR", "Store full metadata"]
