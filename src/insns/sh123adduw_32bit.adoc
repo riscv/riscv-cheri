@@ -1,17 +1,4 @@
 <<<
-//[#insns-sh123adduw-32bit,reftext="CSR access (CSH1ADD.UW, CSH2ADD.UW, CSH3ADD.UW, SH1ADD.UW, SH2ADD.UW, SH3ADD.UW), 32-bit encoding"]
-
-[#CSH1ADD_UW,reftext="CSH1ADD.UW"]
-==== CSH1ADD.UW
-See <<SH3ADD.UW>>.
-
-[#CSH2ADD_UW,reftext="CSH2ADD.UW"]
-==== CSH2ADD.UW
-See <<SH3ADD.UW>>.
-
-[#CSH3ADD_UW,reftext="CSH3ADD.UW"]
-==== CSH3ADD.UW
-See <<SH3ADD.UW>>.
 
 [#SH1ADD_UW,reftext="SH1ADD.UW"]
 ==== SH1ADD.UW
@@ -27,10 +14,10 @@ See <<SH3ADD.UW>>.
 ==== SH3ADD.UW
 
 Synopsis::
-Shift by _n_ and add unsigned word for address generation
+Shift by _n_ and add unsigned word for address generation (SH1ADD.UW, SH2ADD.UW, SH3ADD.UW)
 
 Capability Mode Mnemonic (RV64)::
-`csh[1|2|3]add.uw cd, rs1, cs2`
+`sh[1|2|3]add.uw cd, rs1, cs2`
 
 Legacy Mode Mnemonics (RV64)::
 `sh[1|2|3]add.uw rd, rs1, rs2`
@@ -41,10 +28,10 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x2, attr: ['rv64: SH1ADD.UW=010', 'rv64: CSH1ADD.UW=010', 'rv64: SH2ADD.UW=100', 'rv64: CSH2ADD.UW=100', 'rv64: SH3ADD.UW=110', 'rv64: CSH3ADD.UW=110'] },
+    { bits:  3, name: 0x2, attr: ['rv64: SH1ADD.UW=010', 'rv64: SH2ADD.UW=100', 'rv64: SH3ADD.UW=110'] },
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'cs2/rs2' },
-    { bits:  7, name: 0x10, attr: ['rv64: SH[1|2|3]ADD.UW', 'rv64: CSH[1|2|3]ADD.UW'] },
+    { bits:  7, name: 0x10, attr: ['rv64: SH[1|2|3]ADD.UW'] },
 ]}
 ....
 
@@ -54,10 +41,10 @@ Increment the address field of `cs2` by the unsigned word in `rs1` shifted left 
 Legacy Mode Description::
 Increment `rs2` by the unsigned word in `rs1` shifted left by _n_ bit positions.
 
-Prerequisites CSH[1|2|3]ADD.UW::
+Prerequisites for Capability Mode::
 {cheri_base_ext_name}, Zba
 
-Prerequisites for SH[1|2|3]ADD.UW::
+Prerequisites for Legacy Mode::
 {cheri_legacy_ext_name}, Zba
 
 Capability Mode Operation::

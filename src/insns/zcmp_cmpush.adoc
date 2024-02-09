@@ -3,16 +3,11 @@
 [#CM_PUSH,reftext="CM.PUSH"]
 ==== CM.PUSH
 
-See <<CM.CPUSH>> and cite:[riscv-code-size-spec].
-
-[#CM_CPUSH,reftext="CM.CPUSH"]
-==== CM.CPUSH
-
 Synopsis::
-Create stack frame (CM.CPUSH, CM.PUSH): store the return address register and 0 to 12 saved registers to the stack frame, optionally allocate additional stack space. 16-bit encodings.
+Create stack frame (CM.PUSH): store the return address register and 0 to 12 saved registers to the stack frame, optionally allocate additional stack space. 16-bit encodings.
 
 Capability Mode Mnemonic::
-`cm.cpush \{creg_list\}, -stack_adj`
+`cm.push \{creg_list\}, -stack_adj`
 
 Legacy Mode Mnemonics::
 `cm.push \{reg_list\}, -stack_adj`
@@ -41,10 +36,10 @@ Create stack frame, store integer registers as specified in _reg_list_. Optional
 
 include::store_exceptions.adoc[]
 
-Prerequisites for CM.CPUSH::
+Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}, Zcmp
 
-Prerequisites for CM.PUSH::
+Prerequisites for Legacy Mode::
 {c_cheri_legacy_ext_names}, Zcmp
 
 Operation::

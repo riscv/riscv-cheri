@@ -1,23 +1,17 @@
 <<<
-//[#insns-sh4add-32bit,reftext="CSR access (CSH4ADD, SH4ADD), 32-bit encoding"]
 
 [#SH4ADD,reftext="SH4ADD"]
 ==== SH4ADD
-
-See <<CSH4ADD>>.
-
-[#CSH4ADD,reftext="CSH4ADD"]
-==== CSH4ADD
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* This instruction is *new*.
 endif::[]
 
 Synopsis::
-Shift by 4 and add for address generation (CSH4ADD, SH4ADD)
+Shift by 4 and add for address generation (SH4ADD)
 
 Capability Mode Mnemonics::
-`csh4add cd, rs1, cs2`
+`sh4add cd, rs1, cs2`
 
 Legacy Mode Mnemonics::
 `sh4add rd, rs1, rs2`
@@ -28,10 +22,10 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x7, attr: ['CSH4ADD','SH4ADD'] },
+    { bits:  3, name: 0x7, attr: ['SH4ADD'] },
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'cs2/rs2' },
-    { bits:  7, name: 16, attr: ['CSH4ADD','SH4ADD'] },
+    { bits:  7, name: 16, attr: ['SH4ADD'] },
 ]}
 ....
 
@@ -41,10 +35,10 @@ Increment the address field of `cs2` by `rs1` shifted left by 4 bit positions. C
 Legacy Mode Description::
 Increment `rs2` by `rs1` shifted left by 4 bit positions.
 
-Prerequisites CSH4ADD::
+Prerequisites for Capability Mode::
 {cheri_base_ext_name}
 
-Prerequisites for SH4ADD::
+Prerequisites for legacy Mode::
 {cheri_legacy_ext_name}
 
 Capability Mode Operation::
