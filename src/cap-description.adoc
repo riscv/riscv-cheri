@@ -289,10 +289,7 @@ NOTE: Reserved bits must be 0 in valid capabilities.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the
-in-memory format, and also increase precision for RV32. When EF=0, T and B
-are now shifted right rather than left within the address. Also, the bounds
-decoding for XLENMAX=32 uses a trick (see bit T8) to save one bit when encoding
-the exponent.
+in-memory format, and also increase precision for RV32.
 endif::[]
 
 The components of a capability are encoded as shown in
@@ -322,6 +319,22 @@ WARNING: #TODO: The pseudo-code below does not have a formal notation. It is
 simply a place-holder while the Sail implementation is available. In this
 notation, / means "integer division", [] are the bit-select operators, and
 arithmetic is signed.#
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The IE bit from CHERI v9 is renamed EF and its value is
+inverted to ensure that the <<NULL>> capability is encoded as zero without the
+need for CHERI v9's in-memory format. +
+When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
+with T and B to form the top and base addresses respectively. +
+When EF=0, the exponent `E=CAP_MAX_E - ( (XLENMAX == 32) ? { T8, TE, BE } : { TE, BE } )`,
+so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
+and base addresses respectively. E is computed by subtracting from the maximum
+possible exponent CAP_MAX_E which can be efficiently implemented in hardware
+assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise
+shift right by E. In contrast, CHERI v9 implementations computed the top and
+base addresses by assumming that T and B are at bit 0 and performing a logical
+bitwise shift left by E.
+endif::[]
 
 ```
 EW        = (XLENMAX == 32) ? 5 : 6
