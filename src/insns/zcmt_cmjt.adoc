@@ -3,16 +3,11 @@
 [#CM_JT,reftext="CM.JT"]
 ==== CM.JT
 
-See <<CM.CJT>> and cite:[riscv-code-size-spec].
-
-[#CM_CJT,reftext="CM.CJT"]
-==== CM.CJT
-
 Synopsis::
-Jump via table with link (CM.CJT, CM.JT), 16-bit encodings
+Jump via table with link (CM.JT), 16-bit encodings
 
 Capability Mode Mnemonic::
-`cm.cjt _index_`
+`cm.jt _index_`
 
 Legacy Mode Mnemonics::
 `cm.jt _index_`
@@ -30,7 +25,7 @@ Encoding::
 
 [NOTE]
 
-  For this encoding to decode as <<CM.CJT>>/<<CM.JT>>, _index<32_, otherwise it decodes as <<CM.CJALT>>/<<CM.JALT>>.
+  For this encoding to decode as <<CM.JT>>, _index<32_, otherwise it decodes as <<CM.JALT>>.
 
 Capability Mode Description::
 Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>.
@@ -57,10 +52,10 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for CM.CJT::
+Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}, Zcmt
 
-Prerequisites for CM.JT::
+Prerequisites for Legacy Mode::
 {c_cheri_legacy_ext_names}, Zcmt
 
 Operation::
