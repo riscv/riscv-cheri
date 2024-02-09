@@ -1,23 +1,16 @@
 <<<
-//[#insns-cjr_jr-16bit,reftext="Conditional branches (C.CJR, C.JR), 16-bit encodings"]
 
 [#C_JR,reftext="C.JR"]
 ==== C.JR
-
-See <<C.CJR>>.
-
-[#C_CJR,reftext="C.CJR"]
-==== C.CJR
-
 
 Synopsis::
 Register based jumps without link, 16-bit encodings
 
 Capability Mode Mnemonic::
-`c.cjr cs1`
+`c.jr cs1`
 
 Capability Mode Expansion::
-`cjalr c0, 0(cs1)`
+`jalr c0, 0(cs1)`
 
 Legacy Mode Mnemonic::
 `c.jr rs1`
@@ -36,15 +29,15 @@ Set the next PC according to the standard `jalr` definition.
  Check a minimum length instruction is in <<pcc>> bounds at the target PC, take a CHERI Length Violation exception on error.
 
 Exceptions::
-See <<CJALR>>, <<JALR>>
+See <<JALR>>
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for C.CJALR::
+Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}
 
-Prerequisites for C.JALR::
+Prerequisites for Legacy Mode::
 {c_cheri_legacy_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
- See <<CJALR>>, <<JALR>>
+ See <<JALR>>

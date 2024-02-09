@@ -1,31 +1,22 @@
 <<<
-//[#insns-cj_j-16bit,reftext="Conditional branches (C.CJ,C.J), 16-bit encodings"]
 
 [#C_J,reftext="C.J"]
 ==== C.J
 
-See <<C.CJ>>.
-
-[#C_CJ,reftext="C.CJ"]
-==== C.CJ
-
 Synopsis::
 Register based jumps without link, 16-bit encodings
 
-Capability Mode Mnemonic::
-`c.cj offset`
+Mnemonic::
+`c.j offset`
 
 Capability Mode Expansion::
-`cjal c0, offset`
-
-Legacy Mode Mnemonic::
-`c.j offset`
+`jal c0, offset`
 
 Legacy Mode Expansion::
 `jal x0, offset`
 
 Encoding::
-include::wavedrom/c-cj-format-ls.adoc[]
+include::wavedrom/c-j-format-ls.adoc[]
 
 Description::
 Set the next PC following the standard `jal` definition.
@@ -33,15 +24,15 @@ Set the next PC following the standard `jal` definition.
  *There is no difference in Capability Mode or Legacy Mode execution for this instruction.*
 
 Exceptions::
-See <<CJAL>>, <<JAL>>
+See <<JAL>>
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for C.CJ::
+Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}
 
-Prerequisites for C.J::
+Prerequisites for Legacy Mode::
 {c_cheri_legacy_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
- See <<CJAL>>, <<JAL>>
+ See <<JAL>>
