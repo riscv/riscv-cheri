@@ -1,42 +1,38 @@
 <<<
 
-[#JALR_PCC,reftext="JALR.PCC"]
-==== JALR.PCC
-
-See <<JALR_CAP>>.
-
-[#JALR_CAP,reftext="JALR.CAP"]
-==== JALR.CAP
+[#JALR_MODE,reftext="JALR.MODE"]
+==== JALR.MODE
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* These instructions used to have separate encodings in
-CHERI v9. The instructions depend on the CHERI execution mode and now
-they share the same *new* encoding.
+NOTE: *CHERI v9 Note:* This instruction used to have separate encodings in
+CHERI v9 for each mode. The behaviour depends on the CHERI execution mode and now
+only use a single *new* encoding.
 endif::[]
 
 Synopsis::
 Indirect jump and link (via integer address or capability)
 
 Capability Mode Mnemonic::
-`jalr.pcc rd, rs1`
+`jalr.mode rd, rs1`
 
 Legacy Mode Mnemonic::
-`jalr.cap cd, cs1`
+`jalr.mode cd, cs1`
 
 Encoding::
 include::wavedrom/ct-unconditional-jalr-cap.adoc[]
 
 Capability Mode Description::
-JALR.PCC allows unconditional jumps to a target integer address. The target
+JALR.MODE allows unconditional jumps to a target integer address. The target
 address in `rs1` is installed in the address field of the <<pcc>>. The address
-of the instruction following the jump (<<pcc>> + 4) is written to `rd`. This is identical to the standard <<JALR>> instruction, but with zero offset.
+of the instruction following the jump (<<pcc>> + 4) is written to `rd`.
+This is identical to the legacy mode <<JALR>> instruction, but with zero offset.
 
 Legacy Mode Description::
-JALR.CAP allows unconditional jumps to a target capability. The capability in
+JALR.MODE allows unconditional jumps to a target capability. The capability in
 `cs1` is installed in <<pcc>>. The <<pcc>> of the next instruction following
 the jump (<<pcc>> + 4) is sealed and written to `cd`. This instruction can be
-used to change the current CHERI execution mode and is identical to <<CJALR>>
-but with zero offset.
+used to change the current CHERI execution mode and is identical to
+<<JALR>> in capability mode but with zero offset.
 
 Exception::
 When these instructions cause CHERI exceptions, _CHERI jump or
@@ -45,7 +41,7 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 [%autowidth,options=header,align=center]
 |==============================================================================
-| CAUSE                 | JALR.PCC | JALR.CAP| Reason
+| CAUSE                 | Legacy Mode | Capability Mode| Reason
 | Tag violation         |          | ✔       | `cs1` has tag set to 0
 | Seal violation        |          | ✔       | `cs1` is sealed and the immediate is not 0
 | Permission violation  |          | ✔       | `cs1` does not grant <<x_perm>>
@@ -54,19 +50,13 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites JALR.PCC::
+Prerequisites for Capability Mode::
  {cheri_base_ext_name}
 
-Prerequisites JALR.CAP::
+Prerequisites Legacy Mode::
  {cheri_legacy_ext_name}
 
-Operation JALR.PCC::
-+
---
-TODO
---
-
-Operation JALR.CAP::
+Operation::
 +
 --
 TODO

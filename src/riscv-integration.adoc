@@ -122,7 +122,7 @@ cleared, if the encoding cannot represent the bounds exactly
 * <<CSETBOUNDSINEXACT>>: set the base and length of a capability. The base will be
 rounded down and/or the length will be rounded up if the encoding cannot represent
 the bounds exactly
-* <<CSEAL>>: seal capability
+* <<CSEALENTRY>>: seal capability as a sentry capability
 * <<CBUILDCAP>>: replace the base, top, address, permissions and mode fields of a
 capability with the fields from another capability
 * <<CMOVE>>: move a capability from a *c* register to another *c* register
@@ -216,9 +216,8 @@ if the input register of the instruction holds a capability. The output is XLEN
 bits written to an *x* register; the tag and capability metadata of that
 register are zeroed.
 
-The add upper immediate to <<pcc>> instruction (<<AUIPCC>>) replaces the add upper
-immediate to *pc* instruction (<<AUIPC>>) at the same encoding. <<AUIPCC>> is used to
-build <<pcc>>-relative capabilities. <<AUIPCC>> forms a 32-bit offset from the 20-bit
+The add upper immediate to <<pcc>> instruction (<<AUIPC>>) is used to
+build <<pcc>>-relative capabilities. <<AUIPC>> forms a 32-bit offset from the 20-bit
 immediate and filling the lowest 12 bits with zeros. The <<pcc>> address is then
 incremented by the offset and a representability check is performed so the
 capability's tag is cleared if the new address is outside the <<pcc>>'s
@@ -233,14 +232,12 @@ to the base behaviour as described below.
 
 ===== Unconditional Jumps
 
-The capability jump and link (<<CJAL>>) instruction replaces jump and link (<<JAL>>) at
-the same encoding. <<CJAL>> sign-extends the offset and adds it to the address of
+<<JAL>> sign-extends the offset and adds it to the address of
 the jump instruction to form the target address. The target address is
 installed in the address field of <<pcc>>. The capability with the address of the
 instruction following the jump (<<pcc>> + 4) is written to a *c* register.
 
-The capability jump and link register (<<CJALR>>) instruction replaces the jump
-and link register (<<JALR>>) instruction at the same encoding. This instruction
+<<JALR>>
 allows unconditional jumps to a target capability. The target capability is
 obtained by incrementing the capability in the *c* register operand by the
 sign-extended 12-bit immediate if the immediate is not zero, then setting the
@@ -251,7 +248,7 @@ and written to a *c* register.
 All jumps cause CHERI exceptions when a minimum sized instruction
 at the target address is not within the bounds of the <<pcc>>.
 
-<<CJALR>> causes a CHERI exception when:
+<<JALR>> causes a CHERI exception when:
 
 * The target capability's tag is zero
 * The target capability is sealed and the immediate is not zero
@@ -259,8 +256,8 @@ at the target address is not within the bounds of the <<pcc>>.
 within bounds
 * The target capability does not grant execute permission
 
-<<CJAL>> and <<CJALR>> can also cause instruction address misaligned exceptions
-following the standard RISC-V rules for <<JAL>> and <<JALR>>.
+<<JAL>> and <<JALR>> can also cause instruction address misaligned exceptions
+following the standard RISC-V rules.
 
 [#condbr-purecap]
 ===== Conditional Branches
@@ -1025,7 +1022,7 @@ Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
 ==== Program Counter Capability (pcc)
 
 The <<pcc>> is made visible in a CSR. This provides access to an
-<<infinite-cap>> capability while in debug mode without executing <<AUIPCC>>.
+<<infinite-cap>> capability while in debug mode without executing <<AUIPC>>.
 
 <<pcc>> resets to the <<infinite-cap>> capability with the address field set to the core boot address.
 
@@ -1056,7 +1053,7 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 6+| *CSR/Xret additional exception check*
 | CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
 6+| *direct jumps additional exception check*
-| <<CJAL>>, <<JAL>>, <<insns-conbr-32bit>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} | <<pcc>> length | any byte of minimum length instruction at target out of <<pcc>> bounds
+| <<JAL>>, <<insns-conbr-32bit>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} | <<pcc>> length | any byte of minimum length instruction at target out of <<pcc>> bounds
 6+| *indirect jumps additional exception checks*
 | indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}    |`cs1` tag       | not(`cs1.tag`)
 | indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}   |`cs1` seal      | isCapSealed(`cs1`) and imm12 != 0
@@ -1081,7 +1078,7 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 | capability stores                              | 6                    | N/A                     | N/A                        |capability alignment  | Misaligned capability store
 |=========================================================================================
 
-NOTE: Indirect branches are <<CJALR>>, <<JALR>>, <<JALR.PCC>>, <<JALR.CAP>>, conditional branches are <<insns-conbr-32bit>>.
+NOTE: Indirect branches are <<JALR>>, <<JALR.MODE>>, conditional branches are <<insns-conbr-32bit>>.
 
 NOTE: <<CBO.ZERO>> issues as a cache block wide store.  All
 CMOs operate on the cache block which contains the address.  Prefetches check
@@ -1159,6 +1156,7 @@ semantics of <<CSETADDR>>
 This implies that sealed capabilities will always get their tags cleared when
 written to these CSRs unless the specification explicitly states that the CSR
 behaves otherwise (see <<mepcc>> and <<sepcc>>). Also notes that <<pcc>> is
-available in a read-only CSR. It can be written with <<CJALR>> instruction
-which automatically unseals the capability _before_ the invalid address
+available in a read-only CSR. It can be written with a <<JALR>> instruction
+in capability mode or a <<JALR.MODE>> instruction in legacy mode
+which automatically unseal the capability _before_ the invalid address
 conversion above.

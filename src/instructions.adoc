@@ -11,7 +11,7 @@ checked against <<ddc>>
 . In Legacy mode, a minimum length instruction at the target of all indirect
 jumps is bounds checked against <<pcc>>
 . In Capability mode a minimum length instruction at the target of all indirect
-jumps is bounds checked against `cs1` (e.g. <<CJALR>>)
+jumps is bounds checked against `cs1` (e.g. <<JALR>>)
 . A minimum length instruction at the taken target of all direct
 jumps and conditional branches is bounds checked against <<pcc>> regardless of
 CHERI execution mode
@@ -40,7 +40,7 @@ include::insns/csethigh_32bit.adoc[]
 
 include::insns/csetequalexact_32bit.adoc[]
 
-include::insns/cseal_32bit.adoc[]
+include::insns/csealentry_32bit.adoc[]
 
 include::insns/ctestsubset_32bit.adoc[]
 
@@ -69,13 +69,13 @@ include::insns/store_32bit_cap.adoc[]
 <<<
 === RV32I/E and RV64I/E Base Integer Instruction Sets
 
-include::insns/auipcc_32bit.adoc[]
+include::insns/auipc_32bit.adoc[]
 
 include::insns/condbr_32bit.adoc[]
 
-include::insns/cjalr_jalr_32bit.adoc[]
+include::insns/jalr_32bit.adoc[]
 
-include::insns/cjal_jal_32bit.adoc[]
+include::insns/jal_32bit.adoc[]
 
 include::insns/load_32bit.adoc[]
 
@@ -127,13 +127,13 @@ include::insns/addi4spn_16bit.adoc[]
 
 include::insns/modeswitch_16bit.adoc[]
 
-include::insns/cjalr_jalr_16bit.adoc[]
+include::insns/jalr_16bit.adoc[]
 
-include::insns/cjr_jr_16bit.adoc[]
+include::insns/jr_16bit.adoc[]
 
-include::insns/cjal_jal_16bit.adoc[]
+include::insns/jal_16bit.adoc[]
 
-include::insns/cj_j_16bit.adoc[]
+include::insns/j_16bit.adoc[]
 
 include::insns/load_16bit.adoc[]
 
@@ -259,10 +259,6 @@ See <<CM_JALT>>, <<CM_JT>>.
 
 If the access to the jump table succeeds, then the instructions execute as follows:
 
-* In capability mode
-** <<CM_JT>> executes as <<CJ>> or <<AUIPCC>>+<<CJR>>
-** <<CM_JALT>> executes as <<CJAL>> or <<AUIPCC>>+<<CJALR>>
-* In legacy mode
 ** <<CM_JT>> executes as <<J>> or <<AUIPC>>+<<JR>>
 ** <<CM_JALT>> executes as <<JAL>> or <<AUIPC>>+<<JALR>>
 

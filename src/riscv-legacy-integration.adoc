@@ -123,17 +123,17 @@ the tag and metadata of that register are implicitly set to 0.
 The unconditional jump instructions change behaviour depending on the CHERI
 execution mode although the instruction's encoding remains unchanged.
 
-The jump and link instruction is <<CJAL>> when the CHERI execution mode is
-Capability; the instruction behaves as described in
-xref:section_existing_riscv_insns[xrefstyle=short]. That encoding is <<JAL>>
-when the mode is Legacy. In this case, the address of the instruction
+The jump and link instruction <<JAL>> when the CHERI execution mode is
+Capability; behaves as described in
+xref:section_existing_riscv_insns[xrefstyle=short].
+When the mode is Legacy. In this case, the address of the instruction
 following the jump (*pc* + 4) is written to an *x* register; that register's
 tag and capability metadata are zeroed.
 
-The jump and link register instruction is <<CJALR>> when the CHERI execution mode
-is Capability; the instruction behaves as described in
-xref:section_existing_riscv_insns[xrefstyle=short]. That encoding is <<JALR>>
-when the mode is Legacy. In this case, the target address is obtained by adding
+The jump and link register instruction is <<JALR>> when the CHERI execution mode
+is Capability; behaves as described in
+xref:section_existing_riscv_insns[xrefstyle=short].
+When the mode is Legacy. In this case, the target address is obtained by adding
 the sign-extended 12-bit immediate to the *x* register operand, then setting
 the least significant bit of the result to zero. The target address is then
 written to the <<pcc>> address and a representability check is performed. The
@@ -241,6 +241,9 @@ When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated t
 the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
 hart's context.
 
+As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
+so it does not need to be able to hold all possible invalid addresses.
+
 [#section_cheri_disable]
 === Disabling CHERI Features
 
@@ -251,7 +254,7 @@ endif::[]
 
 {cheri_legacy_ext_name} includes functions to disable most CHERI features. For
 example, executing in a privilege mode where the effective XLEN is less than
-XLENMAX. The following occurs when executing code in a privileged that has
+XLENMAX. The following occurs when executing code in a privileged mode that has
 CHERI disabled:
 
 * The CHERI instructions in xref:section_cap_instructions[xrefstyle=short] (and
@@ -377,6 +380,9 @@ The <<ddc>> CSR is a read-write capability register implicitly used as an
 operand to authorise all data memory accesses when the current CHERI mode is
 Legacy. This register must be readable in any implementation. Its reset value
 is the <<infinite-cap>> capability.
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<ddc>> is a data pointer,
+so it does not need to be able to hold all possible invalid addresses.
 
 .Unprivileged default data capability register
 include::img/ddcreg.edn[]
