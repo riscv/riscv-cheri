@@ -1,28 +1,18 @@
 <<<
 
-[#CJR,reftext="CJR"]
-==== CJR
-
-Expands to <<CJALR>> following the expansion rule for <<JR>> expanding to <<JARL>> from cite:[riscv-unpriv-spec].
-
 [#JR,reftext="JR"]
 ==== JR
 
 Expands to <<JALR>> following the expansion rule from cite:[riscv-unpriv-spec].
 
-[#CJALR,reftext="CJALR"]
-==== CJALR
-
-See <<JALR>>
-
 [#JALR,reftext="JALR"]
-==== CJALR, JALR
+==== JALR
 
 Synopsis::
 Jump and link register
 
 Capability Mode Mnemonic::
-`cjalr cd, cs1, offset`
+`jalr cd, cs1, offset`
 
 Legacy Mode Mnemonic::
 `jalr rd, rs1, offset`
@@ -31,7 +21,7 @@ Encoding::
 include::wavedrom/ct-unconditional-2.adoc[]
 
 Capability Mode Description::
-CJALR allows unconditional, indirect jumps to a target capability. The
+JALR allows unconditional, indirect jumps to a target capability. The
 target capability is obtained by unsealing `cs1` if the immediate is zero and
 incrementing its address by the sign-extended 12-bit immediate otherwise,
 and then setting the least-significant bit of the
@@ -57,7 +47,7 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 [%autowidth,options=header,align=center]
 |==============================================================================
-| CAUSE                 | JALR | CJALR | Reason
+| CAUSE                 | Legacy Mode | Capability Mode | Reason
 | Tag violation         |      | ✔     | `cs1` has tag set to 0
 | Seal violation        |      | ✔     | `cs1` is sealed and the immediate is not 0
 | Permission violation  |      | ✔     | `cs1` does not grant <<x_perm>>
@@ -66,19 +56,13 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites CJALR::
+Prerequisites Capability Mode::
 {cheri_base_ext_name}
 
-Prerequisites JALR::
+Prerequisites Legacy Mode::
 {cheri_legacy_ext_name}
 
-CJALR Operation::
-+
---
-TBD
---
-
-JALR Operation::
+Operation::
 +
 --
 TBD

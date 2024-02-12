@@ -1,29 +1,18 @@
 <<<
-//[#insns-cjal_jal-32bit,reftext="Jumps (CJAL, JAL), 32-bit encodings"]
-
-[#CJ,reftext="CJ"]
-==== CJ
-
-Expands to <<CJAL>> following the expansion rule for <<J>> expanding to <<JAL>> from cite:[riscv-unpriv-spec].
 
 [#J,reftext="J"]
 ==== J
 
 Expands to <<JAL>> following the expansion rule from cite:[riscv-unpriv-spec].
 
-[#CJAL,reftext="CJAL"]
-==== CJAL
-
-See <<JAL>>
-
 [#JAL,reftext="JAL"]
-==== CJAL, JAL
+==== JAL
 
 Synopsis::
 Jump and link
 
 Capability Mode Mnemonic::
-`cjal cd, offset`
+`jal cd, offset`
 
 Legacy Mode Mnemonic::
 `jal rd, offset`
@@ -32,7 +21,7 @@ Encoding::
 include::wavedrom/ct-unconditional.adoc[]
 
 Capability Mode Description::
-CJAL's immediate encodes a signed offset in multiple of 2 bytes. The <<pcc>> is
+JAL's immediate encodes a signed offset in multiple of 2 bytes. The <<pcc>> is
 incremented by the sign-extended offset to form the jump target capability. The
 target capability is written to <<pcc>>. The <<pcc>> of the next instruction
 following the jump (<<pcc>> + 4) is sealed and written to `cd`.
@@ -49,19 +38,13 @@ address is not within the bounds of the <<pcc>>. In this case, _CHERI jump or
 branch fault_ is reported in the TYPE field and Length Violation is reported in
 the CAUSE field of <<mtval>> or <<stval>>.
 
-Prerequisites for CJAL::
+Prerequisites for Capability Mode::
 {cheri_base_ext_name}
 
-Prerequisites for JAL::
+Prerequisites for Legacy Mode::
 {cheri_legacy_ext_name}
 
-CJAL Operation::
-+
---
-TODO
---
-
-JAL Operation TODO #where's the target check?# ::
+Operation::
 +
 --
 TODO

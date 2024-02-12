@@ -179,19 +179,33 @@ references if that SDP bit is set because it "owns" that object.
 ==== Sealed (S) Bit
 
 ifdef::cheri_v9_annotations[]
-WARNING: *CHERI v9:* The sealing bit is new (1-bit otype) and the old CHERI v9 otype no longer exists.
+WARNING: *CHERI v9:* The sealing bit is new (1-bit otype) and the old CHERI v9
+otype no longer exists. Please note that this bit indicates the result of what
+was done in two instructions in CHERI v9: CSeal for sealed capabilities and
+CSealEntry for sealed entry capabilties.
 endif::[]
 
-Indicates that a capability is sealed if the bit is 1 or unsealed if it is 0.
+This bit indicates that a capability is sealed if the bit is 1 or unsealed if it is 0.
+
+The sealing bit conflates two concepts in one bit: Sealing data capabilities and
+creating sealed entry capabilities as described below.
+
 Sealed capabilities cannot be dereferenced to access memory and are immutable
 such that modifying any of its fields clears the tag of the output capability.
 
-In {cheri_base_ext_name}, the sealing bit is used to implement immutable
-capabilities that describe function entry points. A program may jump to a
-sealed capability to begin executing the instructions it references. The jump
+NOTE: Sealed capabilities might be useful to software as tokens that can be passed
+around. The only way of removing the seal bit of a capability is by rebuilding
+it via a superset capability with <<CBUILDCAP>>. {cheri_base_ext_name} does not offer
+an unseal instruction.
+
+For code capabilities, the sealing bit is used to implement immutable
+capabilities that describe function entry points. Such capabilities can be leveraged
+to establish a form of control-flow integrity between mutually distrusting code. These
+capabilities are known as sealed entry (sentry) capabilities. A program may jump to a
+sentry capability to begin executing the instructions it references. The jump
 instruction automatically unseals the capability and installs it to the
 program counter capability (see
-xref:section_riscv_programmers_model[xrefstyle=short]). The <<CJALR>> instruction
+xref:section_riscv_programmers_model[xrefstyle=short]). The <<JALR>> instruction
 also seals the return address capability (if any) since it is the entry point
 to the caller function.
 
