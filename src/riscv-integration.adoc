@@ -110,8 +110,8 @@ permissions or larger bounds compared to the input capability, or the operation
 results in a capability with malformed bounds. These instructions do not give
 rise to exceptions.
 
-* <<CSETADDR>>: set the address of a capability to an arbitrary address
-* <<CINCOFFSET>>, <<CINCOFFSETIMM>>: increment the address of the input capability
+* <<SCADDR>>: set the address of a capability to an arbitrary address
+* <<CADD>>, <<CADDI>>: increment the address of the input capability
 by an arbitrary offset
 * <<CSETHIGH>>: replace a capability's metadata with an arbitrary value. The
 output tag is always 0
@@ -125,7 +125,7 @@ the bounds exactly
 * <<CSEALENTRY>>: seal capability as a sentry capability
 * <<CBUILDCAP>>: replace the base, top, address, permissions and mode fields of a
 capability with the fields from another capability
-* <<CMOVE>>: move a capability from a *c* register to another *c* register
+* <<CMV>>: move a capability from a *c* register to another *c* register
 
 NOTE: <<CBUILDCAP>> outputs a capability with tag set to 0 if the input
 capability's bounds are malformed.
@@ -338,7 +338,7 @@ There are special rules for updating specific CLEN-wide CSRs as shown in <<exten
 of the capability when specifying a capability CSR such as <<mtvecc>>.
 They calculate the final address using the standard
 RISC-V behaviour (set bits, clear bits etc.) and that final address is
-updated in the capability. The update typically uses the semantics of a <<CSETADDR>>
+updated in the capability. The update typically uses the semantics of a <<SCADDR>>
 instruction which clears the tag if the capability is sealed, or if the
 updated address is not representable. <<extended_CSR_writing>> shows the
 exact action taken for each capability width CSR.
@@ -1149,7 +1149,7 @@ these CSRs:
 hold
 . If conversion _was_ required, then A's tag is cleared if A is
 sealed or if the new address is not representable -- this is equivalent to the
-semantics of <<CSETADDR>>
+semantics of <<SCADDR>>
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
 
