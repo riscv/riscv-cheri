@@ -61,7 +61,17 @@ xref:extended_CSR_writing[xrefstyle=short].
 See xref:aliased_CSRs[xrefstyle=short] for a list of CLEN-wide CSRs and
 xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing an XLEN-wide value to each one.
 +
+If `cd` is `c0` (or `rd` is `x0`), then <<CSRRWI>> shall not read the CSR and
+and shall not cause any of the side effects that might occur on a CSR read. If
+`rs1` is `x0`, then <<CSRRS>>, <<CSRRC>>, <<CSRRSI>> and <<CSRRCI>> will not
+write to the CSR at all, and so shall not cause any of the side effects that
+might otherwise occur on a CSR write.
++
 Access to XLEN-wide CSRs from other extensions is as specified by RISC-V.
+
+NOTE: If `rs1` is `x0` and the CSR accessed is a capability, then <<CSRRS>>,
+<<CSRRC>>, <<CSRRSI>> and <<CSRRCI>> do not write so no representability check
+is needed in this case.
 
 Permissions::
 All non-user mode accessible CSRs require <<asr_perm>>, including existing RISC-V CSRs.
