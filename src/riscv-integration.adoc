@@ -113,13 +113,13 @@ rise to exceptions.
 * <<SCADDR>>: set the address of a capability to an arbitrary address
 * <<CADD>>, <<CADDI>>: increment the address of the input capability
 by an arbitrary offset
-* <<CSETHIGH>>: replace a capability's metadata with an arbitrary value. The
+* <<SCHI>>: replace a capability's metadata with an arbitrary value. The
 output tag is always 0
 * <<CANDPERM>>: bitwise AND of a mask value with a bit map representation of the
 architectural (AP) and software-defined (SDP) permissions fields
-* <<CSETBOUNDS>>: set the base and length of a capability. The tag is
+* <<SCBNDS>>: set the base and length of a capability. The tag is
 cleared, if the encoding cannot represent the bounds exactly
-* <<CSETBOUNDSINEXACT>>: set the base and length of a capability. The base will be
+* <<SCBNDSR>>: set the base and length of a capability. The base will be
 rounded down and/or the length will be rounded up if the encoding cannot represent
 the bounds exactly
 * <<CSEALENTRY>>: seal capability as a sentry capability
@@ -131,8 +131,8 @@ NOTE: <<CBUILDCAP>> outputs a capability with tag set to 0 if the input
 capability's bounds are malformed.
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* <<CSETBOUNDS>> and <<CSETBOUNDSIMM>> perform the role
-of the old CSETBOUNDSEXACT while the new <<CSETBOUNDSINEXACT>> is the old
+NOTE: *CHERI v9 Note:* <<SCBNDS>> and <<SCBNDSI>> perform the role
+of the old CSETBOUNDSEXACT while the <<SCBNDSR>> is the old
 CSETBOUNDS.
 endif::[]
 

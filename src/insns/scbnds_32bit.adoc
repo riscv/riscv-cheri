@@ -1,16 +1,17 @@
 <<<
 
-[#CSETBOUNDSIMM,reftext="CSETBOUNDSIMM"]
-==== CSETBOUNDSIMM
+[#SCBNDSI,reftext="SCBNDSI"]
+==== SCBNDSI
 
-See <<CSETBOUNDS>>.
+See <<SCBNDS>>.
 
-[#CSETBOUNDS,reftext="CSETBOUNDS"]
-==== CSETBOUNDS
+[#SCBNDS,reftext="SCBNDS"]
+==== SCBNDS
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* <<CSETBOUNDS>> was CSETBOUNDSEXACT,
-<<CSETBOUNDSIMM>> would have been CSETBOUNDSEXACTIMM if it had existed.
+NOTE: *CHERI v9 Note:* SCBNDS was called CSETBOUNDS.
+
+NOTE: *CHERI v9 Note:* SCBNDSI would have been CSETBOUNDSEXACTIMM if it had existed.
 endif::[]
 
 include::new_encoding_note.adoc[]
@@ -23,11 +24,11 @@ Synopsis::
 Capability set bounds
 
 Mnemonic::
-`csetbounds cd, cs1, rs2` +
-`csetboundsimm cd, cs1, uimm`
+`scbnds cd, cs1, rs2` +
+`scbndsi cd, cs1, uimm`
 
 Encoding::
-include::wavedrom/csetbounds_32bit.adoc[]
+include::wavedrom/scbnds_32bit.adoc[]
 
 Description::
 Capability register `cd`  is set to capability register `cs1`  with the base
@@ -37,22 +38,20 @@ cannot be represented exactly then set `cd.tag` to 0.
 In all cases, `cd.tag` is set to 0 if its bounds exceed `cs1` 's bounds, `cs1` 's
 tag is 0  or `cs1` is sealed.
 +
-<<CSETBOUNDSIMM>> uses the `s` bit to scale the immediate by 4 places
+<<SCBNDSI>> uses the `s` bit to scale the immediate by 4 places
 +
 `immediate = ZeroExtend(s ? uimm<<4 : uimm)`
 
 Prerequisites::
 {cheri_base_ext_name}
 
-TODO: #this is the CSetBoundsExact() function which will be renamed#
-
-Operation for CSETBOUNDS::
+Operation for SCBNDS::
 +
 --
 TODO
 --
 
-Operation for CSETBOUNDSIMM::
+Operation for SCBNDSI::
 +
 --
 TODO
