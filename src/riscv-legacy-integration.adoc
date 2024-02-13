@@ -226,9 +226,10 @@ shown in xref:legacy-csrnames-added[xrefstyle=short].
 [#dddc,reftext="dddc"]
 === Debug Default Data Capability (dddc)
 
-<<dddc>> is a register that is able to hold a capability. Its reset value is
-the <<null-cap>> capability. The address is shown in
+<<dddc>> is a register that is able to hold a capability. The address is shown in
 xref:legacy-csrnames-added[xrefstyle=short].
+
+{TAG_RESET_CSR}
 
 .Debug default data capability
 include::img/dddcreg.edn[]
@@ -327,7 +328,10 @@ hardware register (i.e. CLEN bits) to correctly decode capability bounds.
 
 The <<mtdc>> register is capability width read/write register dedicated
 for use by machine mode. Typically, it is used to hold a data capability to a
-machine-mode hart-local context space, to load into <<ddc>>. <<mtdc>>'s reset
+machine-mode hart-local context space, to load into <<ddc>>.
+
+{TAG_RESET_CSR}
+
 value is the <<null-cap>> capability.
 
 .Machine-mode trap data capability register
@@ -352,8 +356,9 @@ CHERI execution mode is Capability. When CME=0, the mode is Legacy.
 
 The <<stdc>> register is capability width read/write register dedicated
 for use by supervisor mode. Typically, it is used to hold a data capability to
-a supervisor-mode hart-local context space, to load into <<ddc>>. <<stdc>>'s
-reset value is the <<null-cap>> capability.
+a supervisor-mode hart-local context space, to load into <<ddc>>.
+
+{TAG_RESET_CSR}
 
 .Supervisor trap data capability register (*stdc*)
 include::img/stdcreg.edn[]
