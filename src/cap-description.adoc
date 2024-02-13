@@ -146,7 +146,7 @@ and 64-bit.#
 
 NOTE: When XLENMAX=32 there is a single reserved permission encoding (see
 xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
-capability to have this value since <<CANDPERM>> will never create it. It is
+capability to have this value since <<ACPERM>> will never create it. It is
 possible for untagged capabilities to have it. <<GCPERM>> will interpret it
 as if it were 0b0000 (no permissions). Future extensions may assign meaning to
 the reserved bit pattern, in which case <<GCPERM>> is allowed to report a
@@ -195,7 +195,7 @@ such that modifying any of its fields clears the tag of the output capability.
 
 NOTE: Sealed capabilities might be useful to software as tokens that can be passed
 around. The only way of removing the seal bit of a capability is by rebuilding
-it via a superset capability with <<CBUILDCAP>>. {cheri_base_ext_name} does not offer
+it via a superset capability with <<CBLD>>. {cheri_base_ext_name} does not offer
 an unseal instruction.
 
 For code capabilities, the sealing bit is used to implement immutable

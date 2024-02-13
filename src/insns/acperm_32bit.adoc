@@ -1,12 +1,14 @@
 <<<
 
-[#CANDPERM,reftext="CANDPERM"]
-==== CANDPERM
+[#ACPERM,reftext="ACPERM"]
+==== ACPERM
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The implementation of this instruction changes
 because the permission fields are encoded differently in the new
 capability format.
+
+NOTE: *CHERI v9 Note:* this instruction was called CANDPERM.
 endif::[]
 
 include::new_encoding_note.adoc[]
@@ -15,10 +17,10 @@ Synopsis::
 Mask capability permissions
 
 Mnemonics::
-`candperm cd, cs1, rs2`
+`acperm cd, cs1, rs2`
 
 Encoding::
-include::wavedrom/candperm.adoc[]
+include::wavedrom/acperm.adoc[]
 
 Description::
 Converts the AP and SDP fields of capability `cs1` into a bit field; one bit
@@ -28,10 +30,10 @@ resulting bit field -- the capability grants a permission if the corresponding
 bit is set in the bit field -- and write the output capability to `cd` . The
 output capability has its tag set to 0 if `cs1` is sealed.
 
-include::../img/candperms_bit_field.edn[]
+include::../img/acperm_bit_field.edn[]
 
 NOTE: The AP field is not able to encode all combinations of permissions when
-XLENMAX=32. If permissions that cannot be encoded are indicated, CANDPERM
+XLENMAX=32. If permissions that cannot be encoded are indicated, ACPERM
 outputs a capability with all architectural permissions cleared.
 
 CAUTION: TODO: this may not be correct - we should work through the

@@ -1,10 +1,12 @@
 <<<
 
-[#CBUILDCAP,reftext="CBUILDCAP"]
-==== CBUILDCAP
+[#CBLD,reftext="CBLD"]
+==== CBLD
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* cbuildcap does not use ddc if cs1==0
+NOTE: *CHERI v9 Note:* CBLD does not use ddc if cs1==0
+
+NOTE: *CHERI v9 Note:* this instruction was called CBUILDCAP.
 endif::[]
 
 include::new_encoding_note.adoc[]
@@ -13,17 +15,17 @@ Synopsis::
 Capability build
 
 Mnemonic::
-`cbuildcap cd, cs1, cs2`
+`cbld cd, cs1, cs2`
 
 Encoding::
-include::wavedrom/cbuildcap.adoc[]
+include::wavedrom/cbld.adoc[]
 
 Description::
 Copy `cs2` to `cd` and set the tag to 1 if `cs1.tag` is set, `cs1` is not
 sealed, `cs1` 's permissions and bounds are equal or a superset of `cs2` 's,
 `cs2` 's bounds are not malformed (see
 xref:section_cap_malformed[xrefstyle=short]), and all reserved bits in `cs2` 's
-metadata are 0. <<CBUILDCAP>> is typically used alongside <<SCHI>> to build
+metadata are 0. <<CBLD>> is typically used alongside <<SCHI>> to build
 capabilities from integer values.
 
 NOTE: Although currently this will set the tag to 0 and leave the metadata
