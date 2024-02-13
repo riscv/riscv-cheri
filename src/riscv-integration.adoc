@@ -80,23 +80,23 @@ in a *c* register. The output is an integer value written to an *x* register
 representing the decoded field of the capability, such as the permissions or
 bounds. These instructions do not cause exceptions.
 
-* <<CGETTAG>>: inspects the tag of the input capability. The output is 1 if the
+* <<GCTAG>>: inspects the tag of the input capability. The output is 1 if the
 tag is set and 0 otherwise
-* <<CGETPERM>>: outputs the architectural (AP) and software-defined (SDP)
+* <<GCPERM>>: outputs the architectural (AP) and software-defined (SDP)
 permission fields of the input capability
-* <<CGETBASE>>: outputs the expanded base address of the input capability
-* <<CGETLEN>>: outputs the length of the input capability. Length is defined as
+* <<GCBASE>>: outputs the expanded base address of the input capability
+* <<GCLEN>>: outputs the length of the input capability. Length is defined as
 `top - base`. The output is 2^XLENMAX^-1 when the capability's length is
 2^XLENMAX^
 * <<CRAM>>: outputs the nearest bounds alignment that a valid capability can
 represent
-* <<CGETHIGH>>: outputs the compressed capability metadata
+* <<GCHI>>: outputs the compressed capability metadata
 * <<CSETEQUALEXACT>>: compares two capabilities including tag, metadata and
 address
 * <<CTESTSUBSET>>: tests whether the bounds and permissions of a capability are a
 subset of those from another capability
 
-NOTE: <<CGETBASE>> and <<CGETLEN>> output 0 when a capability with malformed
+NOTE: <<GCBASE>> and <<GCLEN>> output 0 when a capability with malformed
 bounds is provided as an input (see
 xref:section_cap_malformed[xrefstyle=short]).
 
