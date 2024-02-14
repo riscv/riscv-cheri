@@ -56,9 +56,13 @@ executed in addition to the checks already required by the base RISC-V ISA. A
 failing check causes a CHERI exception.
 
 * The tag must be set
-* The capability must not be sealed
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
+
+NOTE: Operations that update <<pcc>>, such as changing privilege or executing
+jump instructions, unseal capabilities prior to writing. Therefore,
+implementations do not need to check that that <<pcc>> is unsealed when
+executing each instruction.
 
 [#section_cap_instructions]
 === Capability Instructions
