@@ -89,25 +89,10 @@ the sign-extended offset.
 
 ==== Unconditional Capability Jumps
 
-The indirect jump and link <<pcc>> (<<JALR_PCC>>) instruction shares the same
-encoding with a new indirect jump and link capability (<<JALR_CAP>>) instruction.
-<<JALR_PCC>> is a {cheri_base_ext_name} instruction executed when the mode is
-Capability as described in
-xref:section_uncond_integer_addr_jump[xrefstyle=short]. In Legacy mode, the
-encoding is executed as <<JALR_CAP>> which allows unconditional jumps to a target
-capability. The target capability is provided in a *c* register and is written
-to <<pcc>>. The <<pcc>> of the next instruction following the jump (<<pcc>> + 4) is
-written to a *c* register. <<JALR_CAP>> cause CHERI exceptions when:
+The <<JALR_MODE>> instruction is modal, giving access to the functionality of
+<<JALR>> from either operating mode.
 
-* The target capability's tag is zero
-* A minimum sized instruction at the target capability's address is not
-within bounds
-* The target capability does not grant execute permission
-
-<<JALR_CAP>> causes an instruction address misaligned exception when the target
-address is misaligned.
-
-NOTE: <<JALR_CAP>> can be used to change the current CHERI execution mode when
+NOTE: <<JALR_MODE>> can be used to change the current CHERI execution mode when
 the implementation supports {cheri_mode_ext_name}.
 
 === Existing RISC-V Instructions

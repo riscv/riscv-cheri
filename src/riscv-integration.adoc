@@ -188,19 +188,8 @@ for software to discover and/or control the behaviour#
 [#section_uncond_integer_addr_jump]
 ==== Unconditional Integer Address Jumps
 
-The indirect jump and link <<pcc>> (<<JALR_PCC>>) instruction allows unconditional
-jumps to a target address. The target address is provided in an *x* register;
-the new address is installed in the address field of the <<pcc>>. The address of
-the instruction following the jump (*pc* + 4) is written to an *x* register.
-<<JALR_PCC>> causes an exception when a minimum sized instruction at the
-target address is not within the bounds of the <<pcc>> or the target address is
-misaligned.
-
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* This instruction is now modal and shares the same
-encoding with <<JALR_CAP>> when both {cheri_base_ext_name} and
-{cheri_legacy_ext_name} are supported.
-endif::[]
+The <<JALR_MODE>> instruction allows access to standard RISC-V <<JALR>> from
+capability mode, and in legacy mode it allows access to capability mode <<JALR>>.
 
 [#section_existing_riscv_insns]
 === Existing RISC-V Instructions
@@ -258,6 +247,10 @@ within bounds
 
 <<JAL>> and <<JALR>> can also cause instruction address misaligned exceptions
 following the standard RISC-V rules.
+
+Additionally, <<JALR_MODE>> allows standard RISC-V <<JALR>> behaviour to be
+available, with a zero offset. The target check on a minimum sized instruction
+is still present as for all jumps and branches.
 
 [#condbr-purecap]
 ===== Conditional Branches
