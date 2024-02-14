@@ -50,15 +50,14 @@ Upon entry to debug mode, cite:[riscv-debug-spec], does not specify how to
 update the PC, and says PC relative instructions may be illegal. This concept
 is extended to include any instruction which updates <<pcc>>.
 
+As a result, the value of <<pcc>> is UNSPECIFIED in debug mode, and has no
+architectural effect if PC relative instructions are illegal. Therefore
+<<asr_perm>> is implicitly granted for access to all CSRs in debug mode.
+
 <<dpcc>> (and consequently <<dpc>>) are updated with the
 capability in <<pcc>> whose address field is set to the address of the next
-instruction to be executed as described in cite:[riscv-debug-spec].
-
-Additionally, the <<pcc>> is updated as follows:
-
-* All metadata is set to the <<infinite-cap>> capability
-  ** The <<pcc>> may be used as a source of the <<infinite-cap>> capability in
-debug mode to allow other capabilities to be created and written into memory.
+instruction to be executed as described in cite:[riscv-debug-spec] upon
+debug mode entry.
 
 When leaving debug mode, the capability in <<dpcc>> is unsealed and written
 into <<pcc>>.  A debugger may write <<dpcc>> to change where the hart resumes
@@ -107,3 +106,13 @@ The <<dscratch1c>> register is a CLEN-bit plus tag bit extension to
 
 .Debug scratch 1 capability register
 include::img/dscratch1creg.edn[]
+
+[#dinfc,reftext="dinfc"]
+==== Debug Infinite Capability Register (dinfc)
+
+The <<dinfc>> register is a CLEN-bit plus tag bit CSR only accessible in debug mode.
+It returns the value of the <<infinite-cap>> capability. It is read/write but with no
+writeable fields, so writes are ignored.
+
+.Debug infinite capability register
+include::img/dinfcreg.edn[]
