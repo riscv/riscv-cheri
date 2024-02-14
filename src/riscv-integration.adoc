@@ -80,23 +80,23 @@ in a *c* register. The output is an integer value written to an *x* register
 representing the decoded field of the capability, such as the permissions or
 bounds. These instructions do not cause exceptions.
 
-* <<CGETTAG>>: inspects the tag of the input capability. The output is 1 if the
+* <<GCTAG>>: inspects the tag of the input capability. The output is 1 if the
 tag is set and 0 otherwise
-* <<CGETPERM>>: outputs the architectural (AP) and software-defined (SDP)
+* <<GCPERM>>: outputs the architectural (AP) and software-defined (SDP)
 permission fields of the input capability
-* <<CGETBASE>>: outputs the expanded base address of the input capability
-* <<CGETLEN>>: outputs the length of the input capability. Length is defined as
+* <<GCBASE>>: outputs the expanded base address of the input capability
+* <<GCLEN>>: outputs the length of the input capability. Length is defined as
 `top - base`. The output is 2^XLENMAX^-1 when the capability's length is
 2^XLENMAX^
 * <<CRAM>>: outputs the nearest bounds alignment that a valid capability can
 represent
-* <<CGETHIGH>>: outputs the compressed capability metadata
-* <<CSETEQUALEXACT>>: compares two capabilities including tag, metadata and
+* <<GCHI>>: outputs the compressed capability metadata
+* <<SCEQ>>: compares two capabilities including tag, metadata and
 address
-* <<CTESTSUBSET>>: tests whether the bounds and permissions of a capability are a
+* <<CSCC>>: tests whether the bounds and permissions of a capability are a
 subset of those from another capability
 
-NOTE: <<CGETBASE>> and <<CGETLEN>> output 0 when a capability with malformed
+NOTE: <<GCBASE>> and <<GCLEN>> output 0 when a capability with malformed
 bounds is provided as an input (see
 xref:section_cap_malformed[xrefstyle=short]).
 
@@ -110,29 +110,29 @@ permissions or larger bounds compared to the input capability, or the operation
 results in a capability with malformed bounds. These instructions do not give
 rise to exceptions.
 
-* <<CSETADDR>>: set the address of a capability to an arbitrary address
-* <<CINCOFFSET>>, <<CINCOFFSETIMM>>: increment the address of the input capability
+* <<SCADDR>>: set the address of a capability to an arbitrary address
+* <<CADD>>, <<CADDI>>: increment the address of the input capability
 by an arbitrary offset
-* <<CSETHIGH>>: replace a capability's metadata with an arbitrary value. The
+* <<SCHI>>: replace a capability's metadata with an arbitrary value. The
 output tag is always 0
-* <<CANDPERM>>: bitwise AND of a mask value with a bit map representation of the
+* <<ACPERM>>: bitwise AND of a mask value with a bit map representation of the
 architectural (AP) and software-defined (SDP) permissions fields
-* <<CSETBOUNDS>>: set the base and length of a capability. The tag is
+* <<SCBNDS>>: set the base and length of a capability. The tag is
 cleared, if the encoding cannot represent the bounds exactly
-* <<CSETBOUNDSINEXACT>>: set the base and length of a capability. The base will be
+* <<SCBNDSR>>: set the base and length of a capability. The base will be
 rounded down and/or the length will be rounded up if the encoding cannot represent
 the bounds exactly
-* <<CSEALENTRY>>: seal capability as a sentry capability
-* <<CBUILDCAP>>: replace the base, top, address, permissions and mode fields of a
+* <<SENTRY>>: seal capability as a sentry capability
+* <<CBLD>>: replace the base, top, address, permissions and mode fields of a
 capability with the fields from another capability
-* <<CMOVE>>: move a capability from a *c* register to another *c* register
+* <<CMV>>: move a capability from a *c* register to another *c* register
 
-NOTE: <<CBUILDCAP>> outputs a capability with tag set to 0 if the input
+NOTE: <<CBLD>> outputs a capability with tag set to 0 if the input
 capability's bounds are malformed.
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* <<CSETBOUNDS>> and <<CSETBOUNDSIMM>> perform the role
-of the old CSETBOUNDSEXACT while the new <<CSETBOUNDSINEXACT>> is the old
+NOTE: *CHERI v9 Note:* <<SCBNDS>> and <<SCBNDSI>> perform the role
+of the old CSETBOUNDSEXACT while the <<SCBNDSR>> is the old
 CSETBOUNDS.
 endif::[]
 
@@ -188,19 +188,8 @@ for software to discover and/or control the behaviour#
 [#section_uncond_integer_addr_jump]
 ==== Unconditional Integer Address Jumps
 
-The indirect jump and link <<pcc>> (<<JALR_PCC>>) instruction allows unconditional
-jumps to a target address. The target address is provided in an *x* register;
-the new address is installed in the address field of the <<pcc>>. The address of
-the instruction following the jump (*pc* + 4) is written to an *x* register.
-<<JALR_PCC>> causes an exception when a minimum sized instruction at the
-target address is not within the bounds of the <<pcc>> or the target address is
-misaligned.
-
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* This instruction is now modal and shares the same
-encoding with <<JALR_CAP>> when both {cheri_base_ext_name} and
-{cheri_legacy_ext_name} are supported.
-endif::[]
+The <<JALR_MODE>> instruction allows access to standard RISC-V <<JALR>>, so that
+the target register and link registers are both *x* registers, not *c* registers.
 
 [#section_existing_riscv_insns]
 === Existing RISC-V Instructions
@@ -258,6 +247,10 @@ within bounds
 
 <<JAL>> and <<JALR>> can also cause instruction address misaligned exceptions
 following the standard RISC-V rules.
+
+Additionally, <<JALR_MODE>> allows standard RISC-V <<JALR>> behaviour to be
+available, with a zero offset. The target check on a minimum sized instruction
+is still present as for all jumps and branches.
 
 [#condbr-purecap]
 ===== Conditional Branches
@@ -340,7 +333,7 @@ source operand is an *x* register. Therefore, the instructions atomically read
 CLEN bits from the CSR, calculate the final address using standard RISC-V
 behaviour (set bits, clear bits, etc), and that final address is written to the
 CSR capability's address field. The update typically uses the semantics of a
-<<CSETADDR>> instruction which clears the tag if the capability is sealed, or
+<<SCADDR>> instruction which clears the tag if the capability is sealed, or
 if the updated address is not representable. <<extended_CSR_writing>> shows the
 exact action taken for each capability width CSR.
 
@@ -1159,7 +1152,7 @@ these CSRs:
 hold
 . If conversion _was_ required, then A's tag is cleared if A is
 sealed or if the new address is not representable -- this is equivalent to the
-semantics of <<CSETADDR>>
+semantics of <<SCADDR>>
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
 

@@ -1,0 +1,38 @@
+<<<
+
+[#SCSS,reftext="SCSS"]
+==== SCSS
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* ctestsubset does not use ddc if cs1==0
+
+NOTE: *CHERI v9 Note:* this instruction was called CTESTSUBSET.
+
+endif::[]
+
+include::new_encoding_note.adoc[]
+
+Synopsis::
+Capability test subset
+
+Mnemonic::
+`ctestsubset rd, cs1, cs2`
+
+Encoding::
+include::wavedrom/scss.adoc[]
+
+Description::
+`rd` is set to 1 if the tag of capabilities `cs1`  and `cs2`  are equal and the
+bounds and permissions of `cs2`  are a subset of those of `cs1`.
+
+NOTE: The implementation of this instruction is similar to <<CBLD>>, although
+<<SCSS>> does not include the sealed bit in the check.
+
+Prerequisites::
+{cheri_base_ext_name}
+
+Operation::
++
+--
+TODO
+--

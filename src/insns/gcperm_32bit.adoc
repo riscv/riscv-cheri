@@ -1,0 +1,38 @@
+<<<
+
+[#GCPERM,reftext="GCPERM"]
+==== GCPERM
+
+include::new_encoding_note.adoc[]
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* this instruction was called CGETPERM.
+endif::[]
+
+Synopsis::
+Capability get permissions
+
+Mnemonic::
+`gcperm rd, cs1`
+
+Encoding::
+include::wavedrom/gcperm.adoc[]
+
+Description::
+Converts the AP and SDP fields of capability `cs1` into a bit field; one bit
+per permission, as shown below, and write the result to `rd`. A bit set to 1
+in the bit field indicates that `cs1` grants the corresponding permission.
++
+If the AP field is a reserved value then all architectural permission bits in
+`rd` are set to 0.
+
+include::../img/acperm_bit_field.edn[]
+
+Prerequisites::
+{cheri_base_ext_name}
+
+Operation::
++
+--
+TODO: The encoding of permissions changed.
+--

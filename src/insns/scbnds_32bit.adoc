@@ -1,0 +1,58 @@
+<<<
+
+[#SCBNDSI,reftext="SCBNDSI"]
+==== SCBNDSI
+
+See <<SCBNDS>>.
+
+[#SCBNDS,reftext="SCBNDS"]
+==== SCBNDS
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* SCBNDS was called CSETBOUNDSEXACT.
+
+NOTE: *CHERI v9 Note:* SCBNDSI would have been CSETBOUNDSEXACTIMM if it had existed.
+endif::[]
+
+include::new_encoding_note.adoc[]
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* the immediate format has changed
+endif::[]
+
+Synopsis::
+Capability set bounds
+
+Mnemonic::
+`scbnds cd, cs1, rs2` +
+`scbndsi cd, cs1, uimm`
+
+Encoding::
+include::wavedrom/scbnds_32bit.adoc[]
+
+Description::
+Capability register `cd`  is set to capability register `cs1`  with the base
+address of its bounds replaced with the value of `cs1.address` and
+the length of its bounds set to `rs2`  (or `imm`). If the resulting capability
+cannot be represented exactly then set `cd.tag` to 0.
+In all cases, `cd.tag` is set to 0 if its bounds exceed `cs1` 's bounds, `cs1` 's
+tag is 0  or `cs1` is sealed.
++
+<<SCBNDSI>> uses the `s` bit to scale the immediate by 4 places
++
+`immediate = ZeroExtend(s ? uimm<<4 : uimm)`
+
+Prerequisites::
+{cheri_base_ext_name}
+
+Operation for SCBNDS::
++
+--
+TODO
+--
+
+Operation for SCBNDSI::
++
+--
+TODO
+--

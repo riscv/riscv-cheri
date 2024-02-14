@@ -1,22 +1,18 @@
 <<<
-//[#insns-addi4spn-16bit,reftext="Stack pointer increment in blocks of 4 (C.CINCOFFSET4CSPN, C.ADDI4SPN), 16-bit encodings"]
 
 [#C_ADDI4SPN,reftext="C.ADDI4SPN"]
 ==== C.ADDI4SPN
 
-See <<C.CINCOFFSET4CSPN>>.
-
-[#C_CINCOFFSET4CSPN,reftext="C.CINCOFFSET4CSPN"]
-==== C.CINCOFFSET4CSPN
+See <<C.ADDI4SPN>>.
 
 Synopsis::
-Stack pointer increment in blocks of 4 (C.CINCOFFSET4CSPN, C.ADDI4SPN), 16-bit encodings
+Stack pointer increment in blocks of 4 (C.ADDI4SPN), 16-bit encoding
 
 Capability Mode Mnemonic::
-`c.cincoffset4cspn rd', uimm`
+`c.addi4spn cd', uimm`
 
 Capability Mode Expansion::
-`cincoffset rd', csp, uimm`
+`cadd cd', csp, uimm`
 
 Legacy Mode Mnemonic::
 `c.addi4spn rd', uimm`
@@ -29,13 +25,13 @@ include::wavedrom/c-ciw.adoc[]
 
 Capability Mode Description::
 
-Add a zero-extended non-zero immediate, scaled by 4, to the stack pointer, `csp`, and writes the result to `rd'`. This instruction is used to generate pointers to stack-allocated variables. Clear the tag if the resulting capability is unrepresentable or `csp` is sealed.
+Add a zero-extended non-zero immediate, scaled by 4, to the stack pointer, `csp`, and writes the result to `cd'`. This instruction is used to generate pointers to stack-allocated variables. Clear the tag if the resulting capability is unrepresentable or `csp` is sealed.
 
 Legacy Mode Description::
 
 Add a zero-extended non-zero immediate, scaled by 4, to the stack pointer, `sp`, and writes the result to `rd'`. This instruction is used to generate pointers to stack-allocated variables.
 
-Prerequisites for C.CINCOFFSET4CSPN::
+Prerequisites for C.ADDI4SPN::
 {c_cheri_base_ext_names}
 
 Prerequisites for C.ADDI4SPN::

@@ -1,0 +1,34 @@
+<<<
+
+[#GCBASE,reftext="GCBASE"]
+==== GCBASE
+
+include::new_encoding_note.adoc[]
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* this instruction was called CGETBASE.
+endif::[]
+
+Synopsis::
+Capability get base address
+
+Mnemonic::
+`gcbase rd, cs1`
+
+Encoding::
+include::wavedrom/gcbase.adoc[]
+
+Description::
+Decode the base integer address from `cs1` 's bounds and write the result to
+`rd`. It is not required that the input capability `cs1`  has its tag set to 1.
+<<GCBASE>> outputs 0 if `cs1` 's bounds are malformed (see
+xref:section_cap_malformed[xrefstyle=short]).
+
+Prerequisites::
+{cheri_base_ext_name}
+
+Operation:: TODO #need to check that it returns 0 if malformed#
++
+--
+TODO
+--
