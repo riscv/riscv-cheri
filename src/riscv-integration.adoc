@@ -334,14 +334,20 @@ whole CSR with the CLEN width register operand.
 
 There are special rules for updating specific CLEN-wide CSRs as shown in <<extended_CSR_writing>>.
 
-{non-csrrw-and} specify *x* registers and so only access the address field
-of the capability when specifying a capability CSR such as <<mtvecc>>.
-They calculate the final address using the standard
-RISC-V behaviour (set bits, clear bits etc.) and that final address is
-updated in the capability. The update typically uses the semantics of a <<CSETADDR>>
-instruction which clears the tag if the capability is sealed, or if the
-updated address is not representable. <<extended_CSR_writing>> shows the
+When <<CSRRS>> and <<CSRRC>> instructions are accessing a capability width CSR,
+such as <<mtvecc>>, then the destination operand is a *c* register and the
+source operand is an *x* register. Therefore, the instructions atomically read
+CLEN bits from the CSR, calculate the final address using standard RISC-V
+behaviour (set bits, clear bits, etc), and that final address is written to the
+CSR capability's address field. The update typically uses the semantics of a
+<<CSETADDR>> instruction which clears the tag if the capability is sealed, or
+if the updated address is not representable. <<extended_CSR_writing>> shows the
 exact action taken for each capability width CSR.
+
+The <<CSRRWI>>, <<CSRRSI>> and <<CSRRCI>> variants are similar to <<CSRRW>>,
+<<CSRRS>>, and <<CSRRC>> respectively, when accessing a capability width CSR
+except that they update the capability's address only using an XLEN-bit value
+obtained by zero-extending a 5-bit unsigned immediate field.
 
 All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 <<asr_perm>> and the CSR accessed is privileged.
