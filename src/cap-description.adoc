@@ -146,10 +146,10 @@ and 64-bit.#
 
 NOTE: When XLENMAX=32 there is a single reserved permission encoding (see
 xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
-capability to have this value since <<CANDPERM>> will never create it. It is
-possible for untagged capabilities to have it. <<CGETPERM>> will interpret it
+capability to have this value since <<ACPERM>> will never create it. It is
+possible for untagged capabilities to have it. <<GCPERM>> will interpret it
 as if it were 0b0000 (no permissions). Future extensions may assign meaning to
-the reserved bit pattern, in which case <<CGETPERM>> is allowed to report a
+the reserved bit pattern, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
 [#section_cap_sdp]
@@ -180,9 +180,9 @@ references if that SDP bit is set because it "owns" that object.
 
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9:* The sealing bit is new (1-bit otype) and the old CHERI v9
-otype no longer exists. Please note that this bit indicates the result of what
-was done in two instructions in CHERI v9: CSeal for sealed capabilities and
-CSealEntry for sealed entry capabilties.
+otype no longer exists. Please note that this bit indicates the result of
+two instructions in CHERI v9: CSEAL for sealed capabilities and
+CSEALENTRY for sealed entry capabilities.
 endif::[]
 
 This bit indicates that a capability is sealed if the bit is 1 or unsealed if it is 0.
@@ -195,7 +195,7 @@ such that modifying any of its fields clears the tag of the output capability.
 
 NOTE: Sealed capabilities might be useful to software as tokens that can be passed
 around. The only way of removing the seal bit of a capability is by rebuilding
-it via a superset capability with <<CBUILDCAP>>. {cheri_base_ext_name} does not offer
+it via a superset capability with <<CBLD>>. {cheri_base_ext_name} does not offer
 an unseal instruction.
 
 For code capabilities, the sealing bit is used to implement immutable
@@ -532,8 +532,8 @@ capability's _representable range_ if `b == b' && t == t'`.
 Changing a capability's address to a value outside the _representable range_
 unconditionally clears the capability's tag. Examples are:
 
-* Instructions such as <<CINCOFFSET>> which include pointer arithmetic.
-* The <<CSETADDR>> instruction which updates the capability address field.
+* Instructions such as <<CADD>> which include pointer arithmetic.
+* The <<SCADDR>> instruction which updates the capability address field.
 
 ==== Practical Information
 
