@@ -48,11 +48,15 @@ include::img/dpccreg.edn[]
 
 Upon entry to debug mode, cite:[riscv-debug-spec], does not specify how to
 update the PC, and says PC relative instructions may be illegal. This concept
-is extended to include any instruction which updates <<pcc>>.
+is extended to include any instruction which updates <<pcc>>, which refers to
+all jumps, conditional branches and <<AUIPC>>. The exception is <<MODESW>>
+which _is_ supported if {cheri_mode_ext_name} is implemented, see <<dfinc>>
+for details.
 
-As a result, the value of <<pcc>> is UNSPECIFIED in debug mode, and has no
-architectural effect if PC relative instructions are illegal. Therefore
-<<asr_perm>> is implicitly granted for access to all CSRs in debug mode.
+As a result, the value of <<pcc>> is UNSPECIFIED in debug mode according
+to this specification. The <<pcc>> metadata has no architectural effect in debug
+mode. Therefore <<asr_perm>> is implicitly granted for access to all CSRs and
+no PCC faults are possible.
 
 <<dpcc>> (and consequently <<dpc>>) are updated with the
 capability in <<pcc>> whose address field is set to the address of the next
@@ -111,8 +115,17 @@ include::img/dscratch1creg.edn[]
 ==== Debug Infinite Capability Register (dinfc)
 
 The <<dinfc>> register is a CLEN-bit plus tag bit CSR only accessible in debug mode.
-It returns the value of the <<infinite-cap>> capability. It is read/write but with no
-writeable fields, so writes are ignored.
+
+The reset value is the <<infinite-cap>> capability. The M field (if
+{cheri_mode_ext_name} is implemented) represents the current mode and
+will be only updated if <<MODESW>> is executed.
+
+<<dinfc>> is read/write but with no writeable fields, and so writes are
+ignored.
+
+NOTE: A future version of this specification may add writeable fields to allow creation
+ of other capabilities, if, for example, a future extension requires multiple formats for
+ the <<infinite-cap>> capability.
 
 .Debug infinite capability register
 include::img/dinfcreg.edn[]
