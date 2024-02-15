@@ -34,7 +34,7 @@ where address 2^XLENMAX^ - 1 is within the bounds.
 For {cheri_base_ext_name}, the 32 unprivileged *x* registers of the base
 integer ISA are extended so that they are able to hold a capability as well
 as renamed to *c* registers. Therefore, each *c* register is CLEN bits wide
-and has an out of band tag bit. The *x* notation refers to the address field
+and has an out-of-band tag bit. The *x* notation refers to the address field
 of the capability in an unprivileged register while the *c* notation is used
 to refer to the full capability (i.e. address, metadata and tag) held in the
 same unprivileged register.
@@ -59,6 +59,11 @@ failing check causes a CHERI exception.
 * The capability must not be sealed
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
+
+NOTE: Operations that update <<pcc>>, such as changing privilege or executing
+jump instructions, unseal capabilities prior to writing. Therefore,
+implementations do not need to check that that <<pcc>> is unsealed when
+executing each instruction. However, this property has not yet been formally verified and may not hold if additional CHERI extensions beyond {cheri_base_ext_name} are implemented.
 
 [#section_cap_instructions]
 === Capability Instructions
@@ -93,7 +98,7 @@ represent
 * <<GCHI>>: outputs the compressed capability metadata
 * <<SCEQ>>: compares two capabilities including tag, metadata and
 address
-* <<CSCC>>: tests whether the bounds and permissions of a capability are a
+* <<SCSS>>: tests whether the bounds and permissions of a capability are a
 subset of those from another capability
 
 NOTE: <<GCBASE>> and <<GCLEN>> output 0 when a capability with malformed
@@ -301,7 +306,7 @@ versions of those CSRs are added to the ISA as described in
 xref:csr-numbers-section[xrefstyle=short].
 
 Reading or writing any part of a CLEN-bit CSR may cause
-side-effects. For example, the CSR's tag bit may be cleared if a new address
+side effects. For example, the CSR's tag bit may be cleared if a new address
 is outside the <<section_cap_representable_check>> of a CSR capability being written.
 
 This section describes how the CSR instructions operate on these CSRs in
@@ -331,7 +336,7 @@ When <<CSRRS>> and <<CSRRC>> instructions are accessing a capability width CSR,
 such as <<mtvecc>>, then the destination operand is a *c* register and the
 source operand is an *x* register. Therefore, the instructions atomically read
 CLEN bits from the CSR, calculate the final address using standard RISC-V
-behaviour (set bits, clear bits, etc), and that final address is written to the
+behaviour (set bits, clear bits, etc.), and that final address is written to the
 CSR capability's address field. The update typically uses the semantics of a
 <<SCADDR>> instruction which clears the tag if the capability is sealed, or
 if the updated address is not representable. <<extended_CSR_writing>> shows the
@@ -520,7 +525,7 @@ either check fails.
 Additionally, when MODE=Vectored the capability has its tag bit cleared if the
 capability address + 4 x HICAUSE is not within the representable bounds.
 HICAUSE is the largest exception cause value that the implementation can write
-to to <<mcause>> when an interrupt is taken.
+to <<mcause>> when an interrupt is taken.
 
 NOTE: When MODE=Vectored, it is only required that address + 4 x HICAUSE is
 within representable bounds instead of the capability's bounds. This ensures
@@ -589,7 +594,7 @@ implementation, though it may be explicitly written by software.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<mepcc>> is an executable
 vector, so it does not need to be able to hold all possible invalid addresses.
-Additionally the capability in <<mepcc>> is unsealed when it is installed in
+Additionally, the capability in <<mepcc>> is unsealed when it is installed in
 <<pcc>> on execution of an <<MRET>> instruction.
 
 [#mcause,reftext="mcause"]

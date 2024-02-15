@@ -38,7 +38,7 @@ include::img/dpcreg.edn[]
 [#dpcc,reftext="dpcc"]
 ==== Debug Program Counter Capability (dpcc)
 
-The <<dpcc>> register is a extension to <<dpc>> that is able to hold a
+The <<dpcc>> register is an extension to <<dpc>> that is able to hold a
 capability.
 
 {TAG_RESET_CSR}
@@ -60,9 +60,9 @@ Additionally, the <<pcc>> is updated as follows:
   ** The <<pcc>> may be used as a source of the <<infinite-cap>> capability in
 debug mode to allow other capabilities to be created and written into memory.
 
-When resuming, the hart's <<pcc>> is updated to the capability stored in
-<<dpcc>>. A debugger may write <<dpcc>> to change where the hart resumes and
-its mode, permissions, sealing or bounds.
+When leaving debug mode, the capability in <<dpcc>> is unsealed and written
+into <<pcc>>.  A debugger may write <<dpcc>> to change where the hart resumes
+and its mode, permissions, sealing or bounds.
 
 [#dscratch0,reftext="dscratch0"]
 ==== Debug Scratch Register 0 (dscratch0)
