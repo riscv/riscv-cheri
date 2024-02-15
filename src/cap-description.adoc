@@ -386,7 +386,7 @@ xref:cap_encoding_cb[xrefstyle=short].
 
 ```
 A = a[E + MW - 1:E]
-R  = B - 2^MW-3^
+R  = B - 2^MW-2^
 ```
 
 .Calculation of top address correction
@@ -431,7 +431,7 @@ _representable_ region while maintaining the original bounds. This is enabled by
 defining a lower boundary R from the out-of-bounds values that allows us to
 disambiguate the location of the bounds with respect to an out-of-bounds address.
 R is caluculated
-relative to the base by subtracting 2^MW-3^ from B.
+relative to the base by subtracting 2^MW-2^ from B.
 If B, T or _a_[E + MW - 1:E] is less than R, it is inferred that they lie in the
 2^E+MW^ aligned region above R labelled space~U~ in
 xref:cap_bounds_map[xrefstyle=short] and the corrections _c~t~_ and _c~b~_ are
@@ -568,7 +568,7 @@ xref:cap_bounds_map[xrefstyle=short].
 
 The gap between the object bounds and the bound of the representable range
 is always guaranteed
-to be at least 1/4 of `s`. This is represented by `R = B - 2^MW-3^` in
+to be at least 1/4 of `s`. This is represented by `R = B - 2^MW-2^` in
 xref:section_cap_encoding[xrefstyle=short].
 This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
