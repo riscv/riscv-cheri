@@ -11,6 +11,25 @@ When executing code due to an abstract command, the hart stays in debug mode
 and the rules outlined in Section 4.1 of cite:[riscv-debug-spec]
 apply.
 
+==== CHERI Mode when in Debug Mode
+
+When entering debug mode, the CHERI mode is always the same, and may be
+switchable depending on which extensions have been implemented.
+
+If {cheri_mode_ext_name} is implemented:
+
+* the core enters Legacy Mode when entering debug mode,
+ and the mode can be switched using <<MODESW>>.
+
+If {cheri_legacy_ext_name} and not {cheri_mode_ext_name} are implemented:
+
+* the core enters Capability Mode when entering debug mode,
+ and the mode cannot be switched to Legacy Mode.
+
+If {cheri_base_ext_name} only is implemented:
+
+* the core is always in Capability Mode.
+
 === Core Debug Registers
 
 {cheri_base_ext_name} removes debug CSRs that are designated to hold addresses
