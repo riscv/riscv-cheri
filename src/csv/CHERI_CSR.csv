@@ -8,11 +8,11 @@ direct write if address didn't change","✔","","✔","","✔","✔","Sdext","De
 Always update the CSR with <<SCADDR>> even if the address didn't change, including the MODE field in the address for simplicity.
 Vector range check ^*^ if vectored mode is programmed.","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change, including the MODE field in the address for simplicity.
-Vector range check ^*^ if vectored mode is programmed.","✔","","","","✔","✔","None","Machine Trap-Vector Base-Address Capability","","","","","","","","","","","","","","","","","","","","",""
-"mscratchc","0x760","mscratch","0x340","M","MRW, <<asr_perm>>","tag=0, otherwise undefined","Update the CSR using <<SCADDR>>.","direct write","","","","✔","✔","✔","None","Machine Scratch Capability","","","","","","","","","","","","","","","","","","","","",""
+Vector range check ^*^ if vectored mode is programmed.","✔","","","","✔","✔","M-mode","Machine Trap-Vector Base-Address Capability","","","","","","","","","","","","","","","","","","","","",""
+"mscratchc","0x760","mscratch","0x340","M","MRW, <<asr_perm>>","tag=0, otherwise undefined","Update the CSR using <<SCADDR>>.","direct write","","","","✔","✔","✔","M-mode","Machine Scratch Capability","","","","","","","","","","","","","","","","","","","","",""
 "mepcc","0x761","mepc","0x341","M","MRW, <<asr_perm>>","<<infinite-cap>>","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change.","Apply <<section_invalid_addr_conv>> and update the CSR with the result if the address changed,
-direct write if address didn't change","✔","","✔","","✔","✔","None","Machine Exception Program Counter Capability","","","","","","","","","","","","","","","","","","","","",""
+direct write if address didn't change","✔","","✔","","✔","✔","M-mode","Machine Exception Program Counter Capability","","","","","","","","","","","","","","","","","","","","",""
 "stvecc","0x505","stvec","0x105","S","SRW, <<asr_perm>>","<<infinite-cap>>","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change, including the MODE field in the address for simplicity.
 Vector range check ^*^ if vectored mode is programmed.","Apply <<section_invalid_addr_conv>>.
@@ -26,7 +26,7 @@ direct write if address didn't change","✔","","✔","","✔","✔","S-mode","S
 Always update the CSR with <<SCADDR>> even if the address didn't change.","Apply <<section_invalid_addr_conv>> and update the CSR with the result if the address changed,
 direct write if address didn't change","✔","","","","✔","✔","Zcmt","Jump Vector Table Capability","","","","","","","","","","","","","","","","","","","","",""
 "dddc","0x7bc","","","D","DRW","tag=0, otherwise undefined","","","","✔","","","✔","","Sdext","Debug Default Data Capabilty (saved/restored on debug mode entry/exit)","","","","","","","","","","","","","","","","","","","","",""
-"mtdc","0x74c","","","M","MRW, <<asr_perm>>","tag=0, otherwise undefined","","","","","","","✔","","None","Machine Trap Data Capability (scratch register)","","","","","","","","","","","","","","","","","","","","",""
+"mtdc","0x74c","","","M","MRW, <<asr_perm>>","tag=0, otherwise undefined","","","","","","","✔","","M-mode","Machine Trap Data Capability (scratch register)","","","","","","","","","","","","","","","","","","","","",""
 "stdc","0x163","","","S","SRW, <<asr_perm>>","tag=0, otherwise undefined","","","","","","","✔","","S-mode","Supervisor Trap Data Capability (scratch register)","","","","","","","","","","","","","","","","","","","","",""
 "ddc","0x416","","","U","URW","<<infinite-cap>>","","","","✔","","","✔","","none","User Default Data Capability","","","","","","","","","","","","","","","","","","","","",""
 "dinfc","0x7bd","","","D","DRW","<<infinite-cap>>","","","","","","✔","✔","✔","Sdext","Source of <<infinite-cap>> capability in debug mode, writes are ignored","","","","","","","","","","","","","","","","","","","","",""
