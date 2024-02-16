@@ -84,7 +84,7 @@ GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
 ASCIIDOC          = asciidoctor-pdf
 EXTRA_ASCIIDOC_OPTIONS ?=
 
-ASCIIDOC_OPTIONS  = --trace                                          \
+ASCIIDOC_OPTIONS  = --trace --verbose                                \
                     -a compress                                      \
                     -a mathematical-format=svg                       \
                     -a revnumber=$(VERSION)                          \
