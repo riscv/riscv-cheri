@@ -13,22 +13,12 @@ apply.
 
 ==== CHERI Mode when in Debug Mode
 
-When entering debug mode, the CHERI mode is always the same, and may be
-switchable depending on which extensions have been implemented.
+When entering debug mode, the core always enters Capability Mode.
 
 If {cheri_mode_ext_name} is implemented:
 
-* the core enters Legacy Mode when entering debug mode,
- and the mode can be switched using <<MODESW>>.
-
-If {cheri_legacy_ext_name} and not {cheri_mode_ext_name} are implemented:
-
-* the core enters Capability Mode when entering debug mode,
- and the mode cannot be switched to Legacy Mode.
-
-If {cheri_base_ext_name} only is implemented:
-
-* the core is always in Capability Mode.
+. the mode can be switched using <<MODESW>>.
+. the current mode can be observed in <<dinfc>>.M.
 
 === Core Debug Registers
 
@@ -135,9 +125,13 @@ include::img/dscratch1creg.edn[]
 
 The <<dinfc>> register is a CLEN-bit plus tag bit CSR only accessible in debug mode.
 
-The reset value is the <<infinite-cap>> capability. The M field (if
-{cheri_mode_ext_name} is implemented) represents the current mode and
-will be only updated if <<MODESW>> is executed.
+The reset value is the <<infinite-cap>> capability.
+
+If {cheri_mode_ext_name} is implemented:
+
+. the core enters Capability Mode when entering debug mode
+.. therefore <<dinfc>>.M is set whenever entering debug mode for any reason.
+. the mode can be switched using <<MODESW>>, and the result observed in <<dinfc>>.M.
 
 <<dinfc>> is read/write but with no writeable fields, and so writes are
 ignored.
