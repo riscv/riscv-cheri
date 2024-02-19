@@ -5,6 +5,9 @@ This section describes changes to integrate the Sdext ISA and
 {cheri_base_ext_name}. It must be implemented to make external debug compatible
 with {cheri_base_ext_name}. Modifications to Sdext are kept to a minimum.
 
+WARNING: This section is preliminary as no-one has yet built debug support
+ for CHERI-RISC-V so change is likely.
+
 === Debug Mode
 
 When executing code due to an abstract command, the hart stays in debug mode
@@ -59,7 +62,7 @@ Upon entry to debug mode, cite:[riscv-debug-spec], does not specify how to
 update the PC, and says PC relative instructions may be illegal. This concept
 is extended to include any instruction which reads or updates <<pcc>>, which refers to
 all jumps, conditional branches and <<AUIPC>>. The exception is <<MODESW>>
-which _is_ supported if {cheri_mode_ext_name} is implemented, see <<dfinc>>
+which _is_ supported if {cheri_mode_ext_name} is implemented, see <<dinfc>>
 for details.
 
 As a result, the value of <<pcc>> is UNSPECIFIED in debug mode according
