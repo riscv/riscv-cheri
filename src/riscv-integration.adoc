@@ -472,7 +472,9 @@ both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
 
 The *mstatus* and *mstatush* registers operate as described in
 cite:[riscv-priv-spec] except for the SXL and UXL fields that control the
-value of XLEN for S-mode and U-mode, respectively.
+value of XLEN for S-mode and U-mode, respectively, and the MBE, SBE, and UBE
+fields that control the memory system endianness for M-mode, S-mode,
+and U-mode, respectively.
 
 The encoding of the SXL and UXL fields is the same as the MXL field of *misa*,
 shown in xref:misa_mxl_field[xrefstyle=short]. Only 1 and 2 are supported
@@ -480,9 +482,15 @@ values for SXL and UXL and the fields must be read-only in implementations
 supporting {cheri_base_ext_name}. The effective XLEN in S-mode and U-mode are
 termed SXLEN and UXLEN, respectively.
 
-NOTE: A further CHERI extension, {cheri_legacy_ext_name}, optionally makes SXL
-and UXL writeable, so implementations that support multiple base ISAs must
-support both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
+The MBE, SBE, and UBE fields determine whether explicit loads and stores
+performed from M-mode, S-mode, or U-mode, respectively, are little endian
+(xBE = 0) or big endian (xBE = 1).  MBE must be read only.  SBE and UBE must be
+read only and equal to MBE, if S-mode or U-mode, respectively, is implemented,
+or read only zero otherwise.
+
+NOTE: A further CHERI extension, {cheri_legacy_ext_name}, optionally makes SXL,
+UXL, MBE, SBE, and UBE writeable, so implementations that support multiple base
+ISAs must support both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
 
 [#mtvec, reftext="mtvec"]
 ==== Machine Trap-Vector Base-Address Registers (mtvec)
