@@ -1,5 +1,5 @@
 [#section_debug_integration]
-== Integrating Zcheri_purecap with Sdext
+=== Integrating Zcheri_purecap with Sdext
 
 This section describes changes to integrate the Sdext ISA and
 {cheri_base_ext_name}. It must be implemented to make external debug compatible
@@ -8,22 +8,13 @@ with {cheri_base_ext_name}. Modifications to Sdext are kept to a minimum.
 WARNING: This section is preliminary as no-one has yet built debug support
  for CHERI-RISC-V so change is likely.
 
-=== Debug Mode
+==== Debug Mode
 
 When executing code due to an abstract command, the hart stays in debug mode
 and the rules outlined in Section 4.1 of cite:[riscv-debug-spec]
 apply.
 
-==== CHERI Mode when in Debug Mode
-
-When entering debug mode, the core always enters Capability Mode.
-
-If {cheri_mode_ext_name} is implemented:
-
-. the mode can be switched using <<MODESW>>.
-. the current mode can be observed in <<dinfc>>.M.
-
-=== Core Debug Registers
+==== Core Debug Registers
 
 {cheri_base_ext_name} removes debug CSRs that are designated to hold addresses
 and replaces them with analogous CSRs able to hold capabilities. The removed
@@ -130,11 +121,11 @@ The <<dinfc>> register is a CLEN-bit plus tag bit CSR only accessible in debug m
 
 The reset value is the <<infinite-cap>> capability.
 
-If {cheri_mode_ext_name} is implemented:
+If {cheri_mode_ext_name} (see xref:chapter-Zcheri-mode) is implemented:
 
 . the core enters Capability Mode when entering debug mode
 .. therefore <<dinfc>>.M is set whenever entering debug mode for any reason.
-. the mode can be switched using <<MODESW>>, and the result observed in <<dinfc>>.M.
+. the mode can be optionally switched using <<MODESW>>, and the result observed in <<dinfc>>.M.
 
 <<dinfc>> is read/write but with no writeable fields, and so writes are
 ignored.
