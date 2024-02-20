@@ -43,13 +43,17 @@ Register *c0* is hardwired with all bits, including the capability metadata and
 tag, equal to 0. In other words, *c0* is hardwired to the <<null-cap>>
 capability.
 
+[#pcc,reftext="pcc"]
+==== PCC - The Program Counter Capability
+
 An authorising capability with appropriate permissions is required to execute
 instructions in {cheri_base_ext_name}. Therefore, the unprivileged program
 counter (*pc*) register is extended so that it is able to hold a capability.
 The extended register is called the program counter capability (<<pcc>>). The
-<<pcc>> address field is effectively the *pc* in the base RISC-V ISA that the
+<<pcc>> address field is effectively the *pc* in the base RISC-V ISA so that the
 hardware automatically increments as instructions are executed. The <<pcc>>'s
-metadata and tag are reset to the <<infinite-cap>> capability metadata and tag.
+metadata and tag are reset to the <<infinite-cap>> capability metadata and tag
+with the address field set to the core boot address.
 
 The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA. A
@@ -64,6 +68,16 @@ NOTE: Operations that update <<pcc>>, such as changing privilege or executing
 jump instructions, unseal capabilities prior to writing. Therefore,
 implementations do not need to check that that <<pcc>> is unsealed when
 executing each instruction. However, this property has not yet been formally verified and may not hold if additional CHERI extensions beyond {cheri_base_ext_name} are implemented.
+
+NOTE: It is common for implementations to not allow executing *pc* relative
+instructions, such as <<AUIPC>> or <<JAL>>, in debug mode.
+
+.Program Counter Capability
+[#pcc-format]
+include::img/pccreg.edn[]
+
+<<pcc>> is an executable
+vector, so it need not be able to hold all possible invalid addresses.
 
 [#section_cap_instructions]
 === Capability Instructions
@@ -472,7 +486,9 @@ both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
 
 The *mstatus* and *mstatush* registers operate as described in
 cite:[riscv-priv-spec] except for the SXL and UXL fields that control the
-value of XLEN for S-mode and U-mode, respectively.
+value of XLEN for S-mode and U-mode, respectively, and the MBE, SBE, and UBE
+fields that control the memory system endianness for M-mode, S-mode,
+and U-mode, respectively.
 
 The encoding of the SXL and UXL fields is the same as the MXL field of *misa*,
 shown in xref:misa_mxl_field[xrefstyle=short]. Only 1 and 2 are supported
@@ -480,9 +496,15 @@ values for SXL and UXL and the fields must be read-only in implementations
 supporting {cheri_base_ext_name}. The effective XLEN in S-mode and U-mode are
 termed SXLEN and UXLEN, respectively.
 
-NOTE: A further CHERI extension, {cheri_legacy_ext_name}, optionally makes SXL
-and UXL writeable, so implementations that support multiple base ISAs must
-support both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
+The MBE, SBE, and UBE fields determine whether explicit loads and stores
+performed from M-mode, S-mode, or U-mode, respectively, are little endian
+(xBE = 0) or big endian (xBE = 1).  MBE must be read only.  SBE and UBE must be
+read only and equal to MBE, if S-mode or U-mode, respectively, is implemented,
+or read only zero otherwise.
+
+NOTE: A further CHERI extension, {cheri_legacy_ext_name}, optionally makes SXL,
+UXL, MBE, SBE, and UBE writeable, so implementations that support multiple base
+ISAs must support both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
 
 [#mtvec, reftext="mtvec"]
 ==== Machine Trap-Vector Base-Address Registers (mtvec)
@@ -1025,24 +1047,6 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 
 Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
 <<pcc>> to grant <<asr_perm>> to access unprivileged CSRs.
-
-[#pcc,reftext="pcc"]
-==== Program Counter Capability (pcc)
-
-The <<pcc>> is made visible in a CSR. This provides access to an
-<<infinite-cap>> capability while in debug mode without executing <<AUIPC>>.
-
-<<pcc>> resets to the <<infinite-cap>> capability with the address field set to the core boot address.
-
-NOTE: It is common for implementations to not allow executing *pc* relative
-instructions, such as <<AUIPC>> or <<JAL>>, in debug mode.
-
-.Program Counter Capability
-[#pcc-format]
-include::img/pccreg.edn[]
-
-As shown in xref:CSR_exevectors[xrefstyle=short], <<pcc>> is an executable
-vector, so it need not be able to hold all possible invalid addresses.
 
 === CHERI Exception handling
 

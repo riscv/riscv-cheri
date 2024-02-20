@@ -1,17 +1,20 @@
 [#section_debug_integration]
-== Integrating Zcheri_purecap with Sdext
+=== Integrating Zcheri_purecap with Sdext
 
 This section describes changes to integrate the Sdext ISA and
 {cheri_base_ext_name}. It must be implemented to make external debug compatible
 with {cheri_base_ext_name}. Modifications to Sdext are kept to a minimum.
 
-=== Debug Mode
+WARNING: This section is preliminary as no-one has yet built debug support
+ for CHERI-RISC-V so change is likely.
+
+==== Debug Mode
 
 When executing code due to an abstract command, the hart stays in debug mode
 and the rules outlined in Section 4.1 of cite:[riscv-debug-spec]
 apply.
 
-=== Core Debug Registers
+==== Core Debug Registers
 
 {cheri_base_ext_name} removes debug CSRs that are designated to hold addresses
 and replaces them with analogous CSRs able to hold capabilities. The removed
@@ -48,17 +51,20 @@ include::img/dpccreg.edn[]
 
 Upon entry to debug mode, cite:[riscv-debug-spec], does not specify how to
 update the PC, and says PC relative instructions may be illegal. This concept
-is extended to include any instruction which updates <<pcc>>.
+is extended to include any instruction which reads or updates <<pcc>>, which refers to
+all jumps, conditional branches and <<AUIPC>>. The exception is <<MODESW>>
+which _is_ supported if {cheri_mode_ext_name} is implemented, see <<dinfc>>
+for details.
+
+As a result, the value of <<pcc>> is UNSPECIFIED in debug mode according
+to this specification. The <<pcc>> metadata has no architectural effect in debug
+mode. Therefore <<asr_perm>> is implicitly granted for access to all CSRs and
+no PCC faults are possible.
 
 <<dpcc>> (and consequently <<dpc>>) are updated with the
 capability in <<pcc>> whose address field is set to the address of the next
-instruction to be executed as described in cite:[riscv-debug-spec].
-
-Additionally, the <<pcc>> is updated as follows:
-
-* All metadata is set to the <<infinite-cap>> capability
-  ** The <<pcc>> may be used as a source of the <<infinite-cap>> capability in
-debug mode to allow other capabilities to be created and written into memory.
+instruction to be executed as described in cite:[riscv-debug-spec] upon
+debug mode entry.
 
 When leaving debug mode, the capability in <<dpcc>> is unsealed and written
 into <<pcc>>.  A debugger may write <<dpcc>> to change where the hart resumes
@@ -107,3 +113,26 @@ The <<dscratch1c>> register is a CLEN-bit plus tag bit extension to
 
 .Debug scratch 1 capability register
 include::img/dscratch1creg.edn[]
+
+[#dinfc,reftext="dinfc"]
+==== Debug Infinite Capability Register (dinfc)
+
+The <<dinfc>> register is a CLEN-bit plus tag bit CSR only accessible in debug mode.
+
+The reset value is the <<infinite-cap>> capability.
+
+If {cheri_mode_ext_name} (see xref:chapter-Zcheri-mode) is implemented:
+
+. the core enters Capability Mode when entering debug mode
+.. therefore <<dinfc>>.M is set whenever entering debug mode for any reason.
+. the mode can be optionally switched using <<MODESW>>, and the result observed in <<dinfc>>.M.
+
+<<dinfc>> is read/write but with no writeable fields, and so writes are
+ignored.
+
+NOTE: A future version of this specification may add writeable fields to allow creation
+ of other capabilities, if, for example, a future extension requires multiple formats for
+ the <<infinite-cap>> capability.
+
+.Debug infinite capability register
+include::img/dinfcreg.edn[]
