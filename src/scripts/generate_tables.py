@@ -660,7 +660,7 @@ class csr_alias_action(table):
         return row[self.header.index("Alias")] != ""
 
 class csr_perms(table):
-    cols = ["Extended CSR", "Zcheri_legacy", "Zcheri_purecap", "Prerequisites", "CLEN Address", "Permissions", "Reset Value"]
+    cols = ["Extended CSR", "Zcheri_legacy", "Zcheri_purecap", "Prerequisites", "CLEN Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):

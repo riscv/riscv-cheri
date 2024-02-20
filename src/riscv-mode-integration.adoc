@@ -1,3 +1,4 @@
+[#chapter-Zcheri-mode]
 == "Zcheri_mode" Extension for CHERI Execution Mode
 
 {cheri_mode_ext_name} is an optional extension to {cheri_legacy_ext_name}.
@@ -71,5 +72,11 @@ endif::[]
 In addition to the changes described in
 xref:section_debug_integration[xrefstyle=short] and
 xref:section_legacy_debug_integration[xrefstyle=short], {cheri_mode_ext_name}
-allows <<MODESW>> to act as an illegal instruction when it is executed
-while in debug mode.
+optionally allows <<MODESW>> to execute in debug mode.
+
+When entering debug mode, the core always enters Capability Mode.
+
+If {cheri_mode_ext_name} is implemented:
+
+. the mode can be optionally switched using <<MODESW>>.
+. the current mode can always be observed in <<dinfc>>.M.
