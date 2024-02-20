@@ -7,12 +7,13 @@ space. There are two primary ISA variants, RV32I and RV64I, which provide
 32-bit and 64-bit address spaces respectively. The term XLEN refers to the
 width of an integer register in bits (either 32 or 64). The value of XLEN may
 change dynamically at run-time depending on the values written to CSRs, so we
-define XLENMAX to be widest XLEN that the implementation supports.
+define capability behavior in terms of MXLEN, which is the value of XLEN used
+in machine mode and the widest XLEN the implementation supports.
 
 
 {cheri_base_ext_name} defines capabilities of size CLEN corresponding to 2 *
-XLENMAX without including the tag bit. The value of CLEN is always calculated
-based on XLENMAX regardless of the effective XLEN value.
+MXLEN without including the tag bit. The value of CLEN is always calculated
+based on MXLEN regardless of the effective XLEN value.
 
 === Components of a Capability
 
@@ -77,32 +78,32 @@ Access System Registers Permission (ASR):: Allow access to privileged CSRs.
 [#cap_permissions_encoding]
 ===== Permission Encoding
 
-The bit width of the permissions field depends on the value of XLENMAX as shown
+The bit width of the permissions field depends on the value of MXLEN as shown
 in xref:perms_bit_width[xrefstyle=short]. A {cap_rv32_perms_width}-bit vector
-encodes the permissions when XLENMAX=32. For this case, the legal encodings of
+encodes the permissions when MXLEN=32. For this case, the legal encodings of
 permissions are listed in xref:cap_perms_encoding32[xrefstyle=short]. Certain
 combinations of permissions are impractical. For example, <<c_perm>> is
 superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
 Therefore, it is only possible to encode a subset of all combinations.
 
-.Permissions widths depending on XLENMAX
+.Permissions widths depending on MXLEN
 [#perms_bit_width,options=header,align="center",width="75%",cols="^1,^3,5"]
 |==============================================================================
-^| XLENMAX ^| Permissions width      ^| Comment
+^| MXLEN   ^| Permissions width      ^| Comment
 ^| 32      ^| {cap_rv32_perms_width} ^| Encodes some combinations of 5 permission bits and the Mode bits
 ^| 64      ^| {cap_rv64_perms_width} ^| Separate bits for each permission, and the Mode bit is not included
 |==============================================================================
 
-NOTE: While XLENMAX=32 currently uses the same number of bits for permission encodings, it also includes the mode bit of {cheri_legacy_ext_name} which is separate for XLENMAX=64.
+NOTE: While MXLEN=32 currently uses the same number of bits for permission encodings, it also includes the mode bit of {cheri_legacy_ext_name} which is separate for MXLEN=64.
 
-For XLENMAX=32, the permissions encoding is split into four quadrants.
+For MXLEN=32, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
 The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadrant.
 
 Quadrants 2 and 3 are arranged to implicitly grant future permissions which may be added with the existing allocated encodings.
 Quadrant 0 does the opposite - the encodings are allocated _not_ to implicitly add future permissions, and so granting future permissions will require new encodings.
 
-.Encoding of architectural permissions for XLENMAX=32
+.Encoding of architectural permissions for MXLEN=32
 [#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
 | Encoding[2:0] | R | W | C | X | ASR | Mode | Notes
@@ -133,7 +134,7 @@ Quadrant 0 does the opposite - the encodings are allocated _not_ to implicitly a
 | 7       | ✔ | ✔ | ✔ |   |     | N/A | Data & Cap RW
 |==============================================================================
 
-NOTE: When XLENMAX=32 there are many reserved permission encodings (see
+NOTE: When MXLEN=32 there are many reserved permission encodings (see
 xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
 capability to have one of these values since <<ACPERM>> will never create it. It is
 possible for untagged capabilities to have reserved values. <<GCPERM>> will interpret
@@ -141,13 +142,13 @@ reserved values as if it were 0b00000 (no permissions). Future extensions may as
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
-A {cap_rv64_perms_width}-bit vector encodes the permissions when XLENMAX=64. In
+A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64. In
 this case, there is a bit per permission as shown in
 xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
 corresponding bit is set, otherwise the capability does not grant that
 permission.
 
-.Encoding of architectural permissions for XLENMAX=64
+.Encoding of architectural permissions for MXLEN=64
 [#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="55%"]
 |==============================================================================
 | Bit | Name
@@ -173,10 +174,10 @@ example, a program may decide to use an SDP bit to indicate the "ownership" of
 objects. Therefore, a capability grants permission to free the memory it
 references if that SDP bit is set because it "owns" that object.
 
-.SDP widths depending on XLENMAX
+.SDP widths depending on MXLEN
 [#sdp_bit_width,options=header,align="center",width="55%"]
 |==============================================================================
-^| XLENMAX ^| SDP width
+^| MXLEN   ^| SDP width
 ^| 32      ^| {cap_rv32_sdp_width}
 ^| 64      ^| {cap_rv64_sdp_width}
 |==============================================================================
@@ -219,7 +220,7 @@ to the caller function.
 ==== Bounds
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The bounds mantissa width is different in XLENMAX=32.
+NOTE: *CHERI v9 Note:* The bounds mantissa width is different in MXLEN=32.
 Also, the old IE bit is renamed to Exponent Format (EF); the function of IE
 is the inverse of EF i.e. IE=0 has the same effect as EF=1.
 
@@ -252,33 +253,33 @@ into the capability's address
     ** The exponent is zero if EF=1
 
 The bit width of T and B are defined in terms of the mantissa width (MW) which
-is set depending on the value of XLENMAX as shown in
+is set depending on the value of MXLEN as shown in
 xref:mantissa_bit_width[xrefstyle=short].
 
-.Mantissa width (MW) values depending on XLENMAX
+.Mantissa width (MW) values depending on MXLEN
 [#mantissa_bit_width,options=header,align="center",width="55%"]
 |==============================================================================
-^| XLENMAX ^| MW
+^| MXLEN   ^| MW
 ^| 32      ^| {cap_rv32_mw_width}
 ^| 64      ^| {cap_rv64_mw_width}
 |==============================================================================
 
 The exponent E indicates the position of T and B within the capability's
 address as described in xref:section_cap_encoding[xrefstyle=short]. The bit
-width of the exponent (EW) is set depending on the value of XLENMAX. The
+width of the exponent (EW) is set depending on the value of MXLEN. The
 maximum value of the exponent is calculated as follows:
 
 ```
-CAP_MAX_E = XLENMAX - MW + 2
+CAP_MAX_E = MXLEN - MW + 2
 ```
 
 The possible values for EW and CAP_MAX_E are shown in
 xref:exp_bit_width[xrefstyle=short].
 
-.Exponent widths and CAP_MAX_E depending on XLENMAX
+.Exponent widths and CAP_MAX_E depending on MXLEN
 [#exp_bit_width,options=header,align="center",width="55%"]
 |==============================================================================
-^| XLENMAX ^| EW                   ^| CAP_MAX_E
+^| MXLEN   ^| EW                   ^| CAP_MAX_E
 ^| 32      ^| {cap_rv32_exp_width} ^| 24
 ^| 64      ^| {cap_rv64_exp_width} ^| 52
 |==============================================================================
@@ -288,12 +289,12 @@ when the tag is set (see xref:section_cap_malformed[xrefstyle=short]).
 
 ==== Address
 
-XLENMAX integer value that encodes the byte-address of a memory location.
+MXLEN integer value that encodes the byte-address of a memory location.
 
-.Address widths depending on XLENMAX
+.Address widths depending on MXLEN
 [#address_bit_width,options=header,align="center",width="55%"]
 |==============================================================================
-^| XLENMAX ^| Address width
+^| MXLEN   ^| Address width
 ^| 32      ^| {cap_rv32_addr_width}
 ^| 64      ^| {cap_rv64_addr_width}
 |==============================================================================
@@ -314,14 +315,14 @@ endif::[]
 
 The components of a capability are encoded as shown in
 xref:cap_encoding_xlen32[xrefstyle=short] and
-xref:cap_encoding_xlen64[xrefstyle=short] when XLENMAX=32 and XLENMAX=64
+xref:cap_encoding_xlen64[xrefstyle=short] when MXLEN=32 and MXLEN=64
 respectively.
 
-.Capability encoding when XLENMAX=32
+.Capability encoding when MXLEN=32
 [#cap_encoding_xlen32]
 include::img/cap-encoding-xlen32.edn[]
 
-.Capability encoding when XLENMAX=64
+.Capability encoding when MXLEN=64
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
@@ -346,7 +347,7 @@ inverted to ensure that the <<null-cap>> capability is encoded as zero without t
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base addresses respectively. +
-When EF=0, the exponent `E=CAP_MAX_E - ( (XLENMAX == 32) ? { T8, TE, BE } : { TE, BE } )`,
+When EF=0, the exponent `E=CAP_MAX_E - ( (MXLEN == 32) ? { T8, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
 and base addresses respectively. E is computed by subtracting from the maximum
 possible exponent CAP_MAX_E which can be efficiently implemented in hardware
@@ -357,17 +358,17 @@ bitwise shift left by E.
 endif::[]
 
 ```
-EW        = (XLENMAX == 32) ? 5 : 6
-CAP_MAX_E = XLENMAX - MW + 2
+EW        = (MXLEN == 32) ? 5 : 6
+CAP_MAX_E = MXLEN - MW + 2
 
 If EF = 1:
     E               = 0
     T[EW / 2 - 1:0] = TE
     B[EW / 2 - 1:0] = BE
     LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
-    LMSB            = (XLENMAX == 32) ? T8 : 0
+    LMSB            = (MXLEN == 32) ? T8 : 0
 else:
-    E               = CAP_MAX_E - ( (XLENMAX == 32) ? { T8, TE, BE } : { TE, BE } )
+    E               = CAP_MAX_E - ( (MXLEN == 32) ? { T8, TE, BE } : { TE, BE } )
     T[EW / 2 - 1:0] = 0
     B[EW / 2 - 1:0] = 0
     LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
@@ -383,8 +384,8 @@ T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
 Decoding the bounds:
 
 ```
-top:    t = { a[XLENMAX - 1:E + MW] + ct, T[MW - 1:0]    , {E{1'b0}} }
-base:   b = { a[XLENMAX - 1:E + MW] + cb, B[MW - 1:0]    , {E{1'b0}} }
+top:    t = { a[MXLEN - 1:E + MW] + ct, T[MW - 1:0]    , {E{1'b0}} }
+base:   b = { a[MXLEN - 1:E + MW] + cb, B[MW - 1:0]    , {E{1'b0}} }
 ```
 The corrections c~t~ and c~b~ are calculated as as shown below using the
 definitions in xref:cap_encoding_ct[xrefstyle=short] and
@@ -427,7 +428,7 @@ The EF bit selects between two cases:
 
 1. EF = 1: The exponent is 0 for regions less than 2^MW-2^ bytes long
 2. EF = 0: The exponent is _internal_ with E stored in the lower bits of T and
-B along with T~8~ when XLENMAX=32. E is chosen so that the most significant
+B along with T~8~ when MXLEN=32. E is chosen so that the most significant
 non-zero bit of the length of the region aligns with T[MW - 2] in the decoded
 top. Therefore, the most significant two bits of T can be derived from B using
 the equality `T = B + L`, where L[MW - 2] is known from the values of EF and E
@@ -450,15 +451,15 @@ out-of-bounds while still allowing the bounds to be correctly decoded.
 image::cap-bounds-map.png[width=80%,align=center]
 
 A capability whose bounds cover the entire address space has 0 base and top
-equals 2^XLENMAX^, i.e. _t_ is a XLENMAX + 1 bit value. However, _b_ is a
-XLENMAX bit value and the size mismatch introduces additional complications
+equals 2^MXLEN^, i.e. _t_ is a MXLEN + 1 bit value. However, _b_ is a
+MXLEN bit value and the size mismatch introduces additional complications
 when decoding, so the following condition is required to correct _t_ for
 capabilities whose <<section_cap_representable_check>> wraps the edge of the address
 space:
 
 ```
-if ( (E < (CAP_MAX_E - 1)) & (t[XLENMAX: XLENMAX - 1] - b[XLENMAX - 1] > 1) )
-    t[XLENMAX] = !t[XLENMAX]
+if ( (E < (CAP_MAX_E - 1)) & (t[MXLEN: MXLEN - 1] - b[MXLEN - 1] > 1) )
+    t[MXLEN] = !t[MXLEN]
 ```
 That is, invert the most significant bit of _t_ if the decoded length of the
 capability is larger than E.
@@ -475,9 +476,9 @@ the difference between in-memory and architectural format.
 endif::[]
 
 The <<null-cap>> capability is represented with 0 in all fields. This implies
-that it has no permissions and its exponent E is CAP_MAX_E (52 for XLENMAX=64,
-24 for XLENMAX=32), so its bounds cover the entire address space such that the
-expanded base is 0 and top is 2^XLENMAX^.
+that it has no permissions and its exponent E is CAP_MAX_E (52 for MXLEN=64,
+24 for MXLEN=32), so its bounds cover the entire address space such that the
+expanded base is 0 and top is 2^MXLEN^.
 
 .Field values of the NULL capability
 [#null-cap,reftext="NULL",options=header,align=center,width="55%",cols="1,1,3"]
@@ -488,7 +489,7 @@ expanded base is 0 and top is 2^XLENMAX^.
 | AP      | zeros | Grants no permissions
 | S       | zero  | Unsealed
 | EF      | zero  | Internal exponent format
-| T~8~    | zeros | Top address bit (XLENMAX=32 only)
+| T~8~    | zeros | Top address bit (MXLEN=32 only)
 | T       | zeros | Top address bits
 | T~E~    | zeros | Exponent bits
 | B       | zeros | Base address bits
@@ -517,7 +518,7 @@ or 'root' capability.
 | AP (RV32) | See xref:cap_perms_encoding32[xrefstyle=short] | Grants all permissions
 | S       | zero  | Unsealed
 | EF      | zero  | Internal exponent format
-| T~8~    | zeros | Top address bit (XLENMAX=32 only)
+| T~8~    | zeros | Top address bit (MXLEN=32 only)
 | T       | zeros | Top address bits
 | T~E~    | zeros | Exponent bits
 | B       | zeros | Base address bits
@@ -558,8 +559,8 @@ bounds are formed of two or three sections:
 [#comp_addr_bounds,options=header,align="center"]
 |==============================================================================
 | Configuration  | Upper section | Middle Section | Lower section
-| EF=0           | address[XLENMAX-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
-| EF=1, i.e. E=0 | address[XLENMAX-1:MW] + ct   2+| T[MW - 1:0]
+| EF=0           | address[MXLEN-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
+| EF=1, i.e. E=0 | address[MXLEN-1:MW] + ct   2+| T[MW - 1:0]
 |==============================================================================
 
 The _representable range_ defines the range of addresses which do not corrupt

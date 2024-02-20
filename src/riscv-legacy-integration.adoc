@@ -49,7 +49,7 @@ Setting both registers to <<infinite-cap>> ensures that:
 
 * All permissions are granted
 * The bounds authorise accesses to the entire address space i.e base is 0 and
-top is 2^XLENMAX^
+top is 2^MXLEN^
 
 [#section-cheri-execution-mode]
 === CHERI Execution Mode Encoding
@@ -66,7 +66,7 @@ mode is given by the M bit of the <<pcc>> and the CRE bits in <<mseccfg>>,
 CRE=1 for the current privilege level
 * The mode is Legacy when the effective CRE=0 for the current privilege level or the M bit of the <<pcc>> is 0
 
-.Capability encoding when XLENMAX=64 and {cheri_legacy_ext_name} is supported
+.Capability encoding when MXLEN=64 and {cheri_legacy_ext_name} is supported
 [#cap_encoding_xlen64_mode]
 include::img/cap-encoding-xlen64-mode.edn[]
 
@@ -196,7 +196,7 @@ When <<CSRRW>> is executed on an extended CSR in Legacy Mode:
 field.
     ** The tag and metadata are updated as specified in <<extended_CSR_writing>>.
 * Only XLEN bits are read from the capability address field, which are extended
-to XLENMAX bits according to cite:[riscv-priv-spec] _(3.1.6.2. Base ISA Control in
+to MXLEN bits according to cite:[riscv-priv-spec] _(3.1.6.2. Base ISA Control in
 mstatus Register)_ and are then written to the destination *x* register.
 
 When <<CSRRW>> is executed on an extended CSR in Capability Mode:
@@ -293,7 +293,7 @@ instruction exceptions
 The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
 
 CHERI register access is disabled if XLEN in the current mode is less than
-XLENMAX, if the endianness in the current mode is not the reset value of
+MXLEN, if the endianness in the current mode is not the reset value of
 <<mstatus>>.MBE, or if CRE active at the current mode (<<mseccfg>>.CRE for M-mode, <<menvcfg>>.CRE for
 S-mode or <<senvcfg>>.CRE for U-mode) is 0.
 
@@ -338,43 +338,27 @@ xref:legacy-csrnames-added[xrefstyle=short].
 include::generated/csr_added_legacy_table_body.adoc[]
 |===
 
-==== Machine ISA Register (misa)
-
-{cheri_legacy_ext_name} eliminates some restrictions for MXL imposed in
-{cheri_base_ext_name} to allow implementations supporting multiple base ISAs.
-Namely, the MXL field, that encodes the native base integer ISA width as shown
-in xref:misa_mxl_field[xrefstyle=short], may be writable.
-
-Setting the MXL field to a value that is not XLENMAX disables most CHERI
-features and instructions as described in
-xref:section_cheri_disable[xrefstyle=short].
-
 ==== Machine Status Registers (mstatus and mstatush)
 
 {cheri_legacy_ext_name} eliminates some restrictions for SXL and UXL imposed in
 {cheri_base_ext_name} to allow implementations supporting multiple base ISAs.
 Namely, the SXL and UXL fields may be writable.
 
-{cheri_legacy_ext_name} requires that lower-privilege modes have XLEN settings
-less than or equal to the next-higher privilege mode. WARL field behaviour
-restricts programming so that it is not possible to program MXL, SXL or UXL
-to violate this rule.
-
-Setting the SXL or UXL field to a value that is not XLENMAX disables most
+Setting the SXL or UXL field to a value that is not MXLEN disables most
 CHERI features and instructions, as described in
 xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
 
 NOTE: If CHERI register access must be disabled in a mode for security reasons,
 software should set CRE to 0 regardless of the SXL and UXL fields.
 
-Whenever XLEN in any mode is set to a value less than XLENMAX, standard RISC-V
+Whenever XLEN in any mode is set to a value less than MXLEN, standard RISC-V
 rules from cite:[riscv-unpriv-spec] are followed. This means that all operations
 must ignore source operand register bits above the configured XLEN, and must
-sign-extend results to fill the entire widest supported XLEN in the destination
-register. Similarly, *pc* bits above XLEN are ignored, and when the *pc* is
-written, it is sign-extended to fill XLENMAX. The integer writing rule from CHERI
-is followed, so that every register write also zeroes the metadata and tag of
-the destination register.
+sign-extend results to fill all MXLEN bits in the destination register.
+Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it
+is sign-extended to fill MXLEN. The integer writing rule from CHERI is
+followed, so that every register write also zeroes the metadata and tag of the
+destination register.
 
 However, CHERI operations and security checks will continue using the entire
 hardware register (i.e. CLEN bits) to correctly decode capability bounds.
