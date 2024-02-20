@@ -1,0 +1,69 @@
+<<<
+
+[#JR,reftext="JR"]
+==== JR
+
+Expands to <<JALR>> following the expansion rule from cite:[riscv-unpriv-spec].
+
+[#JALR,reftext="JALR"]
+==== JALR
+
+Synopsis::
+Jump and link register
+
+Capability Mode Mnemonic::
+`jalr cd, cs1, offset`
+
+Legacy Mode Mnemonic::
+`jalr rd, rs1, offset`
+
+Encoding::
+include::wavedrom/ct-unconditional-2.adoc[]
+
+Capability Mode Description::
+JALR allows unconditional, indirect jumps to a target capability. The
+target capability is obtained by unsealing `cs1` if the immediate is zero and
+incrementing its address by the sign-extended 12-bit immediate otherwise,
+and then setting the least-significant bit of the
+result to zero. The target capability may have
+xref:section_invalid_addr_conv[xrefstyle=short]
+performed and is then installed in <<pcc>>. The <<pcc>>
+of the next instruction following the jump (<<pcc>> + 4) is sealed and written
+to `cd`.
+
+Legacy Mode Description::
+JALR allows unconditional, indirect jumps to a target address. The target
+address is obtained by adding the sign-extended 12-bit immediate to `rs1`, then
+setting the least-significant bit of the result to zero. The target address
+is installed in the address field of the <<pcc>> which may require
+xref:section_invalid_addr_conv[xrefstyle=short].
+The address of the
+instruction following the jump (<<pcc>> + 4) is written to `rd`.
+
+Exceptions::
+When these instructions cause CHERI exceptions, _CHERI jump or branch fault_
+is reported in the TYPE field and the following codes may be
+reported in the CAUSE field of <<mtval>> or <<stval>>:
+
+[%autowidth,options=header,align=center]
+|==============================================================================
+| CAUSE                 | Legacy Mode | Capability Mode | Reason
+| Tag violation         |      | ✔     | `cs1` has tag set to 0
+| Seal violation        |      | ✔     | `cs1` is sealed and the immediate is not 0
+| Permission violation  |      | ✔     | `cs1` does not grant <<x_perm>>
+| Length violation      | ✔    | ✔     | Minimum length instruction is not within the target capability's bounds. This check uses the address after it has undergone xref:section_invalid_addr_conv[xrefstyle=short] but with the original bounds.
+|==============================================================================
+
+include::pcrel_debug_warning.adoc[]
+
+Prerequisites Capability Mode::
+{cheri_base_ext_name}
+
+Prerequisites Legacy Mode::
+{cheri_legacy_ext_name}
+
+Operation::
++
+--
+TBD
+--

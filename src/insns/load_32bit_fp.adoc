@@ -1,17 +1,4 @@
 <<<
-//[#insns-load-32bit-fp,reftext="Floating point load (CFLD, CFLW, CFLH, FLD, FLW, FLH), 32-bit encodings"]
-
-[#CFLD,reftext="CFLD"]
-==== CFLD
-See <<FLH>>.
-
-[#CFLW,reftext="CFLW"]
-==== CFLW
-See <<FLH>>.
-
-[#CFLH,reftext="CFLH"]
-==== CFLH
-See <<FLH>>.
 
 [#FLD,reftext="FLD"]
 ==== FLD
@@ -27,10 +14,10 @@ See <<FLH>>.
 ==== FLH
 
 Synopsis::
-Floating point loads (CFLD, CFLW, CFLH, FLD, FLW, FLH), 32-bit encodings
+Floating point loads (FLD, FLW, FLH), 32-bit encodings
 
 Capability Mode Mnemonics::
-`cfld/cflw/cflh frd, offset(cs1)`
+`fld/flw/flh frd, offset(cs1)`
 
 Legacy Mode Mnemonics::
 `fld/flw/flh rd, offset(rs1)`
@@ -47,22 +34,22 @@ Standard floating point load instructions, authorised by the capability in <<ddc
 :!cap_load:
 include::load_exceptions.adoc[]
 
-Prerequisites for CFLD::
+Prerequisites for Capability Mode FLD::
 {cheri_base_ext_name}, and D
 
-Prerequisites for CFLW::
-{cheri_base_ext_name}, and F
-
-Prerequisites for CFLH::
-{cheri_base_ext_name}, and Zfhmin or Zfh
-
-Prerequisites for FLD::
+Prerequisites for Legacy Mode FLD::
 {cheri_legacy_ext_name}, and D
 
-Prerequisites for FLW::
+Prerequisites for Capability Mode FLW::
+{cheri_base_ext_name}, and F
+
+Prerequisites for Legacy Mode FLW::
 {cheri_legacy_ext_name}, and F
 
-Prerequisites for FLH::
+Prerequisites for Capability Mode FLH::
+{cheri_base_ext_name}, and Zfhmin or Zfh
+
+Prerequisites for Legacy Mode FLH::
 {cheri_legacy_ext_name}, and Zfhmin or Zfh
 
 Operation::

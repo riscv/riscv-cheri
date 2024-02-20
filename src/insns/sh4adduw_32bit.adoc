@@ -1,19 +1,13 @@
 <<<
-//[#insns-sh4adduw-32bit,reftext="CSR access (CSH4ADD.UW, SH4ADD.UW), 32-bit encoding"]
 
 [#SH4ADD_UW,reftext="SH4ADD.UW"]
 ==== SH4ADD.UW
 
-See <<CSH4ADD.UW>>.
-
-[#CSH4ADD_UW,reftext="CSH4ADD.UW"]
-==== CSH4ADD.UW
-
 Synopsis::
-Shift by 4 and add unsigned words for address generation (CSH4ADD.UW, SH4ADD.UW)
+Shift by 4 and add unsigned words for address generation (SH4ADD.UW)
 
 Capability Mode Mnemonics::
-`csh4add.uw cd, rs1, cs2`
+`sh4add.uw cd, rs1, cs2`
 
 Legacy Mode Mnemonics::
 `sh4add.uw rd, rs1, rs2`
@@ -24,10 +18,10 @@ Encoding::
 {reg:[
     { bits:  7, name: 0xe3, attr: ['OP'] },
     { bits:  5, name: 'rd' },
-    { bits:  3, name: 0x7, attr: ['CSH4ADD.UW', 'SH4ADD.UW'] },
+    { bits:  3, name: 0x7, attr: ['SH4ADD.UW'] },
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'cs2/rs2' },
-    { bits:  7, name: 16, attr: ['CSH4ADD.UW', 'SH4ADD.UW'] },
+    { bits:  7, name: 16, attr: ['SH4ADD.UW'] },
 ]}
 ....
 
@@ -37,10 +31,10 @@ Increment the address field of `cs2` by the unsigned word in `rs1` shifted left 
 Legacy Mode Description::
 Increment `rs2` by the unsigned word in `rs1` shifted left by 4 bit positions.
 
-Prerequisites CSH4ADD::
+Prerequisites for Capability Mode::
 {cheri_base_ext_name}
 
-Prerequisites for SH4ADD::
+Prerequisites for Legacy Mode::
 {cheri_legacy_ext_name}
 
 Capability Mode Operation::

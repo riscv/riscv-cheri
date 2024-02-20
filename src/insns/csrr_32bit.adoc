@@ -30,30 +30,51 @@ endif::[]
 Synopsis::
 CSR access (CSRRWI, CSRRS, CSRRSI, CSRRC, CSRRCI) 32-bit encodings
 
-Register Source Mnemonics::
-`csrr[s|c] rd, rs1, csr`
+Mnemonics for accessing capability CSRs at CLEN-wide aliases::
+`csrrs  cd, rs1, csr` +
+`csrrc  cd, rs1, csr` +
+`csrrwi cd, imm, csr` +
+`csrrsi cd, imm, csr` +
+`csrrci cd, imm, csr`
 
-Immediate Source Mnemonics::
-`csrr[w|s|c]i rd, imm, csr`
+Mnemonics for accessing XLEN-wide CSRs or capability CSRs at XLEN-wide aliases::
+`csrrs  rd, rs1, csr` +
+`csrrc  rd, rs1, csr` +
+`csrrwi rd, imm, csr` +
+`csrrsi rd, imm, csr` +
+`csrrci rd, imm, csr`
 
 Encoding::
 include::wavedrom/csr-instr.adoc[]
 
 Description::
 These are standard RISC-V CSR instructions with extended functionality for
-accessing CLEN-wide CSRs, such as <<mtvec>>/<<mtvecc>> which can be
+accessing CLEN-wide CSRs, such as <<mtvec>>/<<mtvecc>>, which can be
 accessed through either the RISC-V address or the capability address alias.
 +
-Unlike <<CSRRW>> these instruction perform the same update to CLEN-wide CSRs
- to either the XLEN or CLEN-wide alias as they only every perform an XLEN-wide update.
- Where a CLEN-wide CSR is updated, through either alias, the final address is determined
- as defined by RISC-V for these instructions. The metadata and tag are updated
- as defined in xref:extended_CSR_writing[xrefstyle=short].
+Unlike <<CSRRW>>, these instructions only update the address field and the tag
+as defined in xref:extended_CSR_writing[xrefstyle=short] when writing
+capability CSRs regardless of the CSR alias used. The final address to
+write to the capability CSR is determined as defined by RISC-V for these
+instructions.
 +
 See xref:aliased_CSRs[xrefstyle=short] for a list of CLEN-wide CSRs and
 xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing an XLEN-wide value to each one.
 +
+If `cd` is `c0` (or `rd` is `x0`), then <<CSRRWI>> shall not read the CSR and
+and shall not cause any of the side effects that might occur on a CSR read. If
+`rs1` is `x0` for <<CSRRS>> and <<CSRRC>>, or `imm` is 0 for <<CSRRSI>> and
+<<CSRRCI>>, then the instruction will not write to the CSR at all, and so shall
+not cause any of the side effects that might otherwise occur on a CSR write.
++
+The assembler pseudoinstruction to read a capability CSR at its CLEN alias,
+`csrr rd, csr`, is encoded as `csrrs cd, csr, c0`.
++
 Access to XLEN-wide CSRs from other extensions is as specified by RISC-V.
+
+NOTE: If the CSR accessed is a capability, and `rs1` is `x0` for <<CSRRS>> and
+<<CSRRC>>, or `imm` is 0 for <<CSRRSI>> and <<CSRRCI>>, then the CSR is not
+written so no representability check is needed in this case.
 
 Permissions::
 All non-user mode accessible CSRs require <<asr_perm>>, including existing RISC-V CSRs.

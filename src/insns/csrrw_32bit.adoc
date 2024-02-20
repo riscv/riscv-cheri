@@ -12,18 +12,18 @@ endif::[]
 Synopsis::
 CSR access (CSRRW) 32-bit encodings
 
-Mnemonic (XLEN-wide target, and XLEN-wide aliases of CLEN-wide CSRs)::
-`csrrw rd, rs1, csr`
-
-Mnemonics (CLEN-wide target)::
+Mnemonics for accessing capability CSRs at CLEN-wide aliases::
 `csrrw cd, cs1, csr`
+
+Mnemonics for accessing XLEN-wide CSRs or capability CSRs at XLEN-wide aliases::
+`csrrw rd, rs1, csr`
 
 Encoding::
 include::wavedrom/csrw-instr.adoc[]
 
 Description::
 This is a standard RISC-V CSR instructions with extended functionality for
-accessing CLEN-wide CSRs, such as <<mtvec>>/<<mtvecc>> which can be
+accessing CLEN-wide CSRs, such as <<mtvec>>/<<mtvecc>>, which can be
 accessed through either the RISC-V address or the capability address alias.
 +
 See xref:aliased_CSRs[xrefstyle=short] for a list of CLEN-wide CSRs and
@@ -32,6 +32,12 @@ xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing each 
 CSRRW writes `cs1` to the CLEN-wide alias of extended CSRs, and reads a full capability into `cd`.
 +
 CSRRW writes `rs1` to the XLEN-wide alias of extended CSRs, and reads the address field into `rd`.
++
+If `cd` is `c0` (or `rd` is `x0`), then the instruction shall not read the CSR
+and shall not cause any of the side effects that might occur on a CSR read.
++
+The assembler pseudoinstruction to write a capability CSR at its CLEN alias,
+`csrw csr, cs1`, is encoded as `csrrw c0, csr, cs1`.
 +
 Access to XLEN-wide CSRs from other extensions is as specified by RISC-V.
 

@@ -122,7 +122,7 @@ extensions.
 
 === Risks and Known Uncertainty
 
-* All extensions could be divided up differently in future, including after
+* All extensions could be divided up differently in the future, including after
 ratification
 * The RISC-V Architecture Review Committee (ARC) are likely to update all
 encodings
@@ -160,44 +160,3 @@ available on a CHERI-enabled hart. These include:
 * "J" Pointer Masking
 
 CAUTION: The list above is not complete!
-
-==== Suggested Mnemonic Renaming
-
-xref:suggested_insn_names[xrefstyle=short] lists the currently proposed
-renames. Please update the table when new renames are proposed or confirmed.
-
-.Suggested instruction names
-[#suggested_insn_names]
-[width="100%",options=header]
-|=============================
-| Current Name      | Suggestion
-| CMOVE             | CMV
-| CINCOFFSET        | CADD
-| CINCOFFSETIMM     | CADDI
-| C.CINCOFFSET16CSP | C.CADDI16SP
-| C.CINCOFFSET4CSPN | C.CADDI4SPN
-| CLC/LC            | CLCAP/LCAP
-| CSC/SC            | CSCAP/SCAP
-|=============================
-
-NOTE: Renaming SC is not a choice. The store capability instruction must be
-renamed because it conflicts with store conditional from the RISC-V A
-extension.
-
-Further to the new proposed mnemonics in
-xref:suggested_insn_names[xrefstyle=short], the following general proposals
-have been discussed:
-
-* Do not use the letter 'c' to indicate 'capability' or 'CHERI' because this
-conflicts with the already ratified RISC-V C extension
-    ** We previously discussed using other letters like 'p' for 'pointer' or
-'f' for 'fat pointer' although 'f' is already used for floating point
-* Do not change instruction mnemonics based on the current CHERI execution mode
-    ** For example, LW is always load word regardless of the CHERI mode, so the
-mnemonic CLW disappears
-    ** This facilitates writing the ISA specification as well as code
-maintenance in systems software like Linux
-    ** However, it also goes against intentionality and can make assembly code
-(which occurs very infrequently in real-world code) more difficult to
-understand without additional context
-    ** Both options could be supported by using assembler aliases

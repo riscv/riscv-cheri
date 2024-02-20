@@ -38,8 +38,10 @@ include::img/dpcreg.edn[]
 [#dpcc,reftext="dpcc"]
 ==== Debug Program Counter Capability (dpcc)
 
-The <<dpcc>> register is a extension to <<dpc>> that is able to hold a
-capability. Its reset value is the <<null-cap>> capability.
+The <<dpcc>> register is an extension to <<dpc>> that is able to hold a
+capability.
+
+{TAG_RESET_CSR}
 
 .Debug program counter capability
 include::img/dpccreg.edn[]
@@ -58,17 +60,18 @@ Additionally, the <<pcc>> is updated as follows:
   ** The <<pcc>> may be used as a source of the <<infinite-cap>> capability in
 debug mode to allow other capabilities to be created and written into memory.
 
-When resuming, the hart's <<pcc>> is updated to the capability stored in
-<<dpcc>>. A debugger may write <<dpcc>> to change where the hart resumes and
-its mode, permissions, sealing or bounds.
+When leaving debug mode, the capability in <<dpcc>> is unsealed and written
+into <<pcc>>.  A debugger may write <<dpcc>> to change where the hart resumes
+and its mode, permissions, sealing or bounds.
 
 [#dscratch0,reftext="dscratch0"]
 ==== Debug Scratch Register 0 (dscratch0)
 
 The <<dscratch0>> register is as defined in cite:[riscv-debug-spec]. It is an
 optional DXLEN-bit scratch register that can be used by implementations which
-need it. Its reset value is the <<null-cap>> capability. <<dscratch0>> is
-extended into <<dscratch0c>>.
+need it. <<dscratch0>> is extended into <<dscratch0c>>.
+
+{TAG_RESET_CSR}
 
 .Debug scratch 0 register
 include::img/dscratch0reg.edn[]
@@ -88,8 +91,9 @@ include::img/dscratch0creg.edn[]
 
 The <<dscratch1>> register is as defined in cite:[riscv-debug-spec]. It is an
 optional DXLEN-bit scratch register that can be used by implementations which
-need it. Its reset value is the <<null-cap>> capability. <<dscratch1>> is
-extended into <<dscratch1c>>.
+need it. <<dscratch1>> is extended into <<dscratch1c>>.
+
+{TAG_RESET_CSR}
 
 .Debug scratch 0 register
 include::img/dscratch1reg.edn[]

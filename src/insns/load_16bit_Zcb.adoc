@@ -1,19 +1,4 @@
 <<<
-//[#insns-load-16bit-Zcb,reftext="Load (C.CLH, C.CLHU, C.CLBU, C.LH, C.LHU, C.LBU), 16-bit encodings"]
-
-
-
-[#C_CLH,reftext="C.CLH"]
-==== C.CLH
-See <<C.LBU>>.
-
-[#C_CLHU,reftext="C.CLHU"]
-==== C.CLHU
-See <<C.LBU>>.
-
-[#C_CLBU,reftext="C.CLBU"]
-==== C.CLBU
-See <<C.LBU>>.
 
 [#C_LH,reftext="C.LH"]
 ==== C.LH
@@ -29,13 +14,13 @@ See <<C.LBU>>.
 ==== C.LBU
 
 Synopsis::
-Load (C.CLH, C.CLHU, C.CLBU, C.LH, C.LHU, C.LBU), 16-bit encodings
+Load (C.LH, C.LHU, C.LBU), 16-bit encodings
 
 Capability Mode Mnemonics::
-`c.clh/c.clhu/c.clbu rd', offset(cs1')`
+`c.lh/c.lhu/c.lbu rd', offset(cs1')`
 
 Capability Mode Expansions::
-`clh/clhu/clbu rd, offset(cs1)`
+`lh/lhu/lbu rd, offset(cs1)`
 
 Legacy Mode Mnemonics::
 `c.lh/c.lhu/c.lbu rd', offset(rs1')`
@@ -55,11 +40,11 @@ Subword load instructions, authorised by the capability in <<ddc>>.
 
 include::load_exceptions.adoc[]
 
-Prerequisites C.CLH, C.CLHU, C.CLBU::
+Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}, and Zcb
 
-Prerequisites C.LH, C.LHU, C.LBU::
+Prerequisites for Legacy Mode::
 {c_cheri_legacy_ext_names}, and Zcb
 
 Operation (after expansion to 32-bit encodings)::
- See <<C.CLH>>, <<CLHU>>, <<CLBU>>, <<LH>>, <<LHU>>, <<LBU>>
+ See <<LHU>>, <<LH>>, <<LBU>>

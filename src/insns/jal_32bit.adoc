@@ -1,0 +1,51 @@
+<<<
+
+[#J,reftext="J"]
+==== J
+
+Expands to <<JAL>> following the expansion rule from cite:[riscv-unpriv-spec].
+
+[#JAL,reftext="JAL"]
+==== JAL
+
+Synopsis::
+Jump and link
+
+Capability Mode Mnemonic::
+`jal cd, offset`
+
+Legacy Mode Mnemonic::
+`jal rd, offset`
+
+Encoding::
+include::wavedrom/ct-unconditional.adoc[]
+
+Capability Mode Description::
+JAL's immediate encodes a signed offset in multiple of 2 bytes. The <<pcc>> is
+incremented by the sign-extended offset to form the jump target capability. The
+target capability is written to <<pcc>>. The <<pcc>> of the next instruction
+following the jump (<<pcc>> + 4) is sealed and written to `cd`.
+
+Legacy Mode Description::
+JAL's immediate encodes a signed offset in multiple of 2 bytes. The
+sign-extended offset is added to the <<pcc>>'s address to form the target
+address which is written to the <<pcc>>'s address field. The address of the
+instruction following the jump (<<pcc>> + 4) is written to `rd`.
+
+Exceptions::
+CHERI fault exceptions occur when a minimum length instruction at the target
+address is not within the bounds of the <<pcc>>. In this case, _CHERI jump or
+branch fault_ is reported in the TYPE field and Length Violation is reported in
+the CAUSE field of <<mtval>> or <<stval>>.
+
+Prerequisites for Capability Mode::
+{cheri_base_ext_name}
+
+Prerequisites for Legacy Mode::
+{cheri_legacy_ext_name}
+
+Operation::
++
+--
+TODO
+--

@@ -144,8 +144,13 @@ permission.
 WARNING: #TODO: Confirm that we need a separate permissions format for 32-bit
 and 64-bit.#
 
-NOTE: Valid capabilities must not have the permissions field set to a reserved
-value according to xref:cap_perms_encoding32[xrefstyle=short] when XLENMAX=32.
+NOTE: When XLENMAX=32 there is a single reserved permission encoding (see
+xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
+capability to have this value since <<ACPERM>> will never create it. It is
+possible for untagged capabilities to have it. <<GCPERM>> will interpret it
+as if it were 0b0000 (no permissions). Future extensions may assign meaning to
+the reserved bit pattern, in which case <<GCPERM>> is allowed to report a
+non-zero value.
 
 [#section_cap_sdp]
 ==== Software-Defined Permissions (SDP)
@@ -174,19 +179,33 @@ references if that SDP bit is set because it "owns" that object.
 ==== Sealed (S) Bit
 
 ifdef::cheri_v9_annotations[]
-WARNING: *CHERI v9:* The sealing bit is new (1-bit otype) and the old CHERI v9 otype no longer exists.
+WARNING: *CHERI v9:* The sealing bit is new (1-bit otype) and the old CHERI v9
+otype no longer exists. Please note that this bit indicates the result of
+two instructions in CHERI v9: CSEAL for sealed capabilities and
+CSEALENTRY for sealed entry capabilities.
 endif::[]
 
-Indicates that a capability is sealed if the bit is 1 or unsealed if it is 0.
+This bit indicates that a capability is sealed if the bit is 1 or unsealed if it is 0.
+
+The sealing bit conflates two concepts in one bit: Sealing data capabilities and
+creating sealed entry capabilities as described below.
+
 Sealed capabilities cannot be dereferenced to access memory and are immutable
 such that modifying any of its fields clears the tag of the output capability.
 
-In {cheri_base_ext_name}, the sealing bit is used to implement immutable
-capabilities that describe function entry points. A program may jump to a
-sealed capability to begin executing the instructions it references. The jump
+NOTE: Sealed capabilities might be useful to software as tokens that can be passed
+around. The only way of removing the seal bit of a capability is by rebuilding
+it via a superset capability with <<CBLD>>. {cheri_base_ext_name} does not offer
+an unseal instruction.
+
+For code capabilities, the sealing bit is used to implement immutable
+capabilities that describe function entry points. Such capabilities can be leveraged
+to establish a form of control-flow integrity between mutually distrusting code. These
+capabilities are known as sealed entry (sentry) capabilities. A program may jump to a
+sentry capability to begin executing the instructions it references. The jump
 instruction automatically unseals the capability and installs it to the
 program counter capability (see
-xref:section_riscv_programmers_model[xrefstyle=short]). The <<CJALR>> instruction
+xref:section_riscv_programmers_model[xrefstyle=short]). The <<JALR>> instruction
 also seals the return address capability (if any) since it is the entry point
 to the caller function.
 
@@ -284,10 +303,7 @@ NOTE: Reserved bits must be 0 in valid capabilities.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the
-in-memory format, and also increase precision for RV32. When EF=0, T and B
-are now shifted right rather than left within the address. Also, the bounds
-decoding for XLENMAX=32 uses a trick (see bit T8) to save one bit when encoding
-the exponent.
+in-memory format, and also increase precision for RV32.
 endif::[]
 
 The components of a capability are encoded as shown in
@@ -317,6 +333,22 @@ WARNING: #TODO: The pseudo-code below does not have a formal notation. It is
 simply a place-holder while the Sail implementation is available. In this
 notation, / means "integer division", [] are the bit-select operators, and
 arithmetic is signed.#
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The IE bit from CHERI v9 is renamed EF and its value is
+inverted to ensure that the <<null-cap>> capability is encoded as zero without the
+need for CHERI v9's in-memory format. +
+When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
+with T and B to form the top and base addresses respectively. +
+When EF=0, the exponent `E=CAP_MAX_E - ( (XLENMAX == 32) ? { T8, TE, BE } : { TE, BE } )`,
+so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
+and base addresses respectively. E is computed by subtracting from the maximum
+possible exponent CAP_MAX_E which can be efficiently implemented in hardware
+assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise
+shift right by E. In contrast, CHERI v9 implementations computed the top and
+base addresses by assumming that T and B are at bit 0 and performing a logical
+bitwise shift left by E.
+endif::[]
 
 ```
 EW        = (XLENMAX == 32) ? 5 : 6
@@ -500,8 +532,8 @@ capability's _representable range_ if `b == b' && t == t'`.
 Changing a capability's address to a value outside the _representable range_
 unconditionally clears the capability's tag. Examples are:
 
-* Instructions such as <<CINCOFFSET>> which include pointer arithmetic.
-* The <<CSETADDR>> instruction which updates the capability address field.
+* Instructions such as <<CADD>> which include pointer arithmetic.
+* The <<SCADDR>> instruction which updates the capability address field.
 
 ==== Practical Information
 

@@ -1,22 +1,16 @@
 <<<
-//[#insns-addi16sp-16bit,reftext="Stack pointer increment in blocks of 16 (C.CINCOFFSET16CSP, C.ADDI16SP), 16-bit encodings"]
 
 [#C_ADDI16SP, reftext="C.ADDI16SP"]
 ==== C.ADDI16SP
 
-See <<C.CINCOFFSET16CSP>>.
-
-[#C_CINCOFFSET16CSP, reftext="C.CINCOFFSET16CSP"]
-==== C.CINCOFFSET16CSP
-
 Synopsis::
-Stack pointer increment in blocks of 16 (C.CINCOFFSET16CSP, C.ADDI16SP), 16-bit encodings
+Stack pointer increment in blocks of 16 (C.ADDI16SP), 16-bit encodings
 
 Capability Mode Mnemonic::
-`c.cincoffset16csp imm`
+`c.addi16sp imm`
 
 Capability Mode Expansion::
-`cincoffset csp, csp, imm`
+`cadd csp, csp, imm`
 
 Legacy Mode Mnemonic::
 `c.addi16sp imm`
@@ -29,17 +23,17 @@ include::wavedrom/c-int-reg-immed.adoc[]
 
 Capability Mode Description::
 
-Add the non-zero sign-extended 6-bit immediate to the value in the stack pointer (csp=c2), where the immediate is scaled to represent multiples of 16 in the range (-512,496). Clear the tag if the resulting capability is
+Add the non-zero sign-extended 6-bit immediate to the value in the stack pointer (`csp=c2`), where the immediate is scaled to represent multiples of 16 in the range (-512,496). Clear the tag if the resulting capability is
 unrepresentable or `csp` is sealed.
 
 Legacy Mode Description::
 
-Add the non-zero sign-extended 6-bit immediate to the value in the stack pointer (sp=x2), where the immediate is scaled to represent multiples of 16 in the range (-512,496).
+Add the non-zero sign-extended 6-bit immediate to the value in the stack pointer (`sp=x2`), where the immediate is scaled to represent multiples of 16 in the range (-512,496).
 
-Prerequisites for C.CINCOFFSET16CSP::
+Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}
 
-Prerequisites for C.ADDI16SP::
+Prerequisites for Legacy Mode::
 {c_cheri_legacy_ext_names}
 
 Capability Mode Operation::

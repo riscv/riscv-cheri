@@ -14,7 +14,7 @@ Key features in {cheri_legacy_ext_name} include a definition of a CHERI executio
 unprivileged register, additional instructions and extensions to some existing
 CSRs enabling disable CHERI features. The remainder of this section describes
 these features in detail as well as their integration with the primary base
-integer variants of the the RISC-V ISA (RV32I and RV64I).
+integer variants of the RISC-V ISA (RV32I and RV64I).
 
 === CHERI Execution Mode
 
@@ -45,9 +45,8 @@ implementations that support {cheri_base_ext_name}, but not
 The CHERI execution mode is effectively an extension to some RISC-V instruction
 encodings. For example, the encoding of an instruction like <<LW>> remains
 unchanged, but the mode indicates whether the capability authorising the load
-is the register operand `cs1` (Capability mode), so the instruction is <<CLW>>
-from {cheri_base_ext_name}, or <<ddc>> (Legacy mode), so the instruction is
-simply <<LW>>.
+is the register operand `cs1` (Capability mode). The mode is shown in the assembly
+syntax.
 
 The CHERI execution mode is key in providing backwards compatibility with the
 base RISC-V ISA. RISC-V software is able to execute unchanged in
@@ -75,41 +74,26 @@ depending on the current CHERI execution mode.
 The load and store capability instructions change behaviour depending on the
 CHERI execution mode although the instruction's encoding remains unchanged.
 
-The load capability instruction is <<CLC>> when the CHERI execution mode is
+The load capability instruction is <<LC>>. When the CHERI execution mode is
 Capability; the instruction behaves as described in
-xref:section_cap_instructions[xrefstyle=short]. That encoding is <<LC>> when
-the mode is Legacy. In this case, the capability authorising the memory access
+xref:section_cap_instructions[xrefstyle=short].
+In legacy mode, the capability authorising the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
 the sign-extended offset.
 
-The store capability instruction is <<CSC>> when the CHERI execution mode is
+The store capability instruction is <<SC>>. When the CHERI execution mode is
 Capability; the instruction behaves as described in
-xref:section_cap_instructions[xrefstyle=short]. That encoding is <<SC>> when
-the mode is Legacy. In this case, the capability authorising the memory access
+xref:section_cap_instructions[xrefstyle=short].
+In legacy mode, the capability authorising the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
 the sign-extended offset.
 
 ==== Unconditional Capability Jumps
 
-The indirect jump and link <<pcc>> (<<JALR_PCC>>) instruction shares the same
-encoding with a new indirect jump and link capability (<<JALR_CAP>>) instruction.
-<<JALR_PCC>> is a {cheri_base_ext_name} instruction executed when the mode is
-Capability as described in
-xref:section_uncond_integer_addr_jump[xrefstyle=short]. In Legacy mode, the
-encoding is executed as <<JALR_CAP>> which allows unconditional jumps to a target
-capability. The target capability is provided in a *c* register and is written
-to <<pcc>>. The <<pcc>> of the next instruction following the jump (<<pcc>> + 4) is
-written to a *c* register. <<JALR_CAP>> cause CHERI exceptions when:
+The <<JALR_MODE>> instruction is modal, giving access to the functionality of
+<<JALR>> from either operating mode.
 
-* The target capability's tag is zero
-* A minimum sized instruction at the target capability's address is not
-within bounds
-* The target capability does not grant execute permission
-
-<<JALR_CAP>> causes an instruction address misaligned exception when the target
-address is misaligned.
-
-NOTE: <<JALR_CAP>> can be used to change the current CHERI execution mode when
+NOTE: <<JALR_MODE>> can be used to change the current CHERI execution mode when
 the implementation supports {cheri_mode_ext_name}.
 
 === Existing RISC-V Instructions
@@ -125,17 +109,17 @@ the tag and metadata of that register are implicitly set to 0.
 The unconditional jump instructions change behaviour depending on the CHERI
 execution mode although the instruction's encoding remains unchanged.
 
-The jump and link instruction is <<CJAL>> when the CHERI execution mode is
-Capability; the instruction behaves as described in
-xref:section_existing_riscv_insns[xrefstyle=short]. That encoding is <<JAL>>
-when the mode is Legacy. In this case, the address of the instruction
+The jump and link instruction <<JAL>> when the CHERI execution mode is
+Capability; behaves as described in
+xref:section_existing_riscv_insns[xrefstyle=short].
+When the mode is Legacy. In this case, the address of the instruction
 following the jump (*pc* + 4) is written to an *x* register; that register's
 tag and capability metadata are zeroed.
 
-The jump and link register instruction is <<CJALR>> when the CHERI execution mode
-is Capability; the instruction behaves as described in
-xref:section_existing_riscv_insns[xrefstyle=short]. That encoding is <<JALR>>
-when the mode is Legacy. In this case, the target address is obtained by adding
+The jump and link register instruction is <<JALR>> when the CHERI execution mode
+is Capability; behaves as described in
+xref:section_existing_riscv_insns[xrefstyle=short].
+When the mode is Legacy. In this case, the target address is obtained by adding
 the sign-extended 12-bit immediate to the *x* register operand, then setting
 the least significant bit of the result to zero. The target address is then
 written to the <<pcc>> address and a representability check is performed. The
@@ -228,9 +212,10 @@ shown in xref:legacy-csrnames-added[xrefstyle=short].
 [#dddc,reftext="dddc"]
 === Debug Default Data Capability (dddc)
 
-<<dddc>> is a register that is able to hold a capability. Its reset value is
-the <<null-cap>> capability. The address is shown in
+<<dddc>> is a register that is able to hold a capability. The address is shown in
 xref:legacy-csrnames-added[xrefstyle=short].
+
+{TAG_RESET_CSR}
 
 .Debug default data capability
 include::img/dddcreg.edn[]
@@ -242,6 +227,9 @@ unchanged.
 When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated to
 the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
 hart's context.
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
+so it does not need to be able to hold all possible invalid addresses.
 
 [#section_cheri_disable]
 === Disabling CHERI Registers
@@ -331,12 +319,24 @@ the destination register.
 However, CHERI operations and security checks will continue using the entire
 hardware register (i.e. CLEN bits) to correctly decode capability bounds.
 
+{cheri_legacy_ext_name} eliminates some restrictions for MBE, SBE, and UBE
+imposed in {cheri_base_ext_name} to allow implementations supporting multiple
+endiannesses.  Namely, the MBE, SBE, and UBE fields may be writable if the
+corresponding privilege mode is implemented.
+
+Setting the MBE, SBE, or UBE field to a value that is not the reset value of
+MBE disables most CHERI features and instructions, as described in
+xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
+
 [#mtdc,reftext="mtdc"]
 ==== Machine Trap Default Capability Register (mtdc)
 
 The <<mtdc>> register is capability width read/write register dedicated
 for use by machine mode. Typically, it is used to hold a data capability to a
-machine-mode hart-local context space, to load into <<ddc>>. <<mtdc>>'s reset
+machine-mode hart-local context space, to load into <<ddc>>.
+
+{TAG_RESET_CSR}
+
 value is the <<null-cap>> capability.
 
 .Machine-mode trap data capability register
@@ -381,8 +381,9 @@ xref:section_cheri_disable[xrefstyle=short].
 
 The <<stdc>> register is capability width read/write register dedicated
 for use by supervisor mode. Typically, it is used to hold a data capability to
-a supervisor-mode hart-local context space, to load into <<ddc>>. <<stdc>>'s
-reset value is the <<null-cap>> capability.
+a supervisor-mode hart-local context space, to load into <<ddc>>.
+
+{TAG_RESET_CSR}
 
 .Supervisor trap data capability register (*stdc*)
 include::img/stdcreg.edn[]
@@ -415,6 +416,9 @@ The <<ddc>> CSR is a read-write capability register implicitly used as an
 operand to authorise all data memory accesses when the current CHERI mode is
 Legacy. This register must be readable in any implementation. Its reset value
 is the <<infinite-cap>> capability.
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<ddc>> is a data pointer,
+so it does not need to be able to hold all possible invalid addresses.
 
 .Unprivileged default data capability register
 include::img/ddcreg.edn[]

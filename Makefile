@@ -82,8 +82,9 @@ GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
 
 # AsciiDoctor command
 ASCIIDOC          = asciidoctor-pdf
+EXTRA_ASCIIDOC_OPTIONS ?=
 
-ASCIIDOC_OPTIONS  = --trace                                          \
+ASCIIDOC_OPTIONS  = --trace --verbose                                \
                     -a compress                                      \
                     -a mathematical-format=svg                       \
                     -a revnumber=$(VERSION)                          \
@@ -96,7 +97,7 @@ ASCIIDOC_OPTIONS  = --trace                                          \
                     -a cheri_v9_annotations=''                       \
                     -a pdf-fontsdir=docs-resources/fonts             \
                     -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
-                    --failure-level=ERROR
+                    --failure-level=ERROR $(EXTRA_ASCIIDOC_OPTIONS)
 ASCIIDOC_REQUIRES = --require=asciidoctor-bibtex       \
                     --require=asciidoctor-diagram      \
                     --require=asciidoctor-mathematical

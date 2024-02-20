@@ -1,0 +1,43 @@
+<<<
+
+[#C_MV,reftext="C.MV"]
+==== C.MV
+
+Synopsis::
+Capability move (C.MV), 16-bit encoding
+
+Capability Mode Mnemonic::
+c.mv cd, cs2
+
+Capability Mode Expansion::
+cmv cd, cs2
+
+Suggested assembly syntax::
+`mv cd, cs2` +
+`mv cd, cs2`
+
+NOTE: the suggested assembly syntax distinguishes from integer `mv` by operand type.
+
+Legacy Mode Mnemonic::
+c.mv rd, rs2
+
+Legacy Mode Expansion::
+add rd, x0, rs2
+
+Encoding::
+include::wavedrom/c_mv.adoc[]
+
+Capability Mode Description::
+Capability register `cd` is replaced with the contents of `cs2`.
+
+Legacy Mode Description::
+Standard RISC-V <<C_MV>> instruction.
+
+Prerequisites for Capability Mode::
+{c_cheri_base_ext_names}
+
+Prerequisites for Legacy Mode::
+{c_cheri_legacy_ext_names}
+
+Capability Mode Operation (after expansion to 32-bit encodings)::
+ See <<CMV>>

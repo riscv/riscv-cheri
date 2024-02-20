@@ -44,32 +44,32 @@ capabilities and changing the current CHERI execution mode.
 
 ==== Capability Manipulation Instructions
 
-A new <<CSETMODE>> instruction allows setting a capability's CHERI execution
+A new <<SCMODE>> instruction allows setting a capability's CHERI execution
 mode to the indicated value. The output is written to an unprivileged *c*
 register, not <<pcc>>.
 
 ==== Mode Change Instructions
 
-A new CHERI execution mode switch (<<CMODESWITCH>>) instruction allows software
+A new CHERI execution mode switch (<<MODESW>>) instruction allows software
 to toggle the hart's current CHERI execution mode. If the current mode in the
-<<pcc>> is Legacy, then the mode after executing <<CMODESWITCH>> is Capability
+<<pcc>> is Legacy, then the mode after executing <<MODESW>> is Capability
 and vice-versa. This instruction effectively writes the CHERI execution mode
 bit M of the capability currently installed in the <<pcc>>.
 
 ==== Unconditional Capability Jumps
 
 {cheri_mode_ext_name} allows changing the current CHERI execution mode when
-executing <<CJALR>> or <<JALR_CAP>>.
+executing either <<JALR>> from capability mode or <<JALR_MODE>> from legacy mode.
 
 === Integrating Zcheri_mode with Sdext
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The mode change instruction <<CMODESWITCH>> is new
+NOTE: *CHERI v9 Note:* The mode change instruction <<MODESW>> is new
 and the requirement to optionally support it in debug mode is also new.
 endif::[]
 
 In addition to the changes described in
 xref:section_debug_integration[xrefstyle=short] and
 xref:section_legacy_debug_integration[xrefstyle=short], {cheri_mode_ext_name}
-allows <<CMODESWITCH>> to act as an illegal instruction when it is executed
+allows <<MODESW>> to act as an illegal instruction when it is executed
 while in debug mode.

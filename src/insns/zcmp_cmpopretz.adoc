@@ -3,16 +3,11 @@
 [#CM_POPRETZ,reftext="CM.POPRETZ"]
 ==== CM.POPRETZ
 
-See <<CM.CPOPRETZ>> and cite:[riscv-code-size-spec].
-
-[#CM_CPOPRETZ,reftext="CM.CPOPRETZ"]
-==== CM.CPOPRETZ
-
 Synopsis::
-Destroy stack frame (CM.CPOPRETZ, CM.POPRETZ): load the return address register and register 0 to 12 saved registers from the stack frame, deallocate the stack frame. Move zero into argument register zero. Return through the return address register. 16-bit encodings.
+Destroy stack frame (CM.POPRETZ): load the return address register and register 0 to 12 saved registers from the stack frame, deallocate the stack frame. Move zero into argument register zero. Return through the return address register. 16-bit encodings.
 
 Capability Mode Mnemonic::
-`cm.cpopretz \{creg_list\}, -stack_adj`
+`cm.popretz \{creg_list\}, -stack_adj`
 
 Legacy Mode Mnemonics::
 `cm.popretz \{reg_list\}, -stack_adj`
@@ -34,15 +29,15 @@ Encoding::
 _rlist_ values 0 to 3 are reserved for a future EABI variant
 
 Capability Mode Description::
-Load capability registers as specified in _creg_list_. Deallocate stack frame. Move zero into `ca0`. Return by calling <<CJALR>> to `cra`. All data accesses are checked against `csp`. The return destination is checked against `cra`.
+Load capability registers as specified in _creg_list_. Deallocate stack frame. Move zero into `ca0`. Return by calling <<JALR>> to `cra`. All data accesses are checked against `csp`. The return destination is checked against `cra`.
 
 Legacy Mode Description::
 Load integer registers as specified in _reg_list_. Deallocate stack frame. Move zero into `a0`. Return by calling <<JALR>> to `ra`. All data accesses are checked against <<ddc>>. The return destination is checked against <<pcc>>.
 
 Permissions::
-Loads are checked as for <<CLC>> for Capability Mode or <<LC>> for Legacy Mode.
+Loads are checked as for <<LC>> in both Capability and Legacy Modes.
 +
-The return is checked as for <<CJALR>> for Capability Mode, or <<JALR>> for Legacy Mode.
+The return is checked as for <<JALR>> in both Capability and Legacy Modes.
 
 Exceptions::
 When these instructions cause CHERI exceptions, _CHERI data fault_
@@ -64,10 +59,10 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for CM.CPOPRETZ::
+Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}, Zcmp
 
-Prerequisites for CM.POPRETZ::
+Prerequisites for Legacy Mode::
 {c_cheri_legacy_ext_names}, Zcmp
 
 Operation::
