@@ -1,0 +1,88 @@
+:docgroup: CHERI Task Group
+:description: RISC-V specification for CHERI extensions
+:company: RISC-V.org
+:revdate: 1/2023
+:revnumber: 1.0
+:revremark: This document is under development. Expect potential changes. Visit http://riscv.org/spec-state for further details.
+:revinfo:
+:url-riscv: http://riscv.org
+:doctype: book
+:preface-title: Preamble
+:colophon:
+:appendix-caption: Appendix
+:imagesdir: {imagesdir}
+:title-logo-image: image:risc-v_logo.png["RISC-V International Logo",pdfwidth=3.25in,align=center]
+// Settings:
+:experimental:
+:reproducible:
+:imagesoutdir: {imagesoutdir}
+:bibtex-file: {srcdir}/riscv-cheri.bib
+:bibtex-order: alphabetical
+:bibtex-style: apa
+:icons: font
+:lang: en
+:listing-caption: Listing
+:sectnums:
+:toc: left
+:toclevels: 4
+:source-highlighter: pygments
+ifdef::backend-pdf[]
+:source-highlighter: coderay
+endif::[]
+:data-uri:
+:hide-uri-scheme:
+:stem: latexmath
+:footnote:
+:xrefstyle: short
+:attribute-missing: warn
+
+///////////////////////////////////////////////////////////////////////////////
+// Top-level CHERI definitions
+///////////////////////////////////////////////////////////////////////////////
+
+// Base CHERI extension without the mode bit in capability format
+:cheri_base_ext_name:      Zcheri_purecap
+// CHERI extension adding support for legacy mode
+:cheri_legacy_ext_name:    Zcheri_legacy
+// CHERI extension adding support for the mode bit in the capability format
+:cheri_mode_ext_name:      Zcheri_mode
+// Extension for CHERI PTE bits
+:cheri_pte_ext_name:       Zcheri_pte
+// Extension for CHERI capabilities in vector registers
+:cheri_vectorcap_ext_name: Zcheri_vectorcap
+
+// Extension for supporting lr/sc.[bh]
+:lr_sc_bh_ext_name: Zbhlrsc
+
+:c_cheri_base_ext_names:   C or Zca, {cheri_base_ext_name}
+:c_cheri_legacy_ext_names: C or Zca, {cheri_legacy_ext_name}
+:c_cheri_mode_ext_names:   C or Zca, {cheri_mode_ext_name}
+
+:non-csrrw-or:  <<CSRRWI>>, <<CSRRS>>, <<CSRRSI>>, <<CSRRC>> or <<CSRRCI>>
+:non-csrrw-and:  <<CSRRWI>>, <<CSRRS>>, <<CSRRSI>>, <<CSRRC>> and <<CSRRCI>>
+
+:TAG_RESET_CSR: The tag of the CSR must be reset to zero. The reset values of the metadata and address fields are UNSPECIFIED.
+
+///////////////////////////////////////////////////////////////////////////////
+// Cap definitions
+///////////////////////////////////////////////////////////////////////////////
+
+:cap_rv32_sdp_width:    2
+:cap_rv64_sdp_width:    4
+:cap_rv32_mw_width:    10
+:cap_rv64_mw_width:    14
+:cap_rv32_perms_width:  4
+:cap_rv64_perms_width:  5
+:cap_rv32_addr_width:  32
+:cap_rv64_addr_width:  64
+:cap_rv32_exp_width:    5
+:cap_rv64_exp_width:    6
+
+:cheri_excep_mcause:      28
+:cheri_excep_type_pcc:     0
+:cheri_excep_type_data:    1
+:cheri_excep_type_jump:    2
+:cheri_excep_cause_tag:    0
+:cheri_excep_cause_seal:   1
+:cheri_excep_cause_perm:   2
+:cheri_excep_cause_length: 3
