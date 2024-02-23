@@ -1061,7 +1061,7 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 | Instructions | Xcause | Xtval. TYPE | Xtval. CAUSE | Description | Check
 6+| *All instructions have these exception checks first*
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}    | <<pcc>> tag  | not(<<pcc>>.tag)
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}   | <<pcc>> seal | isCapSealed(<<pcc>>)
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}   | <<pcc>> seal | isCapSealed(<<pcc>>)^1^
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}   | <<pcc>> permission | not(<<pcc>>.<<x_perm>>)
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_length} | <<pcc>> length | Any byte of current instruction out of <<pcc>> bounds
 6+| *CSR/Xret additional exception check*
@@ -1091,6 +1091,8 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 | CBO.INVAL*                                     | {cheri_excep_mcause} | {cheri_excep_type_pcc}  | {cheri_excep_cause_perm}   |<<pcc>> permission    | not(<<pcc>>.<<asr_perm>>)
 | capability stores                              | 6                    | N/A                     | N/A                        |capability alignment  | Misaligned capability store
 |=========================================================================================
+
+^1^ This check is architecturally required, but is impossible to encounter so may not required in an implementation.
 
 NOTE: Indirect branches are <<JALR>>, <<JALR.MODE>>, conditional branches are <<insns-conbr-32bit>>.
 
