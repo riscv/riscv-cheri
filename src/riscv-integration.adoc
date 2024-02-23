@@ -766,10 +766,14 @@ Instruction access fault
 
 | .>|2 +
 0 +
+*{cheri_excep_mcause}* +
+*{cheri_excep_mcause}* +
 8,9,11 +
 3 +
 3 .<|Illegal instruction +
 Instruction address misaligned +
+*CHERI <<ASR-permission>> fault* +
+*CHERI branch/jump target out of bounds fault* +
 Environment call +
 Environment break +
 Load/store/AMO address breakpoint
@@ -785,6 +789,8 @@ Load/store/AMO access fault
 .>|_Lowest_ .>|4,6 .<|If not higher priority: +
 Load/store/AMO address misaligned
 |===
+
+NOTE: the full details of the CHERI exceptions are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
 [#medeleg,reftext="medeleg"]
 ==== Machine Trap Delegation Register (medeleg)
