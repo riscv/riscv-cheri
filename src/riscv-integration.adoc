@@ -189,10 +189,12 @@ does not affect capability loads and stores.  Software which uses capability
 loads and stores to copy data other than capabilities must ensure that
 addresses are aligned.
 
-NOTE: Since there is only one tag per CLEN bit block in memory, it is not
+NOTE: Since there is only one tag per aligned CLEN bit block in memory, it is not
 possible to represent a capability value complete with its tag at an
-address not aligned to CLEN.  To transfer CLEN unaligned bits without a tag,
-use integer loads and stores.
+address not aligned to CLEN. Therefore, <<LC>> and <<SC>> give rise to
+misaligned address fault exceptions when the effective address to access is
+misaligned, even if the implementation supports Zicclsm. To transfer CLEN
+misaligned bits without a tag, use integer loads and stores.
 
 For loads, the tag of the capability loaded from memory is cleared if the
 authorising capability does not grant permission to read capabilities (i.e.
