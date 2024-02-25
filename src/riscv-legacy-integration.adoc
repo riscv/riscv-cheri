@@ -25,9 +25,9 @@ is a new unprivileged register: the default data capability, <<ddc>>, that is
 used to authorise all data memory accesses when the current CHERI mode is
 Legacy.
 
-The current CHERI execution mode is given by the current privilege level and
-the value of the CME bit in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> for
-M-mode, S-mode, and U-mode, respectively.
+The current CHERI execution mode is Legacy if CHERI register access is disabled
+at the current privilege level as described in
+xref:section_cheri_disable[xrefstyle=short], and Capability otherwise.
 
 The CHERI execution mode impacts the instruction set in the following ways:
 
@@ -52,9 +52,9 @@ The CHERI execution mode is key in providing backwards compatibility with the
 base RISC-V ISA. RISC-V software is able to execute unchanged in
 implementations supporting both {cheri_base_ext_name} and
 {cheri_legacy_ext_name} provided that the configured CHERI execution mode is
-Legacy by setting CME=0 in <<mseccfg>>, <<menvcfg>> or <<senvcfg>> as required,
-and the <<infinite-cap>> capability is installed in the <<pcc>> and <<ddc>>
-such that:
+Legacy by setting CRE=0 in <<mseccfg>>, <<menvcfg>>, or <<senvcfg>> as
+required, and the <<infinite-cap>> capability is installed in the <<pcc>> and
+<<ddc>> such that:
 
 * Tags are set
 * Capabilities are unsealed
@@ -87,14 +87,6 @@ xref:section_cap_instructions[xrefstyle=short].
 In legacy mode, the capability authorising the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
 the sign-extended offset.
-
-==== Unconditional Capability Jumps
-
-The <<JALR_MODE>> instruction is modal, giving access to the functionality of
-<<JALR>> from either operating mode.
-
-NOTE: <<JALR_MODE>> can be used to change the current CHERI execution mode when
-the implementation supports {cheri_mode_ext_name}.
 
 === Existing RISC-V Instructions
 
@@ -161,14 +153,14 @@ NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by
 endif::[]
 
 {cheri_legacy_ext_name} adds the concept of CSRs which contain a capability
-where the address field is visible to legacy code (e.g. <<mtvec>>) and the
-full capability is also visible through an alias (e.g. <<mtvecc>>). These
-are referred to as _extended CSRs_.
+where the address field is visible in Legacy mode (e.g. <<mtvec>>) and the full
+capability is visible in Capability mode through a different name (e.g.
+<<mtvecc>>). These are referred to as _extended CSRs_.
 
-Extended CSRs are accessible through two addresses, and the address determines
-the access width.
+Extended CSRs have only one address; the access width is determined by the
+execution mode.
 
-When the XLEN-bit alias is used by <<CSRRW>>:
+When <<CSRRW>> is executed on an extended CSR in Legacy mode:
 
 * The register operand is an *x* register.
 * Only XLEN bits from the *x* source are written to the capability address
@@ -178,7 +170,7 @@ field.
 to XLENMAX bits according to cite:[riscv-priv-spec] _(3.1.6.2. Base ISA Control in
 mstatus Register)_ and are then written to the destination *x* register.
 
-When the CLEN-bit alias is used by <<CSRRW>>:
+When <<CSRRW>> is executed on an extended CSR in Capability mode:
 
 * The register operand is a *c* register.
 * The full capability in the *c* register source is written to the CSR.
@@ -186,8 +178,8 @@ When the CLEN-bit alias is used by <<CSRRW>>:
 determined (see <<extended_CSR_writing>>).
 * The full capability is written to destination *c* register.
 
-When either alias is used by another CSR instruction (<<CSRRWI>>, <<CSRRC>>,
-<<CSRRCI>>, <<CSRRS>>, <<CSRRSI>>):.
+When an extended CSR is used with another CSR instruction (<<CSRRWI>>,
+<<CSRRC>>, <<CSRRCI>>, <<CSRRS>>, <<CSRRSI>>):
 
 * The final address is calculated according to the standard RISC-V CSR rules
 (set bits, clear bits etc).
@@ -196,40 +188,21 @@ XLEN write.
 * XLEN bits are read from the capability address field and written to an output
 *x* register.
 
-There is _no distinction_ between accessing either alias in this case - the
+There is _no distinction_ between Legacy and Capability mode in this case -
 XLEN access is always performed, and the assembly syntax always uses *x*
 registers.
 
 All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 <<asr_perm>> and the CSR accessed is not user-mode accessible.
 
+Accessing a capability CSR other than an extended CSR in Legacy mode results in
+an illegal instruction exception.
+
 [#section_legacy_debug_integration]
 === Integrating Zcheri_legacy with Sdext
 
-A new debug default data capability (<<dddc>>) CSR is added at the CSR number
-shown in xref:legacy-csrnames-added[xrefstyle=short].
-
-[#dddc,reftext="dddc"]
-=== Debug Default Data Capability (dddc)
-
-<<dddc>> is a register that is able to hold a capability. The address is shown in
-xref:legacy-csrnames-added[xrefstyle=short].
-
-{TAG_RESET_CSR}
-
-.Debug default data capability
-include::img/dddcreg.edn[]
-
-Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>>'s metadata is
-set to the <<infinite-cap>> capability's metadata and <<ddc>>'s address remains
-unchanged.
-
-When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated to
-the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
-hart's context.
-
-As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
-so it does not need to be able to hold all possible invalid addresses.
+In Debug mode, CHERI register access is always enabled and the execution mode
+is always Capability.
 
 [#section_cheri_disable]
 === Disabling CHERI Registers
@@ -249,13 +222,11 @@ cause illegal instruction exceptions
 * Executing CSR instructions accessing any capability wide CSR
 addresses (xref:csr-numbers-section[xrefstyle=short]) cause illegal
 instruction exceptions
-* All allowed instructions execute as if the CHERI execution mode is Legacy.
-The CME bits in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> have no effect whilst
-CHERI register access is disabled.
+* The CHERI execution mode is Legacy
 
 CHERI register access is disabled if XLEN in the current mode is less than
-XLENMAX or if CRE active at the current mode (<<menvcfg>>.CRE for S-mode or
-<<senvcfg>>.CRE for U-mode) is 0.
+XLENMAX or if CRE active at the current mode (<<mseccfg>>.CRE for M-mode,
+<<menvcfg>>.CRE for S-mode, or <<senvcfg>>.CRE for U-mode) is 0.
 
 Disabling CHERI register access has no effect on implicit accesses or security
 checks.  The last capability installed in <<pcc>> and <<ddc>> before disabling
@@ -328,20 +299,6 @@ Setting the MBE, SBE, or UBE field to a value that is not the reset value of
 MBE disables most CHERI features and instructions, as described in
 xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
 
-[#mtdc,reftext="mtdc"]
-==== Machine Trap Default Capability Register (mtdc)
-
-The <<mtdc>> register is capability width read/write register dedicated
-for use by machine mode. Typically, it is used to hold a data capability to a
-machine-mode hart-local context space, to load into <<ddc>>.
-
-{TAG_RESET_CSR}
-
-value is the <<null-cap>> capability.
-
-.Machine-mode trap data capability register
-include::img/mtdcreg.edn[]
-
 [#mseccfg,reftext="mseccfg"]
 ==== Machine Security Configuration Register (mseccfg)
 
@@ -352,9 +309,10 @@ xref:mseccfgmodereg[xrefstyle=short].
 [#mseccfgmodereg]
 include::img/mseccfgreg.edn[]
 
-The CHERI Mode Enable (CME) bit controls whether M-mode executes in Capability
-or Legacy mode. When CME=1, the CHERI execution mode is Capability. When CME=0,
-the mode is Legacy.  Its reset value is 0.
+The CHERI Register Enable (CRE) bit controls whether explicit access can be
+performed to CHERI registers in any privilege level.  When CRE=1, CHERI
+registers can be read and written.  When CRE=0, CHERI registers are disabled as
+described in xref:section_cheri_disable[xrefstyle=short].
 
 [#menvcfg,reftext="menvcfg"]
 ==== Machine Environment Configuration Register (menvcfg)
@@ -366,27 +324,12 @@ xref:menvcfgmodereg[xrefstyle=short].
 [#menvcfgmodereg]
 include::img/menvcfgmodereg.edn[]
 
-The CHERI Mode Enable (CME) bit controls whether less privileged levels (e.g.
-S-mode and U-mode) execute in Capability or Legacy mode. When CME=1, the
-CHERI execution mode is Capability. When CME=0, the mode is Legacy.
-
 The CHERI Register Enable (CRE) bit controls whether less privileged levels can
 perform explicit accesses to CHERI registers.  When CRE=1, CHERI registers can
 be read and written by less privileged levels.  When CRE=0, CHERI registers are
 disabled in less privileged levels as described in
-xref:section_cheri_disable[xrefstyle=short].
-
-[#stdc,reftext="stdc"]
-==== Supervisor Trap Default Capability Register (stdc)
-
-The <<stdc>> register is capability width read/write register dedicated
-for use by supervisor mode. Typically, it is used to hold a data capability to
-a supervisor-mode hart-local context space, to load into <<ddc>>.
-
-{TAG_RESET_CSR}
-
-.Supervisor trap data capability register (*stdc*)
-include::img/stdcreg.edn[]
+xref:section_cheri_disable[xrefstyle=short].  CRE is read-only zero if
+<<mseccfg>>.CRE=0.
 
 [#senvcfg,reftext="senvcfg"]
 ==== Supervisor Environment Configuration Register (senvcfg)
@@ -398,10 +341,6 @@ xref:senvcfgreg[xrefstyle=short].
 .Supervisor environment configuration register (*senvcfg*)
 [#senvcfgreg]
 include::img/senvcfgreg.edn[]
-
-The CHERI Mode Enable (CME) bit controls whether U-mode executes in Capability
-or Legacy mode. When CME=1, the CHERI execution mode is Capability. When CME=0,
-the mode is Legacy.
 
 The CHERI Register Enable (CRE) bit controls whether U-mode can perform
 explicit accesses to CHERI registers.  When CRE=1, CHERI registers can be read

@@ -16,10 +16,9 @@ apply.
 
 ==== Core Debug Registers
 
-{cheri_base_ext_name} removes debug CSRs that are designated to hold addresses
-and replaces them with analogous CSRs able to hold capabilities. The removed
-debug CSRs are listed in xref:dcsrnames-removed[xrefstyle=short] and the
-new CSRs are listed in xref:dcsrnames-replaced[xrefstyle=short].
+{cheri_base_ext_name} renames and extends debug CSRs that are designated to
+hold addresses to be able to hold capabilities. The renamed debug CSRs are
+listed in xref:dcsrnames-renamed[xrefstyle=short].
 
 The <<pcc>> must grant <<asr_perm>> to access debug CSRs. This permission is
 automatically provided when the hart enters debug mode as described
@@ -41,7 +40,7 @@ include::img/dpcreg.edn[]
 [#dpcc,reftext="dpcc"]
 ==== Debug Program Counter Capability (dpcc)
 
-The <<dpcc>> register is an extension to <<dpc>> that is able to hold a
+The <<dpcc>> register is a renamed extension to <<dpc>> that is able to hold a
 capability.
 
 {TAG_RESET_CSR}
@@ -85,7 +84,7 @@ include::img/dscratch0reg.edn[]
 [#dscratch0c,reftext="dscratch0c"]
 ==== Debug Scratch Register 0 (dscratch0c)
 
-The <<dscratch0c>> register is a CLEN-bit plus tag bit extension to
+The <<dscratch0c>> register is a CLEN-bit plus tag bit renamed extension to
 <<dscratch0>> that is able to hold a capability. Its reset value is the
 <<null-cap>> capability.
 
@@ -107,7 +106,7 @@ include::img/dscratch1reg.edn[]
 [#dscratch1c,reftext="dscratch1c"]
 ==== Debug Scratch Register 1 (dscratch1c)
 
-The <<dscratch1c>> register is a CLEN-bit plus tag bit extension to
+The <<dscratch1c>> register is a CLEN-bit plus tag bit renamed extension to
 <<dscratch1>> that is able to hold a capability. Its reset value is the
 <<null-cap>> capability.
 
