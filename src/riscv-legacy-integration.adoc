@@ -25,11 +25,9 @@ is a new unprivileged register: the default data capability, <<ddc>>, that is
 used to authorise all data memory accesses when the current CHERI mode is
 Legacy.
 
-The current CHERI execution mode is given by the current privilege level and
-the value of the CME bit in <<menvcfg>> and <<senvcfg>> for S-mode and U-mode,
-respectively.  It is overriden to Legacy if CHERI register access is disabled
+The current CHERI execution mode is Legacy if CHERI register access is disabled
 at the current privilege level as described in
-xref:section_cheri_disable[xrefstyle=short].
+xref:section_cheri_disable[xrefstyle=short], and Capability otherwise.
 
 The CHERI execution mode impacts the instruction set in the following ways:
 
@@ -54,9 +52,9 @@ The CHERI execution mode is key in providing backwards compatibility with the
 base RISC-V ISA. RISC-V software is able to execute unchanged in
 implementations supporting both {cheri_base_ext_name} and
 {cheri_legacy_ext_name} provided that the configured CHERI execution mode is
-Legacy by setting CRE=0 in <<mseccfg>>, CME=0 in <<menvcfg>>, or CME=0 in
-<<senvcfg>> as required, and the <<infinite-cap>> capability is installed in
-the <<pcc>> and <<ddc>> such that:
+Legacy by setting CRE=0 in <<mseccfg>>, <<menvcfg>>, or <<senvcfg>> as
+required, and the <<infinite-cap>> capability is installed in the <<pcc>> and
+<<ddc>> such that:
 
 * Tags are set
 * Capabilities are unsealed
@@ -253,9 +251,7 @@ cause illegal instruction exceptions
 * Executing CSR instructions accessing any capability wide CSR
 addresses (xref:csr-numbers-section[xrefstyle=short]) cause illegal
 instruction exceptions
-* All allowed instructions execute as if the CHERI execution mode is Legacy.
-The CME bits in <<menvcfg>> and <<senvcfg>> have no effect whilst CHERI
-register access is disabled.
+* The CHERI execution mode is Legacy
 
 CHERI register access is disabled if XLEN in the current mode is less than
 XLENMAX or if CRE active at the current mode (<<mseccfg>>.CRE for M-mode,
@@ -371,10 +367,6 @@ xref:menvcfgmodereg[xrefstyle=short].
 [#menvcfgmodereg]
 include::img/menvcfgmodereg.edn[]
 
-The CHERI Mode Enable (CME) bit controls whether less privileged levels (e.g.
-S-mode and U-mode) execute in Capability or Legacy mode. When CME=1, the
-CHERI execution mode is Capability. When CME=0, the mode is Legacy.
-
 The CHERI Register Enable (CRE) bit controls whether less privileged levels can
 perform explicit accesses to CHERI registers.  When CRE=1, CHERI registers can
 be read and written by less privileged levels.  When CRE=0, CHERI registers are
@@ -404,10 +396,6 @@ xref:senvcfgreg[xrefstyle=short].
 .Supervisor environment configuration register (*senvcfg*)
 [#senvcfgreg]
 include::img/senvcfgreg.edn[]
-
-The CHERI Mode Enable (CME) bit controls whether U-mode executes in Capability
-or Legacy mode. When CME=1, the CHERI execution mode is Capability. When CME=0,
-the mode is Legacy.
 
 The CHERI Register Enable (CRE) bit controls whether U-mode can perform
 explicit accesses to CHERI registers.  When CRE=1, CHERI registers can be read
