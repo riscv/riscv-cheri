@@ -153,14 +153,14 @@ NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by
 endif::[]
 
 {cheri_legacy_ext_name} adds the concept of CSRs which contain a capability
-where the address field is visible to legacy code (e.g. <<mtvec>>) and the
-full capability is also visible through an alias (e.g. <<mtvecc>>). These
-are referred to as _extended CSRs_.
+where the address field is visible in Legacy mode (e.g. <<mtvec>>) and the full
+capability is visible in Capability mode through a different name (e.g.
+<<mtvecc>>). These are referred to as _extended CSRs_.
 
-Extended CSRs are accessible through two addresses, and the address determines
-the access width.
+Extended CSRs have only one address; the access width is determined by the
+execution mode.
 
-When the XLEN-bit alias is used by <<CSRRW>>:
+When <<CSRRW>> is executed on an extended CSR in Legacy mode:
 
 * The register operand is an *x* register.
 * Only XLEN bits from the *x* source are written to the capability address
@@ -169,10 +169,8 @@ field.
 * Only XLEN bits are read from the capability address field, which are extended
 to XLENMAX bits according to cite:[riscv-priv-spec] _(3.1.6.2. Base ISA Control in
 mstatus Register)_ and are then written to the destination *x* register.
-* XLEN-bit aliases are only accessible in Legacy mode. Using an XLEN-bit alias with
-  a CSR instruction in Capability mode results in an illegal instruction exception.
 
-When the CLEN-bit alias is used by <<CSRRW>>:
+When <<CSRRW>> is executed on an extended CSR in Capability mode:
 
 * The register operand is a *c* register.
 * The full capability in the *c* register source is written to the CSR.
@@ -180,8 +178,8 @@ When the CLEN-bit alias is used by <<CSRRW>>:
 determined (see <<extended_CSR_writing>>).
 * The full capability is written to destination *c* register.
 
-When either alias is used by another CSR instruction (<<CSRRWI>>, <<CSRRC>>,
-<<CSRRCI>>, <<CSRRS>>, <<CSRRSI>>):.
+When an extended CSR is used with another CSR instruction (<<CSRRWI>>,
+<<CSRRC>>, <<CSRRCI>>, <<CSRRS>>, <<CSRRSI>>):
 
 * The final address is calculated according to the standard RISC-V CSR rules
 (set bits, clear bits etc).
@@ -190,15 +188,15 @@ XLEN write.
 * XLEN bits are read from the capability address field and written to an output
 *x* register.
 
-There is _no distinction_ between accessing either alias in this case - the
+There is _no distinction_ between Legacy and Capability mode in this case -
 XLEN access is always performed, and the assembly syntax always uses *x*
 registers.
 
 All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 <<asr_perm>> and the CSR accessed is not user-mode accessible.
 
-Accessing a CLEN-bit alias or a CLEN-bit CSR with no XLEN-bit name in Legacy
-mode results in an illegal instruction exception.
+Accessing a capability CSR other than an extended CSR in Legacy mode results in
+an illegal instruction exception.
 
 [#section_legacy_debug_integration]
 === Integrating Zcheri_legacy with Sdext
