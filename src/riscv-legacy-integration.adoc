@@ -224,9 +224,8 @@ Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>>'s metadata is
 set to the <<infinite-cap>> capability's metadata and <<ddc>>'s address remains
 unchanged.
 
-When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated to
-the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
-hart's context.
+Upon leaving debug mode, the hart's <<ddc>> is updated to the capability stored
+in <<dddc>>. A debugger may write <<dddc>> to change the hart's context.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
 so it does not need to be able to hold all possible invalid addresses.
