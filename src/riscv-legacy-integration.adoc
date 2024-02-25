@@ -208,30 +208,8 @@ All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 [#section_legacy_debug_integration]
 === Integrating Zcheri_legacy with Sdext
 
-A new debug default data capability (<<dddc>>) CSR is added at the CSR number
-shown in xref:legacy-csrnames-added[xrefstyle=short].
-
-[#dddc,reftext="dddc"]
-=== Debug Default Data Capability (dddc)
-
-<<dddc>> is a register that is able to hold a capability. The address is shown in
-xref:legacy-csrnames-added[xrefstyle=short].
-
-{TAG_RESET_CSR}
-
-.Debug default data capability
-include::img/dddcreg.edn[]
-
-Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>>'s metadata is
-set to the <<infinite-cap>> capability's metadata and <<ddc>>'s address remains
-unchanged.
-
-When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated to
-the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
-hart's context.
-
-As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
-so it does not need to be able to hold all possible invalid addresses.
+In Debug mode, CHERI register access is always enabled and the execution mode
+is always Capability.
 
 [#section_cheri_disable]
 === Disabling CHERI Registers
@@ -328,20 +306,6 @@ Setting the MBE, SBE, or UBE field to a value that is not the reset value of
 MBE disables most CHERI features and instructions, as described in
 xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
 
-[#mtdc,reftext="mtdc"]
-==== Machine Trap Default Capability Register (mtdc)
-
-The <<mtdc>> register is capability width read/write register dedicated
-for use by machine mode. Typically, it is used to hold a data capability to a
-machine-mode hart-local context space, to load into <<ddc>>.
-
-{TAG_RESET_CSR}
-
-value is the <<null-cap>> capability.
-
-.Machine-mode trap data capability register
-include::img/mtdcreg.edn[]
-
 [#mseccfg,reftext="mseccfg"]
 ==== Machine Security Configuration Register (mseccfg)
 
@@ -373,18 +337,6 @@ be read and written by less privileged levels.  When CRE=0, CHERI registers are
 disabled in less privileged levels as described in
 xref:section_cheri_disable[xrefstyle=short].  CRE is read-only zero if
 <<mseccfg>>.CRE=0.
-
-[#stdc,reftext="stdc"]
-==== Supervisor Trap Default Capability Register (stdc)
-
-The <<stdc>> register is capability width read/write register dedicated
-for use by supervisor mode. Typically, it is used to hold a data capability to
-a supervisor-mode hart-local context space, to load into <<ddc>>.
-
-{TAG_RESET_CSR}
-
-.Supervisor trap data capability register (*stdc*)
-include::img/stdcreg.edn[]
 
 [#senvcfg,reftext="senvcfg"]
 ==== Supervisor Environment Configuration Register (senvcfg)
