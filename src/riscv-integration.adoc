@@ -206,12 +206,6 @@ must be set in AP).
 WARNING: #TODO: these cases may cause exceptions in the future - we need a way
 for software to discover and/or control the behaviour#
 
-[#section_uncond_integer_addr_jump]
-==== Unconditional Integer Address Jumps
-
-The <<JALR_MODE>> instruction allows access to standard RISC-V <<JALR>>, so that
-the target register and link registers are both *x* registers, not *c* registers.
-
 [#section_existing_riscv_insns]
 === Existing RISC-V Instructions
 
@@ -268,10 +262,6 @@ within bounds
 
 <<JAL>> and <<JALR>> can also cause instruction address misaligned exceptions
 following the standard RISC-V rules.
-
-Additionally, <<JALR_MODE>> allows standard RISC-V <<JALR>> behaviour to be
-available, with a zero offset. The target check on a minimum sized instruction
-is still present as for all jumps and branches.
 
 [#condbr-purecap]
 ===== Conditional Branches
@@ -1094,7 +1084,7 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 
 ^1^ This check is architecturally required, but is impossible to encounter so may not required in an implementation.
 
-NOTE: Indirect branches are <<JALR>>, <<JALR.MODE>>, conditional branches are <<insns-conbr-32bit>>.
+NOTE: Indirect branches are <<JALR>>, conditional branches are <<insns-conbr-32bit>>.
 
 NOTE: <<CBO.ZERO>> issues as a cache block wide store.  All
 CMOs operate on the cache block which contains the address.  Prefetches check
@@ -1173,6 +1163,5 @@ This implies that sealed capabilities will always get their tags cleared when
 written to these CSRs unless the specification explicitly states that the CSR
 behaves otherwise (see <<mepcc>> and <<sepcc>>). Also notes that <<pcc>> is
 available in a read-only CSR. It can be written with a <<JALR>> instruction
-in capability mode or a <<JALR.MODE>> instruction in legacy mode
-which automatically unseal the capability _before_ the invalid address
-conversion above.
+in capability mode which automatically unseals the capability _before_ the
+invalid address conversion above.
