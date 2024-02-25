@@ -306,10 +306,8 @@ two tag bits in memory.
 === Zicsr, Control and Status Register (CSR) Instructions
 
 {cheri_base_ext_name} requires that RISC-V CSRs intended to hold addresses,
-like <<mtvec>>, are now able to hold capabilities. Therefore, such registers are
-removed in {cheri_base_ext_name} and analogous CLEN-bit
-versions of those CSRs are added to the ISA as described in
-xref:csr-numbers-section[xrefstyle=short].
+like <<mtvec>>, are now able to hold capabilities. Therefore, such registers
+renamed and extended to CLEN-bit in {cheri_base_ext_name}.
 
 Reading or writing any part of a CLEN-bit CSR may cause
 side effects. For example, the CSR's tag bit may be cleared if a new address
@@ -359,77 +357,40 @@ All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 [#csr-numbers-section]
 === Control and Status Registers (CSRs)
 
-{cheri_base_ext_name} removes the CSRs listed in
-xref:dcsrnames-removed[xrefstyle=short],
-xref:mcsrnames-removed[xrefstyle=short],
-xref:scsrnames-removed[xrefstyle=short] and
-xref:ucsrnames-removed[xrefstyle=short] from the base RISC-V ISA and its
-extensions. The CSRs are removed because they are designated to hold addresses,
-but are only XLEN bits wide. The removed registers are replaced with CLEN+1
-bits wide registers. The new CSRs are analogous to the original, removed RISC-V
-CSRs although at different CSR numbers as shown in
-xref:dcsrnames-replaced[xrefstyle=short],
-xref:mcsrnames-replaced[xrefstyle=short],
-xref:scsrnames-replaced[xrefstyle=short] and
-xref:ucsrnames-replaced[xrefstyle=short]. Therefore, the specification of the
-address field for the new capability CSRs remains the same as the
-corresponding, removed CSR which is described in cite:[riscv-priv-spec] and
-the specifications of relevant RISC-V extensions.
+{cheri_base_ext_name} extends the CSRs listed in
+xref:dcsrnames-renamed[xrefstyle=short],
+xref:mcsrnames-renamed[xrefstyle=short],
+xref:scsrnames-renamed[xrefstyle=short] and
+xref:ucsrnames-renamed[xrefstyle=short] from the base RISC-V ISA and its
+extensions. The CSRs are renamed to reflect the fact that they are extended to
+CLEN+1 bits wide, as the *x* registers are renamed to *c* registers.
 
-[[dcsrnames-removed]]
-.Debug-mode CSRs removed in {cheri_base_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
-|===
-include::generated/csr_removed_purecap_mode_d_table_body.adoc[]
-|===
-
-[[mcsrnames-removed]]
-.Machine-mode CSRs removed in {cheri_base_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
-|===
-include::generated/csr_removed_purecap_mode_m_table_body.adoc[]
-|===
-
-[[scsrnames-removed]]
-.Supervisor-mode CSRs removed in {cheri_base_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
-|===
-include::generated/csr_removed_purecap_mode_s_table_body.adoc[]
-|===
-
-[[ucsrnames-removed]]
-.User-mode CSRs removed in {cheri_base_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
-|===
-include::generated/csr_removed_purecap_mode_u_table_body.adoc[]
-|===
-
-[[dcsrnames-replaced]]
-.New debug-mode CSRs in {cheri_base_ext_name} replacing RISC-V CSRs
+[[dcsrnames-renamed]]
+.Renamed debug-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
 |===
-include::generated/csr_replaced_purecap_mode_d_table_body.adoc[]
+include::generated/csr_renamed_purecap_mode_d_table_body.adoc[]
 |===
 
-[[mcsrnames-replaced]]
-.New machine-mode CSRs in {cheri_base_ext_name} replacing RISC-V CSRs
+[[mcsrnames-renamed]]
+.Renamed machine-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
 |===
-include::generated/csr_replaced_purecap_mode_m_table_body.adoc[]
+include::generated/csr_renamed_purecap_mode_m_table_body.adoc[]
 |===
 
-[[scsrnames-replaced]]
-.New supervisor-mode CSRs in {cheri_base_ext_name} replacing RISC-V CSRs
+[[scsrnames-renamed]]
+.Renamed supervisor-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
 |===
-include::generated/csr_replaced_purecap_mode_s_table_body.adoc[]
+include::generated/csr_renamed_purecap_mode_s_table_body.adoc[]
 |===
 
-[[ucsrnames-replaced]]
-.New user-mode CSRs in {cheri_base_ext_name} replacing RISC-V CSRs
+[[ucsrnames-renamed]]
+.Renamed user-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
 |===
-include::generated/csr_replaced_purecap_mode_u_table_body.adoc[]
+include::generated/csr_renamed_purecap_mode_u_table_body.adoc[]
 |===
 
 {cheri_base_ext_name} also introduces the new unprivileged CSRs shown in
@@ -444,9 +405,9 @@ include::generated/csr_added_purecap_mode_u_table_body.adoc[]
 
 === Machine-Level CSRs
 
-{cheri_base_ext_name} adds new M-mode capability CSRs and extends some of the
-existing RISC-V CSRs with new functions. <<pcc>> must grant <<asr_perm>>
-to access M-mode CSRs regardless of the RISC-V privilege mode.
+{cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
+otherwise add new functions. <<pcc>> must grant <<asr_perm>> to access M-mode
+CSRs regardless of the RISC-V privilege mode.
 
 ==== Machine ISA Register (misa)
 
@@ -512,9 +473,9 @@ include::img/mtvecreg.edn[]
 [#mtvecc,reftext="mtvecc"]
 ==== Machine Trap-Vector Base-Address Capability Registers (mtvecc)
 
-The <<mtvecc>> register is an extension to <<mtvec>> that holds a capability.
-Its reset value is the <<infinite-cap>> capability. The capability represents
-an executable vector.
+The <<mtvecc>> register is a renamed extension of <<mtvec>> that holds a
+capability.  Its reset value is the <<infinite-cap>> capability. The capability
+represents an executable vector.
 
 .Machine-mode trap-vector base-capability register
 include::img/mtveccreg.edn[]
@@ -562,8 +523,8 @@ include::img/mscratchreg.edn[]
 [#mscratchc, reftext="mscratchc"]
 ==== Machine Scratch Register Capability (mscratchc)
 
-The <<mscratchc>> register is an extension to <<mscratch>> that is able to hold
-a capability.
+The <<mscratchc>> register is a renamed extension of <<mscratch>> that is able to
+hold a capability.
 
 {TAG_RESET_CSR}
 
@@ -584,7 +545,7 @@ include::img/mepcreg.edn[]
 [#mepcc,reftext="mepcc"]
 ==== Machine Exception Program Counter Capability (mepcc)
 
-The <<mepcc>> register is an extension to <<mepc>> that is able to hold a
+The <<mepcc>> register is a renamed extension of <<mepc>> that is able to hold a
 capability. Its reset value is the <<infinite-cap>> capability.
 
 .Machine exception program counter capability register
@@ -838,9 +799,9 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
 
-{cheri_base_ext_name} adds new S-mode capability CSRs and extends some of the
-existing RISC-V CSRs with new functions. <<pcc>> must grant <<asr_perm>> to
-access S-mode CSRs regardless of the RISC-V privilege mode.
+{cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
+hold capabilities or with other new functions. <<pcc>> must grant <<asr_perm>>
+to access S-mode CSRs regardless of the RISC-V privilege mode.
 
 [#stvec,reftext="stvec"]
 ==== Supervisor Trap Vector Base Address Registers (stvec)
@@ -857,9 +818,9 @@ include::img/stvecreg.edn[]
 
 The <<stvec>> register is an SXLEN-bit WARL read/write register that holds the
 trap vector configuration, consisting of a vector base address (BASE) and a
-vector mode (MODE). The <<stvecc>> register is an
-extension to <<stvec>> that is able to hold a capability. Its reset value is
-the <<infinite-cap>> capability.
+vector mode (MODE). The <<stvecc>> register is a renamed extension of <<stvec>>
+that is able to hold a capability. Its reset value is the <<infinite-cap>>
+capability.
 
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
@@ -882,8 +843,8 @@ include::img/sscratchreg.edn[]
 [#sscratchc, reftext="sscratchc"]
 ==== Supervisor Scratch Registers (sscratchc)
 
-The <<sscratchc>> register is an extension to <<sscratch>> that is able to hold
-a capability.
+The <<sscratchc>> register is a renamed extension of <<sscratch>> that is able to
+hold a capability.
 
 {TAG_RESET_CSR}
 
@@ -904,7 +865,7 @@ include::img/sepcreg.edn[]
 [#sepcc,reftext="sepcc"]
 ==== Supervisor Exception Program Counter Capability (sepcc)
 
-The <<sepcc>> register is an extension to <<sepc>> that is able to hold a
+The <<sepcc>> register is a renamed extension of <<sepc>> that is able to hold a
 capability. Its reset value is the <<infinite-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<sepcc>> is an executable
