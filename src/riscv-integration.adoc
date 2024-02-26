@@ -758,7 +758,7 @@ _Reserved_
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
 | .>|*{cheri_excep_mcause}* .<|*Prior to instruction address translation:* +
-*CHERI fault*
+*CHERI fault due to PCC checks (tag, execute permission and bounds)*
 | .>|12, 1 .<|During instruction address translation: +
 First encountered page fault or access fault
 | .>|1 .<|With physical address for instruction: +
@@ -766,20 +766,21 @@ Instruction access fault
 
 | .>|2 +
 0 +
-*{cheri_excep_mcause}* +
-*{cheri_excep_mcause}* +
 8,9,11 +
 3 +
 3 .<|Illegal instruction +
 Instruction address misaligned +
-*CHERI <<ASR-permission>> fault* +
-*CHERI branch/jump target out of bounds fault* +
 Environment call +
 Environment break +
 Load/store/AMO address breakpoint
 
-| .>|*{cheri_excep_mcause}* .<|*Prior to address translation for an explicit memory access or jump:* +
-*CHERI fault*
+| .>| *{cheri_excep_mcause}* .<| *CHERI faults due to:* +
+*PCC <<asr_perm>> clear* +
+*Branch/jump target address checks (tag, execute permissions and bounds)*
+
+| .>|*{cheri_excep_mcause}* .<|*Prior to address translation for an explicit memory access:* +
+*Load/store/AMO capability address misaligned* +
+*CHERI fault due to capability checks (tag, permissions and bounds)*
 | .>|4,6 .<|Optionally: +
 Load/store/AMO address misaligned
 | .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
