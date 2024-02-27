@@ -250,13 +250,33 @@ cause illegal instruction exceptions
 addresses (xref:csr-numbers-section[xrefstyle=short]) cause illegal
 instruction exceptions
 * All allowed instructions execute as if the CHERI execution mode is Legacy.
-The CME bits in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> have no effect whilst
+The CME bits in <<menvcfg>> and <<senvcfg>> are zero whilst
 CHERI register access is disabled.
 
 CHERI register access is disabled if XLEN in the current mode is less than
 XLENMAX, if the endianness in the current mode is not the reset value of
 <<mstatus>>.MBE, or if CRE active at the current mode (<<menvcfg>>.CRE for
 S-mode or <<senvcfg>>.CRE for U-mode) is 0.
+
+<<menvcfg>>.CRE, <<menvcfg>>.CME, <<senvcfg>>.CRE and <<senvcfg>>.CME form a
+single WARL field. This allows higher privilege software to restrict lower
+privilege software access to CHERI register state, and the ability to enter
+capability mode. The valid configurations are shown in
+xref:xenvcfg-warl-field[xrefstyle=short].
+
+[[xenvcfg-warl-field]]
+.Xenvcfg joint WARL field
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+|<<menvcfg>>.CRE|<<menvcfg>>.CME|<<senvcfg>>.CRE|<<senvcfg>>.CME|Comment
+|0              | RO 0          | RO 0          | RO 0          |<<menvcfg>>.CRE=0 disables all other state
+|1              |0/1            |0              | RO 0          |<<senvcfg>>.CRE=0 disables <<senvcfg>>.CME
+|1              |0/1            |1              |0/1            |both levels of CME can be programmed
+|===
+
+The WARL programming nature is extended to include UXLEN and SXLEN, as they can
+only be programmed to be smaller than MXLEN if the CRE bit active for the current
+mode is disabled.
 
 Disabling CHERI register access has no effect on implicit accesses or security
 checks.  The last capability installed in <<pcc>> and <<ddc>> before disabling
@@ -377,6 +397,8 @@ be read and written by less privileged levels.  When CRE=0, CHERI registers are
 disabled in less privileged levels as described in
 xref:section_cheri_disable[xrefstyle=short].
 
+CME and CRE form part of a WARL field as shown in xref:xenvcfg-warl-field[xrefstyle=short].
+
 [#stdc,reftext="stdc"]
 ==== Supervisor Trap Default Capability Register (stdc)
 
@@ -409,6 +431,8 @@ explicit accesses to CHERI registers.  When CRE=1, CHERI registers can be read
 and written by U-mode.  When CRE=0, CHERI registers are in U-mode disabled as
 described in xref:section_cheri_disable[xrefstyle=short].  CRE is read-only
 zero if <<menvcfg>>.CRE=0.
+
+CME and CRE form part of a WARL field as shown in xref:xenvcfg-warl-field[xrefstyle=short].
 
 [#ddc,reftext="ddc"]
 ==== Default Data Capability (ddc)
