@@ -136,3 +136,26 @@ NOTE: A future version of this specification may add writeable fields to allow c
 
 .Debug infinite capability register
 include::img/dinfcreg.edn[]
+
+==== Hardware Implementations
+
+In an abstract command based implementation, <<dpcc>> will typically be an
+alias for <<pcc>> accessible while the hart is halted. If
+{cheri_legacy_ext_name} is implemented, <<dddc>> must be a separate register
+from <<ddc>> since both are writable. <<ddc>> is copied into <<dddc>> when the
+hart halts and is restored from <<dddc>> when the hart resumes. The abstract
+commands used to access GPRs are not extended to handle capability metadata;
+reads return the address portion only, while writes set the metadata and tag to
+zero.
+
+In an execution based implementation, entry to debug mode is typically treated
+as a trap. <<dpcc>> and, if present, <<dddc>> are written from <<pcc>> and
+<<ddc>> on debug mode entry, and restored to <<pcc>> and <<ddc>> when an
+implementation-defined `DRET` instruction is executed to exit debug mode.
+Since `x0` is not tagged, it cannot be used to access the debug module. A debug
+ROM must use <<pcc>> to access debug module fields.
+
+NOTE: These are illustrative only. The implementation requirements concern only
+behavior observable through the Debug Module and execution of documented
+instructions. The existence, encoding, and behavior of `DRET` may be chosen
+freely to achieve the correct behavior of setting `dmcontrol.resumereq`.
