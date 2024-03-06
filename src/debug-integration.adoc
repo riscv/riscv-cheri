@@ -8,6 +8,66 @@ with {cheri_base_ext_name}. Modifications to Sdext are kept to a minimum.
 WARNING: This section is preliminary as no-one has yet built debug support
  for CHERI-RISC-V so change is likely.
 
+The following features, which are optional in Sdext, must be implemented for
+use with {cheri_base_ext_name}:
+
+* The `hartinfo` register must be implemented.
+* All harts which support {cheri_base_ext_name} must provide
+  `hartinfo.nscratch` of at least 1 and implement the <<dscratch0c>> register.
+* All harts which support {cheri_base_ext_name} must provide
+  `hartinfo.datasize` of at least 1 and `hartinfo.dataaccess` of 0.
+* The program buffer must be implemented, with `abstractcs.progbufsize` of at
+  least 4 if `dmstatus.impebreak` is 1, or at least 5 if `dmstatus.impebreak`
+  is 0.
+
+[NOTE]
+====
+These requirements allow a debugger to read and write capabilities in integer
+registers without disturbing other registers.  These requirements may be
+relaxed if some other means of accessing capabilities in integer registers,
+such as an extension of the Access Register abstract command, is added.  The
+following sequences demonstrate how a debugger can read and write a capability
+in `c1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
+0xBF0, `hartinfo.datasize` is 1, `dmstatus.impebreak` is 0, and
+`abstractcs.progbufsize` is 5:
+
+----
+# Read the high MXLEN bits into data0-data1
+csrrw  c2, dscratch0c, c2
+gchi   x2, c1
+csrw   0xBF0, x2
+csrrw  c2, dscratch0c, c2
+ebreak
+
+# Read the tag into data0
+csrrw  c2, dscratch0c, c2
+gctag  x2, c1
+csrw   0xBF0, x2
+csrrw  c2, dscratch0c, c2
+ebreak
+
+# Write the high MXLEN bits from data0-data1
+csrrw  c2, dscratch0c, c2
+csrr   x2, 0xBF0
+schi   c1, c1, x2
+csrrw  c2, dscratch0c, c2
+ebreak
+
+# Write the tag (if nonzero)
+csrrw   c2, dscratch0c, c2
+csrr    c2, dinfc
+cbld    c1, c2, c1
+csrrw   c2, dscratch0c, c2
+ebreak
+----
+
+The low `MXLEN` bits of a capability are read and written using normal Access
+Register abstract commands.  If <<dscratch0c>> were known to be preserved
+between abstract commands, it would be possible to remove the requirements on
+`hartinfo.datasize`, `hartinfo.dataaccess`, and `abstractcs.progbufsize`,
+however there is no way to discover the former property.
+====
+
 ==== Debug Mode
 
 When executing code due to an abstract command, the hart stays in debug mode
