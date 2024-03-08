@@ -1,0 +1,65 @@
+[#section_sbi_integration]
+== Integrating CHERI extensions with the SBI
+
+This section describes changes to integrate the SBI (supervisor binary
+interface) cite:[riscv-sbi], {cheri_base_ext_name}, and
+{cheri_legacy_ext_name}. It must be implemented in a standard-conforming
+supervisor execution environment which supports {cheri_base_ext_name} or
+{cheri_legacy_ext_name}.
+
+=== Binary Encoding
+
+Invocation of SBI functions is only allowed if <<pcc>> grants <<asr_perm>>. If
+an `ECALL` instruction is executed with <<pcc>> that does not grant
+<<asr_perm>>, the supervisor execution environment generates a CHERI exception.
+<<stval>> is set as for a forbidden CSR access.
+
+Unless documented otherwise for a SBI function, the tag and metadata of
+arguments to SBI functions are ignored and the tag and metadata of return
+values from SBI functions are set to zero.
+
+The rules for shared memory physical address ranges are not changed; they
+continue to be expressed as physical addresses, not capabilities, split between
+a pair of registers.
+
+=== Firmware Features Extension
+
+NOTE: This extension is not, at the time of writing, merged into the main SBI
+specification or ratified; the most recent version is available on the tech-prs
+mailing list cite:[riscv-sbi-fwft].
+
+The Firmware Features Extension is required to be implemented to support
+{cheri_legacy_ext_name}. Two new features are defined.
+`CAPABILITY_REGISTER_ENABLE` corresponds to the CRE bit in <<menvcfg>>.
+`CAPABILITY_MODE_ENABLE` corresponds to the CME bit in <<menvcfg>>.
+Both are required if {cheri_legacy_ext_name} is supported and default to 0 on
+all harts.
+
+=== Hart State Management Extension
+
+The `start_addr`, `resume_addr`, and `opaque` parameters of `sbi_hart_start()`
+and `sbi_hart_suspend()` are extended to capability type and convey a full
+capability to the started or resumed after non-retentive suspend hart. All
+registers which are undefined on a newly started hart must not have valid tags.
+All registers which are undefined after a non-retentive suspend must either
+retain their value, or be set to a value with an invalid tag.
+
+=== Legacy Extensions
+
+The `hart_mask` arguments to `sbi_send_ipi()`, `sbi_remote_fence_i()`,
+`sbi_remote_sfence_vma()`, and `sbi_remote_sfence_vma_asid()` contain pointers
+as seen by S-mode; if S-mode is executing in Capability mode, the hart mask is
+a virtual address capability.
+
+=== Nested Acceleration Extension
+
+This interaction of this extension with {cheri_base_ext_name} will be defined
+as part of the definition of the H extension for {cheri_base_ext_name}. It must
+not be implemented until it has been defined.
+
+=== System Suspend Extension
+
+The `resume_addr` and `opaque` parameters of `sbi_system_suspend()` are
+extended to capability type and convey a full capability to the resumed hart.
+All registers which are undefined after a system suspend must either retain
+their value, or be set to a value with an invalid tag.
