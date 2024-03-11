@@ -1072,7 +1072,7 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}    | <<pcc>> tag  | not(<<pcc>>.tag)
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}   | <<pcc>> seal | isCapSealed(<<pcc>>)^1^
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}   | <<pcc>> permission | not(<<pcc>>.<<x_perm>>)
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_length} | <<pcc>> length | Any byte of current instruction out of <<pcc>> bounds
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_length} | <<pcc>> length | Any byte of current instruction out of <<pcc>> bounds^2^
 6+| *CSR/Xret additional exception check*
 | CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
 6+| *direct jumps additional exception check*
@@ -1086,7 +1086,7 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    | `auth_cap` tag          | not(`auth_cap.tag`)
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   | `auth_cap` seal         | isCapSealed(`auth_cap`)
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   | `auth_cap` permission   | not(`auth_cap`.<<r_perm>>)
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} | `auth_cap` length       | Any byte of load access out of `auth_cap` bounds
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} | `auth_cap` length       | Any byte of load access out of `auth_cap` bounds^2^
 | capability loads | 4                    | N/A                     | N/A                        | load address misaligned | Misaligned capability load
 6+| *Store/atomic/cache-block-operation additional exception checks*
 | all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    |`auth_cap` tag        | not(`auth_cap.tag`)
@@ -1094,7 +1094,7 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 | all atomics, CBO.INVAL*                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>)
 | all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<w_perm>>)
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
-| all stores, all atomics                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of access out of `auth_cap` bounds
+| all stores, all atomics                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of access out of `auth_cap` bounds^2^
 | CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of cache block out of `auth_cap` bounds
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | all bytes of cache block out of `auth_cap` bounds
 | CBO.INVAL*                                     | {cheri_excep_mcause} | {cheri_excep_type_pcc}  | {cheri_excep_cause_perm}   |<<pcc>> permission    | not(<<pcc>>.<<asr_perm>>)
@@ -1102,6 +1102,10 @@ NOTE: `auth_cap` is <<ddc>> for Legacy mode and `cs1` for Capability Mode
 |=========================================================================================
 
 ^1^ This check is architecturally required, but is impossible to encounter so may not required in an implementation.
+
+^2^ Accesses that are not naturally aligned can wrap around the address space
+from 2^XLEN^ to 0. A capability's bounds include both 0 and 2^XLEN^-1 if and
+only if they are the same as the bounds of <<infinite-cap>>.
 
 NOTE: Indirect branches are <<JALR>>, <<JALR.MODE>>, conditional branches are <<insns-conbr-32bit>>.
 
