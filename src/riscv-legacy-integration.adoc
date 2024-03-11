@@ -287,6 +287,73 @@ NOTE: Disabling CHERI register access prevents a low-privileged Legacy mode
 from interfering with the correct operation of higher-privileged Legacy modes
 that do not perform <<ddc>> switches on trap entry and return.
 
+=== CHERI execution with XLEN less than XLENMAX
+
+While XLEN is less than XLENMAX CHERI register access is disabled as described
+in xref:section_cheri_disable[xrefstyle=short]. Base ISA instructions still
+need to perform capability checks on XLEN-wide addresses.
+
+==== Addresses in pcc
+
+The `pc` width is the current XLEN. The address field of <<pcc>> is the `pc`
+sign extended to XLENMAX bits at all times. All changes to the `pc`, including
+jumps, conditional branches, trap returns, and sequential execution, sign
+extend `pc` to set the <<pcc>> address, and a <<pcc>> address which is not sign
+extended is an impossible state.
+
+[NOTE]
+====
+Sign extension of `pc` into `__x__epc` is a requirement imposed by the base
+ISA.
+
+Sequential execution across 2^XLEN^/2 or from 2^XLEN^ to 0 when XLEN is less
+than XLENMAX and <<pcc>> does not hold an infinite-bounds capability has
+different effects depending on whether the addressing boundary coincides with
+an instruction boundary. A single instruction which spans the address boundary
+will be treated as a length violation and is reported as a CHERI exception with
+`__x__epcc` the starting address of the instruction. If an instruction ends
+exactly at the addressing boundary, the instruction will complete successfully
+but the <<pcc>> becomes unrepresentable afterward, and a tag violation CHERI
+exception is taken on the next instruction unless an interrupt or higher
+priority synchronous exception is taken instead; in all cases `__x__epcc` will
+have an address of 0 or 2^XLEN^/2 and a tag of zero.
+====
+
+==== Bounds checking
+
+Each byte address of a load, store, or instruction fetch is individually sign
+extended from XLEN bits to XLENMAX bits prior to bounds checking.
+
+NOTE: A load, store, or instruction fetch which spans 2^XLEN^/2 or wraps from
+2^XLEN^ to 0 will always fail bounds checking when XLEN is less than XLENMAX
+unless the authorising capability has infinite bounds since the mantissa width
+for all XLENMAX is less than 32.
+
+==== CSR width modulation
+
+Address CSRs have a width defined by the base ISA which may be variable,
+depending on the implementation's supported XLEN and mode combinations. The
+corresponding extended CSRs have a variable width address field. If the width
+changes, the address field is truncated to the new width and zero extended to
+XLENMAX bits. The CSR's tag will be cleared at the time of the width change if
+the new address is not representable or if the CSR is sealed and the original
+and modulated addresses differ.
+
+[NOTE]
+====
+The extension behavior differs between extended CSRs and <<pcc>>.
+
+It is suggested that implementations which need width modulation determine at
+the time of CSR writes whether the new address would still be representable if
+truncated, and store this alongside the CSR value.
+
+Extended CSR width modulation is possible for <<jvtc>> if the Zcmt extension is
+implemented and more than one XLEN value is supported. Extended CSR width
+modulation is possible for <<stvecc>>, <<sscratchc>>, and <<sepcc>> if more
+than one SXLEN is supported. Extended CSR width modulation is possible for
+<<mtvecc>>, <<mscratchc>>, and <<mepcc>> if more than one MXLEN is supported.
+====
+
 === Added CLEN-wide CSRs
 
 {cheri_legacy_ext_name} adds the CLEN-wide CSRs shown in
