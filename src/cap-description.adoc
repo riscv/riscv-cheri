@@ -549,8 +549,8 @@ bounds are formed of two or three sections:
 [#comp_addr_bounds,options=header,align="center"]
 |==============================================================================
 | Configuration  | Upper section | Middle Section | Lower section
-| EF=0, i.e. E>0 | address[XLENMAX-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
-| EF=1, i.e. E=0 | address[XLENMAX:MW] + ct     2+| T[MW - 1:0]
+| EF=0           | address[XLENMAX-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
+| EF=1, i.e. E=0 | address[XLENMAX-1:MW] + ct   2+| T[MW - 1:0]
 |==============================================================================
 
 The _representable range_ defines the range of addresses which do not corrupt
@@ -558,8 +558,8 @@ the bounds encoding. The encoding was first introduced in
 xref:section_cap_encoding[xrefstyle=short], and is repeated in a different
 form in xref:comp_addr_bounds[xrefstyle=short] to aid this description.
 
-For the address to be valid for the current bounds encoding, the address
-bits in the _Upper Section_ of xref:comp_addr_bounds[xrefstyle=short] _must
+For the address to be valid for the current bounds encoding, the value
+in the _Upper Section_ of xref:comp_addr_bounds[xrefstyle=short] _must
 not change_ as this will change the meaning of the bounds.
 
 This gives a range of `s=2^E+MW^`, which as shown in
