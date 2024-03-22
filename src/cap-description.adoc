@@ -74,6 +74,33 @@ Execute Permission (X):: Allow instruction execution.
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow access to privileged CSRs.
 
+[NOTE]
+====
+<<asr_perm>> is used as a catch-all permission for operations on resources
+other than virtual memory which require an authorising capability but do not
+have a more specific permission. No complete list of such resources can be
+given since it may be used for resources defined by future standard extensions,
+non-standard extensions, and privileged software. In general, it should be
+assumed that <<asr_perm>> may allow indirect access to any resource which is
+accessible at the current privilege level, but does not allow forging
+capabilities.
+
+The specific resources which <<asr_perm>> grants access to depend on the
+current privilege level, requiring care when a capability can be accessed from
+more than one privilege level. <<asr_perm>> is effective only in <<pcc>>, and
+so a capability granting <<asr_perm>> may be considered effective only in
+privilege levels where at least one page overlapping the capability's bounds is
+executable.
+
+It is recommended that privileged software or extensions which define new
+resources use <<asr_perm>> to authorise access if the resource affects
+execution of existing instructions across <<JALR>> and traps, delivery of
+asynchronous events, or interpretation of virtual addresses. New resources with
+more limited effects may use <<asr_perm>> for authorisation if fine-grained
+access control is unneeded or expected to be performed by unprivileged
+software.
+====
+
 ===== Permission Encoding
 
 The bit width of the permissions field depends on the value of XLENMAX as shown
