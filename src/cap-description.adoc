@@ -50,7 +50,7 @@ unsealed (see xref:section_cap_sealed[xrefstyle=short]), and bounds checks (see
 xref:section_cap_bounds[xrefstyle=short]). An operation is also contingent on
 requirements imposed by other RISC-V architectural features, such as virtual
 memory, PMP and PMAs, even if the capability grants sufficient permissions. The
-permissions currently defined in {cheri_base_ext_name} are listed in
+permissions currently defined in {cheri_base_ext_name} are listed
 below.
 
 [#r_perm,reftext="R-permission"]
@@ -85,44 +85,60 @@ superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
 Therefore, it is only possible to encode a subset of all combinations.
 
 .Permissions widths depending on XLENMAX
-[#perms_bit_width,options=header,align="center",width="55%"]
+[#perms_bit_width,options=header,align="center",width="75%",cols="^1,^3,5"]
 |==============================================================================
-^| XLENMAX ^| Permissions width
-^| 32      ^| {cap_rv32_perms_width}
-^| 64      ^| {cap_rv64_perms_width}
+^| XLENMAX ^| Permissions width      ^| Comment
+^| 32      ^| {cap_rv32_perms_width} ^| Encodes some combinations of 5 permission bits and the Mode bits
+^| 64      ^| {cap_rv64_perms_width} ^| Separate bits for each permission, and the Mode bit is not included
 |==============================================================================
+
+NOTE: While XLENMAX=32 currently uses the same number of bits for permission encodings, it also includes the mode bit of {cheri_mode_ext_name} which is separate for XLENMAX=64.
+
+For XLENMAX=32, the permissions encoding is split into four quadrants.
+The quadrant is taken from bits [4:3] of the permissions encoding.
+The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadrant.
+
+Quadrants 2 and 3 are arranged to implicitly grant future permissions which may be added with the existing allocated encodings.
+Quadrant 0 does the opposite - the encodings are allocated _not_ to implicitly add future permissions, and so granting future permissions will require new encodings.
 
 .Encoding of architectural permissions for XLENMAX=32
-[#cap_perms_encoding32,width="60%",options=header,cols="^2,^1,^1,^1,^1,^1",align="center"]
+[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
-| Encoding | R | W | C | X | ASR
-| 0b0000   |   |   |   |   |
-| 0b0001   5+| *reserved*
-| 0b0010   |   | ✔ |   |   |
-| 0b0011   |   | ✔ | ✔ |   |
-| 0b0100   | ✔ |   |   |   |
-| 0b0101   | ✔ |   | ✔ |   |
-| 0b0110   | ✔ | ✔ |   |   |
-| 0b0111   | ✔ | ✔ | ✔ |   |
-| 0b1000   | ✔ |   |   | ✔ |
-| 0b1001   | ✔ |   | ✔ | ✔ |
-| 0b1010   | ✔ | ✔ |   | ✔ |
-| 0b1011   | ✔ | ✔ | ✔ | ✔ |
-| 0b1100   | ✔ |   |   | ✔ | ✔
-| 0b1101   | ✔ |   | ✔ | ✔ | ✔
-| 0b1110   | ✔ | ✔ |   | ✔ | ✔
-| 0b1111   | ✔ | ✔ | ✔ | ✔ | ✔
+| Encoding[2:0] | R | W | C | X | ASR | Mode | Notes
+8+| *Quadrant 0: Non-capability data read/write*
+8+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
+8+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
+| 0   |   |   |   |   |     | N/A | No permissions
+| 1   | ✔ |   |   |   |     | N/A | Data RO
+| 2-3   7+| reserved
+| 4   |   | ✔ |   |   |     | N/A | Data WO
+| 5   | ✔ | ✔ |   |   |     | N/A | Data RW
+| 6-7   7+| reserved
+8+| *Quadrant 1: Executable capabilities*
+8+| bit[0] - mode (1-capability, 0-legacy)
+| 0-1   | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode  | Execute + ASR (see <<infinite-cap>>)
+| 2-3   | ✔ |   | ✔ | ✔ |     | Mode  | Execute + Data & Cap RO
+| 4-5   | ✔ | ✔ | ✔ | ✔ |     | Mode  | Execute + Data & Cap RW
+| 6-7   | ✔ | ✔ |   | ✔ |     | Mode  | Execute + Data RW
+8+| *Quadrant 2: Reserved*
+8+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+| 0-7   7+| reserved
+8+| *Quadrant 3: Capability data read/write*
+8+| [2] - write. R and C implictly granted.
+8+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+| 0-2   7+| reserved
+| 3       | ✔ |   | ✔ |   |     | N/A | Data & Cap RO
+| 4-6   7+| reserved
+| 7       | ✔ | ✔ | ✔ |   |     | N/A | Data & Cap RW
 |==============================================================================
 
-The encoding in xref:cap_perms_encoding32[xrefstyle=short] is chosen to
-facilitate hardware implementations. Therefore, it can be worked out if the
-permissions are granted as follows:
-
-* <<c_perm>>: bit 0 is set
-* <<w_perm>>: bit 1 is set
-* <<r_perm>>: bits 3 or 2 are set
-* <<x_perm>>: bit 3 is set
-* <<asr_perm>>: bits 3 and 2 are set
+NOTE: When XLENMAX=32 there are many reserved permission encodings (see
+xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
+capability to have one of these values since <<ACPERM>> will never create it. It is
+possible for untagged capabilities to have reserved values. <<GCPERM>> will interpret
+reserved values as if it were 0b00000 (no permissions). Future extensions may assign
+meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
+non-zero value.
 
 A {cap_rv64_perms_width}-bit vector encodes the permissions when XLENMAX=64. In
 this case, there is a bit per permission as shown in
@@ -140,17 +156,6 @@ permission.
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
 |==============================================================================
-
-WARNING: #TODO: Confirm that we need a separate permissions format for 32-bit
-and 64-bit.#
-
-NOTE: When XLENMAX=32 there is a single reserved permission encoding (see
-xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
-capability to have this value since <<ACPERM>> will never create it. It is
-possible for untagged capabilities to have it. <<GCPERM>> will interpret it
-as if it were 0b0000 (no permissions). Future extensions may assign meaning to
-the reserved bit pattern, in which case <<GCPERM>> is allowed to report a
-non-zero value.
 
 [#section_cap_sdp]
 ==== Software-Defined Permissions (SDP)
@@ -346,7 +351,7 @@ and base addresses respectively. E is computed by subtracting from the maximum
 possible exponent CAP_MAX_E which can be efficiently implemented in hardware
 assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise
 shift right by E. In contrast, CHERI v9 implementations computed the top and
-base addresses by assumming that T and B are at bit 0 and performing a logical
+base addresses by assuming that T and B are at bit 0 and performing a logical
 bitwise shift left by E.
 endif::[]
 
@@ -502,12 +507,13 @@ or 'root' capability.
 
 .Field values of the Infinite capability
 [#infinite-cap,reftext="Infinite"]
-[options=header,width="100%",align=center,width="55%",cols="1,1,3"]
+[options=header,width="100%",align=center,width="55%",cols="1,2,3"]
 |==============================================================================
 | Field   | Value | Comment
 | Tag     | one   | Capability is valid
 | SDP     | ones  | Grants all permissions
-| AP      | ones  | Grants all permissions
+| AP (RV64) | ones  | Grants all permissions
+| AP (RV32) | See xref:cap_perms_encoding32[xrefstyle=short] | Grants all permissions
 | S       | zero  | Unsealed
 | EF      | zero  | Internal exponent format
 | T~8~    | zeros | Top address bit (XLENMAX=32 only)
