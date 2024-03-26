@@ -98,14 +98,14 @@ Therefore, it is only possible to encode a subset of all combinations.
 | Encoding  | R | W | C | X | ASR | Mode | Notes
 | 0b00000   |   |   |   |   |     |      | No permissions
 | 0b00001   | ✔ |   |   |   |     |      | Data RO
-| 0b00010   | ✔ | ✔ | ✔ | ✔ |  ✔  |  Leg | Almighty (reset)
-| 0b00011   | ✔ | ✔ | ✔ | ✔ |  ✔  | Pure | Almighty (purecap)
+| 0b00010   7+| reserved
+| 0b00011   7+| reserved
 | 0b00100   |   | ✔ |   |   |     |      | Data WO
-| 0b00101   7+| reserved
-| 0b00110   | ✔ | ✔ |   |   |     |      | Data RW
+| 0b00101   | ✔ | ✔ |   |   |     |      | Data RW
+| 0b00110   7+| reserved
 | 0b00111   7+| reserved
-| 0b01000   | ✔ | ✔ | ✔ | ✔ |  ✔  |  Leg | Execute + ASR
-| 0b01001   | ✔ | ✔ | ✔ | ✔ |  ✔  | Pure | Execute + ASR
+| 0b01000   | ✔ | ✔ | ✔ | ✔ |  ✔  |  Leg | Execute + ASR (Almighty)
+| 0b01001   | ✔ | ✔ | ✔ | ✔ |  ✔  | Pure | Execute + ASR (Almighty)
 | 0b01010   | ✔ |   | ✔ | ✔ |     |  Leg | Execute + Cap RO
 | 0b01011   | ✔ |   | ✔ | ✔ |     | Pure | Execute + Cap RO
 | 0b01100   | ✔ | ✔ | ✔ | ✔ |     |  Leg | Execute + Cap RW
@@ -123,11 +123,11 @@ Therefore, it is only possible to encode a subset of all combinations.
 | 0b11000   7+| reserved
 | 0b11001   7+| reserved
 | 0b11010   7+| reserved
-| 0b11011   | ✔ |   | ✔ |   |     |      |
+| 0b11011   | ✔ |   | ✔ |   |     |      | Cap RO
 | 0b11100   7+| reserved
 | 0b11101   7+| reserved
 | 0b11110   7+| reserved
-| 0b11111   | ✔ | ✔ | ✔ |   |     |      |
+| 0b11111   | ✔ | ✔ | ✔ |   |     |      | Cap RW
 |==============================================================================
 
 
@@ -135,11 +135,11 @@ The encoding in xref:cap_perms_encoding32[xrefstyle=short] is chosen to
 facilitate hardware implementations. Therefore, it can be worked out if the
 permissions are granted as follows:
 
-* <<c_perm>>: P[4] OR (P[3] AND P[1:0] != 0b11) OR (P[4:1] == 0b0001)
-* <<w_perm>>: P[2] OR (P[4:1] == 0b0001) OR (P[3] AND P[2:1] != 0b01)
+* <<c_perm>>: P[4] OR (P[3] AND P[1:0] != 0b11)
+* <<w_perm>>: P[2] OR (P[4:1] == 0b0100)
 * <<r_perm>>: (P[4:0] != 0b00000) AND (P[4:0] != 0b00100)
-* <<x_perm>>: (P[4:3] == 0b01) OR (P[4:1] == 0b0001)
-* <<asr_perm>>: (P[3:1] == 0b100) OR (P[4:1] == 0b0001)
+* <<x_perm>>: (P[4:3] == 0b01)
+* <<asr_perm>>: (P[4:1] == 0b0100)
 
 A {cap_rv64_perms_width}-bit vector encodes the permissions when XLENMAX=64. In
 this case, there is a bit per permission as shown in
