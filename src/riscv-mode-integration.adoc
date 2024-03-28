@@ -3,59 +3,95 @@
 
 {cheri_mode_ext_name} is an optional extension to {cheri_legacy_ext_name}.
 Implementations that support {cheri_mode_ext_name} allow fine-grained switching
-between Capability and Legacy modes using indirect jump instructions.
+between Capability and Legacy modes using <<MODESW>> instructions.
 
 [#section-cheri-execution-mode]
 === CHERI Execution Mode
 
-{cheri_mode_ext_name} adds a new CHERI execution mode bit (M) to capabilities.
-The mode bit is encoded as shown in
-xref:cap_encoding_xlen32_mode[xrefstyle=short] and
-xref:cap_encoding_xlen64_mode[xrefstyle=short]. The current CHERI execution
-mode is give by the M bit of the <<pcc>> and the CME bits in <<mseccfg>>,
-<<menvcfg>>, and <<senvcfg>> as follows:
+[#CEM]
+{cheri_mode_ext_name} adds a new CHERI execution mode (CEM) bit to the
+architectural state. CEM is conceptually associated with <<pcc>>, but it is not
+part of the encoded metadata in *c* registers or memory. CEM controls the
+current execution mode as follows:
 
-* The mode is Capability when the M bit of the <<pcc>> is 1 and the effective
-CME=1 for the current privilege level
-* The mode is Legacy when the effective CME=0 for the current privilege level
-* The mode is Legacy when the M bit of the <<pcc>> is 0 and the effective CME=1
-for the current privilege level
+* When CEM=1, the effective CME=1 for the current privilege level, and the
+  effective CRE=1 for the current privilege level, the execution mode is
+  Capability.
 
-.Capability encoding when XLENMAX=32 and {cheri_mode_ext_name} is supported
-[#cap_encoding_xlen32_mode]
-include::img/cap-encoding-xlen32-mode.edn[]
+* When CEM=0, the effective CME=0 for the current privilege level, or the
+  effective CRE=0 for the current privilege level, the execution mode is
+  Legacy.
 
-.Capability encoding when XLENMAX=64 and {cheri_mode_ext_name} is supported
-[#cap_encoding_xlen64_mode]
-include::img/cap-encoding-xlen64-mode.edn[]
+Capabilities in *c* registers or memory are always considered to have CEM of 1.
+Control transfer instructions take the associated CEM for the target, thus, CEM
+will always be 1 after executing <<JALR.MODE>> in Legacy mode.
 
-{cheri_mode_ext_name} allows the M bit to be set to 1 when the capability does
-not grant <<x_perm>>. In this case, the M bit is superfluous, so the encoding
-may be used to support additional features in future extensions.
+{cheri_mode_ext_name} adds bits associated with all exception pcc registers to
+store CEM at the time a trap is taken. MPCEM is added to <<mstatus_mode>> and
+stores CEM on traps taken into M-mode. If S-mode is implemented, SPCEM is added
+to <<sstatus_mode>> (also visible in <<mstatus_mode>>) and stores CEM on traps
+taken into S-mode. If Sdext is implemented, <<dcsr_mode>>.cem is added and
+stores CEM when the hart halts.
 
-The M bit is 0 in both the <<null-cap>> and <<infinite-cap>> capabilities.
+<<mtvec>> and <<stvec>> do not have a corresponding CEM bit. When a trap is
+taken into M-mode or S-mode, CEM is always set to 1, and the execution mode is
+always Capability unless the new mode's CME or CRE is 0. Similarly, when a hart
+is halted CEM always becomes 1, so program buffer execution initially occurs in
+Capability mode.
+
+MPCEM, SPCEM, and <<dcsr_mode>>.cem are used to set CEM when an exception return or hart
+resume occurs using <<mepc>>, <<sepc>>, or <<dpcc>>, respectively. In all cases
+the return capability's tag will be cleared if it is sealed and the relevant
+saved CEM is 0.
+
+[#dcsr_mode,reftext="dcsr"]
+include::img/dcsr.edn[]
+
+.Debug Control and Status (dcsr)
+include::img/dcsr2.edn[]
+
+[#mstatus_mode,reftext="mstatus"]
+.Machine-mode status register (`mstatus`) for RV32
+include::img/mstatusreg-rv32.edn[]
+
+include::img/mstatusreg.edn[]
+
+.Machine-mode status register (`mstatus`) for RV64
+include::img/mstatusreg2.edn[]
+
+.Additional machine-mode status register (`mstatush`) for RV32.
+include::img/mstatushreg.edn[]
+
+[#sstatus_mode,reftext="sstatus"]
+include::img/sstatus32-1.edn[]
+
+.Supervisor-mode status register (`sstatus`) when SXLEN=32.
+include::img/sstatus32-2.edn[]
+
+include::img/sstatus64.edn[]
+
+.Supervisor-mode status register (`sstatus`) when SXLEN=64.
+include::img/sstatus32-2.edn[]
 
 [#section_mode_cap_instructions]
 === Zcheri_mode Instructions
 
-{cheri_mode_ext_name} introduces new instructions to the base RISC-V integer
-ISA in addition to the instructions added in {cheri_base_ext_name}. The new
-instructions in {cheri_mode_ext_name} allows inspecting the CHERI mode bit in
-capabilities and changing the current CHERI execution mode.
-
-==== Capability Manipulation Instructions
-
-A new <<SCMODE>> instruction allows setting a capability's CHERI execution
-mode to the indicated value. The output is written to an unprivileged *c*
-register, not <<pcc>>.
+{cheri_mode_ext_name} introduces an instruction to the base RISC-V integer ISA
+in addition to the instructions added in {cheri_base_ext_name}. The new
+instruction in {cheri_mode_ext_name} allows changing the current CHERI
+execution mode, and can be executed in both Capability and Legacy mode.
 
 ==== Mode Change Instructions
 
-A new CHERI execution mode switch (<<MODESW>>) instruction allows software
-to toggle the hart's current CHERI execution mode. If the current mode in the
-<<pcc>> is Legacy, then the mode after executing <<MODESW>> is Capability
-and vice-versa. This instruction effectively writes the CHERI execution mode
-bit M of the capability currently installed in the <<pcc>>.
+A new CHERI execution mode switch (<<MODESW>>) instruction allows software to
+toggle the hart's current CHERI execution mode by inverting the value of CEM.
+If the current mode is Legacy, then the mode after executing <<MODESW>> is
+Capability and vice-versa. If the execution mode is forced to Legacy due to
+CRE=0 or disabled access to CHERI registers at the current privilege level,
+<<MODESW>> causes an illegal instruction exception.
+
+If the C extension is implemented, a 16-bit instruction <<C_MODESW>> is
+provided with the same function.
 
 ==== Unconditional Capability Jumps
 
@@ -66,7 +102,7 @@ executing either <<JALR>> from capability mode or <<JALR_MODE>> from legacy mode
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The mode change instruction <<MODESW>> is new
-and the requirement to optionally support it in debug mode is also new.
+and the optional ability to support it in debug mode is also new.
 endif::[]
 
 In addition to the changes described in
@@ -76,7 +112,4 @@ optionally allows <<MODESW>> to execute in debug mode.
 
 When entering debug mode, the core always enters Capability Mode.
 
-If {cheri_mode_ext_name} is implemented:
-
-. the mode can be optionally switched using <<MODESW>>.
-. the current mode can always be observed in <<dinfc>>.M.
+No direct mechanism is provided to observe CEM in debug mode.

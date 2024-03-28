@@ -1,8 +1,9 @@
 
 Description::
-Toggle the hart's current CHERI execution mode in <<pcc>>. If the current mode in
-<<pcc>> is Legacy, then the mode bit (M) in <<pcc>> is set to Capability. If the
-current mode is Capability, then the mode bit (M) in <<pcc>> is set to Legacy.
+Toggle the hart's current CHERI execution mode in <<CEM>>. If the current mode in
+<<CEM>> is Legacy, then <<CEM>> is set to Capability. If the
+current mode is Capability, then <<CEM>> is set to Legacy.
 +
-In debug mode MODESW can still be used to change the operating mode, and the current
-mode is shown in the M bit of <<dinfc>>.
+If the execution mode is forced to Legacy due to CME=0 or disabled access to
+CHERI registers at the current privilege level, MODESW causes an illegal
+instruction exception.  Support for MODESW in debug mode is optional.
