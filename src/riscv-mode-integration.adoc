@@ -1,14 +1,7 @@
-[#chapter-Zcheri-mode]
-== "Zcheri_mode" Extension for CHERI Execution Mode
-
-{cheri_mode_ext_name} is an optional extension to {cheri_legacy_ext_name}.
-Implementations that support {cheri_mode_ext_name} allow fine-grained switching
-between Capability and Legacy modes using indirect jump instructions.
-
 [#section-cheri-execution-mode]
-=== CHERI Execution Mode
+=== Capability format
 
-{cheri_mode_ext_name} adds a new CHERI execution mode bit (M) to capabilities.
+{cheri_legacy_ext_name} adds a new CHERI execution mode bit (M) to capabilities.
 The mode bit is encoded as shown in
 xref:cap_encoding_xlen32_mode[xrefstyle=short] and
 xref:cap_encoding_xlen64_mode[xrefstyle=short]. The current CHERI execution
@@ -21,27 +14,26 @@ CME=1 for the current privilege level
 * The mode is Legacy when the M bit of the <<pcc>> is 0 and the effective CME=1
 for the current privilege level
 
-.Capability encoding when XLENMAX=32 and {cheri_mode_ext_name} is supported
+.Capability encoding when XLENMAX=32 and {cheri_legacy_ext_name} is supported
 [#cap_encoding_xlen32_mode]
 include::img/cap-encoding-xlen32-mode.edn[]
 
-.Capability encoding when XLENMAX=64 and {cheri_mode_ext_name} is supported
+.Capability encoding when XLENMAX=64 and {cheri_legacy_ext_name} is supported
 [#cap_encoding_xlen64_mode]
 include::img/cap-encoding-xlen64-mode.edn[]
 
-{cheri_mode_ext_name} allows the M bit to be set to 1 when the capability does
-not grant <<x_perm>>. In this case, the M bit is superfluous, so the encoding
-may be used to support additional features in future extensions.
+For RV64, the M bit can be set to 1 when the capability does not grant <<x_perm>>.
+In this case, the M bit is superfluous, so the encoding may be used to support additional features in future extensions.
 
 The M bit is 0 in both the <<null-cap>> and <<infinite-cap>> capabilities.
 
 [#section_mode_cap_instructions]
-=== Zcheri_mode Instructions
+=== Mode switching Instructions
 
-{cheri_mode_ext_name} introduces new instructions to the base RISC-V integer
-ISA in addition to the instructions added in {cheri_base_ext_name}. The new
-instructions in {cheri_mode_ext_name} allows inspecting the CHERI mode bit in
-capabilities and changing the current CHERI execution mode.
+{cheri_legacy_ext_name} introduces new instructions to the base RISC-V integer
+ISA in addition to the instructions added in {cheri_base_ext_name}. These new
+instructions allow modifying the CHERI mode bit in
+capabilities and directly changing the current CHERI execution mode.
 
 ==== Capability Manipulation Instructions
 
@@ -59,24 +51,5 @@ bit M of the capability currently installed in the <<pcc>>.
 
 ==== Unconditional Capability Jumps
 
-{cheri_mode_ext_name} allows changing the current CHERI execution mode when
+{cheri_legacy_ext_name} allows changing the current CHERI execution mode when
 executing either <<JALR>> from capability mode or <<JALR_MODE>> from legacy mode.
-
-=== Integrating Zcheri_mode with Sdext
-
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The mode change instruction <<MODESW>> is new
-and the requirement to optionally support it in debug mode is also new.
-endif::[]
-
-In addition to the changes described in
-xref:section_debug_integration[xrefstyle=short] and
-xref:section_legacy_debug_integration[xrefstyle=short], {cheri_mode_ext_name}
-optionally allows <<MODESW>> to execute in debug mode.
-
-When entering debug mode, the core always enters Capability Mode.
-
-If {cheri_mode_ext_name} is implemented:
-
-. the mode can be optionally switched using <<MODESW>>.
-. the current mode can always be observed in <<dinfc>>.M.
