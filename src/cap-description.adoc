@@ -92,37 +92,56 @@ Therefore, it is only possible to encode a subset of all combinations.
 ^| 64      ^| {cap_rv64_perms_width}
 |==============================================================================
 
+NOTE: While XLENMAX=32 currently uses the same number of bits for permission encondings, it also includes the mode bit of {cheri_mode_ext_name} which is separate for XLENMAX=64.
+
 .Encoding of architectural permissions for XLENMAX=32
-[#cap_perms_encoding32,width="60%",options=header,cols="^2,^1,^1,^1,^1,^1",align="center"]
+[#cap_perms_encoding32,width="60%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1",align="center"]
 |==============================================================================
-| Encoding | R | W | C | X | ASR
-| 0b0000   |   |   |   |   |
-| 0b0001   5+| *reserved*
-| 0b0010   |   | ✔ |   |   |
-| 0b0011   |   | ✔ | ✔ |   |
-| 0b0100   | ✔ |   |   |   |
-| 0b0101   | ✔ |   | ✔ |   |
-| 0b0110   | ✔ | ✔ |   |   |
-| 0b0111   | ✔ | ✔ | ✔ |   |
-| 0b1000   | ✔ |   |   | ✔ |
-| 0b1001   | ✔ |   | ✔ | ✔ |
-| 0b1010   | ✔ | ✔ |   | ✔ |
-| 0b1011   | ✔ | ✔ | ✔ | ✔ |
-| 0b1100   | ✔ |   |   | ✔ | ✔
-| 0b1101   | ✔ |   | ✔ | ✔ | ✔
-| 0b1110   | ✔ | ✔ |   | ✔ | ✔
-| 0b1111   | ✔ | ✔ | ✔ | ✔ | ✔
+| Encoding  | R | W | C | X | ASR | Mode | Notes
+| 0b00000   |   |   |   |   |     |      | No permissions
+| 0b00001   | ✔ |   |   |   |     |      | Data RO
+| 0b00010   7+| reserved
+| 0b00011   7+| reserved
+| 0b00100   |   | ✔ |   |   |     |      | Data WO
+| 0b00101   | ✔ | ✔ |   |   |     |      | Data RW
+| 0b00110   7+| reserved
+| 0b00111   7+| reserved
+| 0b01000   | ✔ | ✔ | ✔ | ✔ |  ✔  |  Leg | Execute + ASR (Almighty)
+| 0b01001   | ✔ | ✔ | ✔ | ✔ |  ✔  | Pure | Execute + ASR (Almighty)
+| 0b01010   | ✔ |   | ✔ | ✔ |     |  Leg | Execute + Cap RO
+| 0b01011   | ✔ |   | ✔ | ✔ |     | Pure | Execute + Cap RO
+| 0b01100   | ✔ | ✔ | ✔ | ✔ |     |  Leg | Execute + Cap RW
+| 0b01101   | ✔ | ✔ | ✔ | ✔ |     | Pure | Execute + Cap RW
+| 0b01110   | ✔ | ✔ |   | ✔ |     |  Leg | Execute + Data RW
+| 0b01111   | ✔ | ✔ |   | ✔ |     | Pure | Execute + Data RW
+| 0b10000   7+| reserved
+| 0b10001   7+| reserved
+| 0b10010   7+| reserved
+| 0b10011   7+| reserved
+| 0b10100   7+| reserved
+| 0b10101   7+| reserved
+| 0b10110   7+| reserved
+| 0b10111   7+| reserved
+| 0b11000   7+| reserved
+| 0b11001   7+| reserved
+| 0b11010   7+| reserved
+| 0b11011   | ✔ |   | ✔ |   |     |      | Cap RO
+| 0b11100   7+| reserved
+| 0b11101   7+| reserved
+| 0b11110   7+| reserved
+| 0b11111   | ✔ | ✔ | ✔ |   |     |      | Cap RW
 |==============================================================================
+
 
 The encoding in xref:cap_perms_encoding32[xrefstyle=short] is chosen to
 facilitate hardware implementations. Therefore, it can be worked out if the
 permissions are granted as follows:
 
-* <<c_perm>>: bit 0 is set
-* <<w_perm>>: bit 1 is set
-* <<r_perm>>: bits 3 or 2 are set
-* <<x_perm>>: bit 3 is set
-* <<asr_perm>>: bits 3 and 2 are set
+* <<c_perm>>: `P[4] OR (P[3] AND P[1:0] != 0b11)`
+* <<w_perm>>: `P[2] OR P[4:1] == 0b0100`
+* <<r_perm>>: `P[4:0] != 0b00000 AND P[4:0] != 0b00100`
+* <<x_perm>>: `P[4:3] == 0b01`
+* <<asr_perm>>: `P[4:1] == 0b0100`
 
 A {cap_rv64_perms_width}-bit vector encodes the permissions when XLENMAX=64. In
 this case, there is a bit per permission as shown in
@@ -144,12 +163,12 @@ permission.
 WARNING: #TODO: Confirm that we need a separate permissions format for 32-bit
 and 64-bit.#
 
-NOTE: When XLENMAX=32 there is a single reserved permission encoding (see
+NOTE: When XLENMAX=32 there are many reserved permission encodings (see
 xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
-capability to have this value since <<ACPERM>> will never create it. It is
+capability to have these value since <<ACPERM>> will never create it. It is
 possible for untagged capabilities to have it. <<GCPERM>> will interpret it
-as if it were 0b0000 (no permissions). Future extensions may assign meaning to
-the reserved bit pattern, in which case <<GCPERM>> is allowed to report a
+as if it were 0b00000 (no permissions). Future extensions may assign meaning to
+the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
 [#section_cap_sdp]
