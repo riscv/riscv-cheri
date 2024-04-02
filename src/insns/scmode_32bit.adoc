@@ -23,8 +23,15 @@ Description::
 Copy `cs1`  to `cd`  and set `cd.M` (the mode bit) to the least significant bit of
 `rs2` . `cd.tag` is set to 0 if `cs1`  is sealed.
 
+[NOTE]
+======
+Setting the mode bit on non-executable capabilities is not supported and may be ignored. The reason for this is that the <<cap_perms_encoding32,RV32 permissions encoding>> does not allocate space for these.
+
+TODO: Should we require execute permission for both RV32 and RV64?
+======
+
 Prerequisites::
-{cheri_mode_ext_name}
+{cheri_legacy_ext_name}
 
 Operation ::
 [source,SAIL,subs="verbatim,quotes"]

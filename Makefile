@@ -77,7 +77,7 @@ GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
           $(GEN_DIR)/xlen_dependent_encoding_insns_table_body.adoc \
           $(GEN_DIR)/Zbh_lr_sc_insns_table_body.adoc               \
           $(GEN_DIR)/Zcheri_legacy_insns_table_body.adoc           \
-          $(GEN_DIR)/Zcheri_mode_insns_table_body.adoc             \
+          $(GEN_DIR)/Zcheri_legacy_mode_insns_table_body.adoc      \
           $(GEN_DIR)/Zcheri_purecap_insns_table_body.adoc
 
 # AsciiDoctor command
