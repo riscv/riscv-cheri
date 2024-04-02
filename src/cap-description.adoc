@@ -50,7 +50,7 @@ unsealed (see xref:section_cap_sealed[xrefstyle=short]), and bounds checks (see
 xref:section_cap_bounds[xrefstyle=short]). An operation is also contingent on
 requirements imposed by other RISC-V architectural features, such as virtual
 memory, PMP and PMAs, even if the capability grants sufficient permissions. The
-permissions currently defined in {cheri_base_ext_name} are listed in
+permissions currently defined in {cheri_base_ext_name} are listed
 below.
 
 [#r_perm,reftext="R-permission"]
@@ -92,56 +92,77 @@ Therefore, it is only possible to encode a subset of all combinations.
 ^| 64      ^| {cap_rv64_perms_width}
 |==============================================================================
 
-NOTE: While XLENMAX=32 currently uses the same number of bits for permission encondings, it also includes the mode bit of {cheri_mode_ext_name} which is separate for XLENMAX=64.
+NOTE: While XLENMAX=32 currently uses the same number of bits for permission encodings, it also includes the mode bit of {cheri_mode_ext_name} which is separate for XLENMAX=64.
 
 .Encoding of architectural permissions for XLENMAX=32
-[#cap_perms_encoding32,width="60%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1",align="center"]
+[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^2,^4",align="center"]
 |==============================================================================
-| Encoding  | R | W | C | X | ASR | Mode | Notes
-| 0b00000   |   |   |   |   |     |      | No permissions
-| 0b00001   | ✔ |   |   |   |     |      | Data RO
-| 0b00010   7+| reserved
-| 0b00011   7+| reserved
-| 0b00100   |   | ✔ |   |   |     |      | Data WO
-| 0b00101   | ✔ | ✔ |   |   |     |      | Data RW
-| 0b00110   7+| reserved
-| 0b00111   7+| reserved
-| 0b01000   | ✔ | ✔ | ✔ | ✔ |  ✔  |  Leg | Execute + ASR (Almighty)
-| 0b01001   | ✔ | ✔ | ✔ | ✔ |  ✔  | Pure | Execute + ASR (Almighty)
-| 0b01010   | ✔ |   | ✔ | ✔ |     |  Leg | Execute + Cap RO
-| 0b01011   | ✔ |   | ✔ | ✔ |     | Pure | Execute + Cap RO
-| 0b01100   | ✔ | ✔ | ✔ | ✔ |     |  Leg | Execute + Cap RW
-| 0b01101   | ✔ | ✔ | ✔ | ✔ |     | Pure | Execute + Cap RW
-| 0b01110   | ✔ | ✔ |   | ✔ |     |  Leg | Execute + Data RW
-| 0b01111   | ✔ | ✔ |   | ✔ |     | Pure | Execute + Data RW
-| 0b10000   7+| reserved
-| 0b10001   7+| reserved
-| 0b10010   7+| reserved
-| 0b10011   7+| reserved
-| 0b10100   7+| reserved
-| 0b10101   7+| reserved
-| 0b10110   7+| reserved
-| 0b10111   7+| reserved
-| 0b11000   7+| reserved
-| 0b11001   7+| reserved
-| 0b11010   7+| reserved
-| 0b11011   | ✔ |   | ✔ |   |     |      | Cap RO
-| 0b11100   7+| reserved
-| 0b11101   7+| reserved
-| 0b11110   7+| reserved
-| 0b11111   | ✔ | ✔ | ✔ |   |     |      | Cap RW
+| Encoding    | R | W | C | X | ASR | Mode | Notes
+8+| *Quadrant 0: Non-capability data read/write*
+| 0b00_000   |   |   |   |   |     | N/A | No permissions
+| 0b00_001   | ✔ |   |   |   |     | N/A | Data RO
+| 0b00_010   7+| reserved
+| 0b00_011   7+| reserved
+| 0b00_100   |   | ✔ |   |   |     | N/A | Data WO
+| 0b00_101   | ✔ | ✔ |   |   |     | N/A | Data RW
+| 0b00_110   7+| reserved
+| 0b00_111   7+| reserved
+8+| *Quadrant 1: Executable capabilities*
+| 0b01_000   | ✔ | ✔ | ✔ | ✔ |  ✔  | Legacy  | Execute + ASR (see <<infinite-cap>>)
+| 0b01_001   | ✔ | ✔ | ✔ | ✔ |  ✔  | Purecap | Execute + ASR (see <<infinite-cap>>)
+| 0b01_010   | ✔ |   | ✔ | ✔ |     | Legacy  | Execute + Data & Cap RO
+| 0b01_011   | ✔ |   | ✔ | ✔ |     | Purecap | Execute + Data & Cap RO
+| 0b01_100   | ✔ | ✔ | ✔ | ✔ |     | Legacy  | Execute + Data & Cap RW
+| 0b01_101   | ✔ | ✔ | ✔ | ✔ |     | Purecap | Execute + Data & Cap RW
+| 0b01_110   | ✔ | ✔ |   | ✔ |     | Legacy  | Execute + Data RW
+| 0b01_111   | ✔ | ✔ |   | ✔ |     | Purecap | Execute + Data RW
+8+| *Quadrant 2: Reserved*
+| 0b10_000   7+| reserved
+| 0b10_001   7+| reserved
+| 0b10_010   7+| reserved
+| 0b10_011   7+| reserved
+| 0b10_100   7+| reserved
+| 0b10_101   7+| reserved
+| 0b10_110   7+| reserved
+| 0b10_111   7+| reserved
+8+| *Quadrant 3: Capability data read/write*
+| 0b11_000   7+| reserved
+| 0b11_001   7+| reserved
+| 0b11_010   7+| reserved
+| 0b11_011   | ✔ |   | ✔ |   |     | N/A | Data & Cap RO
+| 0b11_100   7+| reserved
+| 0b11_101   7+| reserved
+| 0b11_110   7+| reserved
+| 0b11_111   | ✔ | ✔ | ✔ |   |     | N/A | Data & Cap RW
 |==============================================================================
 
 
 The encoding in xref:cap_perms_encoding32[xrefstyle=short] is chosen to
 facilitate hardware implementations. Therefore, it can be worked out if the
-permissions are granted as follows:
+permissions are granted as follows, assuming that all reserved cases are ignored:
 
 * <<c_perm>>: `P[4] OR (P[3] AND P[1:0] != 0b11)`
 * <<w_perm>>: `P[2] OR P[4:1] == 0b0100`
 * <<r_perm>>: `P[4:0] != 0b00000 AND P[4:0] != 0b00100`
 * <<x_perm>>: `P[4:3] == 0b01`
 * <<asr_perm>>: `P[4:1] == 0b0100`
+
+The mapping of bit values to decoded permissons in <<cap_perms_encoding32>> is based on the following encoding strategy:
+[#cap_perms_encoding_description32,width="100%",options=header,cols="^2,^1,^1,^1,6",align="center"]
+|==============================================================================
+| Bit 4&3 | Bit 2    | Bit 1      |  Bit 0     | Notes
+5+<|_Data & capability memory access (Quandrant 2+3)_
+|   Q=0b11 | Write 2+| Reserved=0b11          <| Reserved bits for future extensions must be 1
+|   Q=0b01 3+| Reserved=0b111                 <| Reserved bits for future extensions must be 1
+5+<|_Executable capabilities (Quandrant 1)_
+|   0b01  | 1        | 1          |    Mode    | <<infinite-cap>>
+|   0b01  | 1        | 0          |    Mode    | Execute + Data & Cap RO
+|   0b01  | 0        | 1          |    Mode    | Execute + Data & Cap RW
+|   0b01  | 0        | 0          |    Mode    | Execute + Data RW
+5+<|_All other encodings (Quandrant 0)_
+|   0b00  | Write    | Reserved=1 | Read       | Non-capability data
+|   0b00  | 0        | 0          | 0          | No permissions
+|==============================================================================
 
 A {cap_rv64_perms_width}-bit vector encodes the permissions when XLENMAX=64. In
 this case, there is a bit per permission as shown in
@@ -160,15 +181,12 @@ permission.
 | 4   | <<asr_perm>>
 |==============================================================================
 
-WARNING: #TODO: Confirm that we need a separate permissions format for 32-bit
-and 64-bit.#
-
 NOTE: When XLENMAX=32 there are many reserved permission encodings (see
 xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
-capability to have these value since <<ACPERM>> will never create it. It is
-possible for untagged capabilities to have it. <<GCPERM>> will interpret it
-as if it were 0b00000 (no permissions). Future extensions may assign meaning to
-the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
+capability to have one of these values since <<ACPERM>> will never create it. It is
+possible for untagged capabilities to have reserved values. <<GCPERM>> will interpret
+reserved values as if it were 0b00000 (no permissions). Future extensions may assign
+meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
 [#section_cap_sdp]
@@ -365,7 +383,7 @@ and base addresses respectively. E is computed by subtracting from the maximum
 possible exponent CAP_MAX_E which can be efficiently implemented in hardware
 assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise
 shift right by E. In contrast, CHERI v9 implementations computed the top and
-base addresses by assumming that T and B are at bit 0 and performing a logical
+base addresses by assuming that T and B are at bit 0 and performing a logical
 bitwise shift left by E.
 endif::[]
 
@@ -521,12 +539,13 @@ or 'root' capability.
 
 .Field values of the Infinite capability
 [#infinite-cap,reftext="Infinite"]
-[options=header,width="100%",align=center,width="55%",cols="1,1,3"]
+[options=header,width="100%",align=center,width="55%",cols="1,2,3"]
 |==============================================================================
 | Field   | Value | Comment
 | Tag     | one   | Capability is valid
 | SDP     | ones  | Grants all permissions
-| AP      | ones  | Grants all permissions
+| AP (RV64) | ones  | Grants all permissions
+| AP (RV32) | See xref:cap_perms_encoding32[xrefstyle=short] | Grants all permissions
 | S       | zero  | Unsealed
 | EF      | zero  | Internal exponent format
 | T~8~    | zeros | Top address bit (XLENMAX=32 only)
