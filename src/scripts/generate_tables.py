@@ -27,8 +27,8 @@ class table:
     def update(self, row):
         pass
 
-class Zbh_lr_sc_insns(table):
-    cols = ["Mnemonic", "Zcheri_legacy", "Zcheri_purecap", "Function"]
+class Zabhlrsc_insns(table):
+    cols = ["Mnemonic", "Zabhlrsc", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -50,10 +50,10 @@ class Zbh_lr_sc_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Zbhlrsc")] == "✔"
+        return row[self.header.index("Zabhlrsc")] == "✔"
 
 class Zcheri_legacy_insns(table):
-    cols = ["Mnemonic", "RV32", "RV64", "A", "Zbhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
+    cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -78,7 +78,7 @@ class Zcheri_legacy_insns(table):
         return row[self.header.index("Zcheri_legacy")] == "✔" and row[self.header.index("Zcheri_purecap")] != "✔"
 
 class Zcheri_purecap_insns(table):
-    cols = ["Mnemonic", "RV32", "RV64", "A", "Zbhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
+    cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -760,7 +760,7 @@ if __name__ == "__main__":
         tables = []
 
         #same for rv32/rv64
-        tables.append(Zbh_lr_sc_insns              (os.path.join(args.output_dir, "Zbh_lr_sc_insns_table_body.adoc"), header))
+        tables.append(Zabhlrsc_insns               (os.path.join(args.output_dir, "Zabhlrsc_insns_table_body.adoc"), header))
         tables.append(Zcheri_legacy_insns          (os.path.join(args.output_dir, "Zcheri_legacy_insns_table_body.adoc"), header))
         tables.append(Zcheri_purecap_insns         (os.path.join(args.output_dir, "Zcheri_purecap_insns_table_body.adoc"), header))
         tables.append(xlen_dependent_encoding_insns(os.path.join(args.output_dir, "xlen_dependent_encoding_insns_table_body.adoc"), header))
