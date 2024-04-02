@@ -75,7 +75,8 @@ class Zcheri_legacy_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Zcheri_legacy")] == "✔"
+        # Don't print instructions already listed by Zcheri_purecap
+        return row[self.header.index("Zcheri_legacy")] == "✔" and row[self.header.index("Zcheri_purecap")] != "✔"
 
 class Zcheri_mode_insns(table):
     cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
@@ -110,19 +111,23 @@ class Zcheri_purecap_insns(table):
         super().__init__(filename, header)
         self.file.write('|'+'|'.join(self.cols)+'\n')
         self.indices=[]
+        self.function_idx = self.header.index("Function")
         for i in self.cols:
             self.indices.append(self.header.index(i))
 
     def update(self, row):
         if self.check(row):
-            outStr = ""
+            out_str = ""
             for i in self.indices:
-                if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+                cell_value = row[i]
+                if i == 0:
+                    cell_value = '<<' + cell_value + '>>'  # make an xref
+                elif i == self.function_idx:
+                    # Drop references to DDC authorization in the purecap table.
+                    cell_value = cell_value.replace(" via int pointer", " via capability register")
+                    cell_value = cell_value.replace(", authorise with DDC", "")
+                out_str += '|' + cell_value
+            self.file.write(out_str + '\n')
 
     def check(self,row):
         return row[self.header.index("Zcheri_purecap")] == "✔"
