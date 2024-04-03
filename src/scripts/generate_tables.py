@@ -512,31 +512,6 @@ class csr_renamed_purecap_mode_u(table):
     def check(self,row):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "U"
 
-class csr_added_purecap_mode_u(table):
-    cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0 or i==2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "U" and row[self.header.index("Zcheri_purecap")] == "✔"
-
 class csr_alias_action(table):
     cols = ["CLEN CSR", "Action on XLEN write", "Action on CLEN write"]
     indices = []
@@ -669,7 +644,6 @@ if __name__ == "__main__":
         #tables.append(csr_added_purecap_mode_d  (os.path.join(args.output_dir, "csr_added_purecap_mode_d_table_body.adoc"),header))
         #tables.append(csr_added_purecap_mode_m  (os.path.join(args.output_dir, "csr_added_purecap_mode_m_table_body.adoc"),header))
         #tables.append(csr_added_purecap_mode_s  (os.path.join(args.output_dir, "csr_added_purecap_mode_s_table_body.adoc"),header))
-        tables.append(csr_added_purecap_mode_u  (os.path.join(args.output_dir, "csr_added_purecap_mode_u_table_body.adoc"),header))
         tables.append(csr_added_legacy          (os.path.join(args.output_dir, "csr_added_legacy_table_body.adoc"),header))
         tables.append(csr_perms                 (os.path.join(args.output_dir, "csr_permission_table_body.adoc"),header))
         tables.append(csr_exevectors            (os.path.join(args.output_dir, "csr_exevectors_table_body.adoc"),header))
