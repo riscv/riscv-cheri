@@ -6,11 +6,11 @@ instructions where the effect of CHERI needs specific details.
 
 For existing RISC-V instructions, note that:
 
-. In Legacy mode, every byte of each memory access is bounds
+. In Legacy Mode, every byte of each memory access is bounds
 checked against <<ddc>>
-. In Legacy mode, a minimum length instruction at the target of all indirect
+. In Legacy Mode, a minimum length instruction at the target of all indirect
 jumps is bounds checked against <<pcc>>
-. In Capability mode a minimum length instruction at the target of all indirect
+. In Capability Mode a minimum length instruction at the target of all indirect
 jumps is bounds checked against `cs1` (e.g. <<JALR>>)
 . A minimum length instruction at the taken target of all direct
 jumps and conditional branches is bounds checked against <<pcc>> regardless of
@@ -193,9 +193,9 @@ include::insns/store_16bit_Zcb.adoc[]
 <<<
 === "Zcmp" Standard Extension For Code-Size Reduction
 
-The push (<<CM.PUSH>>) and pop (<<CM.POP>>, <<CM.POPRET>>, <<CM.POPRETZ>>) instructions are redefined in capability mode to save/restore full capabilities.
+The push (<<CM.PUSH>>) and pop (<<CM.POP>>, <<CM.POPRET>>, <<CM.POPRETZ>>) instructions are redefined in Capability Mode to save/restore full capabilities.
 
-The double move instructions (<<CM.MVSA01>>, <<CM.MVA01S>>) are redefined in capability mode to move full capabilities between registers. The saved register mapping is as shown in
+The double move instructions (<<CM.MVSA01>>, <<CM.MVA01S>>) are redefined in Capability Mode to move full capabilities between registers. The saved register mapping is as shown in
 
 .saved register mapping for Zcmp
 [#saved_register_mapping]
@@ -231,7 +231,7 @@ include::insns/zcmp_cmva01s.adoc[]
 <<<
 === "Zcmt" Standard Extension For Code-Size Reduction
 
-The table jump instructions (<<CM.JT>>, <<CM.JALT>>) defined in cite:[riscv-code-size-spec] are _not_ redefined in capability mode to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.
+The table jump instructions (<<CM.JT>>, <<CM.JALT>>) defined in cite:[riscv-code-size-spec] are _not_ redefined in Capability Mode to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.
 
 In the future, new jump table modes or new encodings can be added to have capabilities in the jump table.
 
