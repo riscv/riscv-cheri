@@ -306,7 +306,7 @@ class csr_aliases(table):
 def resolve_col_display_name(col_name):
     col_display_names = {
         "CLEN CSR": "{cheri_base_ext_name} CSR",
-        "Alias":        "Replaced CSR"
+        "Alias":    "Extended CSR"
     }
 
     return col_display_names[col_name] if col_name in col_display_names else col_name
