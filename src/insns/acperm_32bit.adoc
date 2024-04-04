@@ -29,16 +29,17 @@ with the mask `rs2` . Set the AP and SDP fields of `cs1` as indicated in the
 resulting bit field -- the capability grants a permission if the corresponding
 bit is set in the bit field -- and write the output capability to `cd` . The
 output capability has its tag set to 0 if `cs1` is sealed.
++
+The AP field is not able to encode all combinations of permissions when XLENMAX=32, therefore removing a permission may yield a capability which cannot be encoded.
+Valid combinations are shown in <<cap_perms_encoding32>>.
+If removing permissions would result in architectural permissions which cannot be encoded, additional architectural permissions will be removed until an encodable subset of the requested permissions has been found.
+For example, with executable capabilities, where <<x_perm>> is set, clearing <<x_perm>> also clears <<asr_perm>> and the Mode becomes irrelevant.
+As a result,the capability is converted from executable to data.
+Similarly, if <<c_perm>>, <<r_perm>> and <<w_perm>> are currently set, attempting to remove <<r_perm>> results will result in a capability with only <<w_perm>> permissions.
+
+WARNING: The resulting architectural permissions for non-encodable <<ACPERM>> subsets are not yet defined. This open issue is tracked by https://github.com/riscv/riscv-cheri/issues/173.
 
 include::../img/acperm_bit_field.edn[]
-
-NOTE: The AP field is not able to encode all combinations of permissions when
-XLENMAX=32. If permissions that cannot be encoded are indicated, ACPERM
-outputs a capability with all architectural permissions cleared.
-
-CAUTION: TODO: this may not be correct - we should work through the
- different combinations which are possible for removing a permission
- for RV32, where it is restricted, and decide what to do in each case
 
 Prerequisites::
 {cheri_base_ext_name}
