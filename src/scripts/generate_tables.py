@@ -105,7 +105,7 @@ class Zcheri_purecap_insns(table):
             self.file.write(out_str + '\n')
 
     def check(self,row):
-        return row[self.header.index("Zcheri_legacy")] != "✔" and row[self.header.index("Zcheri_purecap")] == "✔"
+        return row[self.header.index("Zcheri_purecap")] == "✔"
 
 class cap_mode_insns(table):
     cols = ["Mnemonic", "Zcheri_legacy", "Zcheri_purecap", "Function"]
