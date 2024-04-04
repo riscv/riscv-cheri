@@ -57,20 +57,15 @@ GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
           $(GEN_DIR)/csr_added_purecap_mode_d_table_body.adoc      \
           $(GEN_DIR)/csr_added_purecap_mode_m_table_body.adoc      \
           $(GEN_DIR)/csr_added_purecap_mode_s_table_body.adoc      \
-          $(GEN_DIR)/csr_added_purecap_mode_u_table_body.adoc      \
           $(GEN_DIR)/csr_alias_action_table_body.adoc              \
           $(GEN_DIR)/csr_aliases_table_body.adoc                   \
           $(GEN_DIR)/csr_exevectors_table_body.adoc                \
           $(GEN_DIR)/csr_metadata_table_body.adoc                  \
           $(GEN_DIR)/csr_permission_table_body.adoc                \
-          $(GEN_DIR)/csr_removed_purecap_mode_d_table_body.adoc    \
-          $(GEN_DIR)/csr_removed_purecap_mode_m_table_body.adoc    \
-          $(GEN_DIR)/csr_removed_purecap_mode_s_table_body.adoc    \
-          $(GEN_DIR)/csr_removed_purecap_mode_u_table_body.adoc    \
-          $(GEN_DIR)/csr_replaced_purecap_mode_d_table_body.adoc   \
-          $(GEN_DIR)/csr_replaced_purecap_mode_m_table_body.adoc   \
-          $(GEN_DIR)/csr_replaced_purecap_mode_s_table_body.adoc   \
-          $(GEN_DIR)/csr_replaced_purecap_mode_u_table_body.adoc   \
+          $(GEN_DIR)/csr_renamed_purecap_mode_d_table_body.adoc    \
+          $(GEN_DIR)/csr_renamed_purecap_mode_m_table_body.adoc    \
+          $(GEN_DIR)/csr_renamed_purecap_mode_s_table_body.adoc    \
+          $(GEN_DIR)/csr_renamed_purecap_mode_u_table_body.adoc    \
           $(GEN_DIR)/illegal_insns_table_body.adoc                 \
           $(GEN_DIR)/legacy_mnemonic_insns_table_body.adoc         \
           $(GEN_DIR)/legacy_mode_insns_table_body.adoc             \
