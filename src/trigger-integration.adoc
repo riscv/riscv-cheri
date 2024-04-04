@@ -1,0 +1,58 @@
+[#section_trigger_integration]
+=== Integrating Zcheri_purecap with Sdtrig
+
+The Sdtrig extension is generally orthogonal to Zcheri_purecap. However,
+the priority of synchronous exceptions and where triggers fit is adjusted as
+shown in xref:trigger-exception-priority[xrefstyle=short].
+
+[[trigger-exception-priority]]
+.Synchronous exception priority (including triggers) in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
+[%autowidth,float="center",align="center",cols="<,>,<,<",options="header"]
+|===
+|Priority |Exc.Code |Description |Trigger
+|_Highest_ |3 +
+3 +
+3 +
+3 | | etrigger +
+icount +
+itrigger +
+mcontrol/mcontrol6 after (on previous instruction)
+
+| .>|3 .<|Instruction address breakpoint |mcontrol/mcontrol6 execute address before
+| .>|*{cheri_excep_mcause}* .<|*Prior to instruction address translation:* +
+*CHERI fault due to PCC checks (tag, execute permission and bounds)* |
+| .>|12, 1 .<|During instruction address translation: +
+First encountered page fault or access fault |
+| .>|1 .<|With physical address for instruction: +
+Instruction access fault |
+
+| .>|3 .<| |mcontrol/mcontrol6 execute data before
+
+| .>|2 +
+0 +
+8,9,11 +
+3 .<|Illegal instruction +
+Instruction address misaligned +
+Environment call +
+Environment break |
+
+| .>|3 .<|Load/store/AMO address breakpoint |mcontrol/mcontrol6 load/store address before
+| .>|3 .<| |mcontrol/mcontrol6 store data before
+
+| .>| *{cheri_excep_mcause}* .<| *CHERI faults due to:* +
+*PCC <<asr_perm>> clear* +
+*Branch/jump target address checks (tag, execute permissions and bounds)* |
+| .>|*{cheri_excep_mcause}* .<|*Prior to address translation for an explicit memory access:* +
+*Load/store/AMO capability address misaligned* +
+*CHERI fault due to capability checks (tag, permissions and bounds)* |
+
+| .>|4,6 .<|Optionally: +
+Load/store/AMO address misaligned |
+| .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
+First encountered page fault or access fault |
+| .>|5,7 .<|With physical address for an explicit memory access: +
+Load/store/AMO access fault |
+|  .>|4,6 .<|If not higher priority: +
+Load/store/AMO address misaligned |
+|_Lowest_ .>|3 .<| |mcontrol/mcontrol6 load data before
+|===
