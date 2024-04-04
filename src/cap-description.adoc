@@ -205,6 +205,23 @@ permission.
 | 4   | <<asr_perm>>
 |==============================================================================
 
+===== Permission Transitions
+
+Executing <<ACPERM>> can result in sets of permissions which cannot be represented when XLENMAX=32
+(see <<cap_perms_encoding32>>) or permission combinations which are not useful for XLENMAX=64, such as 
+<<asr_perm>> set without <<x_perm>>.
+
+These cases are defined to return useful minimal sets of permissions in each case, which may be no permissions.
+
+NOTE: Future extensions may allow more combinations of permissions, especially for XLENMAX=64.
+
+. <<asr_perm>> cannot be set without <<x_perm>> being set
+.. Therefore removing <<x_perm>> also removes <<asr_perm>>.
+. <<c_perm>> cannot be set without at least one of <<r_perm>> or <<w_perm>> being set.
+.. Therefore removing all permissions from <<r_perm>> and <<w_perm>> also removes <<c_perm>>.
+.. XLENMAX=32 goes further here and denies <<w_perm>> and <<c_perm>> without <<r_perm>>. 
+ Leaving this combination will clear _all_ permissions.
+
 [#section_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 

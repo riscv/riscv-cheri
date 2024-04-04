@@ -32,12 +32,31 @@ output capability has its tag set to 0 if `cs1` is sealed.
 +
 The AP field is not able to encode all combinations of permissions when MXLEN=32, therefore removing a permission may yield a capability which cannot be encoded.
 Valid combinations are shown in <<cap_perms_encoding32>>.
-If removing permissions would result in architectural permissions which cannot be encoded, additional architectural permissions will be removed until an encodable subset of the requested permissions has been found.
-For example, with executable capabilities, where <<x_perm>> is set, clearing <<x_perm>> also clears <<asr_perm>> and the Mode becomes irrelevant.
-As a result,the capability is converted from executable to data.
-Similarly, if <<c_perm>>, <<r_perm>> and <<w_perm>> are currently set, attempting to remove <<r_perm>> results will result in a capability with only <<w_perm>> permissions.
++
+Additionally some combinations of permissions are not useful when XLENMAX=64.
+These cases are defined to return useful minimal sets of permissions in each case, which may be no permissions.
++
+NOTE: Future extensions may allow more combinations of permissions, especially for XLENMAX=64.
 
-WARNING: The resulting architectural permissions for non-encodable <<ACPERM>> subsets are not yet defined. This open issue is tracked by https://github.com/riscv/riscv-cheri/issues/173.
+The common rules are:
+
+. <<asr_perm>> cannot be set without <<x_perm>> being set
+.. Therefore removing <<x_perm>> also removes <<asr_perm>>.
+. <<c_perm>> cannot be set without at least one of <<r_perm>> or <<w_perm>> being set.
+.. Therefore removing all permissions from <<r_perm>> and <<w_perm>> also removes <<c_perm>>.
+
+The XLENMAX=32 additional rules are:
+
+. <<w_perm>> and <<c_perm>> cannot be set without <<r_perm>> being set.
+. <<x_perm>> cannot be set without <<r_perm>> being set.
+
+NOTE: Attempting to leave either of these combinations will clear *all* permissions.
+
+The XLENMAX=64 additional rule is:
+
+. Clearing <<x_perm>> also clears the <<m_bit>>
+
+NOTE: The combination of <<x_perm>> clear and <<m_bit>> set is reserved for future extensions.
 
 include::../img/acperm_bit_field.edn[]
 
