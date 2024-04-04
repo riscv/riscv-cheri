@@ -1,10 +1,5 @@
 == "Zcheri_legacy" Extension for CHERI Legacy Mode
 
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
-per-privilege enable bits.
-endif::[]
-
 {cheri_legacy_ext_name} is an optional extension to {cheri_base_ext_name}.
 Implementations that support {cheri_base_ext_name} and {cheri_legacy_ext_name}
 define a variant of the CHERI ISA that is fully binary compatible with
@@ -12,7 +7,7 @@ existing RISC-V code.
 
 Key features in {cheri_legacy_ext_name} include a definition of a CHERI execution mode, a new
 unprivileged register, additional instructions and extensions to some existing
-CSRs enabling disable CHERI features. The remainder of this section describes
+CSRs enabling CHERI features. The remainder of this section describes
 these features in detail as well as their integration with the primary base
 integer variants of the RISC-V ISA (RV32I and RV64I).
 
@@ -25,9 +20,7 @@ is a new unprivileged register: the default data capability, <<ddc>>, that is
 used to authorise all data memory accesses when the current CHERI mode is
 Legacy.
 
-The current CHERI execution mode is given by the current privilege level and
-the value of the CME bit in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> for
-M-mode, S-mode, and U-mode, respectively.
+The current CHERI execution mode is given by the mode bit of <<pcc>>.
 
 The CHERI execution mode impacts the instruction set in the following ways:
 
@@ -51,16 +44,36 @@ syntax.
 The CHERI execution mode is key in providing backwards compatibility with the
 base RISC-V ISA. RISC-V software is able to execute unchanged in
 implementations supporting both {cheri_base_ext_name} and
-{cheri_legacy_ext_name} provided that the configured CHERI execution mode is
-Legacy by setting CME=0 in <<mseccfg>>, <<menvcfg>> or <<senvcfg>> as required,
-and the <<infinite-cap>> capability is installed in the <<pcc>> and <<ddc>>
-such that:
+{cheri_legacy_ext_name} provided that the <<infinite-cap>> capability is installed in <<ddc>> and <<pcc>> (with <<section-cheri-execution-mode,M=0>>, i.e. CHERI execution mode set to Legacy).
+Setting both registers to <<infinite-cap>> ensures that:
 
-* Tags are set
-* Capabilities are unsealed
 * All permissions are granted
 * The bounds authorise accesses to the entire address space i.e base is 0 and
 top is 2^XLENMAX^
+
+[#section-cheri-execution-mode]
+=== CHERI Execution Mode Encoding
+
+{cheri_legacy_ext_name} adds a new CHERI execution mode bit (M) to
+capabilities. In RV32, the mode is encoded in the permissions field as
+described in xref:cap_permissions_encoding[xrefstyle=short]. In RV64, a new
+mode bit field is added to the capability format as shown in
+xref:cap_encoding_xlen64_mode[xrefstyle=short]. The current CHERI execution
+mode is given by the M bit of the <<pcc>> and the CRE bits in <<mseccfg>>,
+<<menvcfg>>, and <<senvcfg>> as follows:
+
+* The mode is Capability when the M bit of the <<pcc>> is 1 and the effective
+CRE=1 for the current privilege level
+* The mode is Legacy when the effective CRE=0 for the current privilege level or the M bit of the <<pcc>> is 0
+
+.Capability encoding when XLENMAX=64 and {cheri_legacy_ext_name} is supported
+[#cap_encoding_xlen64_mode]
+include::img/cap-encoding-xlen64-mode.edn[]
+
+For RV64, the M bit can be set to 1 when the capability does not grant <<x_perm>>.
+In this case, the M bit is superfluous, so the encoding may be used to support additional features in future extensions.
+
+The M bit is 0 in both the <<null-cap>> and <<infinite-cap>> capabilities.
 
 [#section_legacy_ext_instructions]
 === Zcheri_legacy Instructions
@@ -86,6 +99,20 @@ xref:section_cap_instructions[xrefstyle=short].
 In Legacy Mode, the capability authorising the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
 the sign-extended offset.
+
+==== Capability Manipulation Instructions
+
+A new <<SCMODE>> instruction allows setting a capability's CHERI execution
+mode to the indicated value. The output is written to an unprivileged *c*
+register, not <<pcc>>.
+
+==== Mode Change Instructions
+
+A new CHERI execution mode switch (<<MODESW>>) instruction allows software
+to toggle the hart's current CHERI execution mode. If the current mode in the
+<<pcc>> is Legacy, then the mode after executing <<MODESW>> is Capability
+and vice-versa. This instruction effectively writes the CHERI execution mode
+bit M of the capability currently installed in the <<pcc>>.
 
 === Existing RISC-V Instructions
 
@@ -116,6 +143,9 @@ the least significant bit of the result to zero. The target address is then
 written to the <<pcc>> address and a representability check is performed. The
 address of the instruction following the jump (*pc* + 4) is written to an *x*
 register; that register's tag and capability metadata are zeroed.
+
+{cheri_legacy_ext_name} allows changing the current CHERI execution mode when
+executing <<JALR>> from Capability Mode.
 
 <<JAL>> and <<JALR>> cause CHERI exceptions when a minimum sized instruction
 at the target address is not within the bounds of the <<pcc>>. An
@@ -198,8 +228,6 @@ Accessing a capability CSR other than an extended CSR in Legacy Mode results in
 an illegal instruction exception. These CSRs are listed in
 xref:legacy-csrnames-added[xrefstyle=short].
 
-include::riscv-mode-integration.adoc[]
-
 [#section_legacy_debug_integration]
 === Integrating Zcheri_legacy with Sdext
 
@@ -244,6 +272,9 @@ so it does not need to be able to hold all possible invalid addresses.
 === Disabling CHERI Registers
 
 ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
+per-privilege enable bits.
+
 NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
 it is not possible to disable CHERI checks completely.
 endif::[]
@@ -259,28 +290,27 @@ cause illegal instruction exceptions
 addresses (xref:csr-numbers-section[xrefstyle=short]) cause illegal
 instruction exceptions
 * All allowed instructions execute as if the CHERI execution mode is Legacy.
-The CME bits in <<menvcfg>> and <<senvcfg>> are zero whilst
-CHERI register access is disabled.
+The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
 
 CHERI register access is disabled if XLEN in the current mode is less than
 XLENMAX, if the endianness in the current mode is not the reset value of
-<<mstatus>>.MBE, or if CRE active at the current mode (<<menvcfg>>.CRE for
+<<mstatus>>.MBE, or if CRE active at the current mode (<<mseccfg>>.CRE for M-mode, <<menvcfg>>.CRE for
 S-mode or <<senvcfg>>.CRE for U-mode) is 0.
 
-<<menvcfg>>.CRE, <<menvcfg>>.CME, <<senvcfg>>.CRE and <<senvcfg>>.CME form a
-single WARL field. This allows higher privilege software to restrict lower
+<<mseccfg>>.CRE, <<menvcfg>>.CRE, and <<senvcfg>>.CRE form a single WARL field.
+This allows higher privilege software to restrict lower
 privilege software access to CHERI register state, and the ability to enter
 Capability Mode. The valid configurations are shown in
 xref:xenvcfg-warl-field[xrefstyle=short].
 
 [[xenvcfg-warl-field]]
 .Xenvcfg joint WARL field
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|<<menvcfg>>.CRE|<<menvcfg>>.CME|<<senvcfg>>.CRE|<<senvcfg>>.CME|Comment
-|0              | RO 0          | RO 0          | RO 0          |<<menvcfg>>.CRE=0 disables all other state
-|1              |0/1            |0              | RO 0          |<<senvcfg>>.CRE=0 disables <<senvcfg>>.CME
-|1              |0/1            |1              |0/1            |both levels of CME can be programmed
+|<<mseccfg>>.CRE |<<menvcfg>>.CRE|<<senvcfg>>.CRE|Comment
+|0               |read-only 0    | read-only 0   |<<mseccfg>>.CRE=0 completely disables CHERI access
+|1               |0              | read-only 0   |<<menvcfg>>.CRE=0 disables access for privilege less than M-mode
+|1               |1              | 0/1           |<<senvcfg>>.CRE can be programmed to enable/disable access for U-mode
 |===
 
 The WARL programming nature is extended to include UXLEN and SXLEN, as they can
@@ -382,9 +412,11 @@ xref:mseccfgmodereg[xrefstyle=short].
 [#mseccfgmodereg]
 include::img/mseccfgreg.edn[]
 
-The CHERI Mode Enable (CME) bit controls whether M-mode executes in Capability
-or Legacy Mode. When CME=1, the CHERI execution mode is Capability. When CME=0,
-the mode is Legacy.  Its reset value is 0.
+The CHERI Register Enable (CRE) bit controls whether M-mode has access to capability registers and instructions.
+When CRE=1, all CHERI instructions and registers can be accessed.
+When CRE=0, CHERI register and instruction access is prohibited for M-mode and lower privilege levels as described in xref:section_cheri_disable[xrefstyle=short].
+
+The reset value is 0.
 
 [#menvcfg,reftext="menvcfg"]
 ==== Machine Environment Configuration Register (menvcfg)
@@ -396,17 +428,14 @@ xref:menvcfgmodereg[xrefstyle=short].
 [#menvcfgmodereg]
 include::img/menvcfgmodereg.edn[]
 
-The CHERI Mode Enable (CME) bit controls whether less privileged levels (e.g.
-S-mode and U-mode) execute in Capability or Legacy Mode. When CME=1, the
-CHERI execution mode is Capability. When CME=0, the mode is Legacy.
-
 The CHERI Register Enable (CRE) bit controls whether less privileged levels can
 perform explicit accesses to CHERI registers.  When CRE=1, CHERI registers can
 be read and written by less privileged levels.  When CRE=0, CHERI registers are
 disabled in less privileged levels as described in
 xref:section_cheri_disable[xrefstyle=short].
+CRE is read-only zero if <<mseccfg>>.CRE=0.
 
-CME and CRE form part of a WARL field as shown in xref:xenvcfg-warl-field[xrefstyle=short].
+The reset value is 0.
 
 [#stdc,reftext="stdc"]
 ==== Supervisor Trap Default Capability Register (stdc)
@@ -431,17 +460,13 @@ xref:senvcfgreg[xrefstyle=short].
 [#senvcfgreg]
 include::img/senvcfgreg.edn[]
 
-The CHERI Mode Enable (CME) bit controls whether U-mode executes in Capability
-or Legacy Mode. When CME=1, the CHERI execution mode is Capability. When CME=0,
-the mode is Legacy.
-
 The CHERI Register Enable (CRE) bit controls whether U-mode can perform
 explicit accesses to CHERI registers.  When CRE=1, CHERI registers can be read
 and written by U-mode.  When CRE=0, CHERI registers are in U-mode disabled as
 described in xref:section_cheri_disable[xrefstyle=short].  CRE is read-only
 zero if <<menvcfg>>.CRE=0.
 
-CME and CRE form part of a WARL field as shown in xref:xenvcfg-warl-field[xrefstyle=short].
+The reset value is 0.
 
 [#ddc,reftext="ddc"]
 ==== Default Data Capability (ddc)
