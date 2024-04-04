@@ -235,10 +235,10 @@ The table jump instructions (<<CM.JT>>, <<CM.JALT>>) defined in cite:[riscv-code
 
 In the future, new jump table modes or new encodings can be added to have capabilities in the jump table.
 
-The jump vector table CSR <<jvt>> has a capability alias <<jvtc>> so that it can only be configured to point to accessible memory. All accesses to the jump table are checked against <<jvtc>>, and _not_ against <<pcc>>. This allows the jump table to be accessed
-when the <<pcc>> bounds are set narrowly to the local function only.
+The jump vector table CSR <<jvt>> has a capability alias <<jvtc>> so that it can only be configured to point to accessible memory. All accesses to the jump table are checked against <<jvtc>> in Capability Mode, and against <<pcc>> bounds in Legacy Mode. This allows the jump table to be accessed
+when the <<pcc>> bounds are set narrowly to the local function only in Capability Mode.
 
-NOTE: the implementation doesn't need to expand and bounds check against <<jvtc>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvtc>>, and then check that the accessed entry is in that range.
+NOTE: In Capability Mode the implementation doesn't need to expand and bounds check against <<jvtc>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvtc>>, and then check that the accessed entry is in that range.
 
 [#jvt,reftext="jvt"]
 ==== Jump Vector Table CSR (jvt)
@@ -253,7 +253,9 @@ The JVT CSR is exactly as defined by cite:[riscv-code-size-spec]. It is renamed 
 .Jump Vector Table Capability register
 include::img/jvtcreg.edn[]
 
-All instruction fetches from the jump vector table are checked against <<jvtc>>.
+All instruction fetches from the jump vector table are checked against <<jvtc>> in Capability
+Mode. In Legacy Mode the address field gives the base address of the table, and the access is
+checked against <<pcc>> bounds.
 
 See <<CM_JALT>>, <<CM_JT>>.
 
@@ -262,7 +264,7 @@ If the access to the jump table succeeds, then the instructions execute as follo
 ** <<CM_JT>> executes as <<J>> or <<AUIPC>>+<<JR>>
 ** <<CM_JALT>> executes as <<JAL>> or <<AUIPC>>+<<JALR>>
 
-As a result the capability metadata is retained in the <<pcc>> during execution.
+As a result the capability metadata is retained in <<pcc>> during execution.
 
 include::insns/zcmt_cmjalt.adoc[]
 
