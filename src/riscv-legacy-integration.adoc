@@ -1,10 +1,5 @@
 == "Zcheri_legacy" Extension for CHERI Legacy Mode
 
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
-per-privilege enable bits.
-endif::[]
-
 {cheri_legacy_ext_name} is an optional extension to {cheri_base_ext_name}.
 Implementations that support {cheri_base_ext_name} and {cheri_legacy_ext_name}
 define a variant of the CHERI ISA that is fully binary compatible with
@@ -12,7 +7,7 @@ existing RISC-V code.
 
 Key features in {cheri_legacy_ext_name} include a definition of a CHERI execution mode, a new
 unprivileged register, additional instructions and extensions to some existing
-CSRs enabling disable CHERI features. The remainder of this section describes
+CSRs enabling CHERI features. The remainder of this section describes
 these features in detail as well as their integration with the primary base
 integer variants of the RISC-V ISA (RV32I and RV64I).
 
@@ -56,12 +51,35 @@ Setting both registers to <<infinite-cap>> ensures that:
 * The bounds authorise accesses to the entire address space i.e base is 0 and
 top is 2^XLENMAX^
 
+[#section-cheri-execution-mode]
+=== CHERI Execution Mode Encoding
+
+{cheri_legacy_ext_name} adds a new CHERI execution mode bit (M) to
+capabilities. In RV32, the mode is encoded in the permissions field as
+described in xref:cap_permissions_encoding[xrefstyle=short]. In RV64, a new
+mode bit field is added to the capability format as shown in
+xref:cap_encoding_xlen64_mode[xrefstyle=short]. The current CHERI execution
+mode is given by the M bit of the <<pcc>> and the CRE bits in <<mseccfg>>,
+<<menvcfg>>, and <<senvcfg>> as follows:
+
+* The mode is Capability when the M bit of the <<pcc>> is 1 and the effective
+CRE=1 for the current privilege level
+* The mode is Legacy when the effective CRE=0 for the current privilege level or the M bit of the <<pcc>> is 0
+
+.Capability encoding when XLENMAX=64 and {cheri_legacy_ext_name} is supported
+[#cap_encoding_xlen64_mode]
+include::img/cap-encoding-xlen64-mode.edn[]
+
+For RV64, the M bit can be set to 1 when the capability does not grant <<x_perm>>.
+In this case, the M bit is superfluous, so the encoding may be used to support additional features in future extensions.
+
+The M bit is 0 in both the <<null-cap>> and <<infinite-cap>> capabilities.
+
 [#section_legacy_ext_instructions]
 === Zcheri_legacy Instructions
 
-{cheri_legacy_ext_name} does not introduce new instructions to the base RISC-V
-integer ISA. However, the behavior of some existing instructions changes
-depending on the current CHERI execution mode.
+{cheri_legacy_ext_name} introduces a small number of new <<section_mode_cap_instructions,mode-switching instructions>> to the base RISC-V integer ISA.
+Additionally, the behavior of some existing instructions changes depending on the current CHERI execution mode.
 
 ==== Capability Load and Store Instructions
 
@@ -81,6 +99,20 @@ xref:section_cap_instructions[xrefstyle=short].
 In Legacy Mode, the capability authorising the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
 the sign-extended offset.
+
+==== Capability Manipulation Instructions
+
+A new <<SCMODE>> instruction allows setting a capability's CHERI execution
+mode to the indicated value. The output is written to an unprivileged *c*
+register, not <<pcc>>.
+
+==== Mode Change Instructions
+
+A new CHERI execution mode switch (<<MODESW>>) instruction allows software
+to toggle the hart's current CHERI execution mode. If the current mode in the
+<<pcc>> is Legacy, then the mode after executing <<MODESW>> is Capability
+and vice-versa. This instruction effectively writes the CHERI execution mode
+bit M of the capability currently installed in the <<pcc>>.
 
 === Existing RISC-V Instructions
 
@@ -111,6 +143,9 @@ the least significant bit of the result to zero. The target address is then
 written to the <<pcc>> address and a representability check is performed. The
 address of the instruction following the jump (*pc* + 4) is written to an *x*
 register; that register's tag and capability metadata are zeroed.
+
+{cheri_legacy_ext_name} allows changing the current CHERI execution mode when
+executing <<JALR>> from Capability Mode.
 
 <<JAL>> and <<JALR>> cause CHERI exceptions when a minimum sized instruction
 at the target address is not within the bounds of the <<pcc>>. An
@@ -199,6 +234,18 @@ xref:legacy-csrnames-added[xrefstyle=short].
 A new debug default data capability (<<dddc>>) CSR is added at the CSR number
 shown in xref:legacy-csrnames-added[xrefstyle=short].
 
+{cheri_legacy_ext_name} optionally allows <<MODESW>> to execute in debug mode.
+
+When entering debug mode, the core always enters Capability Mode.
+
+. the mode can be optionally switched using <<MODESW>>.
+. the current mode can always be observed in <<dinfc>>.M.
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The mode change instruction <<MODESW>> is new
+and the requirement to optionally support it in debug mode is also new.
+endif::[]
+
 [#dddc,reftext="dddc"]
 === Debug Default Data Capability (dddc)
 
@@ -225,6 +272,9 @@ so it does not need to be able to hold all possible invalid addresses.
 === Disabling CHERI Registers
 
 ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
+per-privilege enable bits.
+
 NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
 it is not possible to disable CHERI checks completely.
 endif::[]
@@ -233,8 +283,8 @@ endif::[]
 registers.  The following occurs when executing code in a privilege mode that
 has CHERI register access disabled:
 
-* The CHERI instructions in xref:section_cap_instructions[xrefstyle=short] (and
-xref:instruction-modes[xrefstyle=short] if {cheri_mode_ext_name} is supported)
+* The CHERI instructions in xref:section_cap_instructions[xrefstyle=short] and
+xref:instruction-modes[xrefstyle=short]
 cause illegal instruction exceptions
 * Executing CSR instructions accessing any capability wide CSR
 addresses (xref:csr-numbers-section[xrefstyle=short]) cause illegal

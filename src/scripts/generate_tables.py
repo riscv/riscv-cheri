@@ -78,31 +78,6 @@ class Zcheri_legacy_insns(table):
         # Don't print instructions already listed by Zcheri_purecap
         return row[self.header.index("Zcheri_legacy")] == "✔" and row[self.header.index("Zcheri_purecap")] != "✔"
 
-class Zcheri_mode_insns(table):
-    cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("Zcheri_mode")] == "✔"
-
 class Zcheri_purecap_insns(table):
     cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
     indices = []
@@ -133,7 +108,7 @@ class Zcheri_purecap_insns(table):
         return row[self.header.index("Zcheri_purecap")] == "✔"
 
 class cap_mode_insns(table):
-    cols = ["Mnemonic", "Zcheri_mode", "Zcheri_legacy", "Zcheri_purecap", "Function"]
+    cols = ["Mnemonic", "Zcheri_legacy", "Zcheri_purecap", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -158,7 +133,7 @@ class cap_mode_insns(table):
         return row[self.header.index("Valid Modes")] == "Capability"
 
 class legacy_mode_insns(table):
-    cols = ["Mnemonic", "Zcheri_mode", "Zcheri_legacy", "Zcheri_purecap", "Function"]
+    cols = ["Mnemonic", "Zcheri_legacy", "Zcheri_purecap", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -183,7 +158,7 @@ class legacy_mode_insns(table):
         return row[self.header.index("Valid Modes")] == "Legacy"
 
 class both_mode_insns(table):
-    cols = ["Mnemonic", "Zcheri_mode", "Zcheri_legacy", "Zcheri_purecap", "Function"]
+    cols = ["Mnemonic", "Zcheri_legacy", "Zcheri_purecap", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -660,7 +635,6 @@ if __name__ == "__main__":
 
         #same for rv32/rv64
         tables.append(Zabhlrsc_insns               (os.path.join(args.output_dir, "Zabhlrsc_insns_table_body.adoc"), header))
-        tables.append(Zcheri_mode_insns            (os.path.join(args.output_dir, "Zcheri_mode_insns_table_body.adoc"), header))
         tables.append(Zcheri_legacy_insns          (os.path.join(args.output_dir, "Zcheri_legacy_insns_table_body.adoc"), header))
         tables.append(Zcheri_purecap_insns         (os.path.join(args.output_dir, "Zcheri_purecap_insns_table_body.adoc"), header))
         tables.append(xlen_dependent_encoding_insns(os.path.join(args.output_dir, "xlen_dependent_encoding_insns_table_body.adoc"), header))

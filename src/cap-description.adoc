@@ -74,6 +74,7 @@ Execute Permission (X):: Allow instruction execution.
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow access to privileged CSRs.
 
+[#cap_permissions_encoding]
 ===== Permission Encoding
 
 The bit width of the permissions field depends on the value of XLENMAX as shown
@@ -92,7 +93,7 @@ Therefore, it is only possible to encode a subset of all combinations.
 ^| 64      ^| {cap_rv64_perms_width} ^| Separate bits for each permission, and the Mode bit is not included
 |==============================================================================
 
-NOTE: While XLENMAX=32 currently uses the same number of bits for permission encodings, it also includes the mode bit of {cheri_mode_ext_name} which is separate for XLENMAX=64.
+NOTE: While XLENMAX=32 currently uses the same number of bits for permission encodings, it also includes the mode bit of {cheri_legacy_ext_name} which is separate for XLENMAX=64.
 
 For XLENMAX=32, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
