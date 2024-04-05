@@ -28,15 +28,15 @@ Encoding::
   For this encoding to decode as <<CM.JT>>, _index<32_, otherwise it decodes as <<CM.JALT>>.
 
 Capability Mode Description::
-Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>.
+Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of the jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>.
 
 Legacy Mode Description::
-Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>.
+Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of the jump table access against <<pcc>> bounds and requiring <<x_perm>>.
 
-Permissions::
+Capability Mode Permissions::
 Requires <<jvtc>> to be tagged, not sealed, have <<x_perm>> and for the full XLEN-wide access to be in <<jvtc>> bounds.
 
-Exceptions::
+Capability Mode Exceptions::
 When these instructions cause CHERI exceptions, _CHERI instruction access fault_
 is reported in the TYPE field and the following codes may be
 reported in the CAUSE field of <<mtval>> or <<stval>>:
