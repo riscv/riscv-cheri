@@ -238,6 +238,10 @@ In the future, new jump table modes or new encodings can be added to have capabi
 The jump vector table CSR <<jvt>> has a capability alias <<jvtc>> so that it can only be configured to point to accessible memory. All accesses to the jump table are checked against <<jvtc>> in Capability Mode, and against <<pcc>> bounds in Legacy Mode. This allows the jump table to be accessed
 when the <<pcc>> bounds are set narrowly to the local function only in Capability Mode.
 
+NOTE: Zcmt defines that the fetch from the jump table is from instruction memory.
+ The overall instruction executed is effectively 48-bit, with 16-bits from <<CM.JALT>>/<<CM.JT>>, the other 32-bits (for RV32) from the table.
+ Therefore <<pcc>> is used to authorise the fetch in Legacy Mode, as the fetch is designated to be from instruction memory in cite:[riscv-unpriv-spec].
+
 NOTE: In Capability Mode the implementation doesn't need to expand and bounds check against <<jvtc>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvtc>>, and then check that the accessed entry is in that range.
 
 [#jvt,reftext="jvt"]
