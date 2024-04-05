@@ -48,9 +48,13 @@ The common rules are:
 The XLENMAX=32 additional rules are:
 
 . <<w_perm>> and <<c_perm>> cannot be set without <<r_perm>> being set.
+.. Therefore removing <<r_perm>> also requires removing <<c_perm>>.
 . <<x_perm>> cannot be set without <<r_perm>> being set.
+.. Therefore removing <<r_perm>> also requires removing <<x_perm>>.
+. If removing <<c_perm>> with <<x_perm>> set cannot be represented, then also remove <<x_perm>>.
+.. This effects the _Execute + Data & Cap RO_ case from <<cap_perms_encoding32>>.
 
-NOTE: Attempting to leave either of these combinations will clear *all* permissions.
+NOTE: Failing to follow the rules above will clear *all* permissions.
 
 The XLENMAX=64 additional rule is:
 
