@@ -41,20 +41,15 @@ NOTE: Future extensions may allow more combinations of permissions, especially f
 The common rules are:
 
 . <<asr_perm>> cannot be set without <<x_perm>> being set
-.. Therefore removing <<x_perm>> also removes <<asr_perm>>.
+.. Clear <<asr_perm>> unless <<x_perm>> is set
 . <<c_perm>> cannot be set without at least one of <<r_perm>> or <<w_perm>> being set.
-.. Therefore removing all permissions from <<r_perm>> and <<w_perm>> also removes <<c_perm>>.
+.. Clear <<c_perm>> unless <<r_perm>> or <<w_perm>> are set.
 
 The XLENMAX=32 additional rules are:
 
-. <<w_perm>> and <<c_perm>> cannot be set without <<r_perm>> being set.
-.. Therefore removing <<r_perm>> also requires removing <<c_perm>>.
-. <<x_perm>> cannot be set without <<r_perm>> being set.
-.. Therefore removing <<r_perm>> also requires removing <<x_perm>>.
-. If removing <<c_perm>> with <<x_perm>> set cannot be represented, then also remove <<x_perm>>.
-.. This effects the _Execute + Data & Cap RO_ case from <<cap_perms_encoding32>>.
-
-NOTE: Failing to follow the rules above will clear *all* permissions.
+. Clear <<asr_perm>> if _all_ other permissions are not set
+. Clear <<c_perm>> and <<x_perm>> if <<r_perm>> is not set
+. Clear <<x_perm>> if <<x_perm>> and <<r_perm>> _are_ set, but <<c_perm>> and <<w_perm>> _are not_ set.
 
 The XLENMAX=64 additional rule is:
 
