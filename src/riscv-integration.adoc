@@ -371,6 +371,9 @@ xref:ucsrnames-renamed[xrefstyle=short] from the base RISC-V ISA and its
 extensions. The CSRs are renamed to reflect the fact that they are extended to
 CLEN+1 bits wide, as the *x* registers are renamed to *c* registers.
 
+Furthermore, {cheri_base_ext_name} adds two new CSRs to implement a trusted thread
+identifier (TID) used in compartmentalization.
+
 [[dcsrnames-renamed]]
 .Renamed debug-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
@@ -973,10 +976,28 @@ is the cause of the fault. The possible CHERI types and causes are encoded as
 shown in xref:mtval-cheri-type[xrefstyle=short] and
 xref:mtval-cheri-causes[xrefstyle=short] respectively.
 
+[#stid,reftext="stid"]
+==== Supervisor Thread Identifier (stid)
+
+The <<stid>> register is an SXLEN-bit read-write register. It is used to
+identify the current thread.
+
+.Supervisor thread identifier register
+include::img/stidreg.edn[]
+
 === Unprivileged CSRs
 
 Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
 <<pcc>> to grant <<asr_perm>> to access unprivileged CSRs.
+
+[#utid,reftext="utid"]
+==== User Thread Identifier (utid)
+
+The <<utid>> register is an SXLEN-bit read-write register. It is a read-only
+copy of the <<stid>> register.
+
+.User thread identifier register
+include::img/utidreg.edn[]
 
 === CHERI Exception handling
 
@@ -1102,3 +1123,17 @@ written to these CSRs unless the specification explicitly states that the CSR
 behaves otherwise (see <<mepcc>> and <<sepcc>>). Also note that <<pcc>> can
 be written with a <<JALR>> instruction in Capability Mode which automatically unseal the capability _before_
 the invalid address conversion above.
+
+[#CHERI_COMP,reftext="CHERI Compartmentalization]
+=== CHERI Compartmentalization
+
+This section describes how this specification enables support for compartmentalization for CHERI systems.
+Compartmentalization seeks to separate the privileges between different protection units, e.g., two or more libraries.
+Code can be separated by sentries, which allow for giving out code capabilities to untrusted code where the untrusted code can only call code capability, but not modify it.
+Sentries can be called from different threads and thus there needs to be a way of identifying the current thread.
+While identifying the current thread can be done by privileged code, e.g., the kernel, the implied performance overhead of this is not bearable for CHERI systems with many compartments.
+
+The RISC-V ABI knows a _thread pointer (tp)_ register, which is not usuable for the purpose of reliably identifying the current thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
+Therefore, this specification offers two additional CSRs that facilitate a trusted source for the thread ID.
+The supervisor thread identifier (STID) register is readable and writeable from the supervisor mode allowing to change the thread ID on a context switch.
+The user thread identifier (UTID) exposes the current value of STID as a read-only copy.
