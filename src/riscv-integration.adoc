@@ -1078,27 +1078,41 @@ memory addresses must match for the address to be valid:
 * For Sv48, bits [63:48] must equal bit 47
 * For Sv57, bits [63:57] must equal bit 56
 
-RISC-V permits that some CSRs, such as <<mtvec>> and <<mepc>> (see
-xref:CSR_exevectors[xrefstyle=short]), need not be able to hold all possible
-invalid addresses. Prior to writing these CSRs, implementations may convert an
+RISC-V permits that some CSRs holding addresses, such as <<mtvec>> and <<mepc>>
+(see xref:CSR_exevectors[xrefstyle=short]) and consequently <<pcc>>, need not be able to hold all possible
+invalid addresses. Prior to writing these registers, implementations may convert an
 invalid address into some other invalid address that the register is capable of
 holding. However, these registers hold capabilities in {cheri_base_ext_name}
 and the bounds encoding depends on the address value, so implementations must
 not convert invalid addresses to other arbitrary invalid addresses in an
 unrestricted manner.
 The following procedure must be used instead when writing a capability A to
-these CSRs:
+a CSR:
 
-. If A's address cannot be held then convert it to another address that the CSR can
-hold
-. If conversion _was_ required, then A's tag is cleared if A is
-sealed or if the new address is not representable -- this is equivalent to the
-semantics of <<SCADDR>>
+. If A's address cannot be held, then convert it to another address that the
+register can hold.
+. If A's address is invalid and A's bounds do not equal the bounds of the
+Infinite capability, then A's tag is set to 0.
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
 
-This implies that sealed capabilities will always get their tags cleared when
-written to these CSRs unless the specification explicitly states that the CSR
-behaves otherwise (see <<mepcc>> and <<sepcc>>). Also note that <<pcc>> can
-be written with a <<JALR>> instruction in Capability Mode which automatically unseal the capability _before_
-the invalid address conversion above.
+The following procedure must be used instead when jumping or branching to a
+capability A. Note that A is the <<pcc>> when executing direct jumps and branches
+or the CHERI execution mode is Legacy (see xref:section_zcheri_legacy[xrefstyle=short]):
+
+. Calculate the effective target address T of the jump or branch as required by
+the instruction's behavior.
+. If T is invalid and A's bounds do not equal the bounds of the Infinite
+capability, then A's tag is set to 0. The instruction gives rise to a CHERI
+fault; _CHERI jump or branch fault_ is reported in the TYPE field and Tag
+Violation is reported in the CAUSE field of <<mtval>> or <<stval>>.
+. If T is invalid and A's bounds equal the bounds of the Infinite capability,
+then A's tag is unchanged and T is written into A's address field. The hart
+will raise an instruction access fault as is usual in RISC-V.
+
+NOTE: RISC-V harts that do not support {cheri_base_ext_name} normally raise an
+instruction access fault after jumping or branching to an invalid address.
+Therefore, {cheri_base_ext_name} aims to preserve that behavior to ensure that
+harts supporting {cheri_base_ext_name} and {cheri_legacy_ext_name} are fully
+compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
+Infinite capability.
