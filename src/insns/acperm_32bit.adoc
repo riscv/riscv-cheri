@@ -44,18 +44,15 @@ The common rules are:
 .. Clear <<asr_perm>> unless <<x_perm>> is set
 . <<c_perm>> cannot be set without at least one of <<r_perm>> or <<w_perm>> being set.
 .. Clear <<c_perm>> unless <<r_perm>> or <<w_perm>> are set.
+. Clear the <<m_bit>> if clearing <<x_perm>>.
+
+NOTE: The combination of <<x_perm>> clear and <<m_bit>> set is reserved for future extensions.
 
 The XLENMAX=32 additional rules are:
 
 . Clear <<asr_perm>> if _all_ other permissions are not set
 . Clear <<c_perm>> and <<x_perm>> if <<r_perm>> is not set
 . Clear <<x_perm>> if <<x_perm>> and <<r_perm>> _are_ set, but <<c_perm>> and <<w_perm>> _are not_ set.
-
-The XLENMAX=64 additional rule is:
-
-. Clearing <<x_perm>> also clears the <<m_bit>>
-
-NOTE: The combination of <<x_perm>> clear and <<m_bit>> set is reserved for future extensions.
 
 include::../img/acperm_bit_field.edn[]
 
