@@ -1133,7 +1133,7 @@ Code can be separated by sentries, which allow for giving out code capabilities 
 Sentries can be called from different threads and thus there needs to be a way of identifying the current thread.
 While identifying the current thread can be done by privileged code, e.g., the kernel, the implied performance overhead of this is not bearable for CHERI systems with many compartments.
 
-The RISC-V ABI knows a _thread pointer (tp)_ register, which is not usuable for the purpose of reliably identifying the current thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
+The RISC-V ABI includes a _thread pointer (tp)_ register, which is not usuable for the purpose of reliably identifying the current thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
 Therefore, this specification offers two additional CSRs that facilitate a trusted source for the thread ID.
-The supervisor thread identifier (STID) register is readable and writeable from the supervisor mode allowing to change the thread ID on a context switch.
+The supervisor thread identifier (STID) register is readable and writeable with <<asr_perm>> from the supervisor mode allowing to change the thread ID on a context switch.
 The user thread identifier (UTID) exposes the current value of STID as a read-only copy.
