@@ -33,10 +33,10 @@ output capability has its tag set to 0 if `cs1` is sealed.
 The AP field is not able to encode all combinations of permissions when MXLEN=32, therefore removing a permission may yield a capability which cannot be encoded.
 Valid combinations are shown in <<cap_perms_encoding32>>.
 +
-Additionally some combinations of permissions are not useful when XLENMAX=64.
+Additionally some combinations of permissions are not useful when MXLEN=64.
 These cases are defined to return useful minimal sets of permissions in each case, which may be no permissions.
 +
-NOTE: Future extensions may allow more combinations of permissions, especially for XLENMAX=64.
+NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
 
 The common rules are:
 
@@ -48,7 +48,7 @@ The common rules are:
 
 NOTE: The combination of <<x_perm>> clear and <<m_bit>> set is reserved for future extensions.
 
-The XLENMAX=32 additional rules are:
+The MXLEN=32 additional rules are:
 
 . Clear <<asr_perm>> if _all_ other permissions are not set
 . Clear <<c_perm>> and <<x_perm>> if <<r_perm>> is not set
