@@ -372,7 +372,9 @@ extensions. The CSRs are renamed to reflect the fact that they are extended to
 CLEN+1 bits wide, as the *x* registers are renamed to *c* registers.
 
 Furthermore, {cheri_base_ext_name} adds two new CSRs to implement a trusted thread
-identifier (TID) used in compartmentalization.
+identifier (TID) used in compartmentalization. These CSRs are listed in
+xref:scsrnames-added[xrefstyle=short] and
+xref:ucsrnames-added[xrefstyle=short].
 
 [[dcsrnames-renamed]]
 .Renamed debug-mode CSRs in {cheri_base_ext_name}
@@ -395,11 +397,27 @@ include::generated/csr_renamed_purecap_mode_m_table_body.adoc[]
 include::generated/csr_renamed_purecap_mode_s_table_body.adoc[]
 |===
 
+[[scsrnames-added]]
+.Added supervisor-mode CSRs in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+|{cheri_base_ext_name} CSR|Address|Prerequisites|Permissions|Description
+|<<stid>>|0x580|S-mode|SRW, <<asr_perm>>|Supervisor Thread Identifier
+|===
+
 [[ucsrnames-renamed]]
 .Renamed user-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
 |===
 include::generated/csr_renamed_purecap_mode_u_table_body.adoc[]
+|===
+
+[[ucsrnames-added]]
+.Added user-mode CSRs in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+|{cheri_base_ext_name} CSR|Address|Prerequisites|Permissions|Description
+|<<utid>>|0xC80|U-mode|URO|User Thread Identifier
 |===
 
 === Machine-Level CSRs
