@@ -1087,7 +1087,7 @@ and the bounds encoding depends on the address value, so implementations must
 not convert invalid addresses to other arbitrary invalid addresses in an
 unrestricted manner.
 The following procedure must be used instead when writing a capability A to
-a CSR:
+a CSR that cannot hold all invalid addresses:
 
 . If A's address cannot be held, then convert it to another address that the
 register can hold.
@@ -1097,7 +1097,8 @@ xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
 <<mtvecc>>, <<mepcc>>, etc.
 
 The following procedure must be used instead when jumping or branching to a
-capability A. Note that A is the <<pcc>> when executing direct jumps and branches
+capability A if the <<pcc>> cannot hold all invalid invalid addresses. Note
+that A is the <<pcc>> when executing direct jumps and branches
 or the CHERI execution mode is Legacy (see
 xref:section_cheri_legacy_ext[xrefstyle=short]):
 
