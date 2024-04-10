@@ -1092,7 +1092,7 @@ a CSR:
 . If A's address cannot be held, then convert it to another address that the
 register can hold.
 . If A's address is invalid and A's bounds do not equal the bounds of the
-Infinite capability, then A's tag is set to 0.
+<<infinite-cap>> capability, then A's tag is set to 0.
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
 
@@ -1102,11 +1102,11 @@ or the CHERI execution mode is Legacy (see xref:section_zcheri_legacy[xrefstyle=
 
 . Calculate the effective target address T of the jump or branch as required by
 the instruction's behavior.
-. If T is invalid and A's bounds do not equal the bounds of the Infinite
+. If T is invalid and A's bounds do not equal the bounds of the <<infinite-cap>>
 capability, then A's tag is set to 0. The instruction gives rise to a CHERI
 fault; _CHERI jump or branch fault_ is reported in the TYPE field and Tag
 Violation is reported in the CAUSE field of <<mtval>> or <<stval>>.
-. If T is invalid and A's bounds equal the bounds of the Infinite capability,
+. If T is invalid and A's bounds equal the bounds of the <<infinite-cap>> capability,
 then A's tag is unchanged and T is written into A's address field. The hart
 will raise an instruction access fault as is usual in RISC-V.
 
@@ -1115,4 +1115,4 @@ instruction access fault after jumping or branching to an invalid address.
 Therefore, {cheri_base_ext_name} aims to preserve that behavior to ensure that
 harts supporting {cheri_base_ext_name} and {cheri_legacy_ext_name} are fully
 compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
-Infinite capability.
+<<infinite-cap>> capability.
