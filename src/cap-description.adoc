@@ -19,6 +19,34 @@ current draft and expected to be part of privileged architecture 1.13.
 MXLEN without including the tag bit. The value of CLEN is always calculated
 based on MXLEN regardless of the effective XLEN value.
 
+[#section_cap_encoding]
+=== Capability Encoding
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the
+in-memory format, and also increase precision for RV32.
+endif::[]
+
+The components of a capability, except the tag, are encoded as shown in
+xref:cap_encoding_xlen32[xrefstyle=short] for MXLEN=32 and
+xref:cap_encoding_xlen64[xrefstyle=short] for MXLEN=64. Each memory location
+or register able to hold a capability must also store the tag as out of band
+information that software cannot directly set or clear. The capability metadata
+is held in the most significant bits and the address is held in the least
+significant bits.
+
+.Capability encoding for MXLEN=32
+[#cap_encoding_xlen32]
+include::img/cap-encoding-xlen32.edn[]
+
+.Capability encoding for MXLEN=64
+[#cap_encoding_xlen64]
+include::img/cap-encoding-xlen64.edn[]
+
+Reserved bits are available for future extensions to {cheri_base_ext_name}.
+
+NOTE: Reserved bits must be 0 in valid capabilities.
+
 === Components of a Capability
 
 Capabilities contain the software accessible fields described in this section.
@@ -41,8 +69,22 @@ All locations in registers or memory able to hold a capability are CLEN+1 bits
 wide including the tag bit. Those locations are referred as being _CLEN-bit_ or
 _capability_ wide in this specification.
 
+==== Address
+
+The byte-address of a memory location is encoded as MXLEN integer value.
+
+.Address widths depending on MXLEN
+[#address_bit_width,options=header,align="center",width="55%"]
+|==============================================================================
+^| MXLEN   ^| Address width
+^| 32      ^| {cap_rv32_addr_width}
+^| 64      ^| {cap_rv64_addr_width}
+|==============================================================================
+
 [#section_cap_perms]
 ==== Architectural Permissions (AP)
+
+===== Description
 
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9 Note:* The permissions are encoded differently in this
@@ -163,6 +205,23 @@ permission.
 | 4   | <<asr_perm>>
 |==============================================================================
 
+===== Permission Transitions
+
+Executing <<ACPERM>> can result in sets of permissions which cannot be represented when MXLEN=32
+(see <<cap_perms_encoding32>>) or permission combinations which are not useful for MXLEN=64, such as
+<<asr_perm>> set without <<x_perm>>.
+
+These cases are defined to return useful minimal sets of permissions, which may be no permissions.
+
+NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
+
+. <<asr_perm>> cannot be set without <<x_perm>> being set
+.. Therefore removing <<x_perm>> also removes <<asr_perm>>.
+. <<c_perm>> cannot be set without at least one of <<r_perm>> or <<w_perm>> being set.
+.. Therefore removing all permissions from <<r_perm>> and <<w_perm>> also removes <<c_perm>>.
+.. MXLEN=32 goes further here and denies <<w_perm>> and <<c_perm>> without <<r_perm>>.
+ Leaving this combination will clear _all_ permissions.
+
 [#section_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 
@@ -221,7 +280,9 @@ also seals the return address capability (if any) since it is the entry point
 to the caller function.
 
 [#section_cap_bounds]
-==== Bounds
+==== Bounds (EF, T, TE, B, BE)
+
+===== Concept
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The bounds mantissa width is different in MXLEN=32.
@@ -291,49 +352,8 @@ xref:exp_bit_width[xrefstyle=short].
 NOTE: The address and bounds must be representable in valid capabilities i.e.
 when the tag is set (see xref:section_cap_malformed[xrefstyle=short]).
 
-==== Address
-
-MXLEN integer value that encodes the byte-address of a memory location.
-
-.Address widths depending on MXLEN
-[#address_bit_width,options=header,align="center",width="55%"]
-|==============================================================================
-^| MXLEN   ^| Address width
-^| 32      ^| {cap_rv32_addr_width}
-^| 64      ^| {cap_rv64_addr_width}
-|==============================================================================
-
-==== Reserved Bits
-
-Reserved bits available for future extensions to {cheri_base_ext_name}.
-
-NOTE: Reserved bits must be 0 in valid capabilities.
-
-[#section_cap_encoding]
-=== Capability Encoding
-
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the
-in-memory format, and also increase precision for RV32.
-endif::[]
-
-The components of a capability are encoded as shown in
-xref:cap_encoding_xlen32[xrefstyle=short] and
-xref:cap_encoding_xlen64[xrefstyle=short] when MXLEN=32 and MXLEN=64
-respectively.
-
-.Capability encoding when MXLEN=32
-[#cap_encoding_xlen32]
-include::img/cap-encoding-xlen32.edn[]
-
-.Capability encoding when MXLEN=64
-[#cap_encoding_xlen64]
-include::img/cap-encoding-xlen64.edn[]
-
-Each memory location or register able to hold a capability must also store the
-tag as out of band information that software cannot directly set or clear. The
-capability metadata is held in the most significant bits and the address
-is held in the least significant bits.
+[#section_cap_bounds_decoding]
+===== Decoding
 
 The metadata is encoded in a compressed format cite:[woodruff2019cheri]. It
 uses a floating point representation to encode the bounds relative to the
@@ -468,6 +488,26 @@ if ( (E < (CAP_MAX_E - 1)) & (t[MXLEN: MXLEN - 1] - b[MXLEN - 1] > 1) )
 That is, invert the most significant bit of _t_ if the decoded length of the
 capability is larger than E.
 
+[#section_cap_malformed]
+==== Malformed Capability Bounds
+
+A capability is _malformed_ if its encoding does not describe a valid
+capability because its bounds cannot be correctly decoded. The following check
+indicates whether a capability is malformed.
+
+```
+malformedMSB =  (E == CAP_MAX_E     && B         != 0)
+             || (E == CAP_MAX_E - 1 && B[MW - 1] != 0)
+malformedLSB =  (E  < 0)
+malformed    =  !EF && (malformedMSB || malformedLSB)
+```
+
+NOTE: The check is for malformed _bounds_, so it does not include reserved
+bits!
+
+Capabilities with malformed bounds are always invalid anywhere in the system
+i.e. their tags are always 0.
+
 [#section_special_caps]
 === Special Capabilities
 
@@ -534,6 +574,8 @@ or 'root' capability.
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
 
+==== Concept
+
 The new address, after updating the address of a capability, is within the
 _representable range_ if decompressing the capability's bounds with the
 original and new addresses yields the same base and top addresses.
@@ -585,23 +627,3 @@ xref:section_cap_encoding[xrefstyle=short].
 This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
 is _representable_.
-
-[#section_cap_malformed]
-=== Malformed Capability Bounds
-
-A capability is _malformed_ if its encoding does not describe a valid
-capability because its bounds cannot be correctly decoded. The following check
-indicates whether a capability is malformed.
-
-```
-malformedMSB =  (E == CAP_MAX_E     && B         != 0)
-             || (E == CAP_MAX_E - 1 && B[MW - 1] != 0)
-malformedLSB =  (E  < 0)
-malformed    =  !EF && (malformedMSB || malformedLSB)
-```
-
-NOTE: The check is for malformed _bounds_, so it does not include reserved
-bits!
-
-Capabilities with malformed bounds are always invalid anywhere in the system
-i.e. their tags are always 0.
