@@ -416,16 +416,14 @@ definitions in xref:cap_encoding_ct[xrefstyle=short] and
 xref:cap_encoding_cb[xrefstyle=short].
 
 ```
-Ac = a[E + MW - 1:E + MW - 3]
-Bc = B[MW - 1:MW - 3]
-Tc = T[MW - 1:MW - 3]
-R  = Bc - 1
+A = a[E + MW - 1:E]
+R  = B - 2^MW-2^
 ```
 
 .Calculation of top address correction
 [#cap_encoding_ct,options=header,cols="^1,^1,^1",width="40%",align="center"]
 |==============================================================================
-| A~c~ < R | T~c~ < R | c~t~
+| A < R    | T < R    | c~t~
 | false    | false    | 0
 | false    | true     | +1
 | true     | false    | -1
@@ -435,7 +433,7 @@ R  = Bc - 1
 .Calculation of base address correction
 [#cap_encoding_cb,options=header,cols="^1,^1,^1",width="40%",align="center"]
 |==============================================================================
-| A~c~ < R | B~c~ < R | c~b~
+| A    < R | B    < R | c~b~
 | false    | false    | 0
 | false    | true     | +1
 | true     | false    | -1
@@ -460,15 +458,18 @@ and a carry out is implied if `T[MW - 3:0] < B[MW - 3:0]` since it is
 guaranteed that the top is larger than the base.
 
 The compressed bounds encoding allows the address to roam over a large
-_representable_ region while maintaining the original bounds. This relies on
-using the 'spare' encodings where `T < B` to define a space boundary R,
-relative to the base, calculated by subtracting 1 from the top three bits of B.
+_representable_ region while maintaining the original bounds. This is enabled by
+defining a lower boundary R from the out-of-bounds values that allows us to
+disambiguate the location of the bounds with respect to an out-of-bounds address.
+R is caluculated
+relative to the base by subtracting 2^MW-2^ from B.
 If B, T or _a_[E + MW - 1:E] is less than R, it is inferred that they lie in the
 2^E+MW^ aligned region above R labelled space~U~ in
 xref:cap_bounds_map[xrefstyle=short] and the corrections _c~t~_ and _c~b~_ are
-computed accordingly. The overall effect is that at least 2^E+MW^/8 bytes below
-the base address and 2^E+MW^/4 bytes above the top address can roam
-out-of-bounds while still allowing the bounds to be correctly decoded.
+computed accordingly. The overall effect is that the address can roam
+2^E+MW^/4 bytes below
+the base address and at least 2^E+MW^/4 bytes above the top address
+while still allowing the bounds to be correctly decoded.
 
 [#cap_bounds_map]
 .Memory address bounds encoded within a capability
@@ -621,8 +622,9 @@ not change_ as this will change the meaning of the bounds.
 This gives a range of `s=2^E+MW^`, which as shown in
 xref:cap_bounds_map[xrefstyle=short].
 
-The gap between the bounds of the representable range is always guaranteed
-to be at least 1/8 of `s`. This is represented by `R = Bc - 1` in
+The gap between the object bounds and the bound of the representable range
+is always guaranteed
+to be at least 1/4 of `s`. This is represented by `R = B - 2^MW-2^` in
 xref:section_cap_encoding[xrefstyle=short].
 This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
