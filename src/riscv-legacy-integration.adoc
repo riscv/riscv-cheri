@@ -55,26 +55,30 @@ top is 2^MXLEN^
 [#section-cheri-execution-mode]
 === CHERI Execution Mode Encoding
 
-{cheri_legacy_ext_name} adds a new CHERI execution mode bit (M) to
-capabilities. In RV32, the mode is encoded in the permissions field as
-described in xref:cap_permissions_encoding[xrefstyle=short]. In RV64, a new
-mode bit field is added to the capability format as shown in
-xref:cap_encoding_xlen64_mode[xrefstyle=short]. The current CHERI execution
-mode is given by the M bit of the <<pcc>> and the CRE bits in <<mseccfg>>,
-<<menvcfg>>, and <<senvcfg>> as follows:
+{cheri_legacy_ext_name} adds a new CHERI execution mode field (M) to
+capabilities. When MXLEN=32, the mode is encoded in the permissions field as
+described in xref:cap_permissions_encoding[xrefstyle=short]. When MXLEN=64, a
+new M bit field is added to the capability format as shown in
+xref:cap_encoding_xlen64_mode[xrefstyle=short]; M=0 indicates Legacy Mode and
+M=1 indicates Capability Mode.
 
-* The mode is Capability when the M bit of the <<pcc>> is 1 and the effective
+The current CHERI execution mode is given by the M field of the <<pcc>> and the
+CRE bits in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> as follows:
+
+* The mode is Capability when the M field of the <<pcc>> is Capability and the effective
 CRE=1 for the current privilege level
-* The mode is Legacy when the effective CRE=0 for the current privilege level or the M bit of the <<pcc>> is 0
+* The mode is Legacy when the effective CRE=0 for the current privilege level or the M field of the <<pcc>> is Legacy
 
 .Capability encoding when MXLEN=64 and {cheri_legacy_ext_name} is supported
 [#cap_encoding_xlen64_mode]
 include::img/cap-encoding-xlen64-mode.edn[]
 
-For RV64, the M bit can be set to 1 when the capability does not grant <<x_perm>>.
-In this case, the M bit is superfluous, so the encoding may be used to support additional features in future extensions.
+When MXLEN=32, the M field is Legacy Mode in the <<infinite-cap>> capability,
+so its AP field is 8. The <<null-cap>> capability does not grant <<x_perm>>, so
+the M field is superfluous in this case.
 
-The M bit is 0 in both the <<null-cap>> and <<infinite-cap>> capabilities.
+When MXLEN=64, the M bit can be set to 1 when the capability does not grant <<x_perm>>.
+In this case, the M bit is superfluous, so the encoding may be used to support additional features in future extensions. The M bit is 0 in both the <<null-cap>> and <<infinite-cap>> capabilities.
 
 [#section_legacy_ext_instructions]
 === Zcheri_legacy Instructions

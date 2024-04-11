@@ -188,6 +188,11 @@ reserved values as if it were 0b00000 (no permissions). Future extensions may as
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
+NOTE: When MXLEN=32 the hart's CHERI execution mode is always Capability (see
+xref:m_bit[xrefstyle=short]), so the encodings for Legacy Mode are reserved,
+and must not appear in valid capabilities, if only {cheri_base_ext_name} is
+supported.
+
 A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64. In
 this case, there is a bit per permission as shown in
 xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
@@ -526,7 +531,7 @@ that it has no permissions and its exponent E is CAP_MAX_E (52 for MXLEN=64,
 expanded base is 0 and top is 2^MXLEN^.
 
 .Field values of the NULL capability
-[#null-cap,reftext="NULL",options=header,align=center,width="55%",cols="1,1,3"]
+[#null-cap,reftext="NULL",options=header,align=center,width="90%",cols="20,17,63"]
 |==============================================================================
 | Field   | Value | Comment
 | Tag     | zero  | Capability is not valid
@@ -554,13 +559,13 @@ or 'root' capability.
 
 .Field values of the Infinite capability
 [#infinite-cap,reftext="Infinite"]
-[options=header,width="100%",align=center,width="55%",cols="1,2,3"]
+[options=header,align=center,width="90%",cols="20,17,63"]
 |==============================================================================
 | Field   | Value | Comment
 | Tag     | one   | Capability is valid
 | SDP     | ones  | Grants all permissions
-| AP (RV64) | ones  | Grants all permissions
-| AP (RV32) | See xref:cap_perms_encoding32[xrefstyle=short] | Grants all permissions
+| AP (MXLEN=64) | ones  | Grants all permissions
+| AP (MXLEN=32) | 9 (see xref:cap_perms_encoding32[xrefstyle=short]) | Grants all permissions (and Capability Mode; see xref:m_bit[xrefstyle=short])
 | S       | zero  | Unsealed
 | EF      | zero  | Internal exponent format
 | T~8~    | zeros | Top address bit (MXLEN=32 only)
