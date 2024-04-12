@@ -140,8 +140,6 @@ Therefore, it is only possible to encode a subset of all combinations.
 ^| 64    | {cap_rv64_perms_width} | Separate bits for each permission and the <<m_bit>>
 |==============================================================================
 
-NOTE: While MXLEN=32 currently uses the same number of bits for permission encodings, it also includes the mode bit of {cheri_legacy_ext_name} which is separate for MXLEN=64.
-
 For MXLEN=32, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
 The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadrant.
@@ -217,16 +215,10 @@ Executing <<ACPERM>> can result in sets of permissions which cannot be represent
 (see <<cap_perms_encoding32>>) or permission combinations which are not useful for MXLEN=64, such as
 <<asr_perm>> set without <<x_perm>>.
 
-These cases are defined to return useful minimal sets of permissions, which may be no permissions.
+These cases are defined to return useful minimal sets of permissions, which may be no permissions. See
+<<ACPERM>> for these rules.
 
 NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
-
-. <<asr_perm>> cannot be set without <<x_perm>> being set
-.. Therefore removing <<x_perm>> also removes <<asr_perm>>.
-. <<c_perm>> cannot be set without at least one of <<r_perm>> or <<w_perm>> being set.
-.. Therefore removing all permissions from <<r_perm>> and <<w_perm>> also removes <<c_perm>>.
-.. MXLEN=32 goes further here and denies <<w_perm>> and <<c_perm>> without <<r_perm>>.
- Leaving this combination will clear _all_ permissions.
 
 [#section_cap_sdp]
 ==== Software-Defined Permissions (SDP)
@@ -560,13 +552,13 @@ or 'root' capability.
 
 .Field values of the Infinite capability
 [#infinite-cap,reftext="Infinite"]
-[options=header,align=center,width="70%",cols="25,23,52"]
+[options=header,align=center,width="90%",cols="25,23,52"]
 |==============================================================================
 | Field   | Value | Comment
 | Tag     | one   | Capability is valid
 | SDP     | ones  | Grants all permissions
-| AP (MXLEN=64) | ones  | Grants all permissions
-| AP (MXLEN=32) | 8 (see xref:cap_perms_encoding32[xrefstyle=short]) | Grants all permissions
+| AP (MXLEN=32) | 0x8  (see xref:cap_perms_encoding32[xrefstyle=short]) | Grants all permissions
+| AP (MXLEN=64) | 0x1F (see xref:cap_perms_encoding64[xrefstyle=short]) | Grants all permissions
 | S       | zero  | Unsealed
 | EF      | zero  | Internal exponent format
 | T~8~    | zeros | Top address bit (MXLEN=32 only)
@@ -577,6 +569,8 @@ or 'root' capability.
 | Address | zeros | Capability address
 | Reserved| zeros | All reserved fields
 |==============================================================================
+
+NOTE: The AP fields both set Legacy Mode (if {cheri_legacy_ext_name} is supported)
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
