@@ -1111,11 +1111,15 @@ xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
 
 ===== Branches and Jumps
 
-The following procedure must be used when jumping or branching to a
-capability A if the <<pcc>> cannot hold all invalid addresses. Note
-that A is the <<pcc>> when executing direct jumps and branches
-or the CHERI execution mode is Legacy (see
-xref:section_cheri_legacy_ext[xrefstyle=short]):
+Control transfer instructions jump or branch to a capability A which can be:
+
+* <<pcc>> for branches, direct jumps and any branch when the CHERI execution
+mode is Legacy (see xref:section_cheri_legacy_ext[xrefstyle=short]).
+* The capability in the *c* input register of a jump when the CHERI execution
+mode is Capability (see xref:section_cheri_legacy_ext[xrefstyle=short]).
+
+The following procedure must be used when jumping or branching to the target
+capability A if the <<pcc>> cannot hold all invalid addresses:
 
 . Calculate the effective target address T of the jump or branch as required by
 the instruction's behavior.
