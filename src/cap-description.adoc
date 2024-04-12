@@ -133,14 +133,12 @@ superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
 Therefore, it is only possible to encode a subset of all combinations.
 
 .Permissions widths depending on MXLEN
-[#perms_bit_width,options=header,align="center",width="75%",cols="^1,^3,5"]
+[#perms_bit_width,options=header,align="center",width="80%",cols="^13%,^27%,<60%"]
 |==============================================================================
-^| MXLEN   ^| Permissions width      ^| Comment
-^| 32      ^| {cap_rv32_perms_width} ^| Encodes some combinations of 5 permission bits and the Mode bits
-^| 64      ^| {cap_rv64_perms_width} ^| Separate bits for each permission, and the Mode bit is not included
+^| MXLEN | Permissions width      | Comment
+^| 32    | {cap_rv32_perms_width} | Encodes some combinations of 5 permission bits and the <<m_bit>>
+^| 64    | {cap_rv64_perms_width} | Separate bits for each permission and the <<m_bit>>
 |==============================================================================
-
-NOTE: While MXLEN=32 currently uses the same number of bits for permission encodings, it also includes the mode bit of {cheri_legacy_ext_name} which is separate for MXLEN=64.
 
 For MXLEN=32, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
@@ -148,6 +146,7 @@ The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadra
 
 Quadrants 2 and 3 are arranged to implicitly grant future permissions which may be added with the existing allocated encodings.
 Quadrant 0 does the opposite - the encodings are allocated _not_ to implicitly add future permissions, and so granting future permissions will require new encodings.
+Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 
 .Encoding of architectural permissions for MXLEN=32
 [#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^2,4",align="center"]
@@ -163,7 +162,7 @@ Quadrant 0 does the opposite - the encodings are allocated _not_ to implicitly a
 | 5   | ✔ | ✔ |   |   |     | N/A | Data RW
 | 6-7   7+| reserved
 8+| *Quadrant 1: Executable capabilities*
-8+| bit[0] - mode (1-capability, 0-legacy)
+8+| bit[0] - <<m_bit>> (1-capability, 0-legacy)
 | 0-1   | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode  | Execute + ASR (see <<infinite-cap>>)
 | 2-3   | ✔ |   | ✔ | ✔ |     | Mode  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔ |     | Mode  | Execute + Data & Cap RW
@@ -188,7 +187,7 @@ reserved values as if it were 0b00000 (no permissions). Future extensions may as
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
-A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64. In
+A {cap_rv64_perms_width}-bit vector encodes the permissions and <<m_bit>> when MXLEN=64. In
 this case, there is a bit per permission as shown in
 xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
 corresponding bit is set, otherwise the capability does not grant that
@@ -203,7 +202,12 @@ permission.
 | 2   | <<r_perm>>
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
+| 5   | <<m_bit>>
 |==============================================================================
+
+For both MXLEN=32 and MXLEN=64, the <<m_bit>> is only assigned meaning when the
+implementation supports {cheri_legacy_ext_name}, otherwise the bit is reserved
+and must be 0 in valid capabilities.
 
 ===== Permission Transitions
 
@@ -211,16 +215,10 @@ Executing <<ACPERM>> can result in sets of permissions which cannot be represent
 (see <<cap_perms_encoding32>>) or permission combinations which are not useful for MXLEN=64, such as
 <<asr_perm>> set without <<x_perm>>.
 
-These cases are defined to return useful minimal sets of permissions, which may be no permissions.
+These cases are defined to return useful minimal sets of permissions, which may be no permissions. See
+<<ACPERM>> for these rules.
 
 NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
-
-. <<asr_perm>> cannot be set without <<x_perm>> being set
-.. Therefore removing <<x_perm>> also removes <<asr_perm>>.
-. <<c_perm>> cannot be set without at least one of <<r_perm>> or <<w_perm>> being set.
-.. Therefore removing all permissions from <<r_perm>> and <<w_perm>> also removes <<c_perm>>.
-.. MXLEN=32 goes further here and denies <<w_perm>> and <<c_perm>> without <<r_perm>>.
- Leaving this combination will clear _all_ permissions.
 
 [#section_cap_sdp]
 ==== Software-Defined Permissions (SDP)
@@ -531,7 +529,7 @@ that it has no permissions and its exponent E is CAP_MAX_E (52 for MXLEN=64,
 expanded base is 0 and top is 2^MXLEN^.
 
 .Field values of the NULL capability
-[#null-cap,reftext="NULL",options=header,align=center,width="55%",cols="1,1,3"]
+[#null-cap,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
 |==============================================================================
 | Field   | Value | Comment
 | Tag     | zero  | Capability is not valid
@@ -559,13 +557,13 @@ or 'root' capability.
 
 .Field values of the Infinite capability
 [#infinite-cap,reftext="Infinite"]
-[options=header,width="100%",align=center,width="55%",cols="1,2,3"]
+[options=header,align=center,width="90%",cols="25,23,52"]
 |==============================================================================
 | Field   | Value | Comment
 | Tag     | one   | Capability is valid
 | SDP     | ones  | Grants all permissions
-| AP (RV64) | ones  | Grants all permissions
-| AP (RV32) | See xref:cap_perms_encoding32[xrefstyle=short] | Grants all permissions
+| AP (MXLEN=32) | 0x8  (see xref:cap_perms_encoding32[xrefstyle=short]) | Grants all permissions
+| AP (MXLEN=64) | 0x1F (see xref:cap_perms_encoding64[xrefstyle=short]) | Grants all permissions
 | S       | zero  | Unsealed
 | EF      | zero  | Internal exponent format
 | T~8~    | zeros | Top address bit (MXLEN=32 only)
@@ -576,6 +574,8 @@ or 'root' capability.
 | Address | zeros | Capability address
 | Reserved| zeros | All reserved fields
 |==============================================================================
+
+NOTE: The AP fields both set Legacy Mode (if {cheri_legacy_ext_name} is supported)
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
