@@ -679,7 +679,7 @@ _Reserved_
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
 | .>|*{cheri_excep_mcause}* .<|*Prior to instruction address translation:* +
-*CHERI fault due to PCC checks (tag, execute permission and bounds)*
+*CHERI fault due to PCC checks (tag, execute permission, invalid address and bounds)*
 | .>|12, 1 .<|During instruction address translation: +
 First encountered page fault or access fault
 | .>|1 .<|With physical address for instruction: +
@@ -697,11 +697,11 @@ Load/store/AMO address breakpoint
 
 | .>| *{cheri_excep_mcause}* .<| *CHERI faults due to:* +
 *PCC <<asr_perm>> clear* +
-*Branch/jump target address checks (tag, execute permissions and bounds)*
+*Branch/jump target address checks (tag, execute permissions, invalid address and bounds)*
 
 | .>|*{cheri_excep_mcause}* .<|*Prior to address translation for an explicit memory access:* +
 *Load/store/AMO capability address misaligned* +
-*CHERI fault due to capability checks (tag, permissions and bounds)*
+*CHERI fault due to capability checks (tag, permissions, invalid address and bounds)*
 | .>|4,6 .<|Optionally: +
 Load/store/AMO address misaligned
 | .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
@@ -763,7 +763,8 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 | 1                | Seal violation
 | 2                | Permission violation
 | 3                | Length violation
-| 4-15             | Reserved
+| 4                | Invalid address violation
+| 5-15             | Reserved
 |==============================================================================
 
 [#supervisor-level-csrs-section]
@@ -1078,23 +1079,39 @@ memory addresses must match for the address to be valid:
 * For Sv48, bits [63:48] must equal bit 47
 * For Sv57, bits [63:57] must equal bit 56
 
-RISC-V permits that some CSRs holding addresses, such as <<mtvec>> and <<mepc>>
-(see xref:CSR_exevectors[xrefstyle=short]) and consequently <<pcc>>, need not be able to hold all possible
-invalid addresses. Prior to writing these registers, implementations may convert an
-invalid address into some other invalid address that the register is capable of
-holding. However, these registers hold capabilities in {cheri_base_ext_name}
-and the bounds encoding depends on the address value, so implementations must
-not convert invalid addresses to other arbitrary invalid addresses in an
-unrestricted manner.
-The following procedure must be used instead when writing a capability A to
-a CSR that cannot hold all invalid addresses:
+RISC-V permits that CSRs holding addresses, such as <<mtvec>> and <<mepc>>
+(see xref:CSR_exevectors[xrefstyle=short]) as well as <<pcc>>, need not
+hold all possible invalid addresses. Implementations may convert an invalid
+address into some other invalid address that the register is capable of holding.
+Therefore, implementations often support area and power optimizations by
+compressing invalid addresses in a lossy fashion.
+
+NOTE: Compressing invalid addresses allows implementations to reduce the number
+of flops required to hold some CSRs, such as <<mtvec>>. In CHERI, invalid
+addresses may also be used to reduce the number of bits to compare during a
+bounds check, for example, to 40 bits if using Sv39.
+
+However, the bounds encoding of capabilities in {cheri_base_ext_name} depends
+on the address value, so implementations must not convert invalid addresses to
+other arbitrary invalid address in an unrestricted manner. The remainder of
+this section describes how invalid address handling must be supported in
+{cheri_base_ext_name} when accessing CSRs, branching and jumping, and
+accessing memory.
+
+===== Accessing CSRs
+
+The following procedure must be used instead when executing instructions, such
+as <<CSRRW>>, that write a capability A to a CSR that cannot hold all invalid
+addresses:
 
 . If A's address is invalid and A does not have infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
 
-The following procedure must be used instead when jumping or branching to a
+===== Branches and Jumps
+
+The following procedure must be used when jumping or branching to a
 capability A if the <<pcc>> cannot hold all invalid addresses. Note
 that A is the <<pcc>> when executing direct jumps and branches
 or the CHERI execution mode is Legacy (see
@@ -1103,13 +1120,15 @@ xref:section_cheri_legacy_ext[xrefstyle=short]):
 . Calculate the effective target address T of the jump or branch as required by
 the instruction's behavior.
 . If T is invalid and A does not have infinite bounds (see
-xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0. The
-instruction gives rise to a CHERI
-fault; _CHERI jump or branch fault_ is reported in the TYPE field and Tag
-Violation is reported in the CAUSE field of <<mtval>> or <<stval>>.
-. If T is invalid and A has infinite bounds (see xref:section_cap_encoding[xrefstyle=short]),
-then A's tag is unchanged and T is written into A's address field. The hart
-will raise an instruction access fault as is usual in RISC-V.
+xref:section_cap_encoding[xrefstyle=short]), then the instruction gives rise to
+a CHERI fault; the _CHERI jump or branch_ fault is reported in the TYPE field
+and invalid address violation is reported in the CAUSE field of <<mtval>> or
+<<stval>>.
+. If T is invalid and A has infinite bounds (see
+xref:section_cap_encoding[xrefstyle=short]), then A's tag is unchanged and T is
+written into A's address field. Attempting to execute the instruction at
+address T gives rise to an instruction access fault as is usual in RISC-V.
+. Otherwise T is valid and the instruction behaves as normal.
 
 NOTE: RISC-V harts that do not support {cheri_base_ext_name} normally raise an
 instruction access fault after jumping or branching to an invalid address.
@@ -1117,3 +1136,18 @@ Therefore, {cheri_base_ext_name} aims to preserve that behavior to ensure that
 harts supporting {cheri_base_ext_name} and {cheri_legacy_ext_name} are fully
 compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
 <<infinite-cap>> capability.
+
+===== Memory Accesses
+
+The following procedure must be used while loading or storing to memory with a
+capability A when the implementation supports invalid address optimizations:
+
+. Calculate the effective address T of the memory access as required by the
+instruction's behavior.
+. If T is invalid and A does not have infinite bounds (see
+xref:section_cap_encoding[xrefstyle=short]), then the instruction gives rise to
+a CHERI fault; the _CHERI data_ fault is reported in the TYPE field and invalid
+address violation is reported in the CAUSE field of <<mtval>> or <<stval>>.
+. If T is invalid and A has infinite bounds (see xref:section_cap_encoding[xrefstyle=short]),
+the hart will raise an access fault as is usual in RISC-V.
+. Otherwise T is valid and the instruction behaves as normal.
