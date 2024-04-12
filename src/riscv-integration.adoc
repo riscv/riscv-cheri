@@ -712,7 +712,7 @@ Load/store/AMO access fault
 Load/store/AMO address misaligned
 |===
 
-NOTE: the full details of the CHERI exceptions are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
+NOTE: The full details of the CHERI exceptions are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
 [#medeleg,reftext="medeleg"]
 ==== Machine Trap Delegation Register (medeleg)
@@ -746,7 +746,7 @@ shown in xref:mtval-cheri-type[xrefstyle=short] and
 xref:mtval-cheri-causes[xrefstyle=short] respectively.
 
 .Encoding of TYPE field
-[#mtval-cheri-type,width=60%,float="center",align="center",options=header,cols="30%,70%"]
+[#mtval-cheri-type,width=65%,float="center",align="center",options=header,cols="30%,70%"]
 |==============================================================================
 | CHERI Type Code | Description
 | 0               | CHERI instruction access fault
@@ -756,16 +756,24 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 |==============================================================================
 
 .Encoding of CAUSE field
-[#mtval-cheri-causes,width=40%,float="center",align="center",options=header]
+[#mtval-cheri-causes,width=55%,float="center",align="center",options=header]
 |==============================================================================
 | CHERI Cause Code | Description
 | 0                | Tag violation
 | 1                | Seal violation
 | 2                | Permission violation
-| 3                | Length violation
-| 4                | Invalid address violation
+| 3                | Invalid address violation
+| 4                | Length violation
 | 5-15             | Reserved
 |==============================================================================
+
+CHERI violations have the following order in priority:
+
+. Tag violation (_Highest_)
+. Seal violation
+. Permission violation
+. Invalid address violation
+. Length violation (_Lowest_)
 
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
