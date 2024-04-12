@@ -371,11 +371,6 @@ xref:ucsrnames-renamed[xrefstyle=short] from the base RISC-V ISA and its
 extensions. The CSRs are renamed to reflect the fact that they are extended to
 CLEN+1 bits wide, as the *x* registers are renamed to *c* registers.
 
-Furthermore, {cheri_base_ext_name} adds two new CSRs to implement a trusted thread
-identifier (TID) used in compartmentalization. These CSRs are listed in
-xref:scsrnames-added[xrefstyle=short] and
-xref:ucsrnames-added[xrefstyle=short].
-
 [[dcsrnames-renamed]]
 .Renamed debug-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
@@ -397,27 +392,11 @@ include::generated/csr_renamed_purecap_mode_m_table_body.adoc[]
 include::generated/csr_renamed_purecap_mode_s_table_body.adoc[]
 |===
 
-[[scsrnames-added]]
-.Added supervisor-mode CSRs in {cheri_base_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
-|===
-|{cheri_base_ext_name} CSR|Address|Prerequisites|Permissions|Description
-|<<stid>>|0x580|S-mode|SRW, <<asr_perm>>|Supervisor Thread Identifier
-|===
-
 [[ucsrnames-renamed]]
 .Renamed user-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
 |===
 include::generated/csr_renamed_purecap_mode_u_table_body.adoc[]
-|===
-
-[[ucsrnames-added]]
-.Added user-mode CSRs in {cheri_base_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
-|===
-|{cheri_base_ext_name} CSR|Address|Prerequisites|Permissions|Description
-|<<utid>>|0xC80|U-mode|URO|User Thread Identifier
 |===
 
 === Machine-Level CSRs
@@ -994,30 +973,10 @@ is the cause of the fault. The possible CHERI types and causes are encoded as
 shown in xref:mtval-cheri-type[xrefstyle=short] and
 xref:mtval-cheri-causes[xrefstyle=short] respectively.
 
-[#stid,reftext="stid"]
-==== Supervisor Thread Identifier (stid)
-
-The <<stid>> register is an SXLEN-bit read-write register. It is used to
-identify the current thread. The reset value of this register is
-UNSPECIFIED.
-
-.Supervisor thread identifier register
-include::img/stidreg.edn[]
-
 === Unprivileged CSRs
 
 Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
 <<pcc>> to grant <<asr_perm>> to access unprivileged CSRs.
-
-[#utid,reftext="utid"]
-==== User Thread Identifier (utid)
-
-The <<utid>> register is an UXLEN-bit read-only register. It is a read-only
-copy of the <<stid>> register. The reset value of this register is
-UNSPECIFIED.
-
-.User thread identifier register
-include::img/utidreg.edn[]
 
 === CHERI Exception handling
 

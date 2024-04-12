@@ -1,0 +1,103 @@
+== "Ztid Extension for Thread Identification
+
+{tid_ext_name} is an optional extension to the RISC-V base ISA.
+Implementations that support {cheri_base_ext_name} and {tid_ext_name}.
+define a variant of the CHERI ISA that allows for software compartmentalization
+of CHERI programs.
+
+=== Control and Status Registers (CSRs)
+
+{tid_ext_name} adds two new CSRs to implement a trusted thread
+identifier (TID) used in compartmentalization. These CSRs are listed in
+xref:tid-scsrnames-added[xrefstyle=short] and
+xref:tid-ucsrnames-added[xrefstyle=short].
+
+[[tid-scsrnames-added]]
+.Added supervisor-mode CSRs in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+|{cheri_base_ext_name} CSR|Address|Prerequisites|Permissions|Description
+|<<stid>>|0x580|S-mode|SRW, <<asr_perm>>|Supervisor Thread Identifier
+|===
+
+[[tid-ucsrnames-added]]
+.Added user-mode CSRs in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+|{cheri_base_ext_name} CSR|Address|Prerequisites|Permissions|Description
+|<<utid>>|0xC80|U-mode|URO|User Thread Identifier
+|===
+
+=== Supervisor-Level CSRs
+
+[#stid,reftext="stid"]
+==== Supervisor Thread Identifier (stid)
+
+The <<stid>> register is an SXLEN-bit read-write register. It is used to
+identify the current thread. The reset value of this register is
+UNSPECIFIED.
+
+.Supervisor thread identifier register
+include::img/stidreg.edn[]
+
+[#stidc,reftext="stidc"]
+==== Supervisor Thread Identifier Capability (stidc)
+
+The <<stidc>> register is an MXLEN-bit read-write register. It is used to
+identify the current thread. On reset the tag will be set
+to 0 and the remainder of the data is UNSPECIFIED.
+
+.Supervisor thread identifier capability register
+include::img/stidcreg.edn[]
+
+=== Unprivileged CSRs
+
+[#utid,reftext="utid"]
+==== User Thread Identifier (utid)
+
+The <<utid>> register is an UXLEN-bit read-only register. It is a read-only
+copy of the <<stid>> register. The reset value of this register is
+UNSPECIFIED.
+
+.User thread identifier register
+include::img/utidreg.edn[]
+
+[#utidc,reftext="utidc"]
+==== User Thread Identifier Capability (utidc)
+
+The <<utidc>> register is an MXLEN-wide read-only capability register.
+It is the capability extension of the <<utid>> register. <<utidc>> is
+a read-only copy of the <<stidc>> register. On reset the tag will be set
+to 0 and the remainder of the data is UNSPECIFIED.
+
+.User thread identifier capability register
+include::img/utidcreg.edn[]
+
+[#CHERI_COMP,reftext="CHERI Compartmentalization]
+=== CHERI Compartmentalization
+
+This section describes how this specification enables support for
+compartmentalization for CHERI systems. Compartmentalization seeks
+to separate the privileges between different protection units, e.g.,
+two or more libraries. Code can be separated by sentries, which allow
+for giving out code capabilities to untrusted code where the untrusted
+code can only call code capability, but not modify it. Sentries can
+be called from different threads and thus there needs to be a way of
+identifying the current thread. While identifying the current thread
+can be done by privileged code, e.g., the kernel, the implied performance
+overhead of this is not bearable for CHERI systems with many compartments.
+
+The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
+usable for the purpose of reliably identifying the current thread because
+the tp register is a general purpose register and can be changed arbitrarily
+by untrusted code. Therefore, this specification offers two additional CSRs
+that facilitate a trusted source for the thread ID. The supervisor thread
+identifier (<<stid>>) register is readable and writeable with <<asr_perm>>
+from the supervisor mode allowing to change the thread ID on a context switch.
+The user thread identifier (<<utid>>) exposes the current value of STID as a
+read-only copy.
+
+This extension extends <<stid>> to its capability variant <<stidc>> and
+<<utid>> to its capability variant <<utidc>>. This presents software with the
+freedom to still use these registers with capabilities or leave the metadata
+untouched and only use the registers to storage integers.
