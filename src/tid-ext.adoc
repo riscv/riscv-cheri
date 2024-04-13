@@ -2,8 +2,8 @@
 
 {tid_ext_name} is an optional extension to the RISC-V base ISA.
 Implementations that support {cheri_base_ext_name} and {tid_ext_name}.
-define a variant of the CHERI ISA that allows for software compartmentalization
-of CHERI programs.
+define a variant of the CHERI ISA that allows for more efficient
+software compartmentalization of CHERI programs.
 
 === Control and Status Registers (CSRs)
 
@@ -28,7 +28,7 @@ xref:tid-ucsrnames-added[xrefstyle=short].
 |<<utid>>|0xC80|U-mode|URO|User Thread Identifier
 |===
 
-=== Supervisor-Level CSRs
+=== Supervisor-Level and Unprivileged CSRs
 
 [#stid,reftext="stid"]
 ==== Supervisor Thread Identifier (stid)
@@ -39,6 +39,20 @@ UNSPECIFIED.
 
 .Supervisor thread identifier register
 include::img/stidreg.edn[]
+
+
+[#utid,reftext="utid"]
+==== User Thread Identifier (utid)
+
+The <<utid>> register is an UXLEN-bit read-only register. It is a read-only
+copy of the <<stid>> register. The reset value of this register is
+UNSPECIFIED.
+
+.User thread identifier register
+include::img/utidreg.edn[]
+
+When {cheri_base_ext_name} is implemented, the {tid_ext_name} CSRs are
+extended as follows:
 
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
@@ -51,17 +65,6 @@ will be set to 0 and the remainder of the data is UNSPECIFIED.
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
 
-=== Unprivileged CSRs
-
-[#utid,reftext="utid"]
-==== User Thread Identifier (utid)
-
-The <<utid>> register is an UXLEN-bit read-only register. It is a read-only
-copy of the <<stid>> register. The reset value of this register is
-UNSPECIFIED.
-
-.User thread identifier register
-include::img/utidreg.edn[]
 
 [#utidc,reftext="utidc"]
 ==== User Thread Identifier Capability (utidc)
