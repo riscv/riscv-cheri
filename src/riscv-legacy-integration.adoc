@@ -219,12 +219,9 @@ When an extended CSR is used with another CSR instruction (<<CSRRWI>>,
 (set bits, clear bits etc).
 * The final address is updated as specified in <<extended_CSR_writing>> for an
 XLEN write.
-* XLEN bits are read from the capability address field and written to an output
-*x* register.
-
-There is _no distinction_ between Legacy and Capability Mode in this case -
-XLEN access is always performed, and the assembly syntax always uses *x*
-registers.
+* In Legacy Mode, XLEN bits are read from the capability address field and
+written to an output *x* register. In Capability Mode, CLEN bits are read from
+the CSR and written to an output *c* register.
 
 All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 <<asr_perm>> and the CSR accessed is not user-mode accessible.
