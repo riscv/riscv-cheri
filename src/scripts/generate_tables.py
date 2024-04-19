@@ -75,8 +75,8 @@ class Zcheri_legacy_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        # Don't print instructions already listed by Zcheri_purecap
-        return row[self.header.index("Zcheri_legacy")] == "✔" and row[self.header.index("Zcheri_purecap")] != "✔"
+        # Don't print instructions already listed by {cheri_base_ext_name}
+        return row[self.header.index("{cheri_legacy_ext_name}")] == "✔" and row[self.header.index("{cheri_base_ext_name}")] != "✔"
 
 class Zcheri_purecap_insns(table):
     cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
@@ -105,10 +105,10 @@ class Zcheri_purecap_insns(table):
             self.file.write(out_str + '\n')
 
     def check(self,row):
-        return row[self.header.index("Zcheri_purecap")] == "✔"
+        return row[self.header.index("{cheri_base_ext_name}")] == "✔"
 
 class cap_mode_insns(table):
-    cols = ["Mnemonic", "Zcheri_legacy", "Zcheri_purecap", "Function"]
+    cols = ["Mnemonic", "{cheri_legacy_ext_name}", "{cheri_base_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -133,7 +133,7 @@ class cap_mode_insns(table):
         return row[self.header.index("Valid Modes")] == "Capability"
 
 class legacy_mode_insns(table):
-    cols = ["Mnemonic", "Zcheri_legacy", "Zcheri_purecap", "Function"]
+    cols = ["Mnemonic", "{cheri_legacy_ext_name}", "{cheri_base_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -158,7 +158,7 @@ class legacy_mode_insns(table):
         return row[self.header.index("Valid Modes")] == "Legacy"
 
 class both_mode_insns(table):
-    cols = ["Mnemonic", "Zcheri_legacy", "Zcheri_purecap", "Function"]
+    cols = ["Mnemonic", "{cheri_legacy_ext_name}", "{cheri_base_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -334,7 +334,7 @@ class csr_added_legacy(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Alias")] == "" and row[self.header.index("Zcheri_purecap")] == ""
+        return row[self.header.index("Alias")] == "" and "{cheri_legacy_ext_name}" in row[self.header.index("Prerequisites")]
 
 class csr_added_purecap_mode_d(table):
     cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
@@ -513,7 +513,7 @@ class csr_alias_action(table):
         return row[self.header.index("Alias")] != ""
 
 class csr_perms(table):
-    cols = ["CLEN CSR", "Zcheri_legacy", "Zcheri_purecap", "Prerequisites", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["CLEN CSR", "Prerequisites", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
