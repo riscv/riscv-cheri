@@ -146,7 +146,7 @@ $(BUILD_DIR):
 
 # Rule to generate all the src/generated/*.adoc from the downloaded CSVs using a Python script.
 $(GEN_SRC) &: $(CSVS) $(GEN_SCRIPT)
-	@echo "  GEN"
+	@echo "  GEN $@"
 	@$(GEN_SCRIPT) -o $(GEN_DIR) --csr $(CSV_DIR)/CHERI_CSR.csv --isa $(CSV_DIR)/CHERI_ISA.csv
 
 # Rule to download CSVs. These files are checked in and only re-downloaded when you `make download`.
