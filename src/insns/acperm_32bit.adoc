@@ -51,6 +51,8 @@ The common rules are:
 .. Clear <<c_perm>> unless <<r_perm>> or <<w_perm>> are set.
 . <<m_bit>> cannot be set without <<x_perm>> being set
 .. Clear <<m_bit>> unless <<x_perm>> is set
+. <<lm_perm>> cannot be set without <<c_perm>> being set
+.. Clear <<lm_perm>> unless <<c_perm>> is set.
 
 NOTE: The combination of <<x_perm>> clear and <<m_bit>> set is reserved for future extensions.
 
@@ -58,6 +60,7 @@ The MXLEN=32 additional rules are:
 
 . Clear <<asr_perm>> unless _all_ other permissions are set
 . Clear <<c_perm>> and <<x_perm>> if <<r_perm>> is not set
+. Clear <<w_perm>> if <<c_perm>> _is_ set, but <<lm_perm>> _is not_ set.
 . Clear <<x_perm>> if <<x_perm>> and <<r_perm>> _are_ set, but <<c_perm>> and <<w_perm>> _are not_ set.
 
 Exceptions::
