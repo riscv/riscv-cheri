@@ -6,6 +6,8 @@ Requires <<r_perm>> and <<w_perm>> in the authorising capability.
 +
 If <<c_perm>> is not granted then store the memory tag as zero, and load `cd.tag` as zero.
 +
+If <<lm_perm>> is not granted then perform an implicit <<ACPERM>> to clear the <<lm_perm>> and <<w_perm>> if the tag is set and the resulting value is not sealed (see <<LC>>).
++
 (_This tag clearing behaviour may become a data dependent exception in future._)
 endif::[]
 ifndef::cap_atomic[]
