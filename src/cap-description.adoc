@@ -119,9 +119,9 @@ memory if the authorising capability also grants <<w_perm>>.
 Execute Permission (X):: Allow instruction execution.
 
 [#lm_perm,reftext="LM-permission"]
-Load Mutable Permission (LM):: Allow loads of capabilities with <<w_perm>> via a read-only authorizing capability one.
+Load Mutable Permission (LM):: Allow loads of capabilities with <<w_perm>> via a read-only authorizing capability.
 Clearing this permission allows sharing a read-only version of e.g. a tree structure without making a copy.
-If this permission is not set, capability loads authorized by this capability will have resulting permissions as if an implicit <<ACPERM>> clearing <<w_perm>> and <<lm_perm>> was executed.
+If this permission is not set and the loaded capability is tagged and not sealed, capability loads authorized by this capability will have <<w_perm>> and <<lm_perm>> removed. The rules specified by <<ACPERM>> are followed which means that additional permissions may also be removed as a result.
 
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow access to privileged CSRs.
