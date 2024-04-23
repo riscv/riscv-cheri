@@ -363,7 +363,7 @@ capability address. The base and top addresses from the bounds are decoded as
 shown below.
 
 WARNING: #TODO: The pseudo-code below does not have a formal notation. It is
-simply a place-holder while the Sail implementation is available. In this
+simply a place-holder while the Sail implementation is unavailable. In this
 notation, / means "integer division", [] are the bit-select operators, and
 arithmetic is signed.#
 
@@ -479,7 +479,7 @@ image::cap-bounds-map.png[width=80%,align=center]
 
 A capability has _infinite_ bounds if its bounds cover the entire address space
 such that the base address _b_=0 and the top address _t_&#8805;2^MXLEN^,
-i.e. _t_ is a MXLEN + 1 bit value. However, _b_ is a
+i.e. _t_ is an MXLEN + 1 bit value. However, _b_ is an
 MXLEN bit value and the size mismatch introduces additional complications
 when decoding, so the following condition is required to correct _t_ for
 capabilities whose <<section_cap_representable_check>> wraps the edge of the address
@@ -535,19 +535,19 @@ expanded base is 0 and top is 2^MXLEN^.
 .Field values of the NULL capability
 [#null-cap,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
 |==============================================================================
-| Field   | Value | Comment
-| Tag     | zero  | Capability is not valid
-| SDP     | zeros | Grants no permissions
-| AP      | zeros | Grants no permissions
-| S       | zero  | Unsealed
-| EF      | zero  | Internal exponent format
-| T~8~    | zeros | Top address bit (MXLEN=32 only)
-| T       | zeros | Top address bits
-| T~E~    | zeros | Exponent bits
-| B       | zeros | Base address bits
-| B~E~    | zeros | Exponent bits
-| Address | zeros | Capability address
-| Reserved| zeros | All reserved fields
+| Field    | Value | Comment
+| Tag      | zero  | Capability is not valid
+| SDP      | zeros | Grants no permissions
+| AP       | zeros | Grants no permissions
+| S        | zero  | Unsealed
+| EF       | zero  | Internal exponent format
+| T~8~     | zero  | Top address bit (MXLEN=32 only)
+| T        | zeros | Top address bits
+| T~E~     | zeros | Exponent bits
+| B        | zeros | Base address bits
+| B~E~     | zeros | Exponent bits
+| Address  | zeros | Capability address
+| Reserved | zeros | All reserved fields
 |==============================================================================
 
 [#section_infinite_cap]
@@ -563,20 +563,22 @@ or 'root' capability.
 [#infinite-cap,reftext="Infinite"]
 [options=header,align=center,width="90%",cols="25,23,52"]
 |==============================================================================
-| Field   | Value | Comment
-| Tag     | one   | Capability is valid
-| SDP     | ones  | Grants all permissions
-| AP (MXLEN=32) | 0x8  (see xref:cap_perms_encoding32[xrefstyle=short]) | Grants all permissions
-| AP (MXLEN=64) | 0x1F (see xref:cap_perms_encoding64[xrefstyle=short]) | Grants all permissions
-| S       | zero  | Unsealed
-| EF      | zero  | Internal exponent format
-| T~8~    | zeros | Top address bit (MXLEN=32 only)
-| T       | zeros | Top address bits
-| T~E~    | zeros | Exponent bits
-| B       | zeros | Base address bits
-| B~E~    | zeros | Exponent bits
-| Address | zeros | Capability address
-| Reserved| zeros | All reserved fields
+| Field         | Value | Comment
+| Tag           | one   | Capability is valid
+| SDP           | ones  | Grants all permissions
+| AP (MXLEN=32) | 0x8  (see xref:cap_perms_encoding32[xrefstyle=short])
+                        | Grants all permissions
+| AP (MXLEN=64) | 0x1F (see xref:cap_perms_encoding64[xrefstyle=short])
+                        | Grants all permissions
+| S             | zero  | Unsealed
+| EF            | zero  | Internal exponent format
+| T~8~          | zero  | Top address bit (MXLEN=32 only)
+| T             | zeros | Top address bits
+| T~E~          | zeros | Exponent bits
+| B             | zeros | Base address bits
+| B~E~          | zeros | Exponent bits
+| Address       | zeros | Capability address
+| Reserved      | zeros | All reserved fields
 |==============================================================================
 
 NOTE: The AP fields both set Legacy Mode (if {cheri_legacy_ext_name} is supported)
