@@ -9,6 +9,11 @@ CBO.INVAL performs cache block flushes instead of
 invalidations for less privileged modes. The instruction checks shown in the
 table below remain unchanged regardless of the value of CBIE and the privilege
 mode.
+
+NOTE: A valid implementation of CBO.INVAL is to _always_ execute it as CBO.FLUSH.
+ This is recommended for CHERI systems as invalidate _could_ reveal stale capabilities
+ in memory which the current execution environment should not have access to.
+
 endif::[]
 
 [%autowidth,options=header,align=center]
@@ -19,13 +24,12 @@ endif::[]
 
 ifdef::cbo_clean_flush[]
 | Permission violation  | It does not grant <<w_perm>> and <<r_perm>>
-| Length violation      | None of the bytes accessed are within the bounds
 endif::cbo_clean_flush[]
 
 ifdef::cbo_inval[]
 | Permission violation  | It does not grant <<w_perm>>, <<r_perm>> or <<asr_perm>>
-| Length violation      | At least one byte accessed is outside the bounds
 endif::[]
+| Length violation      | None of the bytes accessed are within the bounds
 |==============================================================================
 
 
