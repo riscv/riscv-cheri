@@ -66,11 +66,11 @@ xref:cap_perms_encoding64[xrefstyle=short]. In both encodings, M=0
 indicates Legacy Mode and M=1 indicates Capability Mode.
 
 The current CHERI execution mode is given by the M field of the <<pcc>> and the
-CRE bits in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> as follows:
+<<CRE>> bits in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> as follows:
 
 * The mode is Capability when the M field of the <<pcc>> is Capability and the effective
-CRE=1 for the current privilege level
-* The mode is Legacy when the effective CRE=0 for the current privilege level or the M field of the <<pcc>> is Legacy
+<<CRE>>=1 for the current privilege level
+* The mode is Legacy when the effective <<CRE>>=0 for the current privilege level or the M field of the <<pcc>> is Legacy
 
 When MXLEN=32, the M field is Legacy Mode in the <<infinite-cap>> capability,
 so its AP field is 8; furthermore, the <<null-cap>> capability does not grant
@@ -299,6 +299,8 @@ CHERI register access is disabled if:
 * <<menvcfg>>.CRE=0 for S-mode
 * <<senvcfg>>.CRE=0 for U-mode
 
+CHERI register access is always enabled in debug mode.
+
 <<mseccfg>>.CRE, <<menvcfg>>.CRE, and <<senvcfg>>.CRE form a single WARL field.
 This allows higher privilege software to restrict lower
 privilege software access to CHERI register state, and the ability to enter
@@ -416,9 +418,11 @@ xref:mseccfgmodereg[xrefstyle=short].
 [#mseccfgmodereg]
 include::img/mseccfgreg.edn[]
 
-The CHERI Register Enable (CRE) bit controls whether M-mode has access to capability registers and instructions.
-When CRE=1, all CHERI instructions and registers can be accessed.
-When CRE=0, CHERI register and instruction access is prohibited for M-mode and lower privilege levels as described in xref:CRE[xrefstyle=short].
+The CHERI Register Enable (<<CRE>>) bit controls whether M-mode has access to capability registers and instructions.
+When <<CRE>>=1, all CHERI instructions and registers can be accessed.
+When <<CRE>>=0, CHERI register and instruction access is prohibited for M-mode and lower privilege levels.
+
+<<mseccfg>>.<<CRE>> is read-only-zero if <<mstatus>>.MBE is not the reset value.
 
 The reset value is 0.
 
@@ -432,12 +436,15 @@ xref:menvcfgmodereg[xrefstyle=short].
 [#menvcfgmodereg]
 include::img/menvcfgmodereg.edn[]
 
-The CHERI Register Enable (CRE) bit controls whether less privileged levels can
-perform explicit accesses to CHERI registers.  When CRE=1, CHERI registers can
-be read and written by less privileged levels.  When CRE=0, CHERI registers are
-disabled in less privileged levels as described in
-xref:CRE[xrefstyle=short].
-CRE is read-only zero if <<mseccfg>>.CRE=0.
+The CHERI Register Enable (<<CRE>>) bit controls whether less privileged levels can
+perform explicit accesses to CHERI registers.  When <<CRE>>=1, CHERI registers can
+be read and written by less privileged levels.  When <<CRE>>=0, CHERI registers are
+disabled.
+
+* <<menvcfg>>.<<CRE>> is read-only-zero if:
+** mstatus.MBE is not the reset value OR
+** SXLEN<MXLEN OR
+** mseccfg.<<CRE>>==0
 
 The reset value is 0.
 
@@ -464,11 +471,16 @@ xref:senvcfgreg[xrefstyle=short].
 [#senvcfgreg]
 include::img/senvcfgreg.edn[]
 
-The CHERI Register Enable (CRE) bit controls whether U-mode can perform
-explicit accesses to CHERI registers.  When CRE=1, CHERI registers can be read
-and written by U-mode.  When CRE=0, CHERI registers are in U-mode disabled as
-described in xref:CRE[xrefstyle=short].  CRE is read-only
-zero if <<menvcfg>>.CRE=0.
+The CHERI Register Enable (<<CRE>>) bit controls whether U-mode can perform
+explicit accesses to CHERI registers.  When <<CRE>>=1, CHERI registers can be read
+and written by U-mode.  When <<CRE>>=0, CHERI registers are in U-mode disabled as
+described. 
+
+* senvcfg.<<CRE>> is read-only-zero if:
+** <<mstatus>>.MBE is not the reset value OR
+* UXLEN<MXLEN OR
+* <<mseccfg>>.<<CRE>>==0 OR
+* <<menvcfg>>.<<CRE>>==0
 
 The reset value is 0.
 
