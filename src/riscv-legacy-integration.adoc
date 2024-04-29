@@ -270,8 +270,8 @@ hart's context.
 As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
 so it does not need to be able to hold all possible invalid addresses.
 
-[#section_cheri_disable]
-=== Disabling CHERI Registers
+[#CRE, reftext="CRE"]
+=== CHERI register access
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
@@ -286,18 +286,18 @@ registers.  The following occurs when executing code in a privilege mode that
 has CHERI register access disabled:
 
 * The CHERI instructions in xref:section_cap_instructions[xrefstyle=short] and
-xref:instruction-modes[xrefstyle=short]
-cause illegal instruction exceptions
-* Executing CSR instructions accessing any capability wide CSR
-addresses (xref:csr-numbers-section[xrefstyle=short]) cause illegal
-instruction exceptions
+<<LC>> and <<SC>> (including 16-bit encodings of them)
+cause illegal instruction exceptions.
+* Accessing the added CLEN-wide CSRs in <<legacy-csrnames-added>> cause illegal instruction exceptions
+* Only XLEN-wide access is available to the CLEN-wide CSRs in <<aliased_CSRs>>
 * All allowed instructions execute as if the CHERI execution mode is Legacy.
 The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
 
-CHERI register access is disabled if XLEN in the current mode is less than
-MXLEN, if the endianness in the current mode is not the reset value of
-<<mstatus>>.MBE, or if CRE active at the current mode (<<mseccfg>>.CRE for M-mode, <<menvcfg>>.CRE for
-S-mode or <<senvcfg>>.CRE for U-mode) is 0.
+CHERI register access is disabled if:
+
+* <<mseccfg>>.CRE=0 for M-mode
+* <<menvcfg>>.CRE=0 for S-mode
+* <<senvcfg>>.CRE=0 for U-mode
 
 <<mseccfg>>.CRE, <<menvcfg>>.CRE, and <<senvcfg>>.CRE form a single WARL field.
 This allows higher privilege software to restrict lower
@@ -306,8 +306,8 @@ Capability Mode. The valid configurations are shown in
 xref:xenvcfg-warl-field[xrefstyle=short].
 
 [[xenvcfg-warl-field]]
-.Xenvcfg joint WARL field
-[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
+.mseccfg, Xenvcfg joint WARL field
+[float="center",align="center",cols="1,1,1,3",options="header"]
 |===
 |<<mseccfg>>.CRE |<<menvcfg>>.CRE|<<senvcfg>>.CRE|Comment
 |0               |read-only 0    | read-only 0   |<<mseccfg>>.CRE=0 completely disables CHERI access
@@ -315,9 +315,27 @@ xref:xenvcfg-warl-field[xrefstyle=short].
 |1               |1              | 0/1           |<<senvcfg>>.CRE can be programmed to enable/disable access for U-mode
 |===
 
-The WARL programming nature is extended to include UXLEN and SXLEN, as they can
-only be programmed to be smaller than MXLEN if the CRE bit active for the current
-mode is disabled.
+The WARL programming nature is extended to include UXLEN, SXLEN and <<mstatus>>.MBE.
+In _all_ cases the CRE enable for the current mode is read-only zero if all the conditions for
+enabling CHERi register state are not met for each privilege mode.
+Therefore the relevant CRE bit accurately shows whether CHERI register
+state is enabled for the current mode.
+
+The full equations per mode are:
+
+* <<mseccfg>>.CRE is read-only-zero if:
+** <<mstatus>>.MBE is not the reset value
+
+* <<menvcfg>>.CRE is read-only-zero if:
+** <<mstatus>>.MBE is not the reset value OR
+** SXLEN<MXLEN OR
+** <<mseccfg>>.CRE==0
+
+* <<senvcfg>>.CRE is read-only-zero if:
+** <<mstatus>>.MBE is not the reset value OR
+** UXLEN<MXLEN OR
+** <<mseccfg>>.CRE==0 OR
+** <<menvcfg>>.CRE==0
 
 Disabling CHERI register access has no effect on implicit accesses or security
 checks.  The last capability installed in <<pcc>> and <<ddc>> before disabling
@@ -348,7 +366,7 @@ Namely, the SXL and UXL fields may be writable.
 
 Setting the SXL or UXL field to a value that is not MXLEN disables most
 CHERI features and instructions, as described in
-xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
+xref:CRE[xrefstyle=short], while in that privilege mode.
 
 NOTE: If CHERI register access must be disabled in a mode for security reasons,
 software should set CRE to 0 regardless of the SXL and UXL fields.
@@ -372,7 +390,7 @@ corresponding privilege mode is implemented.
 
 Setting the MBE, SBE, or UBE field to a value that is not the reset value of
 MBE disables most CHERI features and instructions, as described in
-xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
+xref:CRE[xrefstyle=short], while in that privilege mode.
 
 [#mtdc,reftext="mtdc"]
 ==== Machine Trap Default Capability Register (mtdc)
@@ -400,7 +418,7 @@ include::img/mseccfgreg.edn[]
 
 The CHERI Register Enable (CRE) bit controls whether M-mode has access to capability registers and instructions.
 When CRE=1, all CHERI instructions and registers can be accessed.
-When CRE=0, CHERI register and instruction access is prohibited for M-mode and lower privilege levels as described in xref:section_cheri_disable[xrefstyle=short].
+When CRE=0, CHERI register and instruction access is prohibited for M-mode and lower privilege levels as described in xref:CRE[xrefstyle=short].
 
 The reset value is 0.
 
@@ -418,7 +436,7 @@ The CHERI Register Enable (CRE) bit controls whether less privileged levels can
 perform explicit accesses to CHERI registers.  When CRE=1, CHERI registers can
 be read and written by less privileged levels.  When CRE=0, CHERI registers are
 disabled in less privileged levels as described in
-xref:section_cheri_disable[xrefstyle=short].
+xref:CRE[xrefstyle=short].
 CRE is read-only zero if <<mseccfg>>.CRE=0.
 
 The reset value is 0.
@@ -449,7 +467,7 @@ include::img/senvcfgreg.edn[]
 The CHERI Register Enable (CRE) bit controls whether U-mode can perform
 explicit accesses to CHERI registers.  When CRE=1, CHERI registers can be read
 and written by U-mode.  When CRE=0, CHERI registers are in U-mode disabled as
-described in xref:section_cheri_disable[xrefstyle=short].  CRE is read-only
+described in xref:CRE[xrefstyle=short].  CRE is read-only
 zero if <<menvcfg>>.CRE=0.
 
 The reset value is 0.
