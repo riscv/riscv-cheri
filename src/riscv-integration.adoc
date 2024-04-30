@@ -1094,10 +1094,20 @@ address into some other invalid address that the register is capable of holding.
 Therefore, implementations often support area and power optimizations by
 compressing invalid addresses in a lossy fashion.
 
+Where compressed addresses are implemented, there must be also sufficient address bits
+to represent all valid physical addresses. The following description is for both
+virtual and physical addresses.
+
 NOTE: Compressing invalid addresses allows implementations to reduce the number
-of flops required to hold some CSRs, such as <<mtvec>>. In CHERI, invalid
+of flip-flops required to hold some CSRs, such as <<mtvec>>. In CHERI, invalid
 addresses may also be used to reduce the number of bits to compare during a
-bounds check, for example, to 40 bits if using Sv39.
+bounds check, for example, to 40 bits if using Sv39, assuming that this also
+covers all valid physical addresses.
+
+NOTE: Care needs to be taken not to truncate physical addresses to the implemented
+number of physical addresses bits without also checking that the capability is still
+valid following the rules in this section, as the capability bounds and representable range
+always cover the entire MXLEN-bit address bits, but the address is likely not to.
 
 However, the bounds encoding of capabilities in {cheri_base_ext_name} depends
 on the address value, so implementations must not convert invalid addresses to
@@ -1139,11 +1149,11 @@ and invalid address violation is reported in the CAUSE field of <<mtval>> or
 . If T is invalid and A has infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then A's tag is unchanged and T is
 written into A's address field. Attempting to execute the instruction at
-address T gives rise to an instruction access fault as is usual in RISC-V.
+address T gives rise to an instruction access fault or page fault as is usual in RISC-V.
 . Otherwise T is valid and the instruction behaves as normal.
 
 NOTE: RISC-V harts that do not support {cheri_base_ext_name} normally raise an
-instruction access fault after jumping or branching to an invalid address.
+instruction access fault or page fault after jumping or branching to an invalid address.
 Therefore, {cheri_base_ext_name} aims to preserve that behavior to ensure that
 harts supporting {cheri_base_ext_name} and {cheri_legacy_ext_name} are fully
 compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
@@ -1161,5 +1171,5 @@ xref:section_cap_encoding[xrefstyle=short]), then the instruction gives rise to
 a CHERI fault; the _CHERI data_ fault is reported in the TYPE field and invalid
 address violation is reported in the CAUSE field of <<mtval>> or <<stval>>.
 . If T is invalid and A has infinite bounds (see xref:section_cap_encoding[xrefstyle=short]),
-the hart will raise an access fault as is usual in RISC-V.
+the hart will raise an access fault or page fault as is usual in RISC-V.
 . Otherwise T is valid and the instruction behaves as normal.
