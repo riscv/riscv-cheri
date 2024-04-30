@@ -28,9 +28,10 @@ xref:section_cap_malformed[xrefstyle=short]), and all reserved bits in `cs2` 's
 metadata are 0; otherwise, copy `cs2` to `cd` and clear `cd` 's tag. <<CBLD>> is typically used alongside <<SCHI>> to build
 capabilities from integer values.
 
-NOTE: Although currently this will set the tag to 0 and leave the metadata
-otherwise unchanged when `cs1` is `c0`, this may change in future extensions,
-and so software should not assume this.
+NOTE: When `cs1` is `c0` this will set the tag to 0 and leave the metadata
+otherwise unchanged. However this may change in future extensions,
+and so software should not assume `cs1==0` to be a pseudo instruction
+for tag clearing.
 
 Prerequisites::
 {cheri_base_ext_name}
