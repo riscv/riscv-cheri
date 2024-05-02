@@ -425,9 +425,9 @@ performed from M-mode, S-mode, or U-mode, respectively, are little endian
 read only and equal to MBE, if S-mode or U-mode, respectively, is implemented,
 or read only zero otherwise.
 
-NOTE: A further CHERI extension, {cheri_legacy_ext_name}, optionally makes SXL,
+NOTE: A further CHERI extension, {cheri_hybrid_ext_name}, optionally makes SXL,
 UXL, MBE, SBE, and UBE writeable, so implementations that support multiple base
-ISAs must support both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
+ISAs must support both {cheri_base_ext_name} and {cheri_hybrid_ext_name}.
 
 [#mtvec, reftext="mtvec"]
 ==== Machine Trap-Vector Base-Address Registers (mtvec)
@@ -989,7 +989,7 @@ Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
 
 === CHERI Exception handling
 
-NOTE: `auth_cap` is <<ddc>> for Legacy Mode and `cs1` for Capability Mode
+NOTE: `auth_cap` is <<ddc>> for Hybrid Mode and `cs1` for Capability Mode
 
 .Valid CHERI exception combination description
 [#cheri_exception_combs_descriptions]
@@ -1131,10 +1131,10 @@ xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
 
 Control transfer instructions jump or branch to a capability A which can be:
 
-* <<pcc>> for branches, direct jumps and any branch when the CHERI execution
-mode is Legacy (see xref:section_cheri_legacy_ext[xrefstyle=short]).
-* The capability in the *c* input register of a jump when the CHERI execution
-mode is Capability (see xref:section_cheri_legacy_ext[xrefstyle=short]).
+* <<pcc>> for branches, direct jumps and any branch when in
+Hybrid Mode (see xref:section_cheri_hybrid_ext[xrefstyle=short]).
+* The capability in the *c* input register of a jump when in
+Capability Mode (see xref:section_cheri_hybrid_ext[xrefstyle=short]).
 
 The following procedure must be used when jumping or branching to the target
 capability A if the <<pcc>> cannot hold all invalid addresses:
@@ -1155,7 +1155,7 @@ address T gives rise to an instruction access fault or page fault as is usual in
 NOTE: RISC-V harts that do not support {cheri_base_ext_name} normally raise an
 instruction access fault or page fault after jumping or branching to an invalid address.
 Therefore, {cheri_base_ext_name} aims to preserve that behavior to ensure that
-harts supporting {cheri_base_ext_name} and {cheri_legacy_ext_name} are fully
+harts supporting {cheri_base_ext_name} and {cheri_hybrid_ext_name} are fully
 compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
 <<infinite-cap>> capability.
 

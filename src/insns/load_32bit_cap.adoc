@@ -13,7 +13,7 @@ Load capability
 Capability Mode Mnemonics::
 `lc cd, offset(cs1)`
 
-Legacy Mode Mnemonics::
+Hybrid Mode Mnemonics::
 `lc cd, offset(rs1)`
 
 include::xlen_variable_warning.adoc[]
@@ -24,7 +24,7 @@ include::wavedrom/loadcap.adoc[]
 Capability Mode Description::
 Load a CLEN+1 bit value from memory and writes it to `cd`. The capability in `cs1` authorizes the operation. The effective address of the memory access is obtained by adding the address of `cs1` to the sign-extended 12-bit offset. The tag value written to `cd` is 0 if the tag of the memory location loaded is 0 or `cs1` does not grant <<c_perm>>.
 
-Legacy Mode Description::
+Hybrid Mode Description::
 Loads a CLEN+1 bit value from memory and writes it to `cd`. The capability
 authorising the operation is <<ddc>>. The effective address of the memory
 access is obtained by adding `rs1` to the sign-extended 12-bit offset.
@@ -37,8 +37,8 @@ include::load_exceptions.adoc[]
 Prerequisites for Capability Mode::
 {cheri_base_ext_name}
 
-Prerequisites for Legacy Mode::
-{cheri_legacy_ext_name}
+Prerequisites for Hybrid Mode::
+{cheri_hybrid_ext_name}
 
 LC Operation::
 +

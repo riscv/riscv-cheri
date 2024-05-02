@@ -9,7 +9,7 @@ Create stack frame (CM.PUSH): store the return address register and 0 to 12 save
 Capability Mode Mnemonic::
 `cm.push \{creg_list\}, -stack_adj`
 
-Legacy Mode Mnemonics::
+Hybrid Mode Mnemonics::
 `cm.push \{reg_list\}, -stack_adj`
 
 Encoding::
@@ -31,7 +31,7 @@ _rlist_ values 0 to 3 are reserved for a future EABI variant
 Capability Mode Description::
 Create stack frame, store capability registers as specified in _creg_list_. Optionally allocate additional multiples of 16-byte stack space. All accesses are checked against `csp`.
 
-Legacy Mode Description::
+Hybrid Mode Description::
 Create stack frame, store integer registers as specified in _reg_list_. Optionally allocate additional multiples of 16-byte stack space. All accesses are checked against <<ddc>>.
 
 include::store_exceptions.adoc[]
@@ -39,8 +39,8 @@ include::store_exceptions.adoc[]
 Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}, Zcmp
 
-Prerequisites for Legacy Mode::
-{c_cheri_legacy_ext_names}, Zcmp
+Prerequisites for Hybrid Mode::
+{c_cheri_hybrid_ext_names}, Zcmp
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

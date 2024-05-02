@@ -14,7 +14,7 @@ Jump and link register
 Capability Mode Mnemonic::
 `jalr cd, cs1, offset`
 
-Legacy Mode Mnemonic::
+Hybrid Mode Mnemonic::
 `jalr rd, rs1, offset`
 
 Encoding::
@@ -31,7 +31,7 @@ performed and is then installed in <<pcc>>. The <<pcc>>
 of the next instruction following the jump (<<pcc>> + 4) is sealed and written
 to `cd`.
 
-Legacy Mode Description::
+Hybrid Mode Description::
 JALR allows unconditional, indirect jumps to a target address. The target
 address is obtained by adding the sign-extended 12-bit immediate to `rs1`, then
 setting the least-significant bit of the result to zero. The target address
@@ -47,7 +47,7 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 [%autowidth,options=header,align=center]
 |==============================================================================
-| CAUSE                 | Legacy Mode | Capability Mode | Reason
+| CAUSE                 | Hybrid Mode | Capability Mode | Reason
 | Tag violation         |      | ✔     | `cs1` has tag set to 0
 | Seal violation        |      | ✔     | `cs1` is sealed and the immediate is not 0
 | Permission violation  |      | ✔     | `cs1` does not grant <<x_perm>>
@@ -59,8 +59,8 @@ include::pcrel_debug_warning.adoc[]
 Prerequisites Capability Mode::
 {cheri_base_ext_name}
 
-Prerequisites Legacy Mode::
-{cheri_legacy_ext_name}
+Prerequisites Hybrid Mode::
+{cheri_hybrid_ext_name}
 
 Operation::
 +

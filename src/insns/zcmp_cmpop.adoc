@@ -9,7 +9,7 @@ Destroy stack frame (CM.POP): load the return address register and 0 to 12 saved
 Capability Mode Mnemonic::
 `cm.pop \{creg_list\}, -stack_adj`
 
-Legacy Mode Mnemonics::
+Hybrid Mode Mnemonics::
 `cm.pop \{reg_list\}, -stack_adj`
 
 Encoding::
@@ -31,7 +31,7 @@ _rlist_ values 0 to 3 are reserved for a future EABI variant
 Capability Mode Description::
 Load capability registers as specified in _creg_list_. Deallocate stack frame. All accesses are checked against `csp`.
 
-Legacy Mode Description::
+Hybrid Mode Description::
 Load integer registers as specified in _reg_list_. Deallocate stack frame. All accesses are checked against <<ddc>>.
 
 include::load_exceptions.adoc[]
@@ -39,8 +39,8 @@ include::load_exceptions.adoc[]
 Prerequisites for Capability Mode::
 {c_cheri_base_ext_names}, Zcmp
 
-Prerequisites for Legacy Mode::
-{c_cheri_legacy_ext_names}, Zcmp
+Prerequisites for Hybrid Mode::
+{c_cheri_hybrid_ext_names}, Zcmp
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

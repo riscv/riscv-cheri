@@ -10,7 +10,7 @@ instruction fetch in the near future
 Capability Mode Mnemonic::
 `prefetch.i offset(cs1)`
 
-Legacy Mode Mnemonic::
+Hybrid Mode Mnemonic::
 `prefetch.i offset(rs1)`
 
 Encoding::
@@ -41,7 +41,7 @@ if one or more of the following conditions of `cs1` are met:
 * No bytes of the cache line requested is in bounds
 * The <<x_perm>> is not set
 
-Legacy Mode Description::
+Hybrid Mode Description::
 A PREFETCH.I instruction indicates to hardware that the cache block whose
 effective address is the sum of the base address specified in `rs1` and the
 sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
@@ -53,8 +53,8 @@ is only valid if imm[4:0]=0. The authorising capability for this operation is
 Prerequisites for Capability Mode::
 Zicbop, {cheri_base_ext_name}
 
-Prerequisites for Legacy Mode::
-Zicbop, {cheri_legacy_ext_name}
+Prerequisites for Hybrid Mode::
+Zicbop, {cheri_hybrid_ext_name}
 
 Operation::
 [source,sail]

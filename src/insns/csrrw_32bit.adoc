@@ -15,7 +15,7 @@ CSR access (CSRRW) 32-bit encodings
 Mnemonic for accessing capability CSRs in Capability Mode::
 `csrrw cd, csr, cs1`
 
-Mnemonic for accessing XLEN-wide CSRs or extended CSRs in Legacy Mode::
+Mnemonic for accessing XLEN-wide CSRs or extended CSRs in Hybrid Mode::
 `csrrw rd, csr, rs1`
 
 Encoding::
@@ -30,7 +30,7 @@ xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing each 
 +
 CSRRW writes `cs1` to extended CSRs in Capability Mode, and reads a full capability into `cd`.
 +
-CSRRW writes `rs1` to extended CSRs in Legacy Mode, and reads the address field into `rd`.
+CSRRW writes `rs1` to extended CSRs in Hybrid Mode, and reads the address field into `rd`.
 +
 If `cd` is `c0` (or `rd` is `x0`), then the instruction shall not read the CSR
 and shall not cause any of the side effects that might occur on a CSR read.
@@ -49,8 +49,8 @@ privileged and unprivileged CSRs is shown in cite:[riscv-priv-spec].
 Prerequisites for Capability Mode::
 {cheri_base_ext_name}
 
-Prerequisites for Legacy Mode::
-{cheri_legacy_ext_name}
+Prerequisites for Hybrid Mode::
+{cheri_hybrid_ext_name}
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]
