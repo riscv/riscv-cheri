@@ -53,7 +53,7 @@ HEADER_SOURCE := $(SRC_DIR)/riscv-cheri.adoc
 # Generated files
 GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
           $(GEN_DIR)/cap_mode_insns_table_body.adoc                \
-          $(GEN_DIR)/csr_added_legacy_table_body.adoc              \
+          $(GEN_DIR)/csr_added_hybrid_table_body.adoc              \
           $(GEN_DIR)/csr_added_purecap_mode_d_table_body.adoc      \
           $(GEN_DIR)/csr_added_purecap_mode_m_table_body.adoc      \
           $(GEN_DIR)/csr_added_purecap_mode_s_table_body.adoc      \
@@ -71,7 +71,7 @@ GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
           $(GEN_DIR)/legacy_mode_insns_table_body.adoc             \
           $(GEN_DIR)/xlen_dependent_encoding_insns_table_body.adoc \
           $(GEN_DIR)/Zabhlrsc_insns_table_body.adoc                \
-          $(GEN_DIR)/Zcheri_legacy_insns_table_body.adoc           \
+          $(GEN_DIR)/Zcheri_hybrid_insns_table_body.adoc           \
           $(GEN_DIR)/Zcheri_purecap_insns_table_body.adoc
 
 # AsciiDoctor command
