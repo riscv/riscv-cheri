@@ -10,9 +10,11 @@ invalidations for less privileged modes. The instruction checks shown in the
 table below remain unchanged regardless of the value of CBIE and the privilege
 mode.
 
-NOTE: A valid implementation of CBO.INVAL is to _always_ execute it as CBO.FLUSH.
- This is recommended for CHERI systems as invalidate _could_ reveal stale capabilities
- in memory which the current execution environment should not have access to.
+NOTE: Invalidating a cache block can re-expose capabilities previously stored
+to it after the most recent flush, not just secret values. As such, CBO.INVAL
+has stricter checks on its use than CBO.FLUSH, and should only be made available to,
+and used by, sufficiently-trusted software. Untrusted software should use CBO.FLUSH
+instead.
 
 endif::[]
 
