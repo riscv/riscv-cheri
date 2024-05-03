@@ -112,7 +112,7 @@ Upon entry to debug mode, cite:[riscv-debug-spec], does not specify how to
 update the PC, and says PC relative instructions may be illegal. This concept
 is extended to include any instruction which reads or updates <<pcc>>, which refers to
 all jumps, conditional branches and <<AUIPC>>. The exception is <<MODESW>>
-which _is_ supported if {cheri_hybrid_ext_name} is implemented, see <<dinfc>>
+which _is_ supported if {cheri_default_ext_name} is implemented, see <<dinfc>>
 for details.
 
 As a result, the value of <<pcc>> is UNSPECIFIED in debug mode according
@@ -178,7 +178,7 @@ The <<dinfc>> register is a CLEN-bit plus tag bit CSR only accessible in debug m
 
 The reset value is the <<infinite-cap>> capability.
 
-If {cheri_hybrid_ext_name} (see xref:section-cheri-execution-mode) is implemented:
+If {cheri_default_ext_name} (see xref:section-cheri-execution-mode) is implemented:
 
 . the core enters Capability Mode when entering debug mode
 .. therefore <<dinfc>>.M is set whenever entering debug mode for any reason.

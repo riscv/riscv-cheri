@@ -101,7 +101,7 @@ class Zcheri_hybrid_insns(table):
 
     def check(self,row):
         # Don't print instructions already listed by {cheri_base_ext_name}
-        return row[self.header.index("{cheri_hybrid_ext_name}")] == "✔" and row[self.header.index("{cheri_base_ext_name}")] != "✔"
+        return row[self.header.index("{cheri_default_ext_name}")] == "✔" and row[self.header.index("{cheri_base_ext_name}")] != "✔"
 
 class Zcheri_purecap_insns(table):
     cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
@@ -133,7 +133,7 @@ class Zcheri_purecap_insns(table):
         return row[self.header.index("{cheri_base_ext_name}")] == "✔"
 
 class cap_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_hybrid_ext_name}", "{cheri_base_ext_name}", "Function"]
+    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -158,7 +158,7 @@ class cap_mode_insns(table):
         return row[self.header.index("Valid Modes")] == "Capability"
 
 class legacy_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_hybrid_ext_name}", "{cheri_base_ext_name}", "Function"]
+    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -180,10 +180,10 @@ class legacy_mode_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Valid Modes")] == "Hybrid"
+        return row[self.header.index("Valid Modes")] == "Default"
 
 class both_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_hybrid_ext_name}", "{cheri_base_ext_name}", "Function"]
+    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -258,7 +258,7 @@ class illegal_insns(table):
         return row[self.header.index("illegal insn if (1)")] != ""
 
 class legacy_mnemonic_insns(table):
-    cols = ["Mnemonic", "Hybrid mnemonic RV32", "Hybrid mnemonic RV64"]
+    cols = ["Mnemonic", "Default mode mnemonic RV32", "Default mode mnemonic RV64"]
     indices = []
 
     def __init__(self, filename, header):
@@ -276,7 +276,7 @@ class legacy_mnemonic_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Hybrid mnemonic RV32")] != "" and row[self.header.index("Hybrid mnemonic RV64")] != ""
+        return row[self.header.index("Default mode mnemonic RV32")] != "" and row[self.header.index("Default mode mnemonic RV64")] != ""
 
 class csr_aliases(table):
     cols = ["CLEN CSR", "Alias", "Prerequisites"]
@@ -359,7 +359,7 @@ class csr_added_legacy(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Alias")] == "" and "{cheri_hybrid_ext_name}" in row[self.header.index("Prerequisites")]
+        return row[self.header.index("Alias")] == "" and "{cheri_default_ext_name}" in row[self.header.index("Prerequisites")]
 
 class csr_added_purecap_mode_d(table):
     cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]

@@ -9,7 +9,7 @@ Store zeros to the full set of bytes corresponding to a cache block
 Capability Mode Mnemonic::
 `cbo.zero 0(cs1)`
 
-Hybrid Mode Mnemonic::
+Default Mode Mnemonic::
 `cbo.zero 0(rs1)`
 
 Encoding::
@@ -32,7 +32,7 @@ bytes atomically although each individual write must atomically clear the tag
 bit of the corresponding aligned CLEN-bit location. The authorising capability
 for this operation is `cs1`.
 
-Hybrid Mode Description::
+Default Mode Description::
 A `cbo.zero` instruction performs stores of zeros to the full set of bytes
 corresponding to the cache block whose effective address is the base address
 specified in `cs1`. An implementation may or may not update the entire set of
@@ -45,8 +45,8 @@ include::store_exceptions.adoc[]
 Prerequisites for Capability Mode::
 Zicboz, {cheri_base_ext_name}
 
-Prerequisites for Hybrid Mode::
-Zicboz, {cheri_hybrid_ext_name}
+Prerequisites for Default Mode::
+Zicboz, {cheri_default_ext_name}
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]
