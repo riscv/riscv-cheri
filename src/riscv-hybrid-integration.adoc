@@ -1,12 +1,12 @@
 [#section_cheri_hybrid_ext]
 == "Zcherihybrid" Extension for CHERI Default Mode
 
-{cheri_default_ext_name} is an optional extension to {cheri_base_ext_name}.
-Implementations that support {cheri_base_ext_name} and {cheri_default_ext_name}
+{cheri_legacy_ext_name} is an optional extension to {cheri_base_ext_name}.
+Implementations that support {cheri_base_ext_name} and {cheri_legacy_ext_name}
 define a variant of the CHERI ISA that is fully binary compatible with
 existing RISC-V code.
 
-Key features in {cheri_default_ext_name} include a definition of a CHERI execution mode, a new
+Key features in {cheri_legacy_ext_name} include a definition of a CHERI execution mode, a new
 unprivileged register, additional instructions and extensions to some existing
 CSRs enabling CHERI features. The remainder of this section describes
 these features in detail as well as their integration with the primary base
@@ -15,7 +15,7 @@ integer variants of the RISC-V ISA (RV32I and RV64I).
 [#m_bit,reftext="M-bit"]
 === CHERI Execution Mode
 
-{cheri_default_ext_name} adds CHERI execution modes to ensure backwards
+{cheri_legacy_ext_name} adds CHERI execution modes to ensure backwards
 compatibility with the base RISC-V ISA while saving instruction encoding space.
 There are two execution modes: _Capability_ and _Default_. Additionally, there
 is a new unprivileged register: the default data capability, <<ddc>>, that is
@@ -36,7 +36,7 @@ xref:riscv-extensions[xrefstyle=short]).
 
 NOTE: The implication is that the CHERI execution mode is always Capability on
 implementations that support {cheri_base_ext_name}, but not
-{cheri_default_ext_name}.
+{cheri_legacy_ext_name}.
 
 The CHERI execution mode is effectively an extension to some RISC-V instruction
 encodings. For example, the encoding of an instruction like <<LW>> remains
@@ -47,7 +47,7 @@ syntax.
 The CHERI execution mode is key in providing backwards compatibility with the
 base RISC-V ISA. RISC-V software is able to execute unchanged in
 implementations supporting both {cheri_base_ext_name} and
-{cheri_default_ext_name} provided that the <<infinite-cap>> capability is installed in <<ddc>> and <<pcc>>
+{cheri_legacy_ext_name} provided that the <<infinite-cap>> capability is installed in <<ddc>> and <<pcc>>
 (with <<section-cheri-execution-mode,M=0>>, i.e. in Default Mode).
 Setting both registers to <<infinite-cap>> ensures that:
 
@@ -58,7 +58,7 @@ top is 2^MXLEN^
 [#section-cheri-execution-mode]
 === CHERI Execution Mode Encoding
 
-{cheri_default_ext_name} adds a new CHERI execution mode field (M) to
+{cheri_legacy_ext_name} adds a new CHERI execution mode field (M) to
 capabilities within the AP field (see xref:section_cap_perms[xrefstyle=short]).
 When MXLEN=32, the mode is encoded in bit 0 of quadrant 1 from the AP field.
 When MXLEN=64, the mode is encoded in bit 0 of the AP field: a new M bit field is
@@ -84,7 +84,7 @@ furthermore, the <<m_bit>> is 0 in both the <<null-cap>> and <<infinite-cap>> ca
 [#section_hybrid_ext_instructions]
 === Zcherihybrid Instructions
 
-{cheri_default_ext_name} introduces a small number of new mode-switching instructions to the base RISC-V integer ISA, as shown in <<Zcheri_hybrid_instruction_extension>>.
+{cheri_legacy_ext_name} introduces a small number of new mode-switching instructions to the base RISC-V integer ISA, as shown in <<Zcheri_hybrid_instruction_extension>>.
 Additionally, the behavior of some existing instructions changes depending on the current CHERI execution mode.
 
 ==== Capability Load and Store Instructions
@@ -122,7 +122,7 @@ bit M of the capability currently installed in the <<pcc>>.
 
 === Existing RISC-V Instructions
 
-The CHERI execution mode introduced in {cheri_default_ext_name} affects the
+The CHERI execution mode introduced in {cheri_legacy_ext_name} affects the
 behaviour of instructions that have at least one memory address operand. When
 in Capability Mode, the address input or output operands may include *c* registers.
 When in Default Mode, the address input or output operands are *x/f/v* registers;
@@ -150,7 +150,7 @@ written to the <<pcc>> address and a representability check is performed. The
 address of the instruction following the jump (*pc* + 4) is written to an *x*
 register; that register's tag and capability metadata are zeroed.
 
-{cheri_default_ext_name} allows changing the current CHERI execution mode when
+{cheri_legacy_ext_name} allows changing the current CHERI execution mode when
 executing <<JALR>> from Capability Mode.
 
 <<JAL>> and <<JALR>> cause CHERI exceptions when a minimum sized instruction
@@ -187,7 +187,7 @@ NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by
 <<CSRRW>>.
 endif::[]
 
-{cheri_default_ext_name} adds the concept of CSRs which contain a capability
+{cheri_legacy_ext_name} adds the concept of CSRs which contain a capability
 where the address field is visible in Default Mode (e.g. <<mtvec>>) and the full
 capability is visible in Capability Mode through a different name (e.g.
 <<mtvecc>>). These are referred to as _extended CSRs_.
@@ -237,7 +237,7 @@ xref:default-csrnames-added[xrefstyle=short].
 A new debug default data capability (<<dddc>>) CSR is added at the CSR number
 shown in xref:default-csrnames-added[xrefstyle=short].
 
-{cheri_default_ext_name} optionally allows <<MODESW>> to execute in debug mode.
+{cheri_legacy_ext_name} optionally allows <<MODESW>> to execute in debug mode.
 
 When entering debug mode, the core always enters Capability Mode.
 
@@ -282,7 +282,7 @@ NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
 it is not possible to disable CHERI checks completely.
 endif::[]
 
-{cheri_default_ext_name} includes functions to disable explicit access to CHERI
+{cheri_legacy_ext_name} includes functions to disable explicit access to CHERI
 registers.  The following occurs when executing code in a privilege mode that
 has CHERI register access disabled:
 
@@ -331,11 +331,11 @@ that do not perform <<ddc>> switches on trap entry and return.
 
 === Added CLEN-wide CSRs
 
-{cheri_default_ext_name} adds the CLEN-wide CSRs shown in
+{cheri_legacy_ext_name} adds the CLEN-wide CSRs shown in
 xref:default-csrnames-added[xrefstyle=short].
 
 [[default-csrnames-added]]
-.CLEN-wide CSRs added in {cheri_default_ext_name}
+.CLEN-wide CSRs added in {cheri_legacy_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
 include::generated/csr_added_hybrid_table_body.adoc[]
@@ -343,7 +343,7 @@ include::generated/csr_added_hybrid_table_body.adoc[]
 
 ==== Machine Status Registers (mstatus and mstatush)
 
-{cheri_default_ext_name} eliminates some restrictions for SXL and UXL imposed in
+{cheri_legacy_ext_name} eliminates some restrictions for SXL and UXL imposed in
 {cheri_base_ext_name} to allow implementations supporting multiple base ISAs.
 Namely, the SXL and UXL fields may be writable.
 
@@ -366,7 +366,7 @@ destination register.
 However, CHERI operations and security checks will continue using the entire
 hardware register (i.e. CLEN bits) to correctly decode capability bounds.
 
-{cheri_default_ext_name} eliminates some restrictions for MBE, SBE, and UBE
+{cheri_legacy_ext_name} eliminates some restrictions for MBE, SBE, and UBE
 imposed in {cheri_base_ext_name} to allow implementations supporting multiple
 endiannesses.  Namely, the MBE, SBE, and UBE fields may be writable if the
 corresponding privilege mode is implemented.
@@ -392,7 +392,7 @@ include::img/mtdcreg.edn[]
 [#mseccfg,reftext="mseccfg"]
 ==== Machine Security Configuration Register (mseccfg)
 
-{cheri_default_ext_name} adds a new enable bit to <<mseccfg>> as shown in
+{cheri_legacy_ext_name} adds a new enable bit to <<mseccfg>> as shown in
 xref:mseccfgmodereg[xrefstyle=short].
 
 .Machine security configuration register (*mseccfg*)
@@ -408,7 +408,7 @@ The reset value is 0.
 [#menvcfg,reftext="menvcfg"]
 ==== Machine Environment Configuration Register (menvcfg)
 
-{cheri_default_ext_name} adds two new enable bits to <<menvcfg>> as shown in
+{cheri_legacy_ext_name} adds two new enable bits to <<menvcfg>> as shown in
 xref:menvcfgmodereg[xrefstyle=short].
 
 .Machine environment configuration register (*menvcfg*)
@@ -440,7 +440,7 @@ include::img/stdcreg.edn[]
 ==== Supervisor Environment Configuration Register (senvcfg)
 
 The *senvcfg* register operates as described in the RISC-V Privileged
-Specification. {cheri_default_ext_name} adds two new enable bits as shown in
+Specification. {cheri_legacy_ext_name} adds two new enable bits as shown in
 xref:senvcfgreg[xrefstyle=short].
 
 .Supervisor environment configuration register (*senvcfg*)
