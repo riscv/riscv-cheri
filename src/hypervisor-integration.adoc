@@ -1,0 +1,116 @@
+[#section_hypervisor_integration]
+== Integrating Zcheripurecap and Zcherilegacy with the Hypervisor Extension
+
+The RISC-V hypervisor (H) extension virtualizes the supervisor-level
+architecture to support the efficient hosting of guest operating systems atop a
+type-1 or type-2 hypervisor cite:[riscv-priv-spec]. The hypervisor extension is
+generally orthogonal to CHERI; the main requirements, when integrating with
+Zcheripurecap and Zcherilegacy, is that address CSRs added for hypervisors are
+extended to CLEN size so that they are able to hold capabilities.
+
+[#hstatus,reftext="hstatus"]
+=== Hypervisor Status Register (hstatus)
+
+The <<hstatus>> register operates as described in cite:[riscv-priv-spec] except
+for the VSXL field that controls the value of XLEN for VS-mode (known as
+VSXLEN).
+
+The encoding of the VSXL field is the same as the MXL field of **misa**. Only 1
+and 2 are supported values for VSXL. When the implementation supports
+{cheri_base_ext_name} (but not {cheri_legacy_ext_name}), then <<hstatus>>'s
+VSXL must be read-only as described in xref:mstatus[xrefstyle=short] for
+<<mstatus>>.SXL. When the implementation supports both {cheri_base_ext_name}
+and {cheri_legacy_ext_name}, then VSXL behaves as described in
+xref:status_legacy[xrefstyle=short] for mstatus.SXL.
+
+[#henvcfg,reftext="henvcfg"]
+=== Hypervisor Environment Configuration Register (henvcfg)
+
+[#htval,reftext="htval"]
+=== Hypervisor Trap Value Register (htval)
+
+[#htinst,reftext="htinst"]
+=== Hypervisor Trap Instruction Register (htinst)
+
+[#vsstatus,reftext="vsstatus"]
+=== Virtual Supervisor Status Register (vsstatus)
+
+The <<vsstatus>> register operates as described in cite:[riscv-priv-spec]
+except for the UXL field that controls the value of XLEN for VU-mode.
+
+The encoding of the UXL field is the same as the MXL field of **misa**. Only 1
+and 2 are supported values for UXL. When the implementation supports
+{cheri_base_ext_name} (but not {cheri_legacy_ext_name}), then <<vsstatus>>'s
+UXL must be read-only as described in xref:mstatus[xrefstyle=short] for
+<<mstatus>>.UXL. When the implementation supports both {cheri_base_ext_name}
+and {cheri_legacy_ext_name}, then UXL behaves as described in
+xref:mstatus_legacy[xrefstyle=short] for mstatus.UXL.
+
+[#vstvec,reftext="vstvec"]
+=== Virtual Supervisor Trap Vector Base Address Register (vstvec)
+
+The <<vstvec>> register is as defined in cite:[riscv-priv-spec]. It is the
+VSXLEN-bit register that is the VS mode's version of the supervisor register
+<<stvec>>.
+
+.Virtual supervisor trap vector base address register
+include::img/vstvecreg.edn[]
+
+[#vstvecc,reftext="vstvecc"]
+=== Virtual Supervisor Trap Vector Base Address Capability Register (vstvecc)
+
+The <<vstvecc>> register is a renamed extension of <<vstvec>> that is able to
+hold a capability. Its reset value is the <<infinite-cap>> capability.
+
+.Virtual supervisor trap vector base address capability register
+include::img/vstveccreg.edn[]
+
+The handling of <<vstvecc>> is otherwise identical to <<mtvecc>>, but in
+virtual supervisor mode.
+
+[#vsscratch,reftext="vsscratch"]
+=== Virtual Supervisor Scratch Register (vsscratch)
+
+The <<vsscratch>> register is as defined in cite:[riscv-priv-spec]. It is a
+VSXLEN read/write register that is VS-mode's version of supervisor register
+<<sscratch>>. <<vsscratch>> is extended into <<vsscratchc>>.
+
+.Virtual supervisor scratch register
+include::img/vsscratchreg.edn[]
+
+[#vsscratchc,reftext="vsscratchc"]
+=== Virtual Supervisor Scratch Register (vsscratchc)
+
+The <<vsscratchc>> register is a renamed version of <<vsscratch>> that is able
+to hold a capability.
+
+{TAG_RESET_CSR}
+
+It is not WARL, all capability fields must be implemented.
+
+.Virtual supervisor scratch capability register
+include::img/vsscratchcreg.edn[]
+
+[#vsepc,reftext="vsepc"]
+=== Virtual Supervisor Exception Program Counter (vsepc)
+
+The <<vsepc>> register is as defined in cite:[riscv-priv-spec]. It is extended
+into <<vsepcc>>.
+
+.Virtual supervisor exception program counter
+include::img/vsepcreg.edn[]
+
+[#vsepcc,reftext="vsepcc"]
+=== Virtual Supervisor Exception Program Counter Capability (vsepcc)
+
+The <<vsepcc>> register is a renamed extension of <<vsepc>> that is able to
+hold a capability. Its reset value is the <<infinite-cap>> capability.
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<vsepcc>> is an executable
+vector, so it need not be able to hold all possible invalid addresses.
+Additionally, the capability in <<vsepcc>> is unsealed when it is installed in
+<<pcc>> on execute of an <<SRET>> instruction. The handling of <<vsepcc>> is
+otherwise identical to <<mepcc>> but in virtual supervisor mode.
+
+.Virtual supervisor exception program counter capability
+include::img/vsepccreg.edn[]
