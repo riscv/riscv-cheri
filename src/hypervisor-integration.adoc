@@ -26,11 +26,34 @@ xref:status_legacy[xrefstyle=short] for mstatus.SXL.
 [#henvcfg,reftext="henvcfg"]
 === Hypervisor Environment Configuration Register (henvcfg)
 
+The <<henvcfg>> register operates as described in the RISC-V Privileged
+Specification. A new enable bit is added to <<henvcfg>> when the implementation
+supports {cheri_legacy_ext_name} as shown in xref:henvcfgreg[xrefstyle=short].
+
+.Hypervisor environment configuration register (*henvcfg*)
+[#henvcfgreg]
+include::img/henvcfgreg.edn[]
+
+The CHERI Register Enable (<<CRE>>) bit controls whether explicit access to
+CHERI register is permitted when V=1. When <<CRE>>=1, CHERI registers
+can be read and written by VS and VU modes. When <<CRE>>=0, CHERI registers are
+disabled in VS and VU modes.
+
+* henvcfg.<<CRE>> is read-only zero if:
+    ** <<mstatus>>.MBE is not the reset value OR
+* UXLEN<MXLEN OR
+* <<mseccfg>>.<<CRE>>==0 OR
+* <<menvcfg>>.<<CRE>>==0
+
 [#htval,reftext="htval"]
 === Hypervisor Trap Value Register (htval)
 
-[#htinst,reftext="htinst"]
-=== Hypervisor Trap Instruction Register (htinst)
+The <<htval>> register operates as described in cite:[riscv-priv-spec].
+Additionally, <<htval>> may be written with the exception codes described in
+xref:mtval[xrefstyle=short] when a CHERI exception occurs.
+
+.Hypervisor trap value register
+include::img/htvalreg.edn[]
 
 [#vsstatus,reftext="vsstatus"]
 === Virtual Supervisor Status Register (vsstatus)
@@ -114,3 +137,17 @@ otherwise identical to <<mepcc>> but in virtual supervisor mode.
 
 .Virtual supervisor exception program counter capability
 include::img/vsepccreg.edn[]
+
+[#vstdc,reftext="vstdc"]
+=== Virtual Supervisor Trap Default Capability Register (vstdc)
+
+The <<vstdc>> register is a capability width read/write register that is
+VS-mode's version of supervisor register <<sscratch>>. This register is only
+present when the implementation supports {cheri_legacy_ext_name}.
+
+{TAG_RESET_CSR}
+
+It is not WARL, all capability fields must be implemented.
+
+.Virtual supervisor trap default capability register
+include::img/vstdcreg.edn[]
