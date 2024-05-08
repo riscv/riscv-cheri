@@ -406,7 +406,7 @@ The reset value is 0.
 [#menvcfg,reftext="menvcfg"]
 ==== Machine Environment Configuration Register (menvcfg)
 
-{cheri_legacy_ext_name} adds a new enable bit to <<menvcfg>> as shown in
+{cheri_default_ext_name} adds a new enable bit to <<menvcfg>> as shown in
 xref:menvcfgmodereg[xrefstyle=short].
 
 .Machine environment configuration register (*menvcfg*)
@@ -438,23 +438,23 @@ include::img/stdcreg.edn[]
 ==== Supervisor Environment Configuration Register (senvcfg)
 
 The *senvcfg* register operates as described in the RISC-V Privileged
-Specification. {cheri_legacy_ext_name} adds a new enable bit as shown in
+Specification. {cheri_default_ext_name} adds a new enable bit as shown in
 xref:senvcfgreg[xrefstyle=short].
 
 .Supervisor environment configuration register (*senvcfg*)
 [#senvcfgreg]
 include::img/senvcfgreg.edn[]
 
-The CHERI Register Enable (<<CRE>>) bit controls whether U-mode can perform
-explicit accesses to CHERI registers.  When <<CRE>>=1, CHERI registers can be read
-and written by U-mode.  When <<CRE>>=0, CHERI registers are disabled in U-mode as
+The CHERI Register Enable (CRE) bit controls whether U-mode can perform
+explicit accesses to CHERI registers.  When CRE=1, CHERI registers can be read
+and written by U-mode.  When CRE=0, CHERI registers are disabled in U-mode as
 described.
 
-* senvcfg.<<CRE>> is read-only-zero if:
+* <<senvcfg>>.CRE is read-only-zero if:
 ** <<mstatus>>.MBE is not the reset value OR
 * UXLEN<MXLEN OR
-* <<mseccfg>>.<<CRE>>==0 OR
-* <<menvcfg>>.<<CRE>>==0
+* <<mseccfg>>.CRE==0 OR
+* <<menvcfg>>.CRE==0
 
 The reset value is 0.
 
