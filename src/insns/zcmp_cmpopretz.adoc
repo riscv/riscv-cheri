@@ -6,10 +6,10 @@
 Synopsis::
 Destroy stack frame (CM.POPRETZ): load the return address register and register 0 to 12 saved registers from the stack frame, deallocate the stack frame. Move zero into argument register zero. Return through the return address register. 16-bit encodings.
 
-Capability Mode Mnemonic::
+{cheri_cap_mode_name} Mnemonic::
 `cm.popretz \{creg_list\}, -stack_adj`
 
-Default Mode Mnemonics::
+{cheri_int_mode_name} Mnemonics::
 `cm.popretz \{reg_list\}, -stack_adj`
 
 Encoding::
@@ -28,16 +28,16 @@ Encoding::
 
 _rlist_ values 0 to 3 are reserved for a future EABI variant
 
-Capability Mode Description::
+{cheri_cap_mode_name} Description::
 Load capability registers as specified in _creg_list_. Deallocate stack frame. Move zero into `ca0`. Return by calling <<JALR>> to `cra`. All data accesses are checked against `csp`. The return destination is checked against `cra`.
 
-Default Mode Description::
+{cheri_int_mode_name} Description::
 Load integer registers as specified in _reg_list_. Deallocate stack frame. Move zero into `a0`. Return by calling <<JALR>> to `ra`. All data accesses are checked against <<ddc>>. The return destination is checked against <<pcc>>.
 
 Permissions::
-Loads are checked as for <<LC>> in both Capability and Default Modes.
+Loads are checked as for <<LC>> in both {cheri_int_mode_name} and {cheri_cap_mode_name}.
 +
-The return is checked as for <<JALR>> in both Capability and Default Modes.
+The return is checked as for <<JALR>> in both {cheri_int_mode_name} and {cheri_cap_mode_name}.
 
 Exceptions::
 When these instructions cause CHERI exceptions, _CHERI data fault_
@@ -59,10 +59,10 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for {cheri_cap_mode_name}::
 {c_cheri_base_ext_names}, Zcmp
 
-Prerequisites for Default Mode::
+Prerequisites for {cheri_int_mode_name}::
 {c_cheri_legacy_ext_names}, Zcmp
 
 Operation::

@@ -9,10 +9,10 @@ Register based jumps without link, 16-bit encodings
 Mnemonic::
 `c.j offset`
 
-Capability Mode Expansion::
+{cheri_cap_mode_name} Expansion::
 `jal c0, offset`
 
-Default Mode Expansion::
+{cheri_int_mode_name} Expansion::
 `jal x0, offset`
 
 Encoding::
@@ -21,17 +21,17 @@ include::wavedrom/c-j-format-ls.adoc[]
 Description::
 Set the next PC following the standard `jal` definition.
  Check a minimum length instruction is in <<pcc>> bounds at the target PC, take a CHERI Length Violation exception on error.
- *There is no difference in Capability Mode or Default Mode execution for this instruction.*
+ *There is no difference in {cheri_cap_mode_name} or {cheri_int_mode_name} execution for this instruction.*
 
 Exceptions::
 See <<JAL>>
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for {cheri_cap_mode_name}::
 {c_cheri_base_ext_names}
 
-Prerequisites for Default Mode::
+Prerequisites for {cheri_int_mode_name}::
 {c_cheri_legacy_ext_names}
 
 Operation (after expansion to 32-bit encodings)::

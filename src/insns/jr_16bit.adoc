@@ -6,25 +6,25 @@
 Synopsis::
 Register based jumps without link, 16-bit encodings
 
-Capability Mode Mnemonic::
+{cheri_cap_mode_name} Mnemonic::
 `c.jr cs1`
 
-Capability Mode Expansion::
+{cheri_cap_mode_name} Expansion::
 `jalr c0, 0(cs1)`
 
-Default Mode Mnemonic::
+{cheri_int_mode_name} Mnemonic::
 `c.jr rs1`
 
-Default Mode Expansion::
+{cheri_int_mode_name} Expansion::
 `jalr x0, 0(rs1)`
 
 Encoding::
 include::wavedrom/c-cr-format-ls.adoc[]
 
-Capability Mode Description::
+{cheri_cap_mode_name} Description::
 Jump to `cs1.address+offset`. <<pcc>> metadata is copied from `cs1`, and is unsealed if necessary. Note that execution has several exception checks.
 
-Default Mode Description::
+{cheri_int_mode_name} Description::
 Set the next PC according to the standard `jalr` definition.
  Check a minimum length instruction is in <<pcc>> bounds at the target PC, take a CHERI Length Violation exception on error.
 
@@ -33,10 +33,10 @@ See <<JALR>>
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for {cheri_cap_mode_name}::
 {c_cheri_base_ext_names}
 
-Prerequisites for Default Mode::
+Prerequisites for {cheri_int_mode_name}::
 {c_cheri_legacy_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
