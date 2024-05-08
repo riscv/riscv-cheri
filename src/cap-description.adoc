@@ -164,7 +164,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 | 5   | ✔ | ✔ |   |   |     | N/A | Data RW
 | 6-7   7+| reserved
 8+| *Quadrant 1: Executable capabilities*
-8+| bit[0] - <<m_bit>> (1-Capability, 0-Default)
+8+| bit[0] - <<m_bit>> (1-{cheri_cap_mode_name}, 0-{cheri_int_mode_name})
 | 0-1   | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode  | Execute + ASR (see <<infinite-cap>>)
 | 2-3   | ✔ |   | ✔ | ✔ |     | Mode  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔ |     | Mode  | Execute + Data & Cap RW
@@ -463,7 +463,7 @@ The compressed bounds encoding allows the address to roam over a large
 _representable_ region while maintaining the original bounds. This is enabled by
 defining a lower boundary R from the out-of-bounds values that allows us to
 disambiguate the location of the bounds with respect to an out-of-bounds address.
-R is caluculated
+R is calculated
 relative to the base by subtracting 2^MW-2^ from B.
 If B, T or _a_[E + MW - 1:E] is less than R, it is inferred that they lie in the
 2^E+MW^ aligned region above R labelled space~U~ in

@@ -155,7 +155,7 @@ class cap_mode_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Valid Modes")] == "Capability"
+        return row[self.header.index("Valid Modes")] == "{cheri_cap_mode_name}"
 
 class legacy_mode_insns(table):
     cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
@@ -180,7 +180,7 @@ class legacy_mode_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Valid Modes")] == "Default"
+        return row[self.header.index("Valid Modes")] == "{cheri_int_mode_name}"
 
 class both_mode_insns(table):
     cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
