@@ -289,9 +289,11 @@ has CHERI register access disabled:
 * The CHERI instructions in xref:section_cap_instructions[xrefstyle=short] and
 xref:instruction-modes[xrefstyle=short]
 cause illegal instruction exceptions
-* Executing CSR instructions accessing any capability wide CSR
-addresses (xref:csr-numbers-section[xrefstyle=short]) cause illegal
-instruction exceptions
+* Executing CSR instructions accessing any CSR added by {cheri_default_ext_name}
+ (see <<default-csrnames-added>>) causes an illegal
+instruction exception
+* Executing CSR instructions accessing any extended CSR
+ (see xref:csr-numbers-section[xrefstyle=short]) only allows XLEN access.
 * All allowed instructions execute as if the CHERI execution mode is pass:attributes,quotes[{cheri_int_mode_name}].
 The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
 
@@ -299,6 +301,8 @@ CHERI register access is disabled if XLEN in the current mode is less than
 MXLEN, if the endianness in the current mode is not the reset value of
 <<mstatus>>.MBE, or if CRE active at the current mode (<<mseccfg>>.CRE for M-mode, <<menvcfg>>.CRE for
 S-mode or <<senvcfg>>.CRE for U-mode) is 0.
+
+NOTE: CRE is always enabled in debug mode.
 
 <<mseccfg>>.CRE, <<menvcfg>>.CRE, and <<senvcfg>>.CRE form a single WARL field.
 This allows higher privilege software to restrict lower
