@@ -164,7 +164,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 | 5   | ✔ | ✔ |   |   |     | N/A | Data RW
 | 6-7   7+| reserved
 8+| *Quadrant 1: Executable capabilities*
-8+| bit[0] - <<m_bit>> (1-{cheri_cap_mode_name}, 0-{cheri_int_mode_name})
+8+| bit[0] - <<m_bit>> (1-pass:attributes,quotes[{cheri_cap_mode_name}], 0-pass:attributes,quotes[{cheri_int_mode_name}])
 | 0-1   | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode  | Execute + ASR (see <<infinite-cap>>)
 | 2-3   | ✔ |   | ✔ | ✔ |     | Mode  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔ |     | Mode  | Execute + Data & Cap RW
@@ -581,7 +581,7 @@ or 'root' capability.
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-NOTE: The AP fields both set {cheri_int_mode_name} (if {cheri_default_ext_name} is supported)
+NOTE: The AP fields both set pass:attributes,quotes[{cheri_int_mode_name}] (if {cheri_default_ext_name} is supported)
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
