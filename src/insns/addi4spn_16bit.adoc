@@ -8,26 +8,26 @@ See <<C.ADDI4SPN>>.
 Synopsis::
 Stack pointer increment in blocks of 4 (C.ADDI4SPN), 16-bit encoding
 
-Capability Mode Mnemonic::
+pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonic::
 `c.addi4spn cd', uimm`
 
-Capability Mode Expansion::
+pass:attributes,quotes[{cheri_cap_mode_name}] Expansion::
 `cadd cd', csp, uimm`
 
-Legacy Mode Mnemonic::
+pass:attributes,quotes[{cheri_int_mode_name}] Mnemonic::
 `c.addi4spn rd', uimm`
 
-Legacy Mode Expansion::
+pass:attributes,quotes[{cheri_int_mode_name}] Expansion::
 `add rd', sp, uimm`
 
 Encoding::
 include::wavedrom/c-ciw.adoc[]
 
-Capability Mode Description::
+pass:attributes,quotes[{cheri_cap_mode_name}] Description::
 
 Add a zero-extended non-zero immediate, scaled by 4, to the stack pointer, `csp`, and writes the result to `cd'`. This instruction is used to generate pointers to stack-allocated variables. Clear the tag if the resulting capability is unrepresentable or `csp` is sealed.
 
-Legacy Mode Description::
+pass:attributes,quotes[{cheri_int_mode_name}] Description::
 
 Add a zero-extended non-zero immediate, scaled by 4, to the stack pointer, `sp`, and writes the result to `rd'`. This instruction is used to generate pointers to stack-allocated variables.
 
@@ -35,9 +35,9 @@ Prerequisites for C.ADDI4SPN::
 {c_cheri_base_ext_names}
 
 Prerequisites for C.ADDI4SPN::
-{c_cheri_legacy_ext_names}
+{c_cheri_default_ext_names}
 
-Capability Mode Operation::
+pass:attributes,quotes[{cheri_cap_mode_name}] Operation::
 +
 --
 TODO

@@ -84,7 +84,7 @@ extensions to support CHERI alongside RISC-V:
 {cheri_base_ext_name}:: Introduces key, minimal CHERI concepts and features to
 the RISC-V ISA. The resulting extended ISA is not
 backwards-compatible with RISC-V.
-{cheri_legacy_ext_name}:: Extends {cheri_base_ext_name} with features to ensure
+{cheri_default_ext_name}:: Extends {cheri_base_ext_name} with features to ensure
 that the ISA extended with CHERI allows backwards binary compatibility with
 RISC-V.
 It also adds a mode bit in the encoding of capabilities to
@@ -101,7 +101,7 @@ improves software compartmentalization on CHERI systems.
 CAUTION: The extension names are provisional and subject to change.
 
 {cheri_base_ext_name} is defined as the base extension which all CHERI RISC-V
-implementations must support. {cheri_legacy_ext_name}
+implementations must support. {cheri_default_ext_name}
 and {cheri_pte_ext_name} are optional extensions in addition to
 {cheri_base_ext_name}.
 
@@ -113,10 +113,10 @@ but it could equally be one of the subsets defined by a Zve* extension) then
 We refer to software as _purecap_ if it utilizes CHERI capabilities for all
 memory accesses -- including loads, stores and instruction fetches -- rather
 than integer addresses. Purecap software requires the CHERI RISC-V hart to
-support {cheri_base_ext_name}. We refer to software as _hybrid_ if it uses
+support {cheri_base_ext_name}. We refer to software as _Hybrid_ if it uses
 integer addresses *or* CHERI capabilities for memory accesses. Hybrid software
 requires the CHERI RISC-V hart to support {cheri_base_ext_name} and
-{cheri_legacy_ext_name}.
+{cheri_default_ext_name}.
 
 See xref:riscv-extensions[xrefstyle=short] for compatibility with other RISC-V
 extensions.

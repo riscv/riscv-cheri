@@ -6,34 +6,34 @@
 Synopsis::
 Add upper immediate to *pc*/<<pcc>>
 
-Capability Mode Mnemonic::
+pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonic::
 `auipc cd, imm`
 
-Legacy Mode Mnemonic::
+pass:attributes,quotes[{cheri_int_mode_name}] Mnemonic::
 `auipc rd, imm`
 
 Encoding::
 include::wavedrom/rv64_lui-auipc.adoc[]
 
-Capability Mode Description::
+pass:attributes,quotes[{cheri_cap_mode_name}] Description::
 Form a 32-bit offset from the 20-bit immediate filling the lowest 12 bits with
 zeros. Increment the address of the AUIPC instruction's <<pcc>> by the
 32-bit offset, then write the output capability to `cd`. The tag bit of the
 output capability is 0 if the incremented address is outside the <<pcc>>'s
 <<section_cap_representable_check>>.
 
-Legacy Mode Description::
+pass:attributes,quotes[{cheri_int_mode_name}] Description::
 Form a 32-bit offset from the immediate, filling in the lowest 12 bits with
 zeros, adds this offset to the address of the AUIPC instruction, then places
 the result in register `rd`.
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for pass:attributes,quotes[{cheri_cap_mode_name}]::
 {cheri_base_ext_name}
 
-Prerequisites for Legacy Mode::
-{cheri_legacy_ext_name}
+Prerequisites for pass:attributes,quotes[{cheri_int_mode_name}]::
+{cheri_default_ext_name}
 
 Operation for AUIPC::
 +

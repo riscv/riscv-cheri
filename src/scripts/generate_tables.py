@@ -77,7 +77,7 @@ class Zish4add_insns(table):
     def check(self,row):
         return row[self.header.index("Zish4add")] == "✔"
 
-class Zcheri_legacy_insns(table):
+class Zcheri_hybrid_insns(table):
     cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
     indices = []
 
@@ -101,7 +101,7 @@ class Zcheri_legacy_insns(table):
 
     def check(self,row):
         # Don't print instructions already listed by {cheri_base_ext_name}
-        return row[self.header.index("{cheri_legacy_ext_name}")] == "✔" and row[self.header.index("{cheri_base_ext_name}")] != "✔"
+        return row[self.header.index("{cheri_default_ext_name}")] == "✔" and row[self.header.index("{cheri_base_ext_name}")] != "✔"
 
 class Zcheri_purecap_insns(table):
     cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
@@ -133,7 +133,7 @@ class Zcheri_purecap_insns(table):
         return row[self.header.index("{cheri_base_ext_name}")] == "✔"
 
 class cap_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_legacy_ext_name}", "{cheri_base_ext_name}", "Function"]
+    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -155,10 +155,10 @@ class cap_mode_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Valid Modes")] == "Capability"
+        return row[self.header.index("Valid Modes")] == "{cheri_cap_mode_name}"
 
 class legacy_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_legacy_ext_name}", "{cheri_base_ext_name}", "Function"]
+    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -180,10 +180,10 @@ class legacy_mode_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Valid Modes")] == "Legacy"
+        return row[self.header.index("Valid Modes")] == "{cheri_int_mode_name}"
 
 class both_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_legacy_ext_name}", "{cheri_base_ext_name}", "Function"]
+    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -258,7 +258,7 @@ class illegal_insns(table):
         return row[self.header.index("illegal insn if (1)")] != ""
 
 class legacy_mnemonic_insns(table):
-    cols = ["Mnemonic", "Legacy mnemonic RV32", "Legacy mnemonic RV64"]
+    cols = ["Mnemonic", "{cheri_int_mode_name} mnemonic RV32", "{cheri_int_mode_name} mnemonic RV64"]
     indices = []
 
     def __init__(self, filename, header):
@@ -276,7 +276,7 @@ class legacy_mnemonic_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Legacy mnemonic RV32")] != "" and row[self.header.index("Legacy mnemonic RV64")] != ""
+        return row[self.header.index("{cheri_int_mode_name} mnemonic RV32")] != "" and row[self.header.index("{cheri_int_mode_name} mnemonic RV64")] != ""
 
 class csr_aliases(table):
     cols = ["CLEN CSR", "Alias", "Prerequisites"]
@@ -359,7 +359,7 @@ class csr_added_legacy(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Alias")] == "" and "{cheri_legacy_ext_name}" in row[self.header.index("Prerequisites")]
+        return row[self.header.index("Alias")] == "" and "{cheri_default_ext_name}" in row[self.header.index("Prerequisites")]
 
 class csr_added_purecap_mode_d(table):
     cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
@@ -644,7 +644,7 @@ if __name__ == "__main__":
         #tables.append(csr_added_purecap_mode_d  (os.path.join(args.output_dir, "csr_added_purecap_mode_d_table_body.adoc"),header))
         #tables.append(csr_added_purecap_mode_m  (os.path.join(args.output_dir, "csr_added_purecap_mode_m_table_body.adoc"),header))
         #tables.append(csr_added_purecap_mode_s  (os.path.join(args.output_dir, "csr_added_purecap_mode_s_table_body.adoc"),header))
-        tables.append(csr_added_legacy          (os.path.join(args.output_dir, "csr_added_legacy_table_body.adoc"),header))
+        tables.append(csr_added_legacy          (os.path.join(args.output_dir, "csr_added_hybrid_table_body.adoc"),header))
         tables.append(csr_perms                 (os.path.join(args.output_dir, "csr_permission_table_body.adoc"),header))
         tables.append(csr_exevectors            (os.path.join(args.output_dir, "csr_exevectors_table_body.adoc"),header))
         tables.append(csr_metadata              (os.path.join(args.output_dir, "csr_metadata_table_body.adoc"),header))
@@ -661,7 +661,7 @@ if __name__ == "__main__":
         #same for rv32/rv64
         tables.append(Zabhlrsc_insns               (os.path.join(args.output_dir, "Zabhlrsc_insns_table_body.adoc"), header))
         tables.append(Zish4add_insns               (os.path.join(args.output_dir, "Zish4add_insns_table_body.adoc"), header))
-        tables.append(Zcheri_legacy_insns          (os.path.join(args.output_dir, "Zcheri_legacy_insns_table_body.adoc"), header))
+        tables.append(Zcheri_hybrid_insns          (os.path.join(args.output_dir, "Zcheri_hybrid_insns_table_body.adoc"), header))
         tables.append(Zcheri_purecap_insns         (os.path.join(args.output_dir, "Zcheri_purecap_insns_table_body.adoc"), header))
         tables.append(xlen_dependent_encoding_insns(os.path.join(args.output_dir, "xlen_dependent_encoding_insns_table_body.adoc"), header))
         tables.append(legacy_mnemonic_insns        (os.path.join(args.output_dir, "legacy_mnemonic_insns_table_body.adoc"), header))

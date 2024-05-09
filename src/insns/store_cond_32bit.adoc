@@ -20,48 +20,48 @@ See <<SC.B>>.
 Synopsis::
 Store Conditional (SC.D, SC.W, SC.H, SC.B), 32-bit encodings
 
-Capability Mode Mnemonics (RV64)::
+pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonics (RV64)::
 `sc.[d|w|h|b] rd, rs2, 0(cs1)`
 
-Capability Mode Mnemonics (RV32)::
+pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonics (RV32)::
 `sc.[w|h|b] rd, rs2, 0(cs1)`
 
-Legacy Mode Mnemonics (RV64)::
+pass:attributes,quotes[{cheri_int_mode_name}] Mnemonics (RV64)::
 `sc.[d|w|h|b] rd, rs2, 0(rs1)`
 
-Legacy Mode Mnemonics (RV32)::
+pass:attributes,quotes[{cheri_int_mode_name}] Mnemonics (RV32)::
 `sc.[w|h|b] rd, rs2, 0(rs1)`
 
 Encoding::
 include::wavedrom/store_cond.adoc[]
 
-Capability Mode Description::
+pass:attributes,quotes[{cheri_cap_mode_name}] Description::
 Store conditional instructions, authorised by the capability in `cs1`.
 
-Legacy Mode Description::
+pass:attributes,quotes[{cheri_int_mode_name}] Description::
 Store conditional instructions, authorised by the capability in <<ddc>>.
 
 :store_cond:
 
 include::store_exceptions.adoc[]
 
-Prerequisites for Capability Mode SC.D::
+Prerequisites for pass:attributes,quotes[{cheri_cap_mode_name}] SC.D::
 RV64, and {cheri_base_ext_name}, and A
 
-Prerequisites for Legacy Mode SC.D::
-RV64, and {cheri_legacy_ext_name}, and A
+Prerequisites for pass:attributes,quotes[{cheri_int_mode_name}] SC.D::
+RV64, and {cheri_default_ext_name}, and A
 
-Prerequisites for Capability Mode SC.W::
+Prerequisites for pass:attributes,quotes[{cheri_cap_mode_name}] SC.W::
 {cheri_base_ext_name}, and A
 
-Prerequisites for Legacy Mode SC.W::
-{cheri_legacy_ext_name}, and A
+Prerequisites for pass:attributes,quotes[{cheri_int_mode_name}] SC.W::
+{cheri_default_ext_name}, and A
 
-Prerequisites for Capability Mode SC.H, SC.B::
+Prerequisites for pass:attributes,quotes[{cheri_cap_mode_name}] SC.H, SC.B::
 {cheri_base_ext_name}, and {lr_sc_bh_ext_name}
 
-Prerequisites for Legacy Mode SC.H, SC.B::
-{cheri_legacy_ext_name}, and {lr_sc_bh_ext_name}
+Prerequisites for pass:attributes,quotes[{cheri_int_mode_name}] SC.H, SC.B::
+{cheri_default_ext_name}, and {lr_sc_bh_ext_name}
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

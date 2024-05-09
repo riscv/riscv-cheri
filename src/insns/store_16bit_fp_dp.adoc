@@ -9,43 +9,43 @@ See <<C.FSDSP>>.
 Synopsis::
 Double precision floating point stores (C.FSD, C.FSDSP), 16-bit encodings
 
-Capability Mode Mnemonics (RV32CD/RV32D_Zca)::
+pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonics (RV32CD/RV32D_Zca)::
 `c.fsd fs2, offset(cs1'/csp)`
 
-Capability Mode Expansions (RV32)::
+pass:attributes,quotes[{cheri_cap_mode_name}] Expansions (RV32)::
 `fsd fs2, offset(csp)`
 
-Legacy Mode Mnemonics (RV32CD/RV32D_Zca)::
+pass:attributes,quotes[{cheri_int_mode_name}] Mnemonics (RV32CD/RV32D_Zca)::
 `c.fsd fs2, offset(rs1'/sp)`
 
-Legacy Mode Expansions (RV32)::
+pass:attributes,quotes[{cheri_int_mode_name}] Expansions (RV32)::
 `fsd fs2, offset(rs1'/sp)`
 
-Legacy Mode Mnemonics (RV64CD/RV64D_Zca)::
+pass:attributes,quotes[{cheri_int_mode_name}] Mnemonics (RV64CD/RV64D_Zca)::
 `c.fsd fs2, offset(rs1'/sp)`
 
-Legacy Mode Expansion (RV64)::
+pass:attributes,quotes[{cheri_int_mode_name}] Expansion (RV64)::
 `fsd fs2, offset(rs1'/sp)`
 
 Encoding::
 include::wavedrom/c-sp-store-css-fp-dp.adoc[]
 include::wavedrom/c-sp-store-css-fp-dp-sprel.adoc[]
 
-Capability Mode Description::
+pass:attributes,quotes[{cheri_cap_mode_name}] Description::
 Standard floating point stack pointer relative store instructions, authorised by the capability in `cs1` or `csp`.
 
-Legacy Mode Description::
+pass:attributes,quotes[{cheri_int_mode_name}] Description::
 Standard floating point stack pointer relative store instructions, authorised by the capability in <<ddc>>.
 
 include::store_exceptions.adoc[]
 
-Prerequisites for Capability Mode C.FSD, C.FSDSP (RV32 only)::
+Prerequisites for pass:attributes,quotes[{cheri_cap_mode_name}] C.FSD, C.FSDSP (RV32 only)::
 {cheri_base_ext_name}, C and D; or +
 {cheri_base_ext_name}, Zca and Zcd
 
-Prerequisites for Legacy Mode C.FSD, C.FSDSP::
-{cheri_legacy_ext_name}, C and D; or +
-{cheri_legacy_ext_name}, Zca and Zcd
+Prerequisites for pass:attributes,quotes[{cheri_int_mode_name}] C.FSD, C.FSDSP::
+{cheri_default_ext_name}, C and D; or +
+{cheri_default_ext_name}, Zca and Zcd
 
 Operation (after expansion to 32-bit encodings)::
  See <<FSD>>

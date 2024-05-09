@@ -164,7 +164,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 | 5   | ✔ | ✔ |   |   |     | N/A | Data RW
 | 6-7   7+| reserved
 8+| *Quadrant 1: Executable capabilities*
-8+| bit[0] - <<m_bit>> (1-capability, 0-legacy)
+8+| bit[0] - <<m_bit>> (1-pass:attributes,quotes[{cheri_cap_mode_name}], 0-pass:attributes,quotes[{cheri_int_mode_name}])
 | 0-1   | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode  | Execute + ASR (see <<infinite-cap>>)
 | 2-3   | ✔ |   | ✔ | ✔ |     | Mode  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔ |     | Mode  | Execute + Data & Cap RW
@@ -210,7 +210,7 @@ permission.
 |==============================================================================
 
 For both MXLEN=32 and MXLEN=64, the <<m_bit>> is only assigned meaning when the
-implementation supports {cheri_legacy_ext_name}, otherwise the bit is reserved
+implementation supports {cheri_default_ext_name}, otherwise the bit is reserved
 and must be 0 in valid capabilities.
 
 ===== Permission Transitions
@@ -463,7 +463,7 @@ The compressed bounds encoding allows the address to roam over a large
 _representable_ region while maintaining the original bounds. This is enabled by
 defining a lower boundary R from the out-of-bounds values that allows us to
 disambiguate the location of the bounds with respect to an out-of-bounds address.
-R is caluculated
+R is calculated
 relative to the base by subtracting 2^MW-2^ from B.
 If B, T or _a_[E + MW - 1:E] is less than R, it is inferred that they lie in the
 2^E+MW^ aligned region above R labelled space~U~ in
@@ -581,7 +581,7 @@ or 'root' capability.
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-NOTE: The AP fields both set Legacy Mode (if {cheri_legacy_ext_name} is supported)
+NOTE: The AP fields both set pass:attributes,quotes[{cheri_int_mode_name}] (if {cheri_default_ext_name} is supported)
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check

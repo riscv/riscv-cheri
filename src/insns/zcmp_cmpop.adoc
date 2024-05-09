@@ -6,10 +6,10 @@
 Synopsis::
 Destroy stack frame (CM.POP): load the return address register and 0 to 12 saved registers from the stack frame, deallocate the stack frame. 16-bit encodings.
 
-Capability Mode Mnemonic::
+pass:attributes,quotes[pass:attributes,quotes[{cheri_cap_mode_name}]] Mnemonic::
 `cm.pop \{creg_list\}, -stack_adj`
 
-Legacy Mode Mnemonics::
+pass:attributes,quotes[pass:attributes,quotes[{cheri_int_mode_name}]] Mnemonics::
 `cm.pop \{reg_list\}, -stack_adj`
 
 Encoding::
@@ -28,19 +28,19 @@ Encoding::
 
 _rlist_ values 0 to 3 are reserved for a future EABI variant
 
-Capability Mode Description::
+pass:attributes,quotes[pass:attributes,quotes[{cheri_cap_mode_name}]] Description::
 Load capability registers as specified in _creg_list_. Deallocate stack frame. All accesses are checked against `csp`.
 
-Legacy Mode Description::
+pass:attributes,quotes[pass:attributes,quotes[{cheri_int_mode_name}]] Description::
 Load integer registers as specified in _reg_list_. Deallocate stack frame. All accesses are checked against <<ddc>>.
 
 include::load_exceptions.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for pass:attributes,quotes[pass:attributes,quotes[{cheri_cap_mode_name}]]::
 {c_cheri_base_ext_names}, Zcmp
 
-Prerequisites for Legacy Mode::
-{c_cheri_legacy_ext_names}, Zcmp
+Prerequisites for pass:attributes,quotes[pass:attributes,quotes[{cheri_int_mode_name}]]::
+{c_cheri_default_ext_names}, Zcmp
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

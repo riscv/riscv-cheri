@@ -11,16 +11,16 @@ Expands to <<JALR>> following the expansion rule from cite:[riscv-unpriv-spec].
 Synopsis::
 Jump and link register
 
-Capability Mode Mnemonic::
+pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonic::
 `jalr cd, cs1, offset`
 
-Legacy Mode Mnemonic::
+pass:attributes,quotes[{cheri_int_mode_name}] Mnemonic::
 `jalr rd, rs1, offset`
 
 Encoding::
 include::wavedrom/ct-unconditional-2.adoc[]
 
-Capability Mode Description::
+pass:attributes,quotes[{cheri_cap_mode_name}] Description::
 JALR allows unconditional, indirect jumps to a target capability. The
 target capability is obtained by unsealing `cs1` if the immediate is zero and
 incrementing its address by the sign-extended 12-bit immediate otherwise,
@@ -31,7 +31,7 @@ performed and is then installed in <<pcc>>. The <<pcc>>
 of the next instruction following the jump (<<pcc>> + 4) is sealed and written
 to `cd`.
 
-Legacy Mode Description::
+pass:attributes,quotes[{cheri_int_mode_name}] Description::
 JALR allows unconditional, indirect jumps to a target address. The target
 address is obtained by adding the sign-extended 12-bit immediate to `rs1`, then
 setting the least-significant bit of the result to zero. The target address
@@ -47,7 +47,7 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 [%autowidth,options=header,align=center]
 |==============================================================================
-| CAUSE                 | Legacy Mode | Capability Mode | Reason
+| CAUSE                 | pass:attributes,quotes[{cheri_int_mode_name}] | pass:attributes,quotes[{cheri_cap_mode_name}] | Reason
 | Tag violation         |      | ✔     | `cs1` has tag set to 0
 | Seal violation        |      | ✔     | `cs1` is sealed and the immediate is not 0
 | Permission violation  |      | ✔     | `cs1` does not grant <<x_perm>>
@@ -56,11 +56,11 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites Capability Mode::
+Prerequisites pass:attributes,quotes[{cheri_cap_mode_name}]::
 {cheri_base_ext_name}
 
-Prerequisites Legacy Mode::
-{cheri_legacy_ext_name}
+Prerequisites pass:attributes,quotes[{cheri_int_mode_name}]::
+{cheri_default_ext_name}
 
 Operation::
 +
