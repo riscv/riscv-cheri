@@ -748,23 +748,23 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 .Encoding of TYPE field
 [#mtval-cheri-type,width=65%,float="center",align="center",options=header,cols="30%,70%"]
 |==============================================================================
-| CHERI Type Code | Description
-| 0               | CHERI instruction access fault
-| 1               | CHERI data fault due to load, store or AMO
-| 2               | CHERI jump or branch fault
-| 3-15            | Reserved
+| CHERI Type Code           | Description
+| {cheri_excep_type_pcc}    | CHERI instruction access fault
+| {cheri_excep_type_data}   | CHERI data fault due to load, store or AMO
+| {cheri_excep_type_jump}   | CHERI jump or branch fault
+| 3-15                      | Reserved
 |==============================================================================
 
 .Encoding of CAUSE field
 [#mtval-cheri-causes,width=55%,float="center",align="center",options=header]
 |==============================================================================
-| CHERI Cause Code | Description
-| 0                | Tag violation
-| 1                | Seal violation
-| 2                | Permission violation
-| 3                | Invalid address violation
-| 4                | Length violation
-| 5-15             | Reserved
+| CHERI Cause Code              | Description
+| {cheri_excep_cause_tag}       | Tag violation
+| {cheri_excep_cause_seal}      | Seal violation
+| {cheri_excep_cause_perm}      | Permission violation
+| {cheri_excep_cause_inv_addr}  | Invalid address violation
+| {cheri_excep_cause_length}    | Length violation
+| 5-15                          | Reserved
 |==============================================================================
 
 CHERI violations have the following order in priority:
@@ -997,36 +997,40 @@ NOTE: `auth_cap` is <<ddc>> for pass:attributes,quotes[{cheri_int_mode_name}] an
 |=========================================================================================
 | Instructions | Xcause | Xtval. TYPE | Xtval. CAUSE | Description | Check
 6+| *All instructions have these exception checks first*
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}    | <<pcc>> tag  | not(<<pcc>>.tag)
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}   | <<pcc>> seal | isCapSealed(<<pcc>>)^1^
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}   | <<pcc>> permission | not(<<pcc>>.<<x_perm>>)
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_length} | <<pcc>> length | Any byte of current instruction out of <<pcc>> bounds
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}      | <<pcc>> tag             | not(<<pcc>>.tag)
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}     | <<pcc>> seal            | isCapSealed(<<pcc>>)^1^
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}     | <<pcc>> permission      | not(<<pcc>>.<<x_perm>>)
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_inv_addr} | <<pcc>> invalid address | <<pcc>> holds an invalid address
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_length}   | <<pcc>> length          | Any byte of current instruction out of <<pcc>> bounds
 6+| *CSR/Xret additional exception check*
-| CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
+| CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}          | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
 6+| *direct jumps additional exception check*
-| <<JAL>>, <<insns-conbr-32bit>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} | <<pcc>> length | any byte of minimum length instruction at target out of <<pcc>> bounds
+| <<JAL>>, <<insns-conbr-32bit>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} | <<pcc>> length     | any byte of minimum length instruction at target out of <<pcc>> bounds
 6+| *indirect jumps additional exception checks*
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}    |`cs1` tag       | not(`cs1.tag`)
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}   |`cs1` seal      | isCapSealed(`cs1`) and imm12 != 0
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}   |`cs1` permission| not(`cs1`.<<x_perm>>)
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} |`cs1` length    | any byte of minimum length instruction at target out of `cs1` bounds
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}      |`cs1` tag             | not(`cs1.tag`)
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}     |`cs1` seal            | isCapSealed(`cs1`) and imm12 != 0
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}     |`cs1` permission      | not(`cs1`.<<x_perm>>)
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_inv_addr} |`cs1` invalid address | target address is an invalid address
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length}   |`cs1` length          | any byte of minimum length instruction at target out of `cs1` bounds
 6+| *Load additional exception checks*
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    | `auth_cap` tag          | not(`auth_cap.tag`)
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   | `auth_cap` seal         | isCapSealed(`auth_cap`)
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   | `auth_cap` permission   | not(`auth_cap`.<<r_perm>>)
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} | `auth_cap` length       | Any byte of load access out of `auth_cap` bounds
-| capability loads | 4                    | N/A                     | N/A                        | load address misaligned | Misaligned capability load
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}      | `auth_cap` tag             | not(`auth_cap.tag`)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}     | `auth_cap` seal            | isCapSealed(`auth_cap`)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}     | `auth_cap` permission      | not(`auth_cap`.<<r_perm>>)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_inv_addr} | `auth_cap` invalid address | Address is invalid (see <<section_invalid_addr_conv>>)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length}   | `auth_cap` length          | Any byte of load access out of `auth_cap` bounds
+| capability loads | 4                    | N/A                     | N/A                          | load address misaligned    | Misaligned capability load
 6+| *Store/atomic/cache-block-operation additional exception checks*
 | all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    |`auth_cap` tag        | not(`auth_cap.tag`)
 | all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   |`auth_cap` seal       | isCapSealed(`auth_cap`)
 | all atomics, CBO.INVAL*                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>)
 | all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<w_perm>>)
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
-| all stores, all atomics                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of access out of `auth_cap` bounds
-| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of cache block out of `auth_cap` bounds
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | all bytes of cache block out of `auth_cap` bounds
-| CBO.INVAL*                                     | {cheri_excep_mcause} | {cheri_excep_type_pcc}  | {cheri_excep_cause_perm}   |<<pcc>> permission    | not(<<pcc>>.<<asr_perm>>)
-| capability stores                              | 6                    | N/A                     | N/A                        |capability alignment  | Misaligned capability store
+| all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_inv_addr} |`auth_cap` invalid address | Address is invalid (see <<section_invalid_addr_conv>>)
+| all stores, all atomics                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length}   |`auth_cap` length          | any byte of access out of `auth_cap` bounds
+| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length}   |`auth_cap` length          | any byte of cache block out of `auth_cap` bounds
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length}   |`auth_cap` length          | all bytes of cache block out of `auth_cap` bounds
+| CBO.INVAL*                                     | {cheri_excep_mcause} | {cheri_excep_type_pcc}  | {cheri_excep_cause_perm}     |<<pcc>> permission         | not(<<pcc>>.<<asr_perm>>)
+| capability stores                              | 6                    | N/A                     | N/A                          |capability alignment       | Misaligned capability store
 |=========================================================================================
 
 ^1^ This check is architecturally required, but is impossible to encounter so may not required in an implementation.
