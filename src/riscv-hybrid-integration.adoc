@@ -388,6 +388,8 @@ machine-mode hart-local context space, to load into <<ddc>>.
 
 {TAG_RESET_CSR}
 
+{REQUIRE_CRE_CSR}
+
 .Machine-mode trap data capability register
 include::img/mtdcreg.edn[]
 
@@ -435,6 +437,8 @@ a supervisor-mode hart-local context space, to load into <<ddc>>.
 
 {TAG_RESET_CSR}
 
+{REQUIRE_CRE_CSR}
+
 .Supervisor trap data capability register (*stdc*)
 include::img/stdcreg.edn[]
 
@@ -469,6 +473,10 @@ The <<ddc>> CSR is a read-write capability register implicitly used as an
 operand to authorise all data memory accesses when the current CHERI mode is
 pass:attributes,quotes[{cheri_int_mode_name}]. This register must be readable in any implementation. Its reset value
 is the <<infinite-cap>> capability.
+
+{REQUIRE_CRE_CSR}
+
+NOTE: CRE is not required for the implicit access required by checking memory accesses against <<ddc>>
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<ddc>> is a data pointer,
 so it does not need to be able to hold all possible invalid addresses.
