@@ -12,7 +12,6 @@ CSRs enabling CHERI features. The remainder of this section describes
 these features in detail as well as their integration with the primary base
 integer variants of the RISC-V ISA (RV32I and RV64I).
 
-[#m_bit,reftext="M-bit"]
 === CHERI Execution Mode
 
 {cheri_default_ext_name} adds CHERI execution modes to ensure backwards
@@ -34,7 +33,7 @@ capability is supplied as an explicit *c* operand register to the instruction.
 are available in pass:attributes,quotes[{cheri_int_mode_name}] but not pass:attributes,quotes[{cheri_cap_mode_name}] and vice-versa (see
 xref:riscv-extensions[xrefstyle=short]).
 
-NOTE: The implication is that the CHERI execution mode is always Capability on
+NOTE: The implication is that the CHERI execution mode is always pass:attributes,quotes[{cheri_cap_mode_name}] on
 implementations that support {cheri_base_ext_name}, but not
 {cheri_default_ext_name}.
 
@@ -48,38 +47,35 @@ The CHERI execution mode is key in providing backwards compatibility with the
 base RISC-V ISA. RISC-V software is able to execute unchanged in
 implementations supporting both {cheri_base_ext_name} and
 {cheri_default_ext_name} provided that the <<infinite-cap>> capability is installed in <<ddc>> and <<pcc>>
-(with <<section-cheri-execution-mode,M=0>>, i.e. in pass:attributes,quotes[{cheri_int_mode_name}]).
+(with <<m_bit,M=0>>, i.e. in pass:attributes,quotes[{cheri_int_mode_name}]).
 Setting both registers to <<infinite-cap>> ensures that:
 
 * All permissions are granted
 * The bounds authorise accesses to the entire address space i.e base is 0 and
 top is 2^MXLEN^
 
-[#section-cheri-execution-mode]
+[#m_bit,reftext="M-bit"]
 === CHERI Execution Mode Encoding
 
 {cheri_default_ext_name} adds a new CHERI execution mode field (M) to
-capabilities within the AP field (see xref:section_cap_perms[xrefstyle=short]).
-When MXLEN=32, the mode is encoded in bit 0 of quadrant 1 from the AP field.
-When MXLEN=64, the mode is encoded in bit 0 of the AP field: a new M bit field is
+capabilities within the AP field (see xref:section_cap_perms[xrefstyle=short]):
+
+* When MXLEN=32, the mode is encoded in bit 0 of quadrant 1 from the AP field.
+* When MXLEN=64, the mode is encoded in bit 5 of the AP field: a new <<m_bit>> field is
 added to the capability format as shown in
-xref:cap_perms_encoding64[xrefstyle=short]. In both encodings, M=0
+xref:cap_perms_encoding64[xrefstyle=short]. 
+
+In both encodings, M=0
 indicates pass:attributes,quotes[{cheri_int_mode_name}] and M=1 indicates pass:attributes,quotes[{cheri_cap_mode_name}].
 
-The current CHERI execution mode is given by the M field of the <<pcc>> and the
+The current CHERI execution mode is given by the <<m_bit>> of the <<pcc>> and the
 CRE bits in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> as follows:
 
-* The mode is pass:attributes,quotes[{cheri_cap_mode_name}] when the M field of the <<pcc>> is pass:attributes,quotes[{cheri_cap_mode_name}] and the effective
+* The mode is pass:attributes,quotes[{cheri_cap_mode_name}] when the <<m_bit>> of the <<pcc>> is 1, *and* the effective
 CRE=1 for the current privilege level
-* The mode is pass:attributes,quotes[{cheri_int_mode_name}] when the effective CRE=0 for the current privilege level or the M field of the <<pcc>> is pass:attributes,quotes[{cheri_int_mode_name}]
+* The mode is pass:attributes,quotes[{cheri_int_mode_name}] when the effective CRE=0 for the current privilege level *or* the <<m_bit>> of the <<pcc>> is 0
 
-When MXLEN=32, the M field is pass:attributes,quotes[{cheri_int_mode_name}] in the <<infinite-cap>> capability,
-so its AP field is 8; furthermore, the <<null-cap>> capability does not grant
-<<x_perm>>, so the M field is superfluous in this case.
-
-When MXLEN=64, the <<m_bit>> can be set to 1 when the capability does not grant <<x_perm>>.
-In this case, the <<m_bit>> is superfluous, so the encoding may be used to support additional features in future extensions;
-furthermore, the <<m_bit>> is 0 in both the <<null-cap>> and <<infinite-cap>> capabilities.
+When the <<m_bit>> can be set follows the rules defined by <<ACPERM>>.
 
 [#section_hybrid_ext_instructions]
 === Zcherihybrid Instructions
@@ -93,14 +89,14 @@ The load and store capability instructions change behaviour depending on the
 CHERI execution mode although the instruction's encoding remains unchanged.
 
 The load capability instruction is <<LC>>. When the CHERI execution mode is
-Capability; the instruction behaves as described in
+pass:attributes,quotes[{cheri_cap_mode_name}]; the instruction behaves as described in
 xref:section_cap_instructions[xrefstyle=short].
 In pass:attributes,quotes[{cheri_int_mode_name}], the capability authorising the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
 the sign-extended offset.
 
 The store capability instruction is <<SC>>. When the CHERI execution mode is
-Capability; the instruction behaves as described in
+pass:attributes,quotes[{cheri_cap_mode_name}]; the instruction behaves as described in
 xref:section_cap_instructions[xrefstyle=short].
 In pass:attributes,quotes[{cheri_int_mode_name}], the capability authorising the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
