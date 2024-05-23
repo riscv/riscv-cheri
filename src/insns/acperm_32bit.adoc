@@ -23,17 +23,20 @@ Encoding::
 include::wavedrom/acperm.adoc[]
 
 Description::
-Converts the AP and SDP fields of capability `cs1` into a bit field; one bit
-per permission as shown below. Then calculate the bitwise AND of the bit field
-with the mask `rs2` . Set the AP and SDP fields of `cs1` as indicated in the
-resulting bit field -- the capability grants a permission if the corresponding
-bit is set in the bit field -- and write the output capability to `cd` . The
-output capability has its tag set to 0 if `cs1` is sealed.
+
+include::../img/acperm_bit_field.edn[]
+
+ACPERM performs the following operations:
+
+. Convert the AP and SDP fields of capability `cs1` into the format shown above
+.. SDPLEN is defined in <<sdp_bit_width>>
+. Calculate the bitwise AND of the bit field with the mask `rs2`.
+. Clear AP permissions as required to meet the rules below.
+. Encode the AP permissions for MXLEN=32 according to <<cap_perms_encoding32>>.
+. Copy `cs1` to `cd`, and update the AP and SDP fields with the newly calculated versions.
+. Set `cd.tag=0` if `cs1` is sealed.
 +
-The AP field is not able to encode all combinations of permissions when MXLEN=32, therefore removing a permission may yield a capability which cannot be encoded.
-Valid combinations are shown in <<cap_perms_encoding32>>.
-+
-Additionally some combinations of permissions are not useful when MXLEN=64.
+Some combinations of permissions cannot be encoded for MXLEN=32, and are not useful when MXLEN=64.
 These cases are defined to return useful minimal sets of permissions, which may be no permissions.
 +
 NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
@@ -53,8 +56,6 @@ The MXLEN=32 additional rules are:
 . Clear <<asr_perm>> if _all_ other permissions are not set
 . Clear <<c_perm>> and <<x_perm>> if <<r_perm>> is not set
 . Clear <<x_perm>> if <<x_perm>> and <<r_perm>> _are_ set, but <<c_perm>> and <<w_perm>> _are not_ set.
-
-include::../img/acperm_bit_field.edn[]
 
 Exceptions::
 include::require_cre.adoc[]
