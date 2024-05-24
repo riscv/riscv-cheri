@@ -148,6 +148,11 @@ Quadrants 2 and 3 are arranged to implicitly grant future permissions which may 
 Quadrant 0 does the opposite - the encodings are allocated _not_ to implicitly add future permissions, and so granting future permissions will require new encodings.
 Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 
+NOTE: Despite being encoded with the permissions here, the <<m_bit>> is not a permission.
+Permissions decrease monotonically; you cannot create a capability with more
+permissions than its progenitor. In contrast the <<m_bit>> can be toggled
+using <<SCMODE>>.
+
 <<<
 
 .Encoding of architectural permissions for MXLEN=32
