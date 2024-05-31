@@ -136,8 +136,8 @@ Therefore, it is only possible to encode a subset of all combinations.
 [#perms_bit_width,options=header,align="center",width="80%",cols="^13%,^27%,<60%"]
 |==============================================================================
 ^| MXLEN | Permissions width      | Comment
-^| 32    | {cap_rv32_perms_width} | Encodes some combinations of 5 permission bits and the <<m_bit>>
-^| 64    | {cap_rv64_perms_width} | Separate bits for each permission and the <<m_bit>>
+^| 32    | {cap_rv32_perms_width} | Encodes some combinations of 5 permission bits and _includes_ the <<m_bit>> in quadrant 1 (see <<cap_perms_encoding32>>)
+^| 64    | {cap_rv32_perms_width} | Separate bits for each permission, _excluding_ the <<m_bit>>
 |==============================================================================
 
 For MXLEN=32, the permissions encoding is split into four quadrants.
@@ -206,12 +206,14 @@ permission.
 | 2   | <<r_perm>>
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
-| 5   | <<m_bit>>
+//| 5   | <<m_bit>>
 |==============================================================================
 
-For both MXLEN=32 and MXLEN=64, the <<m_bit>> is only assigned meaning when the
-implementation supports {cheri_default_ext_name}, otherwise the bit is reserved
-and must be 0 in valid capabilities.
+The <<m_bit>> is only assigned meaning when the
+implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
+
+. For MXLEN=64, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
+. For MXLEN=32, the <<m_bit>> is only encoded in quadrant 1 and does _not_ exist in the other quadrants.
 
 ===== Permission Transitions
 
