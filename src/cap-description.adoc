@@ -135,9 +135,9 @@ Therefore, it is only possible to encode a subset of all combinations.
 .Permissions widths depending on MXLEN
 [#perms_bit_width,options=header,align="center",width="80%",cols="^13%,^27%,<60%"]
 |==============================================================================
-^| MXLEN | Permissions width      | Comment
-^| 32    | {cap_rv32_perms_width} | Encodes some combinations of 5 permission bits and _includes_ the <<m_bit>> in quadrant 1 (see <<cap_perms_encoding32>>)
-^| 64    | {cap_rv32_perms_width} | Separate bits for each permission, _excluding_ the <<m_bit>>
+^| MXLEN | AP field width         | Comment
+^| 32    | {cap_rv32_perms_width} | Encodes some combinations of 5 permission bits, including the <<m_bit>> if {cheri_default_ext_name} is supported.
+^| 64    | {cap_rv64_perms_width} | Separate bits for each architectural permission.
 |==============================================================================
 
 For MXLEN=32, the permissions encoding is split into four quadrants.
@@ -153,7 +153,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 .Encoding of architectural permissions for MXLEN=32
 [#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
-| Encoding[2:0] | R | W | C | X | ASR | Mode | Notes
+| Encoding[2:0] | R | W | C | X | ASR | Mode^1^ | Notes
 8+| *Quadrant 0: Non-capability data read/write*
 8+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
 8+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
@@ -165,10 +165,10 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 | 6-7   7+| reserved
 8+| *Quadrant 1: Executable capabilities*
 8+| bit[0] - <<m_bit>> (1-pass:attributes,quotes[{cheri_cap_mode_name}], 0-pass:attributes,quotes[{cheri_int_mode_name}])
-| 0-1   | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode  | Execute + ASR (see <<infinite-cap>>)
-| 2-3   | ✔ |   | ✔ | ✔ |     | Mode  | Execute + Data & Cap RO
-| 4-5   | ✔ | ✔ | ✔ | ✔ |     | Mode  | Execute + Data & Cap RW
-| 6-7   | ✔ | ✔ |   | ✔ |     | Mode  | Execute + Data RW
+| 0-1   | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
+| 2-3   | ✔ |   | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RO
+| 4-5   | ✔ | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
+| 6-7   | ✔ | ✔ |   | ✔ |     | Mode^1^  | Execute + Data RW
 8+| *Quadrant 2: Reserved*
 8+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
 | 0-7   7+| reserved
@@ -181,6 +181,9 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 | 7       | ✔ | ✔ | ✔ |   |     | N/A | Data & Cap RW
 |==============================================================================
 
+^1^ _Mode (<<m_bit>>) can only be set on a tagged capability when {cheri_default_ext_name}
+is supported. Despite being encoded here it is *not* an architectural permission._
+
 NOTE: When MXLEN=32 there are many reserved permission encodings (see
 xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
 capability to have one of these values since <<ACPERM>> will never create it. It is
@@ -189,7 +192,7 @@ reserved values as if it were 0b00000 (no permissions). Future extensions may as
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
-A {cap_rv64_perms_width}-bit vector encodes the permissions and <<m_bit>> when MXLEN=64. In
+A {cap_rv64_perms_width}-bit vector encodes the permissions MXLEN=64. In
 this case, there is a bit per permission as shown in
 xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
 corresponding bit is set, otherwise the capability does not grant that
