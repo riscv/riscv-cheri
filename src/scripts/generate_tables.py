@@ -132,8 +132,37 @@ class Zcheri_purecap_insns(table):
     def check(self,row):
         return row[self.header.index("{cheri_base_ext_name}")] == "✔"
 
+class Zcheri_purecapzcd_insns(table):
+    cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        self.function_idx = self.header.index("Function")
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            out_str = ""
+            for i in self.indices:
+                cell_value = row[i]
+                if i == 0:
+                    cell_value = '<<' + cell_value + '>>'  # make an xref
+                elif i == self.function_idx:
+                    # Drop references to DDC authorization in the purecap table.
+                    cell_value = cell_value.replace(" via int pointer", " via capability register")
+                    cell_value = cell_value.replace(", authorise with DDC", "")
+                out_str += '|' + cell_value
+            self.file.write(out_str + '\n')
+
+    def check(self,row):
+        return row[self.header.index("{cheri_base_ext_name_zcd}")] == "✔"
+
 class cap_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
+    cols = ["Mnemonic", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -158,7 +187,7 @@ class cap_mode_insns(table):
         return row[self.header.index("Valid Modes")] == "{cheri_cap_mode_name}"
 
 class legacy_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
+    cols = ["Mnemonic", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -183,7 +212,7 @@ class legacy_mode_insns(table):
         return row[self.header.index("Valid Modes")] == "{cheri_int_mode_name}"
 
 class both_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
+    cols = ["Mnemonic", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -663,6 +692,7 @@ if __name__ == "__main__":
         tables.append(Zish4add_insns               (os.path.join(args.output_dir, "Zish4add_insns_table_body.adoc"), header))
         tables.append(Zcheri_hybrid_insns          (os.path.join(args.output_dir, "Zcheri_hybrid_insns_table_body.adoc"), header))
         tables.append(Zcheri_purecap_insns         (os.path.join(args.output_dir, "Zcheri_purecap_insns_table_body.adoc"), header))
+        tables.append(Zcheri_purecapzcd_insns      (os.path.join(args.output_dir, "Zcheri_purecapzcd_insns_table_body.adoc"), header))
         tables.append(xlen_dependent_encoding_insns(os.path.join(args.output_dir, "xlen_dependent_encoding_insns_table_body.adoc"), header))
         tables.append(legacy_mnemonic_insns        (os.path.join(args.output_dir, "legacy_mnemonic_insns_table_body.adoc"), header))
         tables.append(illegal_insns                (os.path.join(args.output_dir, "illegal_insns_table_body.adoc"), header))
