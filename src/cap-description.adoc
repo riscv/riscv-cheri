@@ -545,7 +545,6 @@ expanded base is 0 and top is 2^MXLEN^.
 | Tag      | zero  | Capability is not valid
 | SDP      | zeros | Grants no permissions
 | AP       | zeros | Grants no permissions
-| M (MXLEN=64) | zero | <<m_bit>>, encoded separately to AP for MXLEN=64
 | S        | zero  | Unsealed
 | EF       | zero  | Internal exponent format
 | T~8~     | zero  | Top address bit (MXLEN=32 only)
@@ -556,6 +555,11 @@ expanded base is 0 and top is 2^MXLEN^.
 | Address  | zeros | Capability address
 | Reserved | zeros | All reserved fields
 |==============================================================================
+
+If {cheri_default_ext_name} is supported:
+
+* For MXLEN=32, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in the AP field
+* For MXLEN=64, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in a separate M field
 
 [#section_infinite_cap]
 ==== Infinite Capability
@@ -577,7 +581,6 @@ or 'root' capability.
                         | Grants all permissions
 | AP (MXLEN=64) | 0x1F (see xref:cap_perms_encoding64[xrefstyle=short])
                         | Grants all permissions
-| M (MXLEN=64)  | one   | <<m_bit>>, encoded separately to AP for MXLEN=64
 | S             | zero  | Unsealed
 | EF            | zero  | Internal exponent format
 | T~8~          | zero  | Top address bit (MXLEN=32 only)
@@ -589,7 +592,10 @@ or 'root' capability.
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-NOTE: The AP fields both set pass:attributes,quotes[{cheri_int_mode_name}] (if {cheri_default_ext_name} is supported)
+If {cheri_default_ext_name} is supported:
+
+* For MXLEN=32, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in the AP field
+* For MXLEN=64, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in a separate M field
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
