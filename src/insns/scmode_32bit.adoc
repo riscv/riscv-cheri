@@ -20,13 +20,11 @@ Encoding::
 include::wavedrom/scmode.adoc[]
 
 Description::
-Copy `cs1`  to `cd`  and set the <<m_bit>> of `cd` to the least significant bit of
-`rs2` . `cd.tag` is set to 0 if `cs1`  is sealed.
-
-[NOTE]
-======
-There are restrictions on setting the <<m_bit>> which follows the definition in <<ACPERM>>
-======
+Copy `cs1` to `cd`. Clear `cd.tag` if `cs1` is sealed.
+Update the <<m_bit>> of `cd` to the least significant bit of
+`rs2` if the two following conditions are met, otherwise do not update it:
+. <<x_perm>> is set
+. The existing permissions can be produced by <<ACPERM>>
 
 Exceptions::
 include::require_cre.adoc[]
