@@ -71,11 +71,13 @@ added to the capability format as shown in
 xref:cap_perms_encoding64[xrefstyle=short].
 The <<m_bit>> is only valid for code capabilities, otherwise the field is reserved.
 
-NOTE: Mode is similar to a permission, but is not considered one as it can varied
-arbitrarily using <<SCMODE>>.
+NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It is
+orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 
-In both encodings, Mode (M)=0
-indicates pass:attributes,quotes[{cheri_int_mode_name}] and Mode (M)=1 indicates pass:attributes,quotes[{cheri_cap_mode_name}].
+In both encodings:
+
+* Mode (M)=1 indicates pass:attributes,quotes[{cheri_cap_mode_name}].
+* Mode (M)=0 indicates pass:attributes,quotes[{cheri_int_mode_name}].
 
 The current CHERI execution mode is given by the <<m_bit>> of the <<pcc>> and the
 CRE bits in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> as follows:

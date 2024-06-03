@@ -136,7 +136,7 @@ Therefore, it is only possible to encode a subset of all combinations.
 [#perms_bit_width,options=header,align="center",width="80%",cols="^13%,^27%,<60%"]
 |==============================================================================
 ^| MXLEN | AP field width         | Comment
-^| 32    | {cap_rv32_perms_width} | Encodes some combinations of 5 permission bits, including the <<m_bit>> if {cheri_default_ext_name} is supported.
+^| 32    | {cap_rv32_perms_width} | Encodes some combinations of {cap_rv64_perms_width} permission bits, including the <<m_bit>> if {cheri_default_ext_name} is supported.
 ^| 64    | {cap_rv64_perms_width} | Separate bits for each architectural permission.
 |==============================================================================
 
@@ -192,7 +192,7 @@ reserved values as if it were 0b00000 (no permissions). Future extensions may as
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
-A {cap_rv64_perms_width}-bit vector encodes the permissions MXLEN=64. In
+A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64. In
 this case, there is a bit per permission as shown in
 xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
 corresponding bit is set, otherwise the capability does not grant that
@@ -576,6 +576,7 @@ or 'root' capability.
                         | Grants all permissions
 | AP (MXLEN=64) | 0x1F (see xref:cap_perms_encoding64[xrefstyle=short])
                         | Grants all permissions
+| M (MXLEN=64)  | one   | <<m_bit>>, encoded separately to AP for MXLEN=64
 | S             | zero  | Unsealed
 | EF            | zero  | Internal exponent format
 | T~8~          | zero  | Top address bit (MXLEN=32 only)
