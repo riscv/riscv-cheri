@@ -507,12 +507,14 @@ equivalent to _b_=0 and _t_&#8805;2^MXLEN^.
 
 A capability is _malformed_ if its encoding does not describe a valid
 capability because its bounds cannot be correctly decoded. The following check
-indicates whether a capability is malformed.
+indicates whether a capability is malformed. `enableT8` is true when MXLEN=32
+and false otherwise, indicating whether the `T8` bit is available for extra
+precision when `EF=1`.
 
 ```
 malformedMSB =  (E == CAP_MAX_E     && B         != 0)
              || (E == CAP_MAX_E - 1 && B[MW - 1] != 0)
-malformedLSB =  (E  < 0)
+malformedLSB =  (E  < 0) || (E == 0 && enableT8)
 malformed    =  !EF && (malformedMSB || malformedLSB)
 ```
 
@@ -557,6 +559,11 @@ expanded base is 0 and top is 2^MXLEN^.
 | Reserved | zeros | All reserved fields
 |==============================================================================
 
+If {cheri_default_ext_name} is supported:
+
+* For MXLEN=32, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in the AP field
+* For MXLEN=64, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in a separate M field
+
 [#section_infinite_cap]
 ==== Infinite Capability
 
@@ -589,7 +596,10 @@ or 'root' capability.
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-NOTE: The AP fields both set pass:attributes,quotes[{cheri_int_mode_name}] (if {cheri_default_ext_name} is supported)
+If {cheri_default_ext_name} is supported:
+
+* For MXLEN=32, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in the AP field
+* For MXLEN=64, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in a separate M field
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
