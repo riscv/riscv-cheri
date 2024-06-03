@@ -504,12 +504,14 @@ equivalent to _b_=0 and _t_&#8805;2^MXLEN^.
 
 A capability is _malformed_ if its encoding does not describe a valid
 capability because its bounds cannot be correctly decoded. The following check
-indicates whether a capability is malformed.
+indicates whether a capability is malformed. `enableT8` is true when MXLEN=32
+and false otherwise, indicating whether the `T8` bit is available for extra
+precision when `EF=1`.
 
 ```
 malformedMSB =  (E == CAP_MAX_E     && B         != 0)
              || (E == CAP_MAX_E - 1 && B[MW - 1] != 0)
-malformedLSB =  (E  < 0)
+malformedLSB =  (E  < 0) || (E == 0 && enableT8)
 malformed    =  !EF && (malformedMSB || malformedLSB)
 ```
 
