@@ -59,7 +59,7 @@ top is 2^MXLEN^
 === CHERI Execution Mode Encoding
 
 {cheri_default_ext_name} adds a new CHERI execution Mode field (M) to
-the capability format, which is only valid for executable capabilities, i.e.
+the capability format, which is only valid for code capabilities, i.e.
 when the <<x_perm>> is set.
 
 * When MXLEN=32, the Mode is encoded in bit 0 of quadrant 1 from the AP field
@@ -69,7 +69,7 @@ one which encodes the Mode.
 * When MXLEN=64, the Mode is encoded separately; a new <<m_bit>> field is
 added to the capability format as shown in
 xref:cap_perms_encoding64[xrefstyle=short].
-It is _only_ the <<m_bit>> for code capabilities, otherwise the field is reserved.
+The <<m_bit>> is only valid for code capabilities, otherwise the field is reserved.
 
 NOTE: Mode is similar to a permission, but is not considered one as it can varied
 arbitrarily using <<SCMODE>>.
