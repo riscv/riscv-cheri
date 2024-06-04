@@ -22,7 +22,16 @@ include::wavedrom/c-sp-load-css-fp.adoc[]
 include::wavedrom/c-sp-load-css-fp-sprel.adoc[]
 
 pass:attributes,quotes[{cheri_int_mode_name}] Description::
-Standard floating point load instructions, authorised by the capability in <<ddc>>. Note that these instructions are not available in pass:attributes,quotes[{cheri_cap_mode_name}] in RV64, as they have been remapped to <<C.LC>>, <<C.LCSP>>.
+Standard floating point load instructions, authorised by the capability in <<ddc>>. 
+
+NOTE: These instructions are available in RV32 pass:attributes,quotes[{cheri_int_mode_name}] only.
+In pass:attributes,quotes[{cheri_cap_mode_name}] they are remapped to <<C.LC>>/<<C.LCSP>>.
+
+NOTE: In pass:attributes,quotes[{cheri_int_mode_name}], these instructions may be remapped to 
+other encodings by future RV32 only extensions such as Zilsd.
+If this is the case, then the Zilsd encodings will be valid in 
+pass:attributes,quotes[{cheri_int_mode_name}] only. In
+pass:attributes,quotes[{cheri_cap_mode_name}] the instructions will still be <<C.LC>>/<<C.LCSP>>.
 
 include::load_exceptions.adoc[]
 
