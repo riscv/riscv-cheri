@@ -6,10 +6,10 @@
 Synopsis::
 Create stack frame (CM.PUSH): store the return address register and 0 to 12 saved registers to the stack frame, optionally allocate additional stack space. 16-bit encodings.
 
-pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonic::
+pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonic (RV32)::
 `cm.push \{creg_list\}, -stack_adj`
 
-pass:attributes,quotes[{cheri_int_mode_name}] Mnemonics::
+pass:attributes,quotes[{cheri_int_mode_name}] Mnemonic::
 `cm.push \{reg_list\}, -stack_adj`
 
 Encoding::
@@ -33,6 +33,8 @@ Create stack frame, store capability registers as specified in _creg_list_. Opti
 
 pass:attributes,quotes[{cheri_int_mode_name}] Description::
 Create stack frame, store integer registers as specified in _reg_list_. Optionally allocate additional multiples of 16-byte stack space. All accesses are checked against <<ddc>>.
+
+include::zcm_common.adoc[]
 
 include::store_exceptions.adoc[]
 

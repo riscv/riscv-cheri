@@ -13,10 +13,12 @@ Synopsis::
 Floating point stores (C.FSW, C.FSWSP), 16-bit encodings
 
 pass:attributes,quotes[{cheri_int_mode_name}] Mnemonics (RV32)::
-`c.fsw rs2', offset(rs1'/sp)`
+`c.fsw rs2', offset(rs1')` +
+`c.fsw rs2', offset(sp)`
 
 pass:attributes,quotes[{cheri_int_mode_name}] Expansions (RV32)::
-`fsw rs2', offset(rs1'/sp)`
+`fsw rs2', offset(rs1')` +
+`fsw rs2', offset(sp)`
 
 Encoding (RV32)::
 include::wavedrom/c-sp-store-css-fp.adoc[]
@@ -25,7 +27,14 @@ include::wavedrom/c-sp-store-css-fp-sprel.adoc[]
 pass:attributes,quotes[{cheri_int_mode_name}] Description::
 Standard floating point store instructions, authorised by the capability in <<ddc>>.
 
-NOTE: these instructions are not available in pass:attributes,quotes[{cheri_cap_mode_name}] in RV64, as they have been remapped to <<C.SC>>, <<C.SCSP>>.
+NOTE: These instructions are available in RV32 pass:attributes,quotes[{cheri_int_mode_name}] only.
+In pass:attributes,quotes[{cheri_cap_mode_name}] they are remapped to <<C.SC>>/<<C.SCSP>>.
+
+NOTE: In pass:attributes,quotes[{cheri_int_mode_name}], these instructions may be remapped to
+other encodings by future RV32 only extensions such as Zilsd.
+If this is the case, then the Zilsd encodings will be valid in
+pass:attributes,quotes[{cheri_int_mode_name}] only. In
+pass:attributes,quotes[{cheri_cap_mode_name}] the instructions will still be <<C.SC>>/<<C.SCSP>>.
 
 include::store_exceptions.adoc[]
 
