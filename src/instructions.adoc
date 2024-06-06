@@ -119,6 +119,7 @@ One group of 16-bit encodings are remapped to different instructions dependant
 upon the CHERI execution mode, MXLEN and which extensions are supported.
 
 NOTE: Zcf and Zilsd are incompatible
+
 NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 
 
@@ -176,10 +177,10 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 |111    |10      | C.SDSP | N/A     | N/A | N/A        | N/A
 |011    |10      | C.LDSP | N/A     | N/A | N/A        | N/A
 
-|101    |00      | N/A    | N/A     | C.FSD   | N/A         | N/A
-|001    |00      | N/A    | N/A     | C.FLD   | N/A         | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP | N/A         | N/A
-|001    |10      | N/A    | N/A     | C.FLDSP | N/A         | N/A
+|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
+|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
+|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
+|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
 |==============================================================================
 
 .16-bit instruction remapping in pass:attributes,quotes[{cheri_cap_mode_name}]
