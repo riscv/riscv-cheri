@@ -11,11 +11,40 @@ format.
 
 === Limiting Capability Propagation
 
-TODO
+Page table enforcement can allow the operating system to limit the flow
+of capabilities between processes.
+It is highly desirable that a process should only posses capabilities that have
+been issued for that address space by the operating system.
+Unix processes may share memory for efficient communication,
+but capability pointers must not be shared across these channels
+into a foreign address space.
+An operating system might defend against this by only issuing a capability
+to the shared
+region that does not grant the load/store capability permission,
+there are circumstances where portions of general-purpose, mmaped memory become shared,
+and the operating system must prevent future capability communication
+through those pages.
+This is not possible without restructuring software, as the capability for
+the original allocation, which spans both shared memory and private memory, would need to
+be deleted and replaced with a list of distinct capabilities with appropriate
+permissions for each range.
+Such a change would not be transparent to the program.
+Such sharing through virtual memory is on the page granularity, so preventing
+capability writes with a PTE permission is
+a natural solution.
 
 === Capability Revocation
 
-TODO
+Page table enforcement can accellerate concurrant capability revocation
+for temporal safety.
+Without page table capability protection, a concurrent capability revocation
+sweep must begin by visiting all PTEs to mark them unreadable, henceforth trapping on any
+read to a new page to sweep it clean before proceeding.
+With a page-granularity generational capability read permission, we can
+eliminate the initial permission change of all PTEs.
+In addition, a page-granularity capability write control can eliminate many pages
+from the sweep what are known not to contain capabilities.
+
 
 [#section_extending_pte]
 === Extending the Page Table Entry Format
@@ -25,8 +54,8 @@ NOTE: *CHERI v9 Note:* The current proposal is provisional and only includes
 support for load-side revocation when compared to CHERI v9.
 endif::[]
 
-The page table entry format remains unchanged for Sv32. However, three new
-bits, Capability Access (CA), Capability Dirty (CD) and Capability Read
+The page table entry format remains unchanged for Sv32. However, two new
+bits, Capability Write (CW) and Capability Read
 Generation (CRG), are added to leaf PTEs in Sv39, Sv48 and Sv57 as shown in
 xref:sv39pte[xrefstyle=short], xref:sv48pte[xrefstyle=short] and
 xref:sv57pte[xrefstyle=short] respectively.
@@ -43,32 +72,28 @@ include::img/sv48pte.edn[]
 [#sv57pte]
 include::img/sv57pte.edn[]
 
-The CA bit indicates whether reading or writing capabilities with tag set to
-the virtual page is permitted. Capabilities are read and written as usual when
-the CA bit is set. If the CA bit is clear then:
+The CW bit indicates whether reading or writing capabilities with tag set to
+the virtual page is permitted. When the CW bit is set, capabilities are written
+as usual, and capability reads are controlled by the CRG bit.
+If the CW bit is clear then:
 
-* When a capability store or AMO instruction is executed, the implementation
-clears the tag bit of the capability written to the virtual page.
 * When a capability load or AMO instruction is executed, the implementation
 clears the tag bit of the capability read from the virtual page.
+* When CRG is clear, the "no capability state", a store page fault exception
+is raised when a capability store or AMO
+instruction is executed, the authorizing capability grants
+<<c_perm>> and the tag bit of the capability being written is set.
+* When CRG is set, the "pre-CW state", two schemes are permitted:
 
-NOTE: The implementation of the CA bit does not force a dependency on the tag
-bit's value of the capability read or written.
-
-The CD bit indicates that a capability with tag set has been written to the
-virtual page since the last time the CD bit was cleared. Two schemes
-to manage the CD bit are permitted:
-
-* A store page fault exception is raised when a capability store or AMO
-instruction is executed, the authorizing capability grants <<w_perm>> and
-<<c_perm>>, the tag bit of the capability being written is set and the address
-written corresponds to a virtual page with the CD bit clear.
-* When a capability store or AMO instruction is executed, the authorizing
-capability grants <<w_perm>> and <<c_perm>>, the tag bit of the capability being written is set and
-the store address corresponds to a virtual page with the CD bit clear, the
-implementation sets the corresponding bit in the PTE. The PTE update must be
+** The same behavior as when CRG is clear, allowing software interpretation
+of this state.
+** When a capability store or AMO instruction is executed, the authorizing
+capability grants <<c_perm>> and the tag bit of the capability being written is set, the
+implementation sets the CW bit and assigns the CRG bit equal to senvcfg.CRG.
+The PTE update must be
 atomic with respect to other accesses to the PTE, and must atomically check
-that the PTE is valid and grants sufficient permissions. Updates to the CD bit
+that the PTE is valid and grants sufficient permissions. Updates to the CW bit
+and CRG bit
 must be exact (i.e. not speculative), and observed in program order by the
 local hart. Furthermore, the PTE update must appear in the global memory order
 no later than the explicit memory access, or any subsequent explicit memory
@@ -82,15 +107,19 @@ access that caused the update, and the sequence is interruptible. However, the
 hart must not perform explicit memory access before the PTE update is globally
 visible.
 
-NOTE: The behavior of the CA bit takes priority over the CD bit. Therefore,
-implementations must not take action to change or raise an exception related to
-the CD when CA is clear.
+When CW is set, the CRG bit indicates the current generation of the virtual memory page with
+regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
-The CRG bit indicates the current generation of the virtual memory page with
-regards to the ongoing capability revocation cycle. A load page fault
-exception is raised when a capability load or AMO instruction is executed,
-the capability read from memory has tag set and the virtual page's CRG bit does
-not equal senvcfg.CRG.
+* A load page fault exception is raised when a capability load or AMO instruction is executed,
+the authorizing capability grants <<c_perm>>
+and the virtual page's CRG bit does not equal senvcfg.CRG.
+* A load page fault exception is raised when a capability load or AMO instruction is executed,
+the authorizing capability grants <<c_perm>>,
+the capability read from memory has tag set
+and the virtual page's CRG bit does not equal senvcfg.CRG.
+
+NOTE: An implementation may avoid a dependency on the tag
+bit value of the capability read. This will introduce additional traps during revocation sweeps.
 
 [#senvcfg_pte,reftext="senvcfg PTE bits"]
 === Extending the Supervisor Environment Configuration Register (menvcfg)
