@@ -45,7 +45,7 @@ include::img/cap-encoding-xlen64.edn[]
 
 Reserved bits are available for future extensions to {cheri_base_ext_name}.
 
-NOTE: Reserved bits must be 0 in valid capabilities.
+NOTE: Reserved bits must be 0 in tagged capabilities.
 
 === Components of a Capability
 
@@ -521,8 +521,9 @@ malformed    =  !EF && (malformedMSB || malformedLSB)
 NOTE: The check is for malformed _bounds_, so it does not include reserved
 bits!
 
-Capabilities with malformed bounds are always invalid anywhere in the system
-i.e. their tags are always 0.
+It is impossible for a CHERI core to generate a tagged capability with malformed
+bounds, or with any reserved bits set. If such a capability exists then it must
+have been caused by a logic or memory fault.
 
 [#section_special_caps]
 === Special Capabilities
