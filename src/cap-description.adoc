@@ -525,9 +525,12 @@ It is impossible for a CHERI core to generate a tagged capability with malformed
 bounds, or with any reserved bits set. If such a capability exists then it must
 have been caused by a logic or memory fault.
 
-Capabilities with malformed bounds return both base and top bounds as zero. This
-causes all capability manipulation instructions such as <<CADDI>> to clear the tag
-on the result.
+Capabilities with malformed bounds:
+
+. Return both base and top bounds as zero, which affects instructions like <<GCBASE>>.
+. Cause certain manipulation instructions like <<CADDI>> to always clear the tag of the result.
+
+See specific instruction pages for full details of the effect of malformed capabilities.
 
 [#section_special_caps]
 === Special Capabilities
