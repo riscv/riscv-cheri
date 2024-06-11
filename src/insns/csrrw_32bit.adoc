@@ -40,6 +40,8 @@ The assembler pseudo-instruction to write a capability CSR in pass:attributes,qu
 +
 Access to XLEN-wide CSRs from other extensions is as specified by RISC-V.
 
+NOTE: When writing `cs1`, if the bounds are <<section_cap_malformed,malformed>>, any reserved bits are set
+or the permission could not have been produced by <<ACPERM>> then clear the tag before writing to the CSR.
 
 Permissions::
 Accessing privileged CSRs require <<asr_perm>>, including existing RISC-V CSRs,
