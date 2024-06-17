@@ -283,11 +283,11 @@ For code capabilities, the sealing bit is used to implement immutable
 capabilities that describe function entry points. Such capabilities can be leveraged
 to establish a form of control-flow integrity between mutually distrusting code. These
 capabilities are known as sealed entry (sentry) capabilities. A program may jump to a
-sentry capability to begin executing the instructions it references. The jump
-instruction automatically unseals the capability and installs it to the
+sentry capability to begin executing the instructions it references. The <<JALR>>
+instruction automatically unseals the target capability and installs it to the
 program counter capability (see
-xref:section_riscv_programmers_model[xrefstyle=short]). The <<JALR>> instruction
-also seals the return address capability (if any) since it is the entry point
+xref:section_riscv_programmers_model[xrefstyle=short]). The jump instructions
+also seal the return address capability (if any) since it is the entry point
 to the caller function.
 
 [#section_cap_bounds]
