@@ -1,7 +1,7 @@
 == "Zstid Extension for Thread Identification
 
 {tid_ext_name} is an optional extension to the RISC-V base ISA.
-Implementations that support {cheri_base_ext_name} and {tid_ext_name}.
+Implementations that support {cheri_base_ext_name} and {tid_ext_name}
 define a variant of the CHERI ISA that allows for more efficient
 software compartmentalization of CHERI programs.
 
@@ -9,33 +9,54 @@ software compartmentalization of CHERI programs.
 
 {tid_ext_name} adds two new CSRs to implement a trusted thread
 identifier (TID) used in compartmentalization. These CSRs are listed in
-xref:tid-scsrnames-added[xrefstyle=short] and
+xref:tid-mcsrnames-added[xrefstyle=short],
+xref:tid-scsrnames-added[xrefstyle=short], and
 xref:tid-ucsrnames-added[xrefstyle=short].
+
+[[tid-mcsrnames-added]]
+.Added machine-mode CSRs in {tid_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
+|===
+|{tid_ext_name} CSR|Address|Prerequisites|Read-Permission|Write-Permission|Description
+|<<mtid>>|0x780|M-mode|M|M, <<asr_perm>>|Machine Thread Identifier
+|===
 
 [[tid-scsrnames-added]]
 .Added supervisor-mode CSRs in {tid_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
 |===
-|{tid_ext_name} CSR|Address|Prerequisites|Permissions|Description
-|<<stid>>|0x580|S-mode|SRW, <<asr_perm>>|Supervisor Thread Identifier
+|{tid_ext_name} CSR|Address|Prerequisites|Read-Permission|Write-Permission|Description
+|<<stid>>|0x580|S-mode|S|S, <<asr_perm>>|Supervisor Thread Identifier
 |===
 
 [[tid-ucsrnames-added]]
 .Added user-mode CSRs in {tid_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
 |===
-|{tid_ext_name} CSR|Address|Prerequisites|Permissions|Description
-|<<utid>>|0xC80|U-mode|URO|User Thread Identifier
+|{tid_ext_name} CSR|Address|Prerequisites|Read-Permission|Write-Permission|Description
+|<<utid>>|0x480|U-mode|U|U, <<asr_perm>>|User Thread Identifier
 |===
 
-=== Supervisor-Level and Unprivileged CSRs
+
+
+=== Machine-Level, Supervisor-Level and Unprivileged CSRs
+
+[#mtid,reftext="mtid"]
+==== Machine Thread Identifier (mtid)
+
+The <<mtid>> register is an MXLEN-bit read-write register. It is used to
+identify the current thread in machine mode. The reset value of this
+register is UNSPECIFIED.
+
+.Supervisor thread identifier register
+include::img/mtidreg.edn[]
 
 [#stid,reftext="stid"]
 ==== Supervisor Thread Identifier (stid)
 
 The <<stid>> register is an SXLEN-bit read-write register. It is used to
-identify the current thread. The reset value of this register is
-UNSPECIFIED.
+identify the current thread in supervisor mode. The reset value of
+this register is UNSPECIFIED.
 
 .Supervisor thread identifier register
 include::img/stidreg.edn[]
@@ -44,9 +65,9 @@ include::img/stidreg.edn[]
 [#utid,reftext="utid"]
 ==== User Thread Identifier (utid)
 
-The <<utid>> register is an UXLEN-bit read-only register. It is a read-only
-copy of the <<stid>> register. The reset value of this register is
-UNSPECIFIED.
+The <<utid>> register is an UXLEN-bit read-write register. It is used to
+identify the current thread in user mode. The reset value of
+this register is UNSPECIFIED.
 
 .User thread identifier register
 include::img/utidreg.edn[]
@@ -54,13 +75,26 @@ include::img/utidreg.edn[]
 When {cheri_base_ext_name} is implemented, the {tid_ext_name} CSRs are
 extended as follows:
 
+[#mtidc,reftext="mtidc"]
+==== Machine Thread Identifier Capability (mtidc)
+
+The <<mtidc>> register is an CLEN-bit read-write capability register.
+It is the capability extension of the <<mtid>> register.
+It is used to identify the current thread in machine mode.
+On reset the tag of <<mtidc>> will be set to 0 and the remainder
+of the data is UNSPECIFIED.
+
+.Machine thread identifier capability register
+include::img/mtidcreg.edn[]
+
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
 
 The <<stidc>> register is an CLEN-bit read-write capability register.
 It is the capability extension of the <<stid>> register.
-It is used to identify the current thread. On reset the tag of <<stidc>>
-will be set to 0 and the remainder of the data is UNSPECIFIED.
+It is used to identify the current thread in supervisor mode.
+On reset the tag of <<stidc>> will be set to 0 and the remainder
+of the data is UNSPECIFIED.
 
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
@@ -69,10 +103,11 @@ include::img/stidcreg.edn[]
 [#utidc,reftext="utidc"]
 ==== User Thread Identifier Capability (utidc)
 
-The <<utidc>> register is an CLEN-wide read-only capability register.
-It is the capability extension of the <<utid>> register. <<utidc>> is
-a read-only copy of the <<stidc>> register. On reset the tag of <<utidc>>
-will be set to 0 and the remainder of the data is UNSPECIFIED.
+The <<utidc>> register is an CLEN-bit read-write capability register.
+It is the capability extension of the <<utid>> register.
+It is used to identify the current thread in user mode.
+On reset the tag of <<utidc>> will be set to 0 and the remainder
+of the data is UNSPECIFIED.
 
 .User thread identifier capability register
 include::img/utidcreg.edn[]
@@ -94,14 +129,11 @@ overhead of this is not bearable for CHERI systems with many compartments.
 The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
 usable for the purpose of reliably identifying the current thread because
 the tp register is a general purpose register and can be changed arbitrarily
-by untrusted code. Therefore, this specification offers two additional CSRs
-that facilitate a trusted source for the thread ID. The supervisor thread
-identifier (<<stid>>) register is readable and writeable with <<asr_perm>>
-from the supervisor mode allowing to change the thread ID on a context switch.
-The user thread identifier (<<utid>>) exposes the current value of <<stid>> as a
-read-only copy.
+by untrusted code. Therefore, this specification offers three additional CSRs
+that facilitate a trusted source for the thread ID. All registers are readable
+from their respective privilege levels and writeable with <<asr_perm>>.
 
-This extension extends <<stid>> to its capability variant <<stidc>> and
-<<utid>> to its capability variant <<utidc>>. This presents software with the
+This extension extends <<mtid>>, <<stid>>, and <<utid>> to their respective
+capability variants <<mtidc>>, <<stidc>>, and <<utidc>>. This presents software with the
 freedom to still use these registers with capabilities or leave the metadata
 untouched and only use the registers to storage integers.
