@@ -119,7 +119,11 @@ memory if the authorising capability also grants <<w_perm>>.
 Execute Permission (X):: Allow instruction execution.
 
 [#asr_perm,reftext="ASR-permission"]
-Access System Registers Permission (ASR):: Allow access to privileged CSRs.
+Access System Registers Permission (ASR):: Allow read and write access to all
+privileged (M-mode and S-mode) CSRs with the following exceptions:
+. <<utid>>, <<utidc>>, <<stid>>, <<stidc>>, <<mtid>>, <<mtidc>> all require ASR
+access for writing and not for reading, as well as having a suitable privileged
+execution mode.
 
 [#cap_permissions_encoding]
 ===== Permission Encoding
