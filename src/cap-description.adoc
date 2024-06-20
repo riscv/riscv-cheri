@@ -378,7 +378,7 @@ inverted to ensure that the <<null-cap>> capability is encoded as zero without t
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base addresses respectively. +
-When EF=0, the exponent `E=CAP_MAX_E - ( (MXLEN == 32) ? { T8, TE, BE } : { TE, BE } )`,
+When EF=0, the exponent `E=CAP_MAX_E - ( (MXLEN == 32) ? { L8, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
 and base addresses respectively. E is computed by subtracting from the maximum
 possible exponent CAP_MAX_E which can be efficiently implemented in hardware
@@ -397,9 +397,9 @@ If EF = 1:
     T[EW / 2 - 1:0] = TE
     B[EW / 2 - 1:0] = BE
     LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
-    LMSB            = (MXLEN == 32) ? T8 : 0
+    LMSB            = (MXLEN == 32) ? L8 : 0
 else:
-    E               = CAP_MAX_E - ( (MXLEN == 32) ? { T8, TE, BE } : { TE, BE } )
+    E               = CAP_MAX_E - ( (MXLEN == 32) ? { L8, TE, BE } : { TE, BE } )
     T[EW / 2 - 1:0] = 0
     B[EW / 2 - 1:0] = 0
     LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
@@ -456,9 +456,11 @@ alignment boundaries.
 
 The EF bit selects between two cases:
 
-1. EF = 1: The exponent is 0 for regions less than 2^MW-2^ bytes long
+1. EF = 1: The exponent is 0 for regions less than 2^MW-2^ bytes long. L~8~ is
+used to encode the MSB of the length and is added to B along with T[MW-3:0] to
+form the decoded top.
 2. EF = 0: The exponent is _internal_ with E stored in the lower bits of T and
-B along with T~8~ when MXLEN=32. E is chosen so that the most significant
+B along with L~8~ when MXLEN=32. E is chosen so that the most significant
 non-zero bit of the length of the region aligns with T[MW - 2] in the decoded
 top. Therefore, the most significant two bits of T can be derived from B using
 the equality `T = B + L`, where L[MW - 2] is known from the values of EF and E
@@ -507,14 +509,14 @@ equivalent to _b_=0 and _t_&#8805;2^MXLEN^.
 
 A capability is _malformed_ if its encoding does not describe a valid
 capability because its bounds cannot be correctly decoded. The following check
-indicates whether a capability is malformed. `enableT8` is true when MXLEN=32
-and false otherwise, indicating whether the `T8` bit is available for extra
+indicates whether a capability is malformed. `enableL8` is true when MXLEN=32
+and false otherwise, indicating whether the `L8` bit is available for extra
 precision when `EF=1`.
 
 ```
 malformedMSB =  (E == CAP_MAX_E     && B         != 0)
              || (E == CAP_MAX_E - 1 && B[MW - 1] != 0)
-malformedLSB =  (E  < 0) || (E == 0 && enableT8)
+malformedLSB =  (E  < 0) || (E == 0 && enableL8)
 malformed    =  !EF && (malformedMSB || malformedLSB)
 ```
 
@@ -557,7 +559,7 @@ expanded base is 0 and top is 2^MXLEN^.
 | AP       | zeros | Grants no permissions
 | S        | zero  | Unsealed
 | EF       | zero  | Internal exponent format
-| T~8~     | zero  | Top address bit (MXLEN=32 only)
+| L~8~     | zero  | Top address bit (MXLEN=32 only)
 | T        | zeros | Top address bits
 | T~E~     | zeros | Exponent bits
 | B        | zeros | Base address bits
@@ -593,7 +595,7 @@ or 'root' capability.
                         | Grants all permissions
 | S             | zero  | Unsealed
 | EF            | zero  | Internal exponent format
-| T~8~          | zero  | Top address bit (MXLEN=32 only)
+| L~8~          | zero  | Top address bit (MXLEN=32 only)
 | T             | zeros | Top address bits
 | T~E~          | zeros | Exponent bits
 | B             | zeros | Base address bits
