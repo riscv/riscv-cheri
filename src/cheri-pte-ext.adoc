@@ -4,21 +4,32 @@
 CHERI is a security mechanism that is generally orthogonal to page-based
 virtual-memory management as defined in cite:[riscv-priv-spec].
 However, it is helpful in CHERI harts to extend RISC-V's virtual-memory
-management to control the flow of capabilities in memory at the page
-granularity. For this reason, the {cheri_pte_ext_name} extension adds new bits
-to RISC-V's Page Table Entry (PTE) format.
+management to facilitate capability revocation and control the flow of
+capabilities in memory at the page granularity. For this reason, the
+{cheri_pte_ext_name} extension adds new bits to RISC-V's Page Table Entry (PTE)
+format.
 
+=== Limiting Capability Propagation
+
+TODO
+
+=== Capability Revocation
+
+TODO
+
+[#section_extending_pte]
 === Extending the Page Table Entry Format
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The current proposal is provisional and is missing
-PTE bits when compared to CHERI v9.
+NOTE: *CHERI v9 Note:* The current proposal is provisional and only includes
+support for load-side revocation when compared to CHERI v9.
 endif::[]
 
-The page table entry format remains unchanged for Sv32. However, two new bits,
-Capability Write (CW) and Capability Dirty (CD), are added to leaf PTEs in
-Sv39, Sv48 and Sv57 as shown in xref:sv39pte[xrefstyle=short],
-xref:sv48pte[xrefstyle=short] and xref:sv57pte[xrefstyle=short] respectively.
+The page table entry format remains unchanged for Sv32. However, three new
+bits, Capability Access (CA), Capability Dirty (CD) and Capability Read
+Generation (CRG), are added to leaf PTEs in Sv39, Sv48 and Sv57 as shown in
+xref:sv39pte[xrefstyle=short], xref:sv48pte[xrefstyle=short] and
+xref:sv57pte[xrefstyle=short] respectively.
 
 .Sv39 page table entry
 [#sv39pte]
@@ -32,24 +43,20 @@ include::img/sv48pte.edn[]
 [#sv57pte]
 include::img/sv57pte.edn[]
 
-The CW bit indicates whether writing capabilities with tag set to the virtual
-page is permitted. Two schemes to manage the CW bit are permitted:
+The CA bit indicates whether reading or writing capabilities with tag set to
+the virtual page is permitted. Capabilities are read and written as usual when
+the CA bit is set. If the CA bit is clear then:
 
-* A store page fault exception is raised when a capability store or AMO
-instruction is executed, the authorizing capability grants <<w_perm>> and
-<<c_perm>>, and the store address corresponds to a virtual page with the CW bit
-clear.
 * When a capability store or AMO instruction is executed, the implementation
-clears the tag bit of the capability written to a virtual page with the CW bit
-clear.
+clears the tag bit of the capability written to the virtual page.
+* When a capability load or AMO instruction is executed, the implementation
+clears the tag bit of the capability read from the virtual page.
 
-NOTE: The implementation of the CW bit does not force a dependency on the tag
-bit's value of the capability written, so implementations must support the CW
-bit.
+NOTE: The implementation of the CA bit does not force a dependency on the tag
+bit's value of the capability read or written.
 
 The CD bit indicates that a capability with tag set has been written to the
-virtual page since the last time the CD bit was cleared. Implementations are
-strongly encouraged, but not required, to support CD. If supported, two schemes
+virtual page since the last time the CD bit was cleared. Two schemes
 to manage the CD bit are permitted:
 
 * A store page fault exception is raised when a capability store or AMO
@@ -75,26 +82,24 @@ access that caused the update, and the sequence is interruptible. However, the
 hart must not perform explicit memory access before the PTE update is globally
 visible.
 
-NOTE: The behavior of the CW bit takes priority over the CD bit. Therefore,
+NOTE: The behavior of the CA bit takes priority over the CD bit. Therefore,
 implementations must not take action to change or raise an exception related to
-the CD bit when the CW bit is clear.
+the CD when CA is clear.
 
-[#menvcfg_pte,reftext="menvcfg PTE bits"]
-=== Extending the Machine Environment Configuration Register (menvcfg)
+The CRG bit indicates the current generation of the virtual memory page with
+regards to the ongoing capability revocation cycle. A load page fault
+exception is raised when a capability load or AMO instruction is executed,
+the capability read from memory has tag set and the virtual page's CRG bit does
+not equal senvcfg.CRG.
 
-The *menvcfg* register is extended to allow discovering whether the
-implementation supports the CD bit.
+[#senvcfg_pte,reftext="senvcfg PTE bits"]
+=== Extending the Supervisor Environment Configuration Register (menvcfg)
 
-The *menvcfg* register operates as described in cite:[riscv-priv-spec]. {cheri_base_ext_name} adds a new enable bit as shown in
-xref:menvcfgreg[xrefstyle=short] when XLEN=64.
+The *senvcfg* register operates as described in cite:[riscv-priv-spec].
+{cheri_pte_ext_name} adds a new Capability Read Generation (CRG) bit as shown
+in xref:senvcfgreg_pte[xrefstyle=short] when XLEN=64. The CRG bit in *senvcfg*
+is used as described in xref:section_extending_pte[xrefstyle=short].
 
-.Machine environment configuration register (*menvcfg*)
-[#menvcfgreg]
-include::img/menvcfgreg.edn[]
-
-The Capability Dirty Enable (CDE) bit controls whether the Capability Dirty
-(CD) bit is available for use in S-mode address translation. When CDE=1, the CD
-bit is available for S-mode address translation. When CDE=0, the implementation
-behaves as though the CD bit were not implemented. If CD is not implemented,
-CDE is read-only zero. If CD is implemented although not configurable, CDE is
-read-only one.
+.Supervisor environment configuration register (*senvcfg*)
+[#senvcfgreg_pte]
+include::img/senvcfgreg-pte.edn[]
