@@ -280,15 +280,13 @@ it via a superset capability with <<CBLD>>. {cheri_base_ext_name} does not offer
 an unseal instruction.
 
 For code capabilities, the sealing bit is used to implement immutable
-capabilities that describe function entry points. Such capabilities can be leveraged
-to establish a form of control-flow integrity between mutually distrusting code. These
-capabilities are known as sealed entry (sentry) capabilities. A program may jump to a
-sentry capability to begin executing the instructions it references. The jump
-instruction automatically unseals the capability and installs it to the
+capabilities that describe function entry points, known as sealed entry (sentry) capabilities. Such capabilities can be leveraged
+to establish a form of control-flow integrity between mutually distrusting code. A program may jump to a
+sentry capability to begin executing the instructions it references. A <<JALR>>
+instruction with zero offset automatically unseals a sentry target capability and installs it in the
 program counter capability (see
-xref:section_riscv_programmers_model[xrefstyle=short]). The <<JALR>> instruction
-also seals the return address capability (if any) since it is the entry point
-to the caller function.
+xref:section_riscv_programmers_model[xrefstyle=short]). The jump-and-link instructions
+also seal the return address capability which serves as an entry point the callee can return to but cannot use to authorize memory loads or stores.
 
 [#section_cap_bounds]
 ==== Bounds (EF, T, TE, B, BE)
