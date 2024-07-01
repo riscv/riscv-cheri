@@ -242,14 +242,14 @@ to the base behaviour as described below.
 <<JAL>> sign-extends the offset and adds it to the address of
 the jump instruction to form the target address. The target address is
 installed in the address field of <<pcc>>. The capability with the address of the
-instruction following the jump (<<pcc>> + 4) is sealed and written to a *c* register.
+instruction following the jump is sealed and written to a *c* register.
 
 <<JALR>>
 allows unconditional, indirect jumps to a target capability. The target capability is
 obtained by incrementing the capability in the *c* register operand by the
 sign-extended 12-bit offset, then setting the
 least significant bit of the result to zero. The target capability is unsealed if it is a sentry with zero offset. The capability
-with the address of the instruction following the jump (<<pcc>> + 4) is sealed
+with the address of the instruction following the jump is sealed
 and written to a *c* register.
 
 All jumps cause CHERI exceptions when a minimum sized instruction
