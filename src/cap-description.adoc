@@ -167,8 +167,8 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 | 4   |   | ✔ |   |   |     | N/A | Data WO
 | 5   | ✔ | ✔ |   |   |     | N/A | Data RW
 | 6-7   7+| reserved
-8+| *Quadrant 1: Executable capabilities*
-8+| bit[0] - <<m_bit>> (1-pass:attributes,quotes[{cheri_cap_mode_name}], 0-pass:attributes,quotes[{cheri_int_mode_name}])
+8+| *Quadrant 1: Executable capabilities{INT_MODE}
+8+| bit[0] - <<m_bit>> ({CAP_MODE}-pass:attributes,quotes[{cheri_cap_mode_name}], {INT_MODE}-pass:attributes,quotes[{cheri_int_mode_name}])
 | 0-1   | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
 | 2-3   | ✔ |   | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
@@ -570,16 +570,14 @@ expanded base is 0 and top is 2^MXLEN^.
 | Reserved | zeros | All reserved fields
 |==============================================================================
 
-If {cheri_default_ext_name} is supported:
-
-* For MXLEN=32, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in the AP field
-* For MXLEN=64, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in a separate M field
+NOTE: <<null-cap>> is not a code capability, and so the CHERI execution mode is not encoded.
 
 [#section_infinite_cap]
 ==== Infinite Capability
 
 The <<infinite-cap>> capability grants all permissions while its bounds also
-cover the whole address space.
+cover the whole address space. It includes <<x_perm>> and so includes the
+<<m_bit>> if {cheri_default_ext_name} is supported.
 
 NOTE: The <<infinite-cap>> capability is also known as 'default', 'almighty',
 or 'root' capability.
@@ -591,7 +589,7 @@ or 'root' capability.
 | Field         | Value | Comment
 | Tag           | one   | Capability is valid
 | SDP           | ones  | Grants all permissions
-| AP (MXLEN=32) | 0x8  (see xref:cap_perms_encoding32[xrefstyle=short])
+| AP (MXLEN=32) | 0x8^1^  (see xref:cap_perms_encoding32[xrefstyle=short])
                         | Grants all permissions
 | AP (MXLEN=64) | 0x1F (see xref:cap_perms_encoding64[xrefstyle=short])
                         | Grants all permissions
@@ -606,10 +604,11 @@ or 'root' capability.
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-If {cheri_default_ext_name} is supported:
+^1^If {cheri_default_ext_name} is supported, then the <<infinite-cap>> capability must represent
+pass:attributes,quotes[{cheri_int_mode_name}] for compatibility with standard RISC-V code. Therefore:
 
-* For MXLEN=32, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in the AP field
-* For MXLEN=64, the <<m_bit>> is set to zero (pass:attributes,quotes[{cheri_int_mode_name}]) in a separate M field
+* For MXLEN=32, the <<m_bit>> is set to {INT_MODE} in the AP field, giving the value 0x9
+* For MXLEN=64, the <<m_bit>> is set to {INT_MODE} in a separate M field which is _not shown_ in the table above.
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
