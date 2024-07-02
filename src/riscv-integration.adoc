@@ -29,6 +29,14 @@ The memory address space is circular, so the byte at address
 <<section_cap_representable_check>> described in xref:section_cap_encoding[xrefstyle=short] is
 also circular, so address 0 is within the <<section_cap_representable_check>> of a capability
 where address 2^MXLEN^ - 1 is within the bounds.
+However, the decoded top field of a capability is MXLEN + 1 bits wide and does *not* wrap, so
+a capability with base 2^MXLEN^ - 1 and top 2^MXLEN^ + 1 is not a subset of the
+<<infinite-cap>> capability and does not authorise access to the byte at address 0.
+Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
+a CHERI core to generate a tagged capability with top > 2^MXLEN^.
+If such a capability exists then it must have been caused by a logic or memory fault.
+Unlike malformed bounds, the top overflowing is not treated as a special case in the
+architecture: normal bounds check rules should be followed.
 
 [#section_riscv_programmers_model]
 === Programmer's Model for Zcheripurecap
