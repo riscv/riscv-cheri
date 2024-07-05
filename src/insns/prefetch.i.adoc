@@ -44,13 +44,16 @@ likely to be accessed by an instruction fetch in the near future. The encoding
 is only valid if imm[4:0]=0. The authorising capability for this operation is
 <<ddc>>.
 
-In either mode, instruction does not perform a memory access
+In either mode, PREFETCH.I does not perform a memory access
 if one or more of the following conditions of the authorising capability are met:
+
 * The tag is not set
 * The sealed bit is set
 * No bytes of the cache line requested is in bounds
 * The <<x_perm>> is not set
-* Any reserved bits are set, the permissions could not have been produced by <<ACPERM>> or the bounds are <<section_cap_malformed,malformed>>.
+* Any reserved bits are set
+* The permissions could not have been produced by <<ACPERM>>
+* The bounds are <<section_cap_malformed,malformed>>.
 
 Prerequisites for pass:attributes,quotes[{cheri_cap_mode_name}]::
 Zicbop, {cheri_base_ext_name}
