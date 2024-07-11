@@ -530,6 +530,10 @@ CHERI enforces the following invariants for all valid (i.e., tagged) capabilitie
 . The bounds are not malformed.
 . No reserved bit in the capability encoding is set.
 
+A tagged capability that violates those invariants (i.e., a tagged but malformed capability or a tagged
+capability with any reserved bit set) can only possibly be caused by
+a logic or memory fault (e.g., bit flipping).
+
 Capabilities with malformed bounds:
 
 . Return both base and top bounds as zero, which affects instructions like <<GCBASE>>.
