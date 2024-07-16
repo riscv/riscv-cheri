@@ -1173,12 +1173,12 @@ compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
 The following procedure must be used while loading or storing to memory with a
 capability A when the implementation supports invalid address optimizations:
 
-. Calculate the effective address T of the memory access as required by the
+. Calculate the effective address range R of the memory access as required by the
 instruction's behavior.
-. If T is invalid and A does not have infinite bounds (see
+. If any byte in R is invalid and A does not have infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then the instruction gives rise to
 a CHERI fault; the _CHERI data_ fault is reported in the TYPE field and invalid
 address violation is reported in the CAUSE field of <<mtval>> or <<stval>>.
-. If T is invalid and A has infinite bounds (see xref:section_cap_encoding[xrefstyle=short]),
+. If any byte in R is invalid and A has infinite bounds (see xref:section_cap_encoding[xrefstyle=short]),
 the hart will raise an access fault or page fault as is usual in RISC-V.
-. Otherwise T is valid and the instruction behaves as normal.
+. Otherwise all bytes in R are valid and the instruction behaves as normal.
