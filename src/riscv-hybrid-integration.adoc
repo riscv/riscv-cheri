@@ -84,7 +84,7 @@ CRE bits in <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> as follows:
 
 * The Mode is pass:attributes,quotes[{cheri_cap_mode_name}] when the <<m_bit>> of the <<pcc>> is {CAP_MODE_VALUE}, *and* the effective
 CRE=1 for the current privilege level
-* The Mode is pass:attributes,quotes[{cheri_int_mode_name}] when the effective CRE=0 for the current privilege level *or* the <<m_bit>> of the <<pcc>> is {INT_MODE_VALUE}
+* The Mode is pass:attributes,quotes[{cheri_int_mode_name}] when the <<section_cheri_disable,effective CRE>> for the current privilege is 0 *or* the <<m_bit>> of the <<pcc>> is {INT_MODE_VALUE}
 
 When the <<m_bit>> can be set follows the rules defined by <<ACPERM>>.
 
@@ -331,30 +331,15 @@ The mode bit in <<pcc>> is treated as if it was zero while CHERI register access
 
 CHERI register access is disabled if XLEN in the current mode is less than
 MXLEN, if the endianness in the current mode is not the reset value of
-<<mstatus>>.MBE, or if CRE active at the current mode (<<mseccfg>>.CRE for M-mode, <<menvcfg>>.CRE for
-S-mode or <<senvcfg>>.CRE for U-mode) is 0.
+<<mstatus>>.MBE, or if the effective CRE for the current privilege is 0.
+
+The effective CRE for the current privilege is:
+
+* Machine: `mseccfg.CRE`
+* Supervisor: `mseccfg.CRE & menvcfg.CRE`
+* User: `mseccfg.CRE & menvcfg.CRE & senvcfg.CRE`
 
 NOTE: CRE is always enabled in debug mode.
-
-<<mseccfg>>.CRE, <<menvcfg>>.CRE, and <<senvcfg>>.CRE form a single WARL field.
-This allows higher privilege software to restrict lower
-privilege software access to CHERI register state, and the ability to enter
-pass:attributes,quotes[{cheri_cap_mode_name}]. The valid configurations are shown in
-xref:xenvcfg-warl-field[xrefstyle=short].
-
-[[xenvcfg-warl-field]]
-.Xenvcfg joint WARL field
-[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
-|===
-|<<mseccfg>>.CRE |<<menvcfg>>.CRE|<<senvcfg>>.CRE|Comment
-|0               |read-only 0    | read-only 0   |<<mseccfg>>.CRE=0 completely disables CHERI access
-|1               |0              | read-only 0   |<<menvcfg>>.CRE=0 disables access for privilege less than M-mode
-|1               |1              | 0/1           |<<senvcfg>>.CRE can be programmed to enable/disable access for U-mode
-|===
-
-The WARL programming nature is extended to include UXLEN and SXLEN, as they can
-only be programmed to be smaller than MXLEN if the CRE bit active for the current
-mode is disabled.
 
 Disabling CHERI register access has no effect on implicit accesses or security
 checks.  The last capability installed in <<pcc>> and <<ddc>> before disabling
@@ -452,9 +437,9 @@ xref:menvcfgmodereg[xrefstyle=short].
 include::img/menvcfgmodereg.edn[]
 
 The CHERI Register Enable (CRE) bit controls whether less privileged levels can
-perform explicit accesses to CHERI registers.  When CRE=1, CHERI registers can
-be read and written by less privileged levels.  When CRE=0, CHERI registers are
-disabled in less privileged levels as described in
+perform explicit accesses to CHERI registers. When CRE=1 and <<mseccfg>>.CRE=1,
+CHERI registers can be read and written by less privileged levels. When CRE=0,
+CHERI registers are disabled in less privileged levels as described in
 xref:section_cheri_disable[xrefstyle=short].
 CRE is read-only zero if <<mseccfg>>.CRE=0.
 
@@ -486,15 +471,9 @@ xref:senvcfgreg[xrefstyle=short].
 include::img/senvcfgreg.edn[]
 
 The CHERI Register Enable (CRE) bit controls whether U-mode can perform
-explicit accesses to CHERI registers.  When CRE=1, CHERI registers can be read
-and written by U-mode.  When CRE=0, CHERI registers are disabled in U-mode as
-described.
-
-* <<senvcfg>>.CRE is read-only-zero if:
-** <<mstatus>>.MBE is not the reset value OR
-* UXLEN<MXLEN OR
-* <<mseccfg>>.CRE==0 OR
-* <<menvcfg>>.CRE==0
+explicit accesses to CHERI registers.  When CRE=1 and <<menvcfg>>.CRE=1 and
+<<mseccfg>>.CRE=1 CHERI registers can be read and written by U-mode. When CRE=0,
+CHERI registers are disabled in U-mode as described.
 
 The reset value is 0.
 
