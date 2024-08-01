@@ -1,5 +1,5 @@
 [#section_hypervisor_integration]
-== Integrating Zcheripurecap and Zcherilegacy with the Hypervisor Extension
+== Integrating Zcheripurecap and Zcherihybrid with the Hypervisor Extension
 
 The RISC-V hypervisor (H) extension virtualizes the supervisor-level
 architecture to support the efficient hosting of guest operating systems atop a
@@ -17,33 +17,33 @@ VSXLEN).
 
 The encoding of the VSXL field is the same as the MXL field of **misa**. Only 1
 and 2 are supported values for VSXL. When the implementation supports
-{cheri_base_ext_name} (but not {cheri_legacy_ext_name}), then <<hstatus>>'s
+{cheri_base_ext_name} (but not {cheri_default_ext_name}), then <<hstatus>>'s
 VSXL must be read-only as described in xref:mstatus[xrefstyle=short] for
 <<mstatus>>.SXL. When the implementation supports both {cheri_base_ext_name}
-and {cheri_legacy_ext_name}, then VSXL behaves as described in
-xref:status_legacy[xrefstyle=short] for mstatus.SXL.
+and {cheri_default_ext_name}, then VSXL behaves as described in
+xref:mstatus_hybrid[xrefstyle=short] for mstatus.SXL.
 
 [#henvcfg,reftext="henvcfg"]
 === Hypervisor Environment Configuration Register (henvcfg)
 
 The <<henvcfg>> register operates as described in the RISC-V Privileged
 Specification. A new enable bit is added to <<henvcfg>> when the implementation
-supports {cheri_legacy_ext_name} as shown in xref:henvcfgreg[xrefstyle=short].
+supports {cheri_default_ext_name} as shown in xref:henvcfgreg[xrefstyle=short].
 
 .Hypervisor environment configuration register (*henvcfg*)
 [#henvcfgreg]
 include::img/henvcfgreg.edn[]
 
-The CHERI Register Enable (<<CRE>>) bit controls whether explicit access to
-CHERI register is permitted when V=1. When <<CRE>>=1, CHERI registers
-can be read and written by VS and VU modes. When <<CRE>>=0, CHERI registers are
+The CHERI Register Enable (CRE) bit controls whether explicit access to
+CHERI register is permitted when V=1. When CRE=1, CHERI registers
+can be read and written by VS and VU modes. When CRE=0, CHERI registers are
 disabled in VS and VU modes.
 
-* henvcfg.<<CRE>> is read-only zero if:
+* henvcfg.CRE is read-only zero if:
     ** <<mstatus>>.MBE is not the reset value OR
 * UXLEN<MXLEN OR
-* <<mseccfg>>.<<CRE>>==0 OR
-* <<menvcfg>>.<<CRE>>==0
+* <<mseccfg>>.CRE==0 OR
+* <<menvcfg>>.CRE==0
 
 [#htval,reftext="htval"]
 === Hypervisor Trap Value Register (htval)
@@ -63,10 +63,10 @@ except for the UXL field that controls the value of XLEN for VU-mode.
 
 The encoding of the UXL field is the same as the MXL field of **misa**. Only 1
 and 2 are supported values for UXL. When the implementation supports
-{cheri_base_ext_name} (but not {cheri_legacy_ext_name}), then <<vsstatus>>'s
+{cheri_base_ext_name} (but not {cheri_default_ext_name}), then <<vsstatus>>'s
 UXL must be read-only as described in xref:mstatus[xrefstyle=short] for
 <<mstatus>>.UXL. When the implementation supports both {cheri_base_ext_name}
-and {cheri_legacy_ext_name}, then UXL behaves as described in
+and {cheri_default_ext_name}, then UXL behaves as described in
 xref:mstatus_hybrid[xrefstyle=short] for mstatus.UXL.
 
 [#vstvec,reftext="vstvec"]
@@ -143,7 +143,7 @@ include::img/vsepccreg.edn[]
 
 The <<vstdc>> register is a capability width read/write register that is
 VS-mode's version of supervisor register <<sscratch>>. This register is only
-present when the implementation supports {cheri_legacy_ext_name}.
+present when the implementation supports {cheri_default_ext_name}.
 
 {TAG_RESET_CSR}
 
