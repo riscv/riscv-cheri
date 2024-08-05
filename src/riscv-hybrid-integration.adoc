@@ -199,9 +199,9 @@ Load and store instructions change behavior depending on the CHERI execution
 mode although the instruction's encoding remains unchanged.
 
 Loads and stores behave as described in
-xref:section_existing_riscv_insns[xrefstyle=short] when in pass:attributes,quotes[{cheri_cap_mode_name}]
+xref:section_existing_riscv_insns[xrefstyle=short] when in pass:attributes,quotes[{cheri_cap_mode_name}].
 In pass:attributes,quotes[{cheri_int_mode_name}], the instructions behave as described in
-the RISC-V base ISA (i.e. without the 'C' prefix) and rely on *x* operands
+the RISC-V base ISA and rely on *x* operands
 only. The capability authorising the memory access is <<ddc>> and the memory
 address is given by sign-extending the 12-bit immediate offset and adding it to
 the base address in the *x* register operand.
@@ -362,6 +362,7 @@ xref:default-csrnames-added[xrefstyle=short].
 include::generated/csr_added_hybrid_table_body.adoc[]
 |===
 
+[#mstatus_hybrid]
 ==== Machine Status Registers (mstatus and mstatush)
 
 {cheri_default_ext_name} eliminates some restrictions for SXL and UXL imposed in
@@ -399,7 +400,7 @@ xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
 [#mtdc,reftext="mtdc"]
 ==== Machine Trap Default Capability Register (mtdc)
 
-The <<mtdc>> register is pass:attributes,quotes[{cheri_cap_mode_name}] width read/write register dedicated
+The <<mtdc>> register is a capability width read/write register dedicated
 for use by machine mode. Typically, it is used to hold a data capability to a
 machine-mode hart-local context space, to load into <<ddc>>.
 
@@ -449,7 +450,7 @@ The reset value is 0.
 [#stdc,reftext="stdc"]
 ==== Supervisor Trap Default Capability Register (stdc)
 
-The <<stdc>> register is pass:attributes,quotes[{cheri_cap_mode_name}] width read/write register dedicated
+The <<stdc>> register is a capability width read/write register dedicated
 for use by supervisor mode. Typically, it is used to hold a data capability to
 a supervisor-mode hart-local context space, to load into <<ddc>>.
 
