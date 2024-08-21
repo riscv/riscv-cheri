@@ -1,0 +1,57 @@
+<<<
+
+[#HSV_C,reftext="HSV.C"]
+==== HSV.C
+
+Synopsis::
+Hypervisor virtual-machine store capability
+
+pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonic::
+`hsv.c cs2, cs1`
+
+pass:attributes,quotes[{cheri_int_mode_name}] Mnemonic::
+`hsv.c cs2, rs1`
+
+Encoding::
+include::wavedrom/hypv-virt-store-cap.adoc[]
+
+pass:attributes,quotes[{cheri_cap_mode_name}] Description::
+Store a CLEN+1 bit value in `cs2` to memory as though V=1; i.e., with the
+address translation and protection, and endianness, that apply to memory
+accesses in either VS-mode or VU-mode. The effective address is the address of
+`cs1`. The authorising capability for the operation is `cs1`. The capability
+written to memory has the tag set to 0 if the tag of `cs2` is 0 or `cs1` does
+not grant <<c_perm>>.
+
+pass:attributes,quotes[{cheri_int_mode_name}] Description::
+Store a CLEN+1 bit value in `cs2` to memory as though V=1; i.e., with the
+address translation and protection, and endianness, that apply to memory
+accesses in either VS-mode or VU-mode. The effective address is the `rs1`. The
+authorising capability for the operation is <<ddc>>. The capability written to
+memory has the tag set to 0 if the tag of `cs2` is 0 or <<ddc>> does not grant
+<<c_perm>>.
+
+include::malformed_no_check.adoc[]
+
+:has_cap_data:
+include::store_exceptions.adoc[]
++
+include::require_cre.adoc[]
+
+Prerequisites for pass:attributes,quotes[{cheri_cap_mode_name}]::
+{cheri_base_ext_name}, H
+
+Prerequisites for pass:attributes,quotes[{cheri_int_mode_name}]::
+{cheri_base_ext_name}, {cheri_default_ext_name}, H
+
+pass:attributes,quotes[{cheri_cap_mode_name}] Operation::
++
+--
+TBD
+--
+
+pass:attributes,quotes[{cheri_int_mode_name}] Operation::
++
+--
+TBD
+--

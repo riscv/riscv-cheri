@@ -10,7 +10,8 @@ software compartmentalization of CHERI programs.
 {tid_ext_name} adds two new CSRs to implement a trusted thread
 identifier (TID) used in compartmentalization. These CSRs are listed in
 xref:tid-mcsrnames-added[xrefstyle=short],
-xref:tid-scsrnames-added[xrefstyle=short], and
+xref:tid-scsrnames-added[xrefstyle=short],
+xref:tid-vscsrnames-added[xrefstyle=short] and
 xref:tid-ucsrnames-added[xrefstyle=short].
 
 [[tid-mcsrnames-added]]
@@ -27,6 +28,14 @@ xref:tid-ucsrnames-added[xrefstyle=short].
 |===
 |{tid_ext_name} CSR|Address|Prerequisites|Read-Permission|Write-Permission|Description
 |<<stid>>|0x580|S-mode|S|S, <<asr_perm>>|Supervisor Thread Identifier
+|===
+
+[[tid-vscsrnames-added]]
+.Added virtual supervisor-mode CSRs in {tid_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
+|===
+|{tid_ext_name} CSR|Address|Prerequisites|Read-Permission|Write-Permission|Description
+|<<vstid>>|0xA80|VS-mode|S|H, <<asr_perm>>|Virtual Supervisor Thread Identifier
 |===
 
 [[tid-ucsrnames-added]]
@@ -61,6 +70,15 @@ this register is UNSPECIFIED.
 .Supervisor thread identifier register
 include::img/stidreg.edn[]
 
+[#vstid,reftext="vstid"]
+==== Virtual Supervisor Thread Identifier (vstid)
+
+The <<vstid>> register is a VSLEN-bit read-write register. It is used to
+identify the current thread in virtual supervisor mode. The reset value of this
+register is UNSPECIFIED.
+
+.Virtual supervisor thread identifier register
+include::img/vstidreg.edn[]
 
 [#utid,reftext="utid"]
 ==== User Thread Identifier (utid)
@@ -99,6 +117,17 @@ of the data is UNSPECIFIED.
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
 
+[#vstidc,reftext="vstidc"]
+==== Virtual Supervisor Thread Identifier Capability (vstidc)
+
+The <<vstidc>> register is a CLEN-bit read-write capability register.
+It is the capability extension of the <<vstid>> register.
+It is used to identify the current thread in virtual supervisor mode.
+On reset the tag of <<vstidc>> will be set to 0 and the remainder
+of the data is UNSPECIFIED.
+
+.Virtual supervisor thread identifier capability register
+include::img/vstidcreg.edn[]
 
 [#utidc,reftext="utidc"]
 ==== User Thread Identifier Capability (utidc)
@@ -133,7 +162,7 @@ by untrusted code. Therefore, this specification offers three additional CSRs
 that facilitate a trusted source for the thread ID. All registers are readable
 from their respective privilege levels and writeable with <<asr_perm>>.
 
-This extension extends <<mtid>>, <<stid>>, and <<utid>> to their respective
-capability variants <<mtidc>>, <<stidc>>, and <<utidc>>. This presents software with the
+This extension extends <<mtid>>, <<stid>>, <<vstid>> and <<utid>> to their respective
+capability variants <<mtidc>>, <<stidc>>, <<vstidc>> and <<utidc>>. This presents software with the
 freedom to still use these registers with capabilities or leave the metadata
 untouched and only use the registers to storage integers.
