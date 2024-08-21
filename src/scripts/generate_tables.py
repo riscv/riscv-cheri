@@ -462,6 +462,31 @@ class csr_renamed_purecap_mode_s(table):
     def check(self,row):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "S"
 
+class csr_renamed_purecap_mode_vs(table):
+    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(map(resolve_col_display_name, self.cols))+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0 or i==2:
+                    #make an xref
+                    outStr += '|<<'+row[i]+'>>'
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "VS"
+
 class csr_added_purecap_mode_s(table):
     cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
@@ -639,6 +664,7 @@ if __name__ == "__main__":
         tables.append(csr_renamed_purecap_mode_d(os.path.join(args.output_dir, "csr_renamed_purecap_mode_d_table_body.adoc"),header))
         tables.append(csr_renamed_purecap_mode_m(os.path.join(args.output_dir, "csr_renamed_purecap_mode_m_table_body.adoc"),header))
         tables.append(csr_renamed_purecap_mode_s(os.path.join(args.output_dir, "csr_renamed_purecap_mode_s_table_body.adoc"),header))
+        tables.append(csr_renamed_purecap_mode_vs(os.path.join(args.output_dir, "csr_renamed_purecap_mode_vs_table_body.adoc"),header))
         tables.append(csr_renamed_purecap_mode_u(os.path.join(args.output_dir, "csr_renamed_purecap_mode_u_table_body.adoc"),header))
         #maybe these should be included but they're not
         #tables.append(csr_added_purecap_mode_d  (os.path.join(args.output_dir, "csr_added_purecap_mode_d_table_body.adoc"),header))
