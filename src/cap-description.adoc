@@ -118,6 +118,12 @@ memory if the authorising capability also grants <<w_perm>>.
 [#x_perm,reftext="X-permission"]
 Execute Permission (X):: Allow instruction execution.
 
+[#lm_perm,reftext="LM-permission"]
+Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
+If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed provided that the loaded capability has its tag set and is not sealed; loaded capabilities that are sealed or untagged do not have their permissions changed.
+The rules specified by <<ACPERM>> are followed when <<w_perm>> and <<lm_perm>> are removed, so additional permissions may also be removed.
+Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
+
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow read and write access to all
 privileged (M-mode and S-mode) CSRs.
@@ -156,34 +162,37 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 <<<
 
 .Encoding of architectural permissions for MXLEN=32
-[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^2,4",align="center"]
+[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
-| Encoding[2:0] | R | W | C | X | ASR | Mode^1^ | Notes
-8+| *Quadrant 0: Non-capability data read/write*
-8+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
-8+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
-| 0   |   |   |   |   |     | N/A | No permissions
-| 1   | ✔ |   |   |   |     | N/A | Data RO
-| 2-3   7+| reserved
-| 4   |   | ✔ |   |   |     | N/A | Data WO
-| 5   | ✔ | ✔ |   |   |     | N/A | Data RW
-| 6-7   7+| reserved
-8+| *Quadrant 1: Executable capabilities*
-8+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-pass:attributes,quotes[{cheri_cap_mode_name}], {INT_MODE_VALUE}-pass:attributes,quotes[{cheri_int_mode_name}])
-| 0-1   | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
-| 2-3   | ✔ |   | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RO
-| 4-5   | ✔ | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
-| 6-7   | ✔ | ✔ |   | ✔ |     | Mode^1^  | Execute + Data RW
-8+| *Quadrant 2: Reserved*
-8+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
-| 0-7   7+| reserved
-8+| *Quadrant 3: Capability data read/write*
-8+| [2] - write. R and C implicitly granted.
-8+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
-| 0-2   7+| reserved
-| 3       | ✔ |   | ✔ |   |     | N/A | Data & Cap RO
-| 4-6   7+| reserved
-| 7       | ✔ | ✔ | ✔ |   |     | N/A | Data & Cap RW
+| Encoding[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
+9+| *Quadrant 0: Non-capability data read/write*
+9+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
+9+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
+| 0   |   |   |   |   |     |   | N/A | No permissions
+| 1   | ✔ |   |   |   |     |   | N/A | Data RO
+| 2-3   8+| reserved
+| 4   |   | ✔ |   |   |     |   | N/A | Data WO
+| 5   | ✔ | ✔ |   |   |     |   | N/A | Data RW
+| 6-7   8+| reserved
+9+| *Quadrant 1: Executable capabilities*
+9+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-pass:attributes,quotes[{cheri_cap_mode_name}], {INT_MODE_VALUE}-pass:attributes,quotes[{cheri_int_mode_name}])
+| 0-1   | ✔ | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
+| 2-3   | ✔ |   | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RO
+| 4-5   | ✔ | ✔ | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
+| 6-7   | ✔ | ✔ |   |   | ✔ |     | Mode^1^  | Execute + Data RW
+9+| *Quadrant 2: Restricted capability data read/write*
+9+| bit[2] - write. R and C implicitly granted, LM dependent on W permission.
+9+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+| 0-2   8+| reserved
+| 3       | ✔ |   | ✔ |   |   |     | N/A | Data & Cap RO (no LM)
+| 4-7   8+| reserved
+9+| *Quadrant 3: Capability data read/write*
+9+| [2] - write. R and C implicitly granted.
+9+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+| 0-2   8+| reserved
+| 3       | ✔ |   | ✔ | ✔ |   |     | N/A | Data & Cap RO
+| 4-6   8+| reserved
+| 7       | ✔ | ✔ | ✔ | ✔ |   |     | N/A | Data & Cap RW
 |==============================================================================
 
 ^1^ _Mode (<<m_bit>>) can only be set on a tagged capability when {cheri_default_ext_name}
@@ -214,7 +223,8 @@ permission.
 | 2   | <<r_perm>>
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
-//| 5   | <<m_bit>>
+| 5   | <<lm_perm>>
+//| 6   | <<m_bit>>
 |==============================================================================
 
 The <<m_bit>> is only assigned meaning when the
@@ -596,7 +606,7 @@ or 'root' capability.
 | SDP           | ones  | Grants all permissions
 | AP (MXLEN=32) | 0x8/0x9^1^  (see xref:cap_perms_encoding32[xrefstyle=short])
                         | Grants all permissions
-| AP (MXLEN=64) | 0x1F (see xref:cap_perms_encoding64[xrefstyle=short])
+| AP (MXLEN=64) | 0x3F (see xref:cap_perms_encoding64[xrefstyle=short])
                         | Grants all permissions
 | S             | zero  | Unsealed
 | EF            | zero  | Internal exponent format
