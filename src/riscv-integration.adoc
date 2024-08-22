@@ -537,9 +537,10 @@ include::img/mepccreg.edn[]
 Capabilities written to <<mepcc>> must be legalised by implicitly zeroing bit
 **mepcc[0]**. Additionally, if an implementation allows IALIGN to be
 either 16 or 32, then whenever IALIGN=32, the capability read from <<mepcc>>
-must be legalised by implicitly zeroing bit **mepcc[1]**. Therefore, the
+must be legalised by implicitly zeroing **mepcc[1]**. Therefore, the
 capability read or written has its tag bit cleared if the legalised address is
-not within the <<section_cap_representable_check>>.
+not within the <<section_cap_representable_check>> or if the legalisation
+changes the address and the capability is sealed.
 
 NOTE: When reading or writing a sealed capability in <<mepcc>>, the
 tag is not cleared if the original address equals the legalized
