@@ -115,7 +115,9 @@ gctag x1, c1
 [#section_hybrid_ext_instructions]
 === Zcherihybrid Instructions
 
-{cheri_default_ext_name} introduces a small number of new mode-switching instructions to the base RISC-V integer ISA, as shown in <<Zcheri_hybrid_instruction_extension>>.
+{cheri_default_ext_name} introduces a small number of new mode-switching and
+capability manipulation instructions to the base RISC-V integer ISA, as shown
+in <<Zcheri_hybrid_instruction_extension>>.
 Additionally, the behavior of some existing instructions changes depending on the current CHERI execution mode.
 
 ==== Capability Load and Store Instructions
@@ -142,6 +144,10 @@ the sign-extended offset.
 A new <<SCMODE>> instruction allows setting a capability's CHERI execution
 mode to the indicated value. The output is written to an unprivileged *c*
 register, not <<pcc>>.
+
+A new <<GCMODE>> instruction allows decoding the CHERI execution mode from an
+arbitrary capability held in an *x* register. The output is written to an
+unprivileged *x* register.
 
 ==== Mode Change Instructions
 
