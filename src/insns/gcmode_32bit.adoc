@@ -13,9 +13,12 @@ Encoding::
 include::wavedrom/gcmode.adoc[]
 
 Description::
-Decode the architectural capability CHERI execution mode from `cs1` and write
-the result to `rd`. It is not required that the input capability `cs1`  has its
-tag set to 1.
+Decode the CHERI execution mode from the capability in `cs1` and write
+the result to `rd`. The output in `rd` is {CAP_MODE_VALUE} if the CHERI
+execution mode of the capability in `cs1` is
+pass:attributes,quotes[{cheri_cap_mode_name}] and {INT_MODE_VALUE} if the mode
+is pass:attributes,quotes[{cheri_int_mode_name}]. It is not required that `cs1`
+has its tag set to 1.
 
 Exceptions::
 include::require_cre.adoc[]
