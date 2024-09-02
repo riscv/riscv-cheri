@@ -21,14 +21,22 @@ include::wavedrom/gcperm.adoc[]
 Description::
 If MXLEN=32 unpack permissions from the format in <<cap_perms_encoding32>>.
 +
-Convert the unpacked AP permissions, and the SDP fields of capability
-`cs1` into a bit field, as shown below, and write the result to `rd`. A bit set to 1
-in the bit field indicates that `cs1` grants the corresponding permission.
+Convert the unpacked AP permissions, and the SDP fields of capability `cs1`
+into a bit field, as shown in xref:gcperm_bit_field_clen64[xrefstyle=short]
+when CLEN=64 and xref:gcperm_bit_field_clen128[xrefstyle=short] when CLEN=128,
+and write the result to `rd`. A bit set to 1 in the bit field indicates that
+`cs1` grants the corresponding permission.
 +
 If the AP field cannot be produced by <<ACPERM>> then all architectural
 permission bits in `rd` are set to 0.
 
-include::../img/acperm_bit_field.edn[]
+.Capability permissions bit field when CLEN=64
+[#gcperm_bit_field_clen64]
+include::../img/acperm_bit_field_rv32.edn[]
+
+.Capability permissions bit field when CLEN=128
+[#gcperm_bit_field_clen128]
+include::../img/acperm_bit_field_rv64.edn[]
 
 Exceptions::
 include::require_cre.adoc[]
