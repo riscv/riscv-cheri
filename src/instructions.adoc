@@ -6,11 +6,11 @@ instructions where the effect of CHERI needs specific details.
 
 For existing RISC-V instructions, note that:
 
-. In pass:attributes,quotes[{cheri_int_mode_name}], every byte of each memory access is bounds
+. In {cheri_int_mode_name}, every byte of each memory access is bounds
 checked against <<ddc>>
-. In pass:attributes,quotes[{cheri_int_mode_name}], a minimum length instruction at the target of all indirect
+. In {cheri_int_mode_name}, a minimum length instruction at the target of all indirect
 jumps is bounds checked against <<pcc>>
-. In pass:attributes,quotes[{cheri_cap_mode_name}] a minimum length instruction at the target of all indirect
+. In {cheri_cap_mode_name} a minimum length instruction at the target of all indirect
 jumps is bounds checked against `cs1` (e.g. <<JALR>>)
 . A minimum length instruction at the taken target of all direct
 jumps and conditional branches is bounds checked against <<pcc>> regardless of
@@ -129,7 +129,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 
 ==== RV32
 
-.16-bit instruction remapping in pass:attributes,quotes[{cheri_int_mode_name}]
+.16-bit instruction remapping in {cheri_int_mode_name}
 [#16bit_insn_remapping_rv32_a]
 [width="100%",options=header]
 |==============================================================================
@@ -148,7 +148,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 
 ^1^ reserved for future standard Zcm extensions
 
-.16-bit instruction remapping in pass:attributes,quotes[{cheri_cap_mode_name}]
+.16-bit instruction remapping in {cheri_cap_mode_name}
 [#16bit_insn_remapping_rv32_b]
 [width="100%",options=header]
 |==============================================================================
@@ -170,7 +170,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 <<<
 ==== RV64
 
-.16-bit instruction remapping in pass:attributes,quotes[{cheri_int_mode_name}]
+.16-bit instruction remapping in {cheri_int_mode_name}
 [#16bit_insn_remapping_rv64_a]
 [width="100%",options=header]
 |==============================================================================
@@ -187,7 +187,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 |001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
 |==============================================================================
 
-.16-bit instruction remapping in pass:attributes,quotes[{cheri_cap_mode_name}]
+.16-bit instruction remapping in {cheri_cap_mode_name}
 [#16bit_insn_remapping_rv64_b]
 [width="100%",options=header]
 |==============================================================================
@@ -284,9 +284,9 @@ include::insns/store_16bit_Zcb.adoc[]
 [#Zcmp,reftext="Zcmp"]
 === "Zcmp" Standard Extension For Code-Size Reduction
 
-The push (<<CM.PUSH>>) and pop (<<CM.POP>>, <<CM.POPRET>>, <<CM.POPRETZ>>) instructions are redefined in pass:attributes,quotes[{cheri_cap_mode_name}] to save/restore full capabilities.
+The push (<<CM.PUSH>>) and pop (<<CM.POP>>, <<CM.POPRET>>, <<CM.POPRETZ>>) instructions are redefined in {cheri_cap_mode_name} to save/restore full capabilities.
 
-The double move instructions (<<CM.MVSA01>>, <<CM.MVA01S>>) are redefined in pass:attributes,quotes[{cheri_cap_mode_name}] to move full capabilities between registers. The saved register mapping is as shown in
+The double move instructions (<<CM.MVSA01>>, <<CM.MVA01S>>) are redefined in {cheri_cap_mode_name} to move full capabilities between registers. The saved register mapping is as shown in
 
 .saved register mapping for Zcmp
 [#saved_register_mapping]
@@ -323,18 +323,18 @@ include::insns/zcmp_cmva01s.adoc[]
 [#Zcmt,reftext="Zcmt"]
 === "Zcmt" Standard Extension For Code-Size Reduction
 
-The table jump instructions (<<CM.JT>>, <<CM.JALT>>) defined in cite:[riscv-code-size-spec] are _not_ redefined in pass:attributes,quotes[{cheri_cap_mode_name}] to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.
+The table jump instructions (<<CM.JT>>, <<CM.JALT>>) defined in cite:[riscv-code-size-spec] are _not_ redefined in {cheri_cap_mode_name} to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.
 
 In the future, new jump table modes or new encodings can be added to have capabilities in the jump table.
 
-The jump vector table CSR <<jvt>> has a capability alias <<jvtc>> so that it can only be configured to point to accessible memory. All accesses to the jump table are checked against <<jvtc>> in pass:attributes,quotes[{cheri_cap_mode_name}], and against <<pcc>> bounds in pass:attributes,quotes[{cheri_int_mode_name}]. This allows the jump table to be accessed
-when the <<pcc>> bounds are set narrowly to the local function only in pass:attributes,quotes[{cheri_cap_mode_name}].
+The jump vector table CSR <<jvt>> has a capability alias <<jvtc>> so that it can only be configured to point to accessible memory. All accesses to the jump table are checked against <<jvtc>> in {cheri_cap_mode_name}, and against <<pcc>> bounds in {cheri_int_mode_name}. This allows the jump table to be accessed
+when the <<pcc>> bounds are set narrowly to the local function only in {cheri_cap_mode_name}.
 
 NOTE: Zcmt defines that the fetch from the jump table is from instruction memory.
  The overall instruction executed is effectively 48-bit, with 16-bits from <<CM.JALT>>/<<CM.JT>>, the other 32-bits (for RV32) from the table.
- Therefore <<pcc>> is used to authorise the fetch in pass:attributes,quotes[{cheri_int_mode_name}], as the fetch is designated to be from instruction memory in cite:[riscv-unpriv-spec].
+ Therefore <<pcc>> is used to authorise the fetch in {cheri_int_mode_name}, as the fetch is designated to be from instruction memory in cite:[riscv-unpriv-spec].
 
-NOTE: In pass:attributes,quotes[{cheri_cap_mode_name}] the implementation doesn't need to expand and bounds check against <<jvtc>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvtc>>, and then check that the accessed entry is in that range.
+NOTE: In {cheri_cap_mode_name} the implementation doesn't need to expand and bounds check against <<jvtc>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvtc>>, and then check that the accessed entry is in that range.
 
 [#jvt,reftext="jvt"]
 ==== Jump Vector Table CSR (jvt)
@@ -349,8 +349,8 @@ The JVT CSR is exactly as defined by cite:[riscv-code-size-spec]. It is renamed 
 .Jump Vector Table Capability register
 include::img/jvtcreg.edn[]
 
-All instruction fetches from the jump vector table are checked against <<jvtc>> in pass:attributes,quotes[{cheri_cap_mode_name}].
-In pass:attributes,quotes[{cheri_int_mode_name}] the address field gives the base address of the table, and the access is
+All instruction fetches from the jump vector table are checked against <<jvtc>> in {cheri_cap_mode_name}.
+In {cheri_int_mode_name} the address field gives the base address of the table, and the access is
 checked against <<pcc>> bounds.
 
 See <<CM_JALT>>, <<CM_JT>>.

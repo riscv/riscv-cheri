@@ -8,10 +8,10 @@ NOTE: The RV64 encoding is intended to also allocate the encoding for SQ for RV1
 Synopsis::
 Store capability
 
-pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonic::
+{cheri_cap_mode_name} Mnemonic::
 `sc cs2, offset(cs1)`
 
-pass:attributes,quotes[{cheri_int_mode_name}] Mnemonic::
+{cheri_int_mode_name} Mnemonic::
 `sc cs2, offset(rs1)`
 
 include::xlen_variable_warning.adoc[]
@@ -19,14 +19,14 @@ include::xlen_variable_warning.adoc[]
 Encoding::
 include::wavedrom/storecap.adoc[]
 
-pass:attributes,quotes[{cheri_cap_mode_name}] Description::
+{cheri_cap_mode_name} Description::
 Store the CLEN+1 bit value in `cs2` to memory. The capability in `cs1`
 authorizes the operation. The effective address of the memory access is
 obtained by adding the address of `cs1` to the sign-extended 12-bit offset. The
 capability written to memory has the tag set to 0 if the tag of `cs2` is 0 or
 `cs1` does not grant <<c_perm>>.
 
-pass:attributes,quotes[{cheri_int_mode_name}] Description::
+{cheri_int_mode_name} Description::
 Store the CLEN+1 bit value in `cs2` to memory. The capability
 authorising the operation is <<ddc>>. The effective address of the memory
 access is obtained by adding `rs1` to the sign-extended 12-bit offset. The
@@ -40,10 +40,10 @@ include::store_exceptions.adoc[]
 +
 include::require_cre.adoc[]
 
-Prerequisites for pass:attributes,quotes[{cheri_cap_mode_name}]::
+Prerequisites for {cheri_cap_mode_name}::
 {cheri_base_ext_name}
 
-Prerequisites for pass:attributes,quotes[{cheri_int_mode_name}]::
+Prerequisites for {cheri_int_mode_name}::
 {cheri_default_ext_name}
 
 SC Operation::
