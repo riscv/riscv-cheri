@@ -13,18 +13,18 @@ See <<HLVX_WU>>.
 Synopsis::
 Hypervisor virtual machine load from executable memory
 
-pass:attributes,quotes[{cheri_cap_mode_name}] Mnemonics::
+{cheri_cap_mode_name} Mnemonics::
 `hlv.hu rd, cs1` +
 `hlv.wu rd, cs1`
 
-pass:attributes,quotes[{cheri_int_mode_name}] Mnemonics::
+{cheri_int_mode_name} Mnemonics::
 `hlv.hu rd, rs1` +
 `hlv.wu rd, rs1`
 
 Encoding::
 include::wavedrom/hypv-virt-loadx.adoc[]
 
-pass:attributes,quotes[{cheri_cap_mode_name}] Description::
+{cheri_cap_mode_name} Description::
 Performs a load with the *execute* permission taking the place of *read*
 permission during address translation and as though V=1; i.e., with the address
 translation and protection, and endianness, that apply to memory access in
@@ -32,7 +32,7 @@ either VS-mode or VU-mode. The effective address is the address of `cs1`. The
 authorising capability for the operation is `cs1`. A copy of the loaded value
 is written to `rd`.
 
-pass:attributes,quotes[{cheri_int_mode_name}] Description::
+{cheri_int_mode_name} Description::
 Performs a load with the *execute* permission taking the place of *read*
 permission during address translation and as though V=1; i.e., with the address
 translation and protection, and endianness, that apply to memory access in
@@ -55,19 +55,19 @@ listed below; in this case, _CHERI data fault_ is reported in the <<mtval>> or
 | Length violation           | At least one byte accessed is outside the authority capability bounds, or the capability has <<section_cap_malformed,malformed>> bounds
 |==============================================================================
 
-Prerequisites for pass:attributes,quotes[{cheri_cap_mode_name}]::
+Prerequisites for {cheri_cap_mode_name}::
 {cheri_base_ext_name}, H
 
-Prerequisites for pass:attributes,quotes[{cheri_int_mode_name}]::
+Prerequisites for {cheri_int_mode_name}::
 {cheri_base_ext_name}, {cheri_default_ext_name}, H
 
-pass:attributes,quotes[{cheri_cap_mode_name}] Operation::
+{cheri_cap_mode_name} Operation::
 +
 --
 TBD
 --
 
-pass:attributes,quotes[{cheri_int_mode_name}] Operation::
+{cheri_int_mode_name} Operation::
 +
 --
 TBD

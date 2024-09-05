@@ -175,7 +175,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 | 5   | ✔ | ✔ |   |   |     |   | N/A | Data RW
 | 6-7   8+| reserved
 9+| *Quadrant 1: Executable capabilities*
-9+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-pass:attributes,quotes[{cheri_cap_mode_name}], {INT_MODE_VALUE}-pass:attributes,quotes[{cheri_int_mode_name}])
+9+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
 | 0-1   | ✔ | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
 | 2-3   | ✔ |   | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
@@ -615,7 +615,7 @@ or 'root' capability.
 |==============================================================================
 
 ^1^If {cheri_default_ext_name} is supported, then the <<infinite-cap>> capability must represent
-pass:attributes,quotes[{cheri_int_mode_name}] for compatibility with standard RISC-V code. Therefore:
+{cheri_int_mode_name} for compatibility with standard RISC-V code. Therefore:
 
 * For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the AP field, giving the value 0x9
 * For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
