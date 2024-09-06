@@ -562,6 +562,10 @@ class csr_alias_action(table):
     def check(self,row):
         return row[self.header.index("Alias")] != ""
 
+class csr_new_write_action(csr_alias_action):
+    def check(self,row):
+        return row[self.header.index("Alias")] == ""
+
 class csr_perms(table):
     cols = ["CLEN CSR", "Prerequisites", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
@@ -660,6 +664,7 @@ if __name__ == "__main__":
         tables = []
 
         tables.append(csr_alias_action          (os.path.join(args.output_dir, "csr_alias_action_table_body.adoc"),header))
+        tables.append(csr_new_write_action      (os.path.join(args.output_dir, "new_csr_write_action_table_body.adoc"),header))
         tables.append(csr_aliases               (os.path.join(args.output_dir, "csr_aliases_table_body.adoc"),header))
         tables.append(csr_renamed_purecap_mode_d(os.path.join(args.output_dir, "csr_renamed_purecap_mode_d_table_body.adoc"),header))
         tables.append(csr_renamed_purecap_mode_m(os.path.join(args.output_dir, "csr_renamed_purecap_mode_m_table_body.adoc"),header))
