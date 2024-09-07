@@ -102,6 +102,7 @@ The byte-address of a memory location is encoded as MXLEN integer value.
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9 Note:* The permissions are encoded differently in this
 specification.
+Additionally, this specification incorporates permissions that were present in Morello and/or CHERIoT but not CHERI v9.
 endif::[]
 
 This field encodes architecturally defined permissions of the capability.
@@ -240,8 +241,10 @@ permission.
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
 | 5   | <<lm_perm>>
-//| 6   | <<m_bit>>
+| 6   | <<el_perm>>^1^
+| 7   | <<sl_perm>>^1^
 |==============================================================================
+^1^ This permission is only supported if the implementation supports <<section_ext_cheri_levels,{cheri_levels_ext_name}>>.
 
 The <<m_bit>> is only assigned meaning when the
 implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
