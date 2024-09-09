@@ -21,7 +21,7 @@ into a foreign address space.
 An operating system might defend against this by only issuing a capability
 to the shared
 region that does not grant the load/store capability permission,
-there are circumstances where portions of general-purpose, mmaped memory become shared,
+there are circumstances where portions of general-purpose, mmapped^*^ memory become shared,
 and the operating system must prevent future capability communication
 through those pages.
 This is not possible without restructuring software, as the capability for
@@ -33,9 +33,11 @@ Such sharing through virtual memory is on the page granularity, so preventing
 capability writes with a PTE permission is
 a natural solution.
 
+^*^ _allocated using mmap_
+
 === Capability Revocation
 
-Page table enforcement can accellerate concurrant capability revocation
+Page table enforcement can accelerate concurrent capability revocation
 for temporal safety.
 Without page table capability protection, a concurrent capability revocation
 sweep must begin by visiting all PTEs to mark them unreadable, henceforth trapping on any
@@ -72,7 +74,7 @@ include::img/sv48pte.edn[]
 [#sv57pte]
 include::img/sv57pte.edn[]
 
-The CW bit indicates whether reading or writing capabilities with tag set to
+The CW bit indicates whether reading or writing capabilities with the tag set to
 the virtual page is permitted. When the CW bit is set, capabilities are written
 as usual, and capability reads are controlled by the CRG bit.
 If the CW bit is clear then:
@@ -121,14 +123,40 @@ and the virtual page's CRG bit does not equal senvcfg.CRG.
 NOTE: An implementation may avoid a dependency on the tag
 bit value of the capability read. This will introduce additional traps during revocation sweeps.
 
-[#senvcfg_pte,reftext="senvcfg PTE bits"]
-=== Extending the Supervisor Environment Configuration Register (menvcfg)
+[[pte_cw_crg_load_summary]]
+.Summary of Load CW and CRG behavior in the PTEs
+[%autowidth,float="center",align="left",cols="<,<,<",options="header"]
+|===
+|PTE.CW |PTE.CRG           |Load/AMO
+| 0     | X                | Clear loaded tag
+| 1     |!=<<senvcfg>>.CRE | Page fault, or page fault if tag is set
+| 1     |==<<senvcfg>>.CRE | Normal operation
+|===
 
-The *senvcfg* register operates as described in cite:[riscv-priv-spec].
+[[pte_cw_crg_store_summary]]
+.Summary of Store CW and CRG behavior in the PTEs
+[%autowidth,float="center",align="left",cols="<,<,<",options="header"]
+|===
+|PTE.CW |PTE.CRG           |Store/AMO
+| 0     | 0                | Page fault if stored tag is set
+| 0     | 1                | Page fault if stored tag is set, or hardware CW, CRG update
+| 1     | X                | Normal operation
+|===
+
+
+[#senvcfg_pte,reftext="senvcfg PTE bits"]
+=== Extending the Machine and Supervisor Environment Configuration Registers (menvcfg/senvcfg)
+
+The *menvcfg* and *senvcfg* register operate as described in cite:[riscv-priv-spec].
 {cheri_pte_ext_name} adds a new Capability Read Generation (CRG) bit as shown
-in xref:senvcfgreg_pte[xrefstyle=short] when XLEN=64. The CRG bit in *senvcfg*
+in xref:menvcfgreg_pte[xrefstyle=short] and xref:senvcfgreg_pte[xrefstyle=short]
+when XLEN=64. The CRG bit in *senvcfg*
 is used as described in xref:section_extending_pte[xrefstyle=short].
 
-.Supervisor environment configuration register (*senvcfg*)
+.Machine environment configuration register (*menvcfg*) with Zcheripte, RV64 only
+[#menvcfgreg_pte]
+include::img/menvcfgreg-pte.edn[]
+
+.Supervisor environment configuration register (*senvcfg*) with Zcheripte, RV64 only
 [#senvcfgreg_pte]
 include::img/senvcfgreg-pte.edn[]
