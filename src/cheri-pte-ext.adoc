@@ -139,10 +139,13 @@ bit value of the capability read. This will introduce additional traps during re
 |===
 |PTE.CW |PTE.CRG           |Store/AMO
 | 0     | 0                | Page fault if stored tag is set
-| 0     | 1                | Page fault if stored tag is set, or hardware CW, CRG update
+| 0     | 1                | Page fault if stored tag is set, or hardware CW and CRG update^1^
 | 1     | X                | Normal operation
 |===
 
+^1^ The choice here follows the pattern of whether to implement the _Svade_ extension
+ to take page-fault exceptions for A and D PTE bit state changes, or whether to a implement
+ a hardware updating mechanism.
 
 [#senvcfg_pte,reftext="senvcfg PTE bits"]
 === Extending the Machine and Supervisor Environment Configuration Registers (menvcfg/senvcfg)
