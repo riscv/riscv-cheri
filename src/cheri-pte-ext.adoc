@@ -127,10 +127,10 @@ bit value of the capability read. This will introduce additional traps during re
 .Summary of Load CW and CRG behavior in the PTEs
 [%autowidth,float="center",align="left",cols="<,<,<",options="header"]
 |===
-|PTE.CW |PTE.CRG           |Load/AMO
-| 0     | X                | Clear loaded tag
-| 1     |!=<<senvcfg>>.CRE | Page fault, or page fault if tag is set
-| 1     |==<<senvcfg>>.CRE | Normal operation
+|PTE.CW |PTE.CRG                          |Load/AMO
+| 0     | X                               | Clear loaded tag
+| 1     |!=<<senvcfgreg_pte,senvcfg>>.CRG | Page fault, or page fault if tag is set
+| 1     |==<<senvcfgreg_pte,senvcfg>>.CRG | Normal operation
 |===
 
 [[pte_cw_crg_store_summary]]
@@ -156,10 +156,14 @@ in xref:menvcfgreg_pte[xrefstyle=short] and xref:senvcfgreg_pte[xrefstyle=short]
 when XLEN=64. The CRG bit in *senvcfg*
 is used as described in xref:section_extending_pte[xrefstyle=short].
 
-.Machine environment configuration register (*menvcfg*) with Zcheripte, RV64 only
+WARNING: Unlike all other bits in *Xenvcfg*, CRG is in *senvcfg* and *not* in *menvcfg*. This suggests
+ this it is in the wrong place and is likely to move at some point in the future to a location
+ where it is associated with virtual memory, but the *satp* CSR is full, so this will have to do.
+
+.Machine environment configuration register (*menvcfg*) with Zcheripte, RV64 only, no CRG field
 [#menvcfgreg_pte]
 include::img/menvcfgreg-pte.edn[]
 
-.Supervisor environment configuration register (*senvcfg*) with Zcheripte, RV64 only
+.Supervisor environment configuration register (*senvcfg*) with Zcheripte, RV64 only, CRG field added
 [#senvcfgreg_pte]
 include::img/senvcfgreg-pte.edn[]
