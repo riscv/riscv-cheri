@@ -141,6 +141,65 @@ of the data is UNSPECIFIED.
 .User thread identifier capability register
 include::img/utidcreg.edn[]
 
+=== "Smstateen/Ssstateen" Integration
+
+The TID bit controls access to the CSRs in
+xref:tid-scsrnames-added[xrefstyle=short],
+xref:tid-vscsrnames-added[xrefstyle=short] and
+xref:tid-ucsrnames-added[xrefstyle=short] provided by the {tid_ext_name}
+extension.
+
+.Machine State Enable 0 Register (`mstateen0`)
+[wavedrom, ,svg]
+....
+{reg: [
+{bits: 1, name: 'C'},
+{bits: 1, name: 'FCSR'},
+{bits: 1, name: 'JVT'},
+{bits: 1, name: 'TID'},
+{bits: 52, name: 'WPRI'},
+{bits: 1, name: 'P1P13'},
+{bits: 1, name: 'CONTEXT'},
+{bits: 1, name: 'IMSIC'},
+{bits: 1, name: 'AIA'},
+{bits: 1, name: 'CSRIND'},
+{bits: 1, name: 'WPRI'},
+{bits: 1, name: 'ENVCFG'},
+{bits: 1, name: 'SE0'},
+], config: {bits: 64, lanes: 4, hspace:1024}}
+....
+
+.Hypervisor State Enable 0 Register (`hstateen0`)
+[wavedrom, ,svg]
+....
+{reg: [
+{bits: 1, name: 'C'},
+{bits: 1, name: 'FCSR'},
+{bits: 1, name: 'JVT'},
+{bits: 1, name: 'TID'},
+{bits: 53, name: 'WPRI'},
+{bits: 1, name: 'CONTEXT'},
+{bits: 1, name: 'IMSIC'},
+{bits: 1, name: 'AIA'},
+{bits: 1, name: 'CSRIND'},
+{bits: 1, name: 'WPRI'},
+{bits: 1, name: 'ENVCFG'},
+{bits: 1, name: 'SE0'},
+], config: {bits: 64, lanes: 4, hspace:1024}}
+....
+
+.Supervisor State Enable 0 Register (`sstateen0`)
+[wavedrom, ,svg]
+....
+{reg: [
+{bits: 1, name: 'C'},
+{bits: 1, name: 'FCSR'},
+{bits: 1, name: 'JVT'},
+{bits: 1, name: 'TID'},
+{bits: 28, name: 'WPRI'}
+], config:{bits: 32, lanes: 2, hspace:1024}}
+....
+
 [#CHERI_COMP,reftext="CHERI Compartmentalization]
 === CHERI Compartmentalization
 
