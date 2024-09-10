@@ -234,8 +234,7 @@ xref:default-csrnames-added[xrefstyle=short].
 Extended CSRs have only one address; the access width is determined by the
 execution mode.
 
-When <<CSRRW>> is executed on an extended CSR or a new capability CSR in
-{cheri_int_mode_name}:
+When <<CSRRW>> is executed on an extended CSR in {cheri_int_mode_name}:
 
 * The register operand is an *x* register.
 * Only XLEN bits from the *x* source are written to the capability address
@@ -245,8 +244,8 @@ field.
 to MXLEN bits according to cite:[riscv-priv-spec] _(3.1.6.2. Base ISA Control in
 mstatus Register)_ and are then written to the destination *x* register.
 
-When <<CSRRW>> is executed on an extended CSR or a new capability CSR in
-{cheri_cap_mode_name}:
+When <<CSRRW>> is executed on an extended CSR in {cheri_cap_mode_name}, or
+on a new CSR regardless of the CHERI execution mode:
 
 * The register operand is a *c* register.
 * The full capability in the *c* register source is written to the CSR.
@@ -261,9 +260,13 @@ instruction (<<CSRRWI>>, <<CSRRC>>, <<CSRRCI>>, <<CSRRS>>, <<CSRRSI>>):
 (set bits, clear bits etc).
 * The final address is updated as specified in <<extended_CSR_writing>> for an
 XLEN write.
-* In {cheri_int_mode_name}, XLEN bits are read from the capability address field and
-written to an output *x* register. In {cheri_cap_mode_name}, CLEN bits are read from
-the CSR and written to an output *c* register.
+* When accessing an extended CSR:
+    ** In {cheri_int_mode_name}, XLEN bits are read from the capability address
+field and written to an output *x* register.
+    ** In {cheri_cap_mode_name}, CLEN bits are read from the CSR and written to
+an output *c* register.
+* When accessing a new capability CSR:
+    ** CLEN bits are read from the CSR and written to an output *c* register.
 
 All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 <<asr_perm>> and the CSR accessed is not user-mode accessible.
