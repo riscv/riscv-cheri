@@ -91,7 +91,7 @@ include::generated/both_mode_insns_table_body.adoc[]
 include::generated/csr_aliases_table_body.adoc[]
 |==============================================================================
 
-.Action taken on writing to extended CSRs.
+.Action taken on writing to extended CSRs^**^
 [#extended_CSR_writing]
 [width="100%",options=header,cols="1,2,2"]
 |==============================================================================
@@ -102,21 +102,28 @@ include::generated/csr_alias_action_table_body.adoc[]
  is within bounds of the capability written to `Xtvecc`. The check on writing
  must include the lowest (0 offset) and highest possible offset (e.g. 64 * MXLEN bits where HICAUSE=16).
 
-.Action taken on writing to new capability CSRs
+^**^ XLEN bits of extended capability CSRs are written when executing
+<<CSRRWI>>, <<CSRRC>>, <<CSRRS>>, <<CSRRCI>> or <<CSRRSI>> regardless of the
+CHERI execution mode. When using <<CSRRW>>, CLEN bits are written when the
+CHERI execution mode is {cheri_cap_mode_name} and XLEN bits are written when
+the mode is {cheri_int_mode_name}; therefore, writing XLEN bits with <<CSRRW>>
+is only possible when {cheri_default_ext_name} is implemented.
+
+.Action taken on writing to new capability CSRs^+^
 [#new_cap_CSR_writing]
 [width="100%",options=header,cols="1,2,2"]
 |==============================================================================
 include::generated/new_csr_write_action_table_body.adoc[]
 |==============================================================================
 
-NOTE: _XLEN writing_ is only available if {cheri_default_ext_name} is implemented.
+^+^ XLEN bits of new capability CSRs added in {cheri_default_ext_name} are
+written when executing <<CSRRWI>>, <<CSRRC>>, <<CSRRS>>, <<CSRRCI>> or
+<<CSRRSI>> regardless of the CHERI execution mode. CLEN bits are always written
+when using <<CSRRW>> regardless of the CHERI execution mode.
 
 NOTE: Implementations which allow misa.C to be writable need to legalise *Xepcc*
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.
-
-NOTE: <<CSRRW>> make an XLEN-wide access to the XLEN-wide CSR aliases or a CLEN-wide access to the CLEN-wide aliases for all extended CSRs.
- {non-csrrw-and} only make XLEN-wide accesses even if the CLEN-wide alias is specified.
 
 .CLEN-wide CSRs storing executable vectors or data pointers
 [#CSR_exevectors]
