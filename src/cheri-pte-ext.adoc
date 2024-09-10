@@ -147,23 +147,113 @@ bit value of the capability read. This will introduce additional traps during re
  to take page-fault exceptions for A and D PTE bit state changes, or whether to implement
  a hardware updating mechanism.
 
-[#senvcfg_pte,reftext="senvcfg PTE bits"]
-=== Extending the Machine and Supervisor Environment Configuration Registers (menvcfg/senvcfg)
+[#xstatus_pte]
+=== Extending the Machine (mstatus), Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
 
-The *menvcfg* and *senvcfg* register operate as described in cite:[riscv-priv-spec].
-{cheri_pte_ext_name} adds a new Capability Read Generation (CRG) bit as shown
-in xref:menvcfgreg_pte[xrefstyle=short] and xref:senvcfgreg_pte[xrefstyle=short]
-when XLEN=64. The CRG bit in *senvcfg*
-is used as described in xref:section_extending_pte[xrefstyle=short].
+The *mstatus*, *sstatus* and *vsstatus* operate as described in
+xref:mstatus[xrefstyle=short], xref:sstatus[xrefstyle=short] and
+xref:vsstatus[xrefstyle=short] respectively. {cheri_pte_ext_name} adds a new Capability Read
+Generation (CRG) bit as shown in xref:mstatusreg_pte[xrefstyle=short],
+xref:sstatusreg_pte[xrefstyle=short] and xref:vsstatusreg_pte[xrefstyle=short] when
+XLEN=64. The CRG bit is used as described in
+xref:section_extending_pte[xrefstyle=short].
 
-WARNING: Unlike all other bits in *Xenvcfg*, CRG is in *senvcfg* and *not* in *menvcfg*. This suggests
- this it is in the wrong place and is likely to move at some point in the future to a location
- where it is associated with virtual memory, but the *satp* CSR is full, so this will have to do.
+[#mstatusreg_pte]
+.Machine-mode status (*mstatus*) register when MXLEN=64
+[wavedrom, ,svg]
+....
+{reg: [
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SIE'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'MIE'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SPIE'},
+  {bits:  1, name: 'UBE'},
+  {bits:  1, name: 'MPIE'},
+  {bits:  1, name: 'SPP'},
+  {bits:  2, name: 'VS[1:0]'},
+  {bits:  2, name: 'MPP[1:0]'},
+  {bits:  2, name: 'FS[1:0]'},
+  {bits:  2, name: 'XS[1:0]'},
+  {bits:  1, name: 'MPRV'},
+  {bits:  1, name: 'SUM'},
+  {bits:  1, name: 'MXR'},
+  {bits:  1, name: 'TVM'},
+  {bits:  1, name: 'TW'},
+  {bits:  1, name: 'TSR'},
+  {bits:  1, name: 'SPELP'},
+  {bits:  1, name: 'SDT'},
+  {bits:  7, name: 'WPRI'},
+  {bits:  2, name: 'UXL[1:0]'},
+  {bits:  2, name: 'SXL[1:0]'},
+  {bits:  1, name: 'SBE'},
+  {bits:  1, name: 'MBE'},
+  {bits:  1, name: 'GVA'},
+  {bits:  1, name: 'MPV'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'MPELP'},
+  {bits:  1, name: 'MDT'},
+  {bits: 19, name: 'WPRI'},
+  {bits:  1, name: 'CRG'},
+  {bits:  1, name: 'SD'},
+], config:{lanes: 4, hspace:1024}}
+....
 
-.Machine environment configuration register (*menvcfg*) with Zcheripte, RV64 only, no CRG field
-[#menvcfgreg_pte]
-include::img/menvcfgreg-pte.edn[]
+[#sstatusreg_pte]
+.Supervisor-mode status (*sstatus*) register when SXLEN=64
+[wavedrom, ,svg]
+....
+{reg: [
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SIE'},
+  {bits:  3, name: 'WPRI'},
+  {bits:  1, name: 'SPIE'},
+  {bits:  1, name: 'UBE'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SPP'},
+  {bits:  2, name: 'VS[1:0]'},
+  {bits:  2, name: 'WPRI'},
+  {bits:  2, name: 'FS[1:0]'},
+  {bits:  2, name: 'XS[1:0]'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SUM'},
+  {bits:  1, name: 'MXR'},
+  {bits:  3, name: 'WPRI'},
+  {bits:  1, name: 'SPELP'},
+  {bits:  1, name: 'SDT'},
+  {bits:  7, name: 'WPRI'},
+  {bits:  2, name: 'UXL[1:0]'},
+  {bits: 28, name: 'WPRI'},
+  {bits:  1, name: 'CRG'},
+  {bits:  1, name: 'SD'},
+], config:{lanes: 4, hspace:1024}}
+....
 
-.Supervisor environment configuration register (*senvcfg*) with Zcheripte, RV64 only, CRG field added
-[#senvcfgreg_pte]
-include::img/senvcfgreg-pte.edn[]
+[#vsstatusreg_pte]
+.Virtual Supervisor-mode status (*vsstatus*) register when VSXLEN=64
+[wavedrom, ,svg]
+....
+{reg: [
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SIE'},
+  {bits:  3, name: 'WPRI'},
+  {bits:  1, name: 'SPIE'},
+  {bits:  1, name: 'UBE'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SPP'},
+  {bits:  2, name: 'VS[1:0]'},
+  {bits:  2, name: 'WPRI'},
+  {bits:  2, name: 'FS[1:0]'},
+  {bits:  2, name: 'XS[1:0]'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'MXR'},
+  {bits:  1, name: 'SUM'},
+  {bits: 12, name: 'WPRI'},
+  {bits:  2, name: 'UXL[1:0]'},
+  {bits: 28, name: 'WPRI'},
+  {bits:  1, name: 'CRG'},
+  {bits:  1, name: 'SD'}
+], config:{lanes: 4, hspace:1024}}
+....
+
