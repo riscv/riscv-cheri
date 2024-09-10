@@ -129,8 +129,8 @@ bit value of the capability read. This will introduce additional traps during re
 |===
 |PTE.CW |PTE.CRG                          |Load/AMO
 | 0     | X                               | Clear loaded tag
-| 1     |!=<<senvcfgreg_pte,senvcfg>>.CRG | Page fault, or page fault if tag is set
-| 1     |==<<senvcfgreg_pte,senvcfg>>.CRG | Normal operation
+| 1     |!=<<sstatusreg_pte,ssstatus>>.CRG | Page fault, or page fault if tag is set
+| 1     |==<<sstatusreg_pte,ssstatus>>.CRG | Normal operation
 |===
 
 [[pte_cw_crg_store_summary]]
@@ -150,13 +150,11 @@ bit value of the capability read. This will introduce additional traps during re
 [#xstatus_pte]
 === Extending the Machine (mstatus), Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
 
-The *mstatus*, *sstatus* and *vsstatus* operate as described in
-xref:mstatus[xrefstyle=short], xref:sstatus[xrefstyle=short] and
-xref:vsstatus[xrefstyle=short] respectively. {cheri_pte_ext_name} adds a new Capability Read
-Generation (CRG) bit as shown in xref:mstatusreg_pte[xrefstyle=short],
-xref:sstatusreg_pte[xrefstyle=short] and xref:vsstatusreg_pte[xrefstyle=short] when
-XLEN=64. The CRG bit is used as described in
-xref:section_extending_pte[xrefstyle=short].
+The <<mstatusreg_pte,mstatus>>, <<sstatusreg_pte,status>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) bit as shown.
+
+mstatus.CRG is made visible in sstatus.CRG.
+
+When V=1 vstatus.CRG is in effect.
 
 [#mstatusreg_pte]
 .Machine-mode status (*mstatus*) register when MXLEN=64
