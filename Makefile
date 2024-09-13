@@ -89,7 +89,6 @@ ASCIIDOC_OPTIONS  = --trace --verbose                                \
                     -a srcdir=$(SRC_DIR)                             \
                     -a imagesdir=img                                 \
                     -a imagesoutdir=$(BUILD_DIR)/img                 \
-                    -a cheri_v9_annotations=''                       \
                     -a pdf-fontsdir=docs-resources/fonts             \
                     -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
                     --failure-level=ERROR $(EXTRA_ASCIIDOC_OPTIONS)
