@@ -19,9 +19,9 @@ The assembly syntax of all vector loads and stores are updated in
 of an *x* operand.
 
 According to the vector extension cite:[riscv-v-spec] only _active_ elements are
-accessed or updated in memory. Therefore only _active_ elements are checked to be
-within capability bounds. If a vector load or store has no _active_ elements then
-no CHERI fault will be taken.
+accessed or updated in memory. Therefore only _active_ elements are subject to
+CHERI exception checks. If a vector load or store has no _active_ elements then
+_no_ CHERI fault will be taken.
 
 This is consistent with other exceptions such as page faults which are only taken
 on _active_ elements.
@@ -32,7 +32,7 @@ treated the same way as a page fault and vl will be reduced.
 All other CHERI exceptions, such as tag and permission violations are checked on
 the first element, and so will be taken as expected.
 
-Indexed loads in {cheri_cap_mode_name} check the bounds of every access against
+NOTE: Indexed loads in {cheri_cap_mode_name} check the bounds of every access against
 the authority capability in `cs1`. Therefore the approach of having a zero base
 register and treating every element as an absolute address may not work well
 in this mode.
