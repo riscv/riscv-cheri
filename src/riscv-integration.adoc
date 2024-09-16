@@ -1,5 +1,5 @@
 [#section_rv_integration]
-== Integrating Zcheripurecap with the RISC-V Base Integer Instruction Set
+== Integrating {cheri_base_ext_name} with the RISC-V Base Integer Instruction Set
 
 {cheri_base_ext_name} is an extension to the RISC-V ISA. The extension adds a
 carefully selected set of instructions and CSRs that are sufficient to
@@ -29,9 +29,17 @@ The memory address space is circular, so the byte at address
 <<section_cap_representable_check>> described in xref:section_cap_encoding[xrefstyle=short] is
 also circular, so address 0 is within the <<section_cap_representable_check>> of a capability
 where address 2^MXLEN^ - 1 is within the bounds.
+However, the decoded top field of a capability is MXLEN + 1 bits wide and does *not* wrap, so
+a capability with base 2^MXLEN^ - 1 and top 2^MXLEN^ + 1 is not a subset of the
+<<infinite-cap>> capability and does not authorise access to the byte at address 0.
+Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
+a CHERI core to generate a tagged capability with top > 2^MXLEN^.
+If such a capability exists then it must have been caused by a logic or memory fault.
+Unlike malformed bounds, the top overflowing is not treated as a special case in the
+architecture: normal bounds check rules should be followed.
 
 [#section_riscv_programmers_model]
-=== Programmer's Model for Zcheripurecap
+=== Programmer's Model for {cheri_base_ext_name}
 
 For {cheri_base_ext_name}, the 32 unprivileged *x* registers of the base
 integer ISA are extended so that they are able to hold a capability as well
@@ -109,6 +117,7 @@ bounds. These instructions do not cause exceptions.
 tag is set and 0 otherwise
 * <<GCPERM>>: outputs the architectural (AP) and software-defined (SDP)
 permission fields of the input capability
+* <<GCTYPE>>: outputs the type (e.g. unsealed or sentry) of the input capability
 * <<GCBASE>>: outputs the expanded base address of the input capability
 * <<GCLEN>>: outputs the length of the input capability. Length is defined as
 `top - base`. The output is 2^MXLEN^-1 when the capability's length is
@@ -151,9 +160,6 @@ the bounds exactly
 * <<CBLD>>: replace the base, top, address, permissions and mode fields of a
 capability with the fields from another capability
 * <<CMV>>: move a capability from a *c* register to another *c* register
-
-NOTE: <<CBLD>> outputs a capability with tag set to 0 if the input
-capability's bounds are malformed.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* <<SCBNDS>> and <<SCBNDSI>> perform the role
@@ -245,14 +251,14 @@ to the base behaviour as described below.
 <<JAL>> sign-extends the offset and adds it to the address of
 the jump instruction to form the target address. The target address is
 installed in the address field of <<pcc>>. The capability with the address of the
-instruction following the jump (<<pcc>> + 4) is written to a *c* register.
+instruction following the jump is sealed and written to a *c* register.
 
 <<JALR>>
-allows unconditional jumps to a target capability. The target capability is
+allows unconditional, indirect jumps to a target capability. The target capability is
 obtained by incrementing the capability in the *c* register operand by the
-sign-extended 12-bit immediate if the immediate is not zero, then setting the
-least significant bit of the result to zero, then unsealing. The capability
-with the address of the instruction following the jump (<<pcc>> + 4) is sealed
+sign-extended 12-bit offset, then setting the
+least significant bit of the result to zero. The target capability is unsealed if it is a sentry with zero offset. The capability
+with the address of the instruction following the jump is sealed
 and written to a *c* register.
 
 All jumps cause CHERI exceptions when a minimum sized instruction
@@ -283,6 +289,7 @@ the target address is installed in the <<pcc>>'s address field. These instructio
 when a minimum sized instruction at the target address is not within the
 <<pcc>>'s bounds.
 
+[#section_int_load_store_insns]
 ==== Integer Load and Store Instructions
 
 Integer load and store instructions transfer the amount of integer data described in
@@ -366,7 +373,8 @@ All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 {cheri_base_ext_name} extends the CSRs listed in
 xref:dcsrnames-renamed[xrefstyle=short],
 xref:mcsrnames-renamed[xrefstyle=short],
-xref:scsrnames-renamed[xrefstyle=short] and
+xref:scsrnames-renamed[xrefstyle=short],
+xref:vscsrnames-renamed[xrefstyle=short] and
 xref:ucsrnames-renamed[xrefstyle=short] from the base RISC-V ISA and its
 extensions. The CSRs are renamed to reflect the fact that they are extended to
 CLEN+1 bits wide, as the *x* registers are renamed to *c* registers.
@@ -390,6 +398,13 @@ include::generated/csr_renamed_purecap_mode_m_table_body.adoc[]
 [%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
 |===
 include::generated/csr_renamed_purecap_mode_s_table_body.adoc[]
+|===
+
+[[vscsrnames-renamed]]
+.Renamed virtual supervisor-mode CSRs in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<,<",options="header"]
+|===
+include::generated/csr_renamed_purecap_mode_vs_table_body.adoc[]
 |===
 
 [[ucsrnames-renamed]]
@@ -419,18 +434,18 @@ Only 1 and 2 are supported values for SXL and UXL and the fields must be
 read-only in implementations supporting {cheri_base_ext_name}. The effective
 XLEN in S-mode and U-mode are termed SXLEN and UXLEN, respectively.
 
-The MBE, SBE, and UBE fields determine whether explicit loads and stores
-performed from M-mode, S-mode, or U-mode, respectively, are little endian
-(xBE = 0) or big endian (xBE = 1).  MBE must be read only.  SBE and UBE must be
-read only and equal to MBE, if S-mode or U-mode, respectively, is implemented,
-or read only zero otherwise.
+The MBE, SBE, and UBE fields determine the endianness of memory accesses other
+than instruction fetches performed from M-mode, S-mode, or U-mode,
+respectively. xBE=0 indicates little endian and xBE=1 is big endian. MBE must
+be read-only. SBE and UBE must be read only and equal to MBE, if S-mode or
+U-mode, respectively, is implemented, or read-only zero otherwise.
 
-NOTE: A further CHERI extension, {cheri_legacy_ext_name}, optionally makes SXL,
+NOTE: A further CHERI extension, {cheri_default_ext_name}, optionally makes SXL,
 UXL, MBE, SBE, and UBE writeable, so implementations that support multiple base
-ISAs must support both {cheri_base_ext_name} and {cheri_legacy_ext_name}.
+ISAs must support both {cheri_base_ext_name} and {cheri_default_ext_name}.
 
 [#mtvec, reftext="mtvec"]
-==== Machine Trap-Vector Base-Address Registers (mtvec)
+==== Machine Trap Vector Base Address Register (mtvec)
 
 The <<mtvec>> register is as defined in cite:[riscv-priv-spec]. It is an
 MXLEN-bit register used as the executable vector jumped to when taking traps
@@ -441,7 +456,7 @@ into machine mode. It is extended into <<mtvecc>>.
 include::img/mtvecreg.edn[]
 
 [#mtvecc,reftext="mtvecc"]
-==== Machine Trap-Vector Base-Address Capability Registers (mtvecc)
+==== Machine Trap Vector Base Address Capability Register (mtvecc)
 
 The <<mtvecc>> register is a renamed extension of <<mtvec>> that holds a
 capability.  Its reset value is the <<infinite-cap>> capability. The capability
@@ -491,7 +506,7 @@ is extended into <<mscratchc>>.
 include::img/mscratchreg.edn[]
 
 [#mscratchc, reftext="mscratchc"]
-==== Machine Scratch Register Capability (mscratchc)
+==== Machine Scratch Capability Register (mscratchc)
 
 The <<mscratchc>> register is a renamed extension of <<mscratch>> that is able to
 hold a capability.
@@ -524,9 +539,10 @@ include::img/mepccreg.edn[]
 Capabilities written to <<mepcc>> must be legalised by implicitly zeroing bit
 **mepcc[0]**. Additionally, if an implementation allows IALIGN to be
 either 16 or 32, then whenever IALIGN=32, the capability read from <<mepcc>>
-must be legalised by implicitly zeroing bit **mepcc[1]**. Therefore, the
+must be legalised by implicitly zeroing **mepcc[1]**. Therefore, the
 capability read or written has its tag bit cleared if the legalised address is
-not within the <<section_cap_representable_check>>.
+not within the <<section_cap_representable_check>> or if the legalisation
+changes the address and the capability is sealed.
 
 NOTE: When reading or writing a sealed capability in <<mepcc>>, the
 tag is not cleared if the original address equals the legalized
@@ -700,9 +716,9 @@ Load/store/AMO address breakpoint
 *Branch/jump target address checks (tag, execute permissions, invalid address and bounds)*
 
 | .>|*{cheri_excep_mcause}* .<|*Prior to address translation for an explicit memory access:* +
-*Load/store/AMO capability address misaligned* +
 *CHERI fault due to capability checks (tag, permissions, invalid address and bounds)*
-| .>|4,6 .<|Optionally: +
+| .>|4,6 .<|*Load/store/AMO capability address misaligned* +
+Optionally: +
 Load/store/AMO address misaligned
 | .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
 First encountered page fault or access fault
@@ -748,23 +764,23 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 .Encoding of TYPE field
 [#mtval-cheri-type,width=65%,float="center",align="center",options=header,cols="30%,70%"]
 |==============================================================================
-| CHERI Type Code | Description
-| 0               | CHERI instruction access fault
-| 1               | CHERI data fault due to load, store or AMO
-| 2               | CHERI jump or branch fault
-| 3-15            | Reserved
+| CHERI Type Code           | Description
+| {cheri_excep_type_pcc}    | CHERI instruction access fault
+| {cheri_excep_type_data}   | CHERI data fault due to load, store or AMO
+| {cheri_excep_type_jump}   | CHERI jump or branch fault
+| 3-15                      | Reserved
 |==============================================================================
 
 .Encoding of CAUSE field
 [#mtval-cheri-causes,width=55%,float="center",align="center",options=header]
 |==============================================================================
-| CHERI Cause Code | Description
-| 0                | Tag violation
-| 1                | Seal violation
-| 2                | Permission violation
-| 3                | Invalid address violation
-| 4                | Length violation
-| 5-15             | Reserved
+| CHERI Cause Code              | Description
+| {cheri_excep_cause_tag}       | Tag violation
+| {cheri_excep_cause_seal}      | Seal violation
+| {cheri_excep_cause_perm}      | Permission violation
+| {cheri_excep_cause_inv_addr}  | Invalid address violation
+| {cheri_excep_cause_bounds}    | Bounds violation
+| 5-15                          | Reserved
 |==============================================================================
 
 CHERI violations have the following order in priority:
@@ -773,7 +789,7 @@ CHERI violations have the following order in priority:
 . Seal violation
 . Permission violation
 . Invalid address violation
-. Length violation (_Lowest_)
+. Bounds violation (_Lowest_)
 
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
@@ -783,7 +799,7 @@ hold capabilities or with other new functions. <<pcc>> must grant <<asr_perm>>
 to access S-mode CSRs regardless of the RISC-V privilege mode.
 
 [#stvec,reftext="stvec"]
-==== Supervisor Trap Vector Base Address Registers (stvec)
+==== Supervisor Trap Vector Base Address Register (stvec)
 
 The <<stvec>> register is as defined in cite:[riscv-priv-spec]. It is an
 SXLEN-bit register used as the executable vector jumped to when taking traps
@@ -793,7 +809,7 @@ into supervisor mode. It is extended into <<stvecc>>.
 include::img/stvecreg.edn[]
 
 [#stvecc,reftext="stvecc"]
-==== Supervisor Trap Vector Base Address Registers (stvecc)
+==== Supervisor Trap Vector Base Address Capability Register (stvecc)
 
 The <<stvec>> register is an SXLEN-bit WARL read/write register that holds the
 trap vector configuration, consisting of a vector base address (BASE) and a
@@ -820,7 +836,7 @@ is extended into <<sscratchc>>.
 include::img/sscratchreg.edn[]
 
 [#sscratchc, reftext="sscratchc"]
-==== Supervisor Scratch Registers (sscratchc)
+==== Supervisor Scratch Capability Register (sscratchc)
 
 The <<sscratchc>> register is a renamed extension of <<sscratch>> that is able to
 hold a capability.
@@ -989,7 +1005,7 @@ Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
 
 === CHERI Exception handling
 
-NOTE: `auth_cap` is <<ddc>> for Legacy Mode and `cs1` for Capability Mode
+NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_mode_name}
 
 .Valid CHERI exception combination description
 [#cheri_exception_combs_descriptions]
@@ -997,36 +1013,40 @@ NOTE: `auth_cap` is <<ddc>> for Legacy Mode and `cs1` for Capability Mode
 |=========================================================================================
 | Instructions | Xcause | Xtval. TYPE | Xtval. CAUSE | Description | Check
 6+| *All instructions have these exception checks first*
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}    | <<pcc>> tag  | not(<<pcc>>.tag)
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}   | <<pcc>> seal | isCapSealed(<<pcc>>)^1^
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}   | <<pcc>> permission | not(<<pcc>>.<<x_perm>>)
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_length} | <<pcc>> length | Any byte of current instruction out of <<pcc>> bounds
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}      | <<pcc>> tag             | not(<<pcc>>.tag)
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}     | <<pcc>> seal            | isCapSealed(<<pcc>>)^1^
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}     | <<pcc>> permission      | not(<<pcc>>.<<x_perm>>)
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_inv_addr} | <<pcc>> invalid address | <<pcc>> holds an invalid address
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_bounds}   | <<pcc>> bounds          | Any byte of current instruction out of <<pcc>> bounds
 6+| *CSR/Xret additional exception check*
-| CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
+| CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}          | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
 6+| *direct jumps additional exception check*
-| <<JAL>>, <<insns-conbr-32bit>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} | <<pcc>> length | any byte of minimum length instruction at target out of <<pcc>> bounds
+| <<JAL>>, <<insns-conbr-32bit>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds} | <<pcc>> bounds     | any byte of minimum length instruction at target out of <<pcc>> bounds
 6+| *indirect jumps additional exception checks*
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}    |`cs1` tag       | not(`cs1.tag`)
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}   |`cs1` seal      | isCapSealed(`cs1`) and imm12 != 0
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}   |`cs1` permission| not(`cs1`.<<x_perm>>)
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_length} |`cs1` length    | any byte of minimum length instruction at target out of `cs1` bounds
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}      |`cs1` tag             | not(`cs1.tag`)
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}     |`cs1` seal            | isCapSealed(`cs1`) and imm12 != 0
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}     |`cs1` permission      | not(`cs1`.<<x_perm>>)
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_inv_addr} |`cs1` invalid address | target address is an invalid address
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds}   |`cs1` bounds          | any byte of minimum length instruction at target out of `cs1` bounds
 6+| *Load additional exception checks*
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    | `auth_cap` tag          | not(`auth_cap.tag`)
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   | `auth_cap` seal         | isCapSealed(`auth_cap`)
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   | `auth_cap` permission   | not(`auth_cap`.<<r_perm>>)
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} | `auth_cap` length       | Any byte of load access out of `auth_cap` bounds
-| capability loads | 4                    | N/A                     | N/A                        | load address misaligned | Misaligned capability load
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}      | `auth_cap` tag             | not(`auth_cap.tag`)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}     | `auth_cap` seal            | isCapSealed(`auth_cap`)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}     | `auth_cap` permission      | not(`auth_cap`.<<r_perm>>)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_inv_addr} | `auth_cap` invalid address | Address is invalid (see <<section_invalid_addr_conv>>)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_bounds}   | `auth_cap` bounds          | Any byte of load access out of `auth_cap` bounds
+| capability loads | 4                    | N/A                     | N/A                          | load address misaligned    | Misaligned capability load
 6+| *Store/atomic/cache-block-operation additional exception checks*
 | all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    |`auth_cap` tag        | not(`auth_cap.tag`)
 | all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   |`auth_cap` seal       | isCapSealed(`auth_cap`)
 | all atomics, CBO.INVAL*                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>)
 | all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<w_perm>>)
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
-| all stores, all atomics                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of access out of `auth_cap` bounds
-| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | any byte of cache block out of `auth_cap` bounds
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_length} |`auth_cap` length     | all bytes of cache block out of `auth_cap` bounds
-| CBO.INVAL*                                     | {cheri_excep_mcause} | {cheri_excep_type_pcc}  | {cheri_excep_cause_perm}   |<<pcc>> permission    | not(<<pcc>>.<<asr_perm>>)
-| capability stores                              | 6                    | N/A                     | N/A                        |capability alignment  | Misaligned capability store
+| all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_inv_addr} |`auth_cap` invalid address | Address is invalid (see <<section_invalid_addr_conv>>)
+| all stores, all atomics                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_bounds}   |`auth_cap` bounds          | any byte of access out of `auth_cap` bounds
+| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_bounds}   |`auth_cap` bounds          | any byte of cache block out of `auth_cap` bounds
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_bounds}   |`auth_cap` bounds          | all bytes of cache block out of `auth_cap` bounds
+| CBO.INVAL*                                     | {cheri_excep_mcause} | {cheri_excep_type_pcc}  | {cheri_excep_cause_perm}     |<<pcc>> permission         | not(<<pcc>>.<<asr_perm>>)
+| capability stores                              | 6                    | N/A                     | N/A                          |capability alignment       | Misaligned capability store
 |=========================================================================================
 
 ^1^ This check is architecturally required, but is impossible to encounter so may not required in an implementation.
@@ -1131,10 +1151,10 @@ xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
 
 Control transfer instructions jump or branch to a capability A which can be:
 
-* <<pcc>> for branches, direct jumps and any branch when the CHERI execution
-mode is Legacy (see xref:section_cheri_legacy_ext[xrefstyle=short]).
-* The capability in the *c* input register of a jump when the CHERI execution
-mode is Capability (see xref:section_cheri_legacy_ext[xrefstyle=short]).
+* <<pcc>> for branches, direct jumps and any branch when in
+{cheri_int_mode_name} (see xref:section_cheri_hybrid_ext[xrefstyle=short]).
+* The capability in the *c* input register of a jump when in
+{cheri_cap_mode_name} (see xref:section_cheri_hybrid_ext[xrefstyle=short]).
 
 The following procedure must be used when jumping or branching to the target
 capability A if the <<pcc>> cannot hold all invalid addresses:
@@ -1155,7 +1175,7 @@ address T gives rise to an instruction access fault or page fault as is usual in
 NOTE: RISC-V harts that do not support {cheri_base_ext_name} normally raise an
 instruction access fault or page fault after jumping or branching to an invalid address.
 Therefore, {cheri_base_ext_name} aims to preserve that behavior to ensure that
-harts supporting {cheri_base_ext_name} and {cheri_legacy_ext_name} are fully
+harts supporting {cheri_base_ext_name} and {cheri_default_ext_name} are fully
 compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
 <<infinite-cap>> capability.
 
@@ -1164,12 +1184,12 @@ compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
 The following procedure must be used while loading or storing to memory with a
 capability A when the implementation supports invalid address optimizations:
 
-. Calculate the effective address T of the memory access as required by the
+. Calculate the effective address range R of the memory access as required by the
 instruction's behavior.
-. If T is invalid and A does not have infinite bounds (see
+. If any byte in R is invalid and A does not have infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then the instruction gives rise to
 a CHERI fault; the _CHERI data_ fault is reported in the TYPE field and invalid
 address violation is reported in the CAUSE field of <<mtval>> or <<stval>>.
-. If T is invalid and A has infinite bounds (see xref:section_cap_encoding[xrefstyle=short]),
+. If any byte in R is invalid and A has infinite bounds (see xref:section_cap_encoding[xrefstyle=short]),
 the hart will raise an access fault or page fault as is usual in RISC-V.
-. Otherwise T is valid and the instruction behaves as normal.
+. Otherwise all bytes in R are valid and the instruction behaves as normal.

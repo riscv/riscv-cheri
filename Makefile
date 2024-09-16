@@ -18,7 +18,7 @@ GEN_SCRIPT   = $(SCRIPTS_DIR)/generate_tables.py
 
 # Version and date
 DATE    ?= $(shell date +%Y-%m-%d)
-VERSION ?= v0.8.0
+VERSION ?= v0.8.3
 REVMARK ?= Draft
 
 # URLs for downloaded CSV files
@@ -53,11 +53,12 @@ HEADER_SOURCE := $(SRC_DIR)/riscv-cheri.adoc
 # Generated files
 GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
           $(GEN_DIR)/cap_mode_insns_table_body.adoc                \
-          $(GEN_DIR)/csr_added_legacy_table_body.adoc              \
+          $(GEN_DIR)/csr_added_hybrid_table_body.adoc              \
           $(GEN_DIR)/csr_added_purecap_mode_d_table_body.adoc      \
           $(GEN_DIR)/csr_added_purecap_mode_m_table_body.adoc      \
           $(GEN_DIR)/csr_added_purecap_mode_s_table_body.adoc      \
           $(GEN_DIR)/csr_alias_action_table_body.adoc              \
+          $(GEN_DIR)/new_csr_write_action_table_body.adoc          \
           $(GEN_DIR)/csr_aliases_table_body.adoc                   \
           $(GEN_DIR)/csr_exevectors_table_body.adoc                \
           $(GEN_DIR)/csr_metadata_table_body.adoc                  \
@@ -71,7 +72,7 @@ GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
           $(GEN_DIR)/legacy_mode_insns_table_body.adoc             \
           $(GEN_DIR)/xlen_dependent_encoding_insns_table_body.adoc \
           $(GEN_DIR)/Zabhlrsc_insns_table_body.adoc                \
-          $(GEN_DIR)/Zcheri_legacy_insns_table_body.adoc           \
+          $(GEN_DIR)/Zcheri_hybrid_insns_table_body.adoc           \
           $(GEN_DIR)/Zcheri_purecap_insns_table_body.adoc
 
 # AsciiDoctor command
@@ -88,7 +89,6 @@ ASCIIDOC_OPTIONS  = --trace --verbose                                \
                     -a srcdir=$(SRC_DIR)                             \
                     -a imagesdir=img                                 \
                     -a imagesoutdir=$(BUILD_DIR)/img                 \
-                    -a cheri_v9_annotations=''                       \
                     -a pdf-fontsdir=docs-resources/fonts             \
                     -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
                     --failure-level=ERROR $(EXTRA_ASCIIDOC_OPTIONS)

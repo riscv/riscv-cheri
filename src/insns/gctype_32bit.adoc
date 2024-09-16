@@ -1,0 +1,47 @@
+<<<
+
+[#GCTYPE,reftext="GCTYPE"]
+==== GCTYPE
+
+include::new_encoding_note.adoc[]
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* this instruction was called CGETTYPE.
+endif::[]
+
+Synopsis::
+Capability get type
+
+Mnemonic::
+`gctype rd, cs1`
+
+Encoding::
+include::wavedrom/gctype.adoc[]
+
+Description::
+Decode the architectural capability type from `cs1` and write the result to `rd`.
+It is not required that the input capability `cs1`  has its tag set to 1.
+
+NOTE: While the architectural capability type maps directly to the value of the `CT` capability bit in {cheri_base_ext_name}, future extensions may define an alternate mapping.
+Therefore, software should always use <<GCTYPE>> to obtain the capability type rather than directly reading the high bits of the capability using <<GCHI>>.
+
+
+.Capability types in {cheri_base_ext_name}
+|===
+|Type |Hardware interpretation
+
+|0    | Unsealed capability
+|1    | <<#section_cap_sealed,Sentry capability>>
+|===
+
+Exceptions::
+include::require_cre.adoc[]
+
+Prerequisites::
+{cheri_base_ext_name}
+
+Operation::
++
+--
+TODO
+--

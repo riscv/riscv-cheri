@@ -4,9 +4,10 @@
 ==== SCSS
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* ctestsubset does not use ddc if cs1==0
-
 NOTE: *CHERI v9 Note:* this instruction was called CTESTSUBSET.
+
+NOTE: *CHERI v9 Note:* this instruction does not use ddc if cs1==0
+
 
 endif::[]
 
@@ -22,8 +23,16 @@ Encoding::
 include::wavedrom/scss.adoc[]
 
 Description::
-`rd` is set to 1 if the tag of capabilities `cs1`  and `cs2`  are equal and the
-bounds and permissions of `cs2`  are a subset of those of `cs1`.
+`rd` is set to 1 if the tag of capabilities `cs1` and `cs2` are equal and the
+bounds and permissions of `cs2` are a subset of those of `cs1`.
+
+If either `cs1` or `cs2`:
+
+. Have bounds which are <<section_cap_malformed,malformed>>, or
+. Have any bits set in reserved fields, or
+. Have permissions that could not have been legally produced by <<ACPERM>>
+
+then the instruction returns zero.
 
 NOTE: The implementation of this instruction is similar to <<CBLD>>, although
 <<SCSS>> does not include the sealed bit in the check.

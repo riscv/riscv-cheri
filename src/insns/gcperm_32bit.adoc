@@ -19,13 +19,14 @@ Encoding::
 include::wavedrom/gcperm.adoc[]
 
 Description::
-Converts the AP and SDP fields of capability `cs1` into a bit field; one bit
-per permission, as shown below, and write the result to `rd`. A bit set to 1
+If MXLEN=32 unpack permissions from the format in <<cap_perms_encoding32>>.
++
+Convert the unpacked AP permissions, and the SDP fields of capability
+`cs1` into a bit field, as shown below, and write the result to `rd`. A bit set to 1
 in the bit field indicates that `cs1` grants the corresponding permission.
 +
-If the AP field is a reserved value then all architectural permission bits in
-`rd` are set to 0. This is only possible for MXLEN=32 and the reserved values
-are shown in <<cap_perms_encoding32>>.
+If the AP field cannot be produced by <<ACPERM>> then all architectural
+permission bits in `rd` are set to 0.
 
 include::../img/acperm_bit_field.edn[]
 

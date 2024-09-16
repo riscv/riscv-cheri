@@ -6,10 +6,10 @@
 Synopsis::
 Jump via table with link (CM.JT), 16-bit encodings
 
-Capability Mode Mnemonic::
+{cheri_cap_mode_name} Mnemonic::
 `cm.jt _index_`
 
-Legacy Mode Mnemonics::
+{cheri_int_mode_name} Mnemonic::
 `cm.jt _index_`
 
 Encoding::
@@ -27,16 +27,18 @@ Encoding::
 
   For this encoding to decode as <<CM.JT>>, _index<32_, otherwise it decodes as <<CM.JALT>>.
 
-Capability Mode Description::
+{cheri_cap_mode_name} Description::
 Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of the jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>.
 
-Legacy Mode Description::
+{cheri_int_mode_name} Description::
 Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of the jump table access against <<pcc>> bounds and requiring <<x_perm>>.
 
-Capability Mode Permissions::
+include::zcm_common.adoc[]
+
+{cheri_cap_mode_name} Permissions::
 Requires <<jvtc>> to be tagged, not sealed, have <<x_perm>> and for the full XLEN-wide access to be in <<jvtc>> bounds.
 
-Capability Mode Exceptions::
+{cheri_cap_mode_name} Exceptions::
 When these instructions cause CHERI exceptions, _CHERI instruction access fault_
 is reported in the TYPE field and the following codes may be
 reported in the CAUSE field of <<mtval>> or <<stval>>:
@@ -47,16 +49,17 @@ reported in the CAUSE field of <<mtval>> or <<stval>>:
 | Tag violation         |  ✔
 | Seal violation        |  ✔
 | Permission violation  |  ✔
-| Length violation      |  ✔
+| Invalid address violation  |  ✔
+| Bounds violation      |  ✔
 |==============================================================================
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for {cheri_cap_mode_name}::
 {c_cheri_base_ext_names}, Zcmt
 
-Prerequisites for Legacy Mode::
-{c_cheri_legacy_ext_names}, Zcmt
+Prerequisites for {cheri_int_mode_name}::
+{c_cheri_default_ext_names}, Zcmt
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

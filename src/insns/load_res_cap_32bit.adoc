@@ -1,5 +1,4 @@
 <<<
-//[#insns-load-res-cap-32bit,reftext="Load Reserved (CLR.C, LR.C), 32-bit encodings"]
 
 [#LR_C,reftext="LR.C"]
 ==== LR.C
@@ -11,34 +10,38 @@ Load Reserved Capability (LR.C), 32-bit encodings
 
 include::xlen_variable_warning.adoc[]
 
-Capability Mode Mnemonics::
+{cheri_cap_mode_name} Mnemonic::
 `lr.c cd, 0(cs1)`
 
-Legacy Mode Mnemonics::
+{cheri_int_mode_name} Mnemonic::
 `lr.c cd, 0(rs1)`
 
 Encoding::
 include::wavedrom/load_res_cap.adoc[]
 
-Capability Mode Description::
+{cheri_cap_mode_name} Description::
 Load reserved instructions, authorised by the capability in `cs1`.
  All misaligned load reservations cause a load address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
 
-Legacy Mode Description::
+{cheri_int_mode_name} Description::
 Load reserved instructions, authorised by the capability in <<ddc>>.
  All misaligned load reservations cause a load address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
 
+include::load_tag_perms.adoc[]
+
 :cap_load:
+
+include::malformed_no_check.adoc[]
 
 include::load_exceptions.adoc[]
 +
 include::require_cre.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for {cheri_cap_mode_name}::
 {cheri_base_ext_name}, and A
 
-Prerequisites for Legacy Mode::
-{cheri_legacy_ext_name}, and A
+Prerequisites for {cheri_int_mode_name}::
+{cheri_default_ext_name}, and A
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

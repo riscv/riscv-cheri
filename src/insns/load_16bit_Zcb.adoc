@@ -16,35 +16,43 @@ See <<C.LBU>>.
 Synopsis::
 Load (C.LH, C.LHU, C.LBU), 16-bit encodings
 
-Capability Mode Mnemonics::
-`c.lh/c.lhu/c.lbu rd', offset(cs1')`
+{cheri_cap_mode_name} Mnemonics::
+`c.lh  rd', offset(cs1')` +
+`c.lhu rd', offset(cs1')` +
+`c.lbu rd', offset(cs1')`
 
-Capability Mode Expansions::
-`lh/lhu/lbu rd, offset(cs1)`
+{cheri_cap_mode_name} Expansions::
+`lh  rd, offset(cs1)` +
+`lhu rd, offset(cs1)` +
+`lbu rd, offset(cs1)`
 
-Legacy Mode Mnemonics::
-`c.lh/c.lhu/c.lbu rd', offset(rs1')`
+{cheri_int_mode_name} Mnemonics::
+`c.lh  rd', offset(rs1')` +
+`c.lhu rd', offset(rs1')` +
+`c.lbu rd', offset(rs1')`
 
-Legacy Mode Expansions::
-`lh/lhu/lbu rd, offset(rs1)`
+{cheri_int_mode_name} Expansions::
+`lh  rd, offset(rs1)` +
+`lhu rd, offset(rs1)` +
+`lbu rd, offset(rs1)`
 
 Encoding::
 
 include::wavedrom/reg-based-ldnstr-Zcb.adoc[]
 
-Capability Mode Description::
+{cheri_cap_mode_name} Description::
 Subword load instructions, authorised by the capability in `cs1`.
 
-Legacy Mode Description::
+{cheri_int_mode_name} Description::
 Subword load instructions, authorised by the capability in <<ddc>>.
 
 include::load_exceptions.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for {cheri_cap_mode_name}::
 {c_cheri_base_ext_names}, and Zcb
 
-Prerequisites for Legacy Mode::
-{c_cheri_legacy_ext_names}, and Zcb
+Prerequisites for {cheri_int_mode_name}::
+{c_cheri_default_ext_names}, and Zcb
 
 Operation (after expansion to 32-bit encodings)::
  See <<LHU>>, <<LH>>, <<LBU>>

@@ -1,5 +1,5 @@
 [#section_debug_integration]
-=== Integrating Zcheripurecap with Sdext
+=== Integrating {cheri_base_ext_name} with Sdext
 
 This section describes changes to integrate the Sdext ISA and
 {cheri_base_ext_name}. It must be implemented to make external debug compatible
@@ -112,7 +112,7 @@ Upon entry to debug mode, cite:[riscv-debug-spec], does not specify how to
 update the PC, and says PC relative instructions may be illegal. This concept
 is extended to include any instruction which reads or updates <<pcc>>, which refers to
 all jumps, conditional branches and <<AUIPC>>. The exception is <<MODESW>>
-which _is_ supported if {cheri_legacy_ext_name} is implemented, see <<dinfc>>
+which _is_ supported if {cheri_default_ext_name} is implemented, see <<dinfc>>
 for details.
 
 As a result, the value of <<pcc>> is UNSPECIFIED in debug mode according
@@ -128,6 +128,8 @@ debug mode entry.
 When leaving debug mode, the capability in <<dpcc>> is unsealed and written
 into <<pcc>>.  A debugger may write <<dpcc>> to change where the hart resumes
 and its mode, permissions, sealing or bounds.
+
+The legalisation of <<dpcc>> follows the same rules described for <<mepcc>>.
 
 [#dscratch0,reftext="dscratch0"]
 ==== Debug Scratch Register 0 (dscratch0)
@@ -176,13 +178,9 @@ include::img/dscratch1creg.edn[]
 
 The <<dinfc>> register is a CLEN-bit plus tag bit CSR only accessible in debug mode.
 
-The reset value is the <<infinite-cap>> capability.
-
-If {cheri_legacy_ext_name} (see xref:section-cheri-execution-mode) is implemented:
-
-. the core enters Capability Mode when entering debug mode
-.. therefore <<dinfc>>.M is set whenever entering debug mode for any reason.
-. the mode can be optionally switched using <<MODESW>>, and the result observed in <<dinfc>>.M.
+The reset value is the <<infinite-cap>> capability with the <<m_bit>> set to {CAP_MODE_VALUE},
+regardless of whether {cheri_default_ext_name} (see xref:section-cheri-execution-mode[xrefstyle=short])
+is implemented:
 
 <<dinfc>> is read/write but with no writeable fields, and so writes are
 ignored.

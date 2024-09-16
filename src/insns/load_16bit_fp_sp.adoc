@@ -11,23 +11,32 @@ See <<C.FLWSP>>.
 Synopsis::
 Floating point load (C.FLW, C.FLWSP), 16-bit encodings
 
-Legacy Mode Mnemonics (RV32)::
+{cheri_int_mode_name} Mnemonics (RV32)::
 `c.flw rd', offset(rs1'/sp)`
 
-Legacy Mode Expansions (RV32)::
+{cheri_int_mode_name} Expansions (RV32)::
 `flw rd', offset(rs1'/sp)`
 
 Encoding (RV32)::
 include::wavedrom/c-sp-load-css-fp.adoc[]
 include::wavedrom/c-sp-load-css-fp-sprel.adoc[]
 
-Legacy Mode Description::
-Standard floating point load instructions, authorised by the capability in <<ddc>>. Note that these instructions are not available in Capability Mode, as they have been remapped to <<C.LC>>, <<C.LCSP>>.
+{cheri_int_mode_name} Description::
+Standard floating point load instructions, authorised by the capability in <<ddc>>.
+
+NOTE: These instructions are available in RV32 {cheri_int_mode_name} only.
+In {cheri_cap_mode_name} they are remapped to <<C.LC>>/<<C.LCSP>>.
+
+NOTE: In {cheri_int_mode_name}, these instructions may be remapped to
+other encodings by future RV32 only extensions such as Zilsd.
+If this is the case, then the Zilsd encodings will be valid in
+{cheri_int_mode_name} only. In
+{cheri_cap_mode_name} the instructions will still be <<C.LC>>/<<C.LCSP>>.
 
 include::load_exceptions.adoc[]
 
-Prerequisites for Legacy Mode::
-{c_cheri_legacy_ext_names}, and Zcf or F
+Prerequisites for {cheri_int_mode_name}::
+{c_cheri_default_ext_names}, and Zcf or F
 
 Operation (after expansion to 32-bit encodings)::
  See <<FLW>>

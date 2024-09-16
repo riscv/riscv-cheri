@@ -1,0 +1,57 @@
+<<<
+
+[#HLV_C,reftext="HLV.C"]
+==== HLV.C
+
+Synopsis::
+Hypervisor virtual-machine load capability
+
+{cheri_cap_mode_name} Mnemonic::
+`hlv.c cd, cs1`
+
+{cheri_int_mode_name} Mnemonic::
+`hlv.c cd, rs1`
+
+Encoding::
+include::wavedrom/hypv-virt-load-cap.adoc[]
+
+{cheri_cap_mode_name} Description::
+Load a CLEN+1 bit value from memory as though V=1; i.e., with the address
+translation and protection, and endianness, that apply to memory accesses in
+either VS-mode or VU-mode. The effective address is the address of `cs1`. The
+authorising capability for the operation is `cs1`. A copy of the loaded value
+is written to `cd`.
+
+{cheri_int_mode_name} Description::
+Load a CLEN+1 bit value from memory as though V=1; i.e., with the address
+translation and protection, and endianness, that apply to memory accesses in
+either VS-mode and VU-mode. The effective address is `rs1`. The authorising
+capability for the operation is <<ddc>>. A copy of the loaded value is written
+to `cd`.
+
+include::load_tag_perms.adoc[]
+
+include::malformed_no_check.adoc[]
+
+:has_cap_data:
+include::load_exceptions.adoc[]
++
+include::require_cre.adoc[]
+
+Prerequisites for {cheri_cap_mode_name}::
+{cheri_base_ext_name}, H
+
+Prerequisites for {cheri_int_mode_name}::
+{cheri_base_ext_name}, {cheri_default_ext_name}, H
+
+{cheri_cap_mode_name} Operation::
++
+--
+TBD
+--
+
+{cheri_int_mode_name} Operation::
++
+--
+TBD
+--

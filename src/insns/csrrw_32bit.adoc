@@ -12,10 +12,10 @@ endif::[]
 Synopsis::
 CSR access (CSRRW) 32-bit encodings
 
-Mnemonic for accessing capability CSRs in Capability Mode::
+Mnemonic for accessing capability CSRs in {cheri_cap_mode_name}::
 `csrrw cd, csr, cs1`
 
-Mnemonic for accessing XLEN-wide CSRs or extended CSRs in Legacy Mode::
+Mnemonic for accessing XLEN-wide CSRs or extended CSRs in {cheri_int_mode_name}::
 `csrrw rd, csr, rs1`
 
 Encoding::
@@ -28,29 +28,31 @@ accessing CLEN-wide CSRs, such as <<mtvec>>/<<mtvecc>>.
 See xref:aliased_CSRs[xrefstyle=short] for a list of CLEN-wide CSRs and
 xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing each one.
 +
-CSRRW writes `cs1` to extended CSRs in Capability Mode, and reads a full capability into `cd`.
+CSRRW writes `cs1` to extended CSRs in {cheri_cap_mode_name}, and reads a full capability into `cd`.
 +
-CSRRW writes `rs1` to extended CSRs in Legacy Mode, and reads the address field into `rd`.
+CSRRW writes `rs1` to extended CSRs in {cheri_int_mode_name}, and reads the address field into `rd`.
 +
 If `cd` is `c0` (or `rd` is `x0`), then the instruction shall not read the CSR
 and shall not cause any of the side effects that might occur on a CSR read.
 +
-The assembler pseudoinstruction to write a capability CSR in Capability Mode,
+The assembler pseudo-instruction to write a capability CSR in {cheri_cap_mode_name},
 `csrw csr, cs1`, is encoded as `csrrw c0, csr, cs1`.
 +
 Access to XLEN-wide CSRs from other extensions is as specified by RISC-V.
 
+NOTE: When writing `cs1`, if the bounds are <<section_cap_malformed,malformed>>, any reserved bits are set
+or the permission could not have been produced by <<ACPERM>> then clear the tag before writing to the CSR.
 
 Permissions::
 Accessing privileged CSRs require <<asr_perm>>, including existing RISC-V CSRs,
 as described in xref:zicsr-section-purecap[xrefstyle=short]. The list of
 privileged and unprivileged CSRs is shown in cite:[riscv-priv-spec].
 
-Prerequisites for Capability Mode::
+Prerequisites for {cheri_cap_mode_name}::
 {cheri_base_ext_name}
 
-Prerequisites for Legacy Mode::
-{cheri_legacy_ext_name}
+Prerequisites for {cheri_int_mode_name}::
+{cheri_default_ext_name}
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

@@ -21,17 +21,25 @@ Encoding::
 include::wavedrom/cbld.adoc[]
 
 Description::
-Copy `cs2` to `cd` and set the tag to 1 if `cs1.tag` is set, `cs1` is not
-sealed, `cs2` 's permissions and bounds are equal to or a subset of `cs1` 's,
-`cs2` 's bounds are not malformed (see
-xref:section_cap_malformed[xrefstyle=short]), and all reserved bits in `cs2` 's
-metadata are 0; otherwise, copy `cs2` to `cd` and clear `cd` 's tag. <<CBLD>> is typically used alongside <<SCHI>> to build
+Copy `cs2` to `cd` and set `cd.tag` to 1 if
+
+. `cs1.tag` is set, and
+. `cs1` 's bounds are not <<section_cap_malformed,malformed>>, and all reserved fields are zero, and
+. `cs1` 's permissions could have been legally produced by <<ACPERM>>, and
+. `cs1` is not sealed, and
+. `cs2` 's permissions and bounds are equal to or a subset of `cs1` 's, and
+. `cs2` 's bounds are not <<section_cap_malformed,malformed>>, and all reserved fields are zero, and
+. `cs2` 's permissions could have been legally produced by <<ACPERM>>, and
+. All reserved bits in `cs2` 's metadata are 0;
+
+Otherwise, copy `cs2` to `cd` and clear `cd` 's tag.
+
+<<CBLD>> is typically used alongside <<SCHI>> to build
 capabilities from integer values.
 
-NOTE: When `cs1` is `c0` this will set the tag to 0 and leave the metadata
-otherwise unchanged. However this may change in future extensions,
-and so software should not assume `cs1==0` to be a pseudo instruction
-for tag clearing.
+NOTE: When `cs1` is `c0` this will copy `cs2` to `cd` and clear `cd.tag`.
+However this may change in future extensions, and so software should not
+assume `cs1==0` to be a pseudo instruction for tag clearing.
 
 Exceptions::
 include::require_cre.adoc[]

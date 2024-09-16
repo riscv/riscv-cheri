@@ -4,35 +4,41 @@
 ==== C.JALR
 
 Synopsis::
-Register based jumps with link, 16-bit encodings
+Jump register with link, 16-bit encodings
 
-Capability Mode Mnemonic::
+{cheri_cap_mode_name} Mnemonic::
 `c.jalr c1, cs1`
 
-Capability Mode Expansion::
+{cheri_cap_mode_name} Expansion::
 `jalr c1, 0(cs1)`
 
-Legacy Mode Mnemonic::
+{cheri_int_mode_name} Mnemonic::
 `c.jalr x1, rs1`
 
-Legacy Mode Expansion::
+{cheri_int_mode_name} Expansion::
 `jalr x1, 0(rs1)`
 
 Encoding::
 include::wavedrom/c-jalr-format-ls.adoc[]
 
-include::jalr_common.adoc[]
+{cheri_cap_mode_name} Description::
+See <<JALR>> for execution of the expanded instruction as shown above.
+Note that the `offset` is zero in the expansion.
+
+{cheri_int_mode_name} Description::
+See <<JALR>> for execution of the expanded instruction as shown above.
+Note that the `offset` is zero in the expansion.
 
 Exceptions::
 See <<JALR>>
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for {cheri_cap_mode_name}::
 {c_cheri_base_ext_names}
 
-Prerequisites for Legacy Mode::
-{c_cheri_legacy_ext_names}
+Prerequisites for {cheri_int_mode_name}::
+{c_cheri_default_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
  See <<JALR>>

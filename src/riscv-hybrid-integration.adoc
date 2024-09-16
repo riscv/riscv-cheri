@@ -1,0 +1,508 @@
+[#section_cheri_hybrid_ext]
+== "{cheri_default_ext_name}" Extension for CHERI {cheri_int_mode_name}
+
+{cheri_default_ext_name} is an optional extension to {cheri_base_ext_name}.
+Implementations that support {cheri_base_ext_name} and {cheri_default_ext_name}
+define a variant of the CHERI ISA that is fully binary compatible with
+existing RISC-V code.
+
+Key features in {cheri_default_ext_name} include a definition of a CHERI execution mode, a new
+unprivileged register, additional instructions and extensions to some existing
+CSRs enabling CHERI features. The remainder of this section describes
+these features in detail as well as their integration with the primary base
+integer variants of the RISC-V ISA (RV32I and RV64I).
+
+[#section-cheri-execution-mode]
+=== CHERI Execution Mode
+
+{cheri_default_ext_name} adds CHERI execution modes to ensure backwards
+compatibility with the base RISC-V ISA while saving instruction encoding space.
+There are two execution modes: {cheri_cap_mode_name} and {cheri_int_mode_name}. Additionally, there
+is a new unprivileged register: the default data capability, <<ddc>>, that is
+used to authorise all data memory accesses when in
+{cheri_int_mode_name}.
+
+The current CHERI execution mode is given by the <<m_bit>> field of <<pcc>> that
+is encoded as described in xref:section-cheri-execution-mode[xrefstyle=short].
+
+The CHERI execution mode impacts the instruction set in the following ways:
+
+* The authorising capability used to execute memory access instructions.
+In {cheri_int_mode_name}, <<ddc>> is implicitly used. In {cheri_cap_mode_name}, the authorising
+capability is supplied as an explicit *c* operand register to the instruction.
+* The set of instructions that is available for execution. Some instructions
+are available in {cheri_int_mode_name} but not {cheri_cap_mode_name} and vice-versa (see
+xref:riscv-extensions[xrefstyle=short]).
+
+NOTE: The implication is that the CHERI execution mode is always {cheri_cap_mode_name} on
+implementations that support {cheri_base_ext_name}, but not
+{cheri_default_ext_name}.
+
+The CHERI execution mode is effectively an extension to some RISC-V instruction
+encodings. For example, the encoding of an instruction like <<LW>> remains
+unchanged, but the mode indicates whether the capability authorising the load
+is the register operand `cs1` ({cheri_cap_mode_name}). The mode is shown in the assembly
+syntax.
+
+The CHERI execution mode is key in providing backwards compatibility with the
+base RISC-V ISA. RISC-V software is able to execute unchanged in
+implementations supporting both {cheri_base_ext_name} and
+{cheri_default_ext_name} provided that the <<infinite-cap>> capability is installed in <<ddc>> and <<pcc>>
+(with <<m_bit,M={INT_MODE_VALUE}>>, i.e. in {cheri_int_mode_name}).
+Setting both registers to <<infinite-cap>> ensures that:
+
+* All permissions are granted
+* The bounds authorise accesses to the entire address space i.e base is 0 and
+top is 2^MXLEN^
+
+[#m_bit,reftext="M-bit"]
+=== CHERI Execution Mode Encoding
+
+{cheri_default_ext_name} adds a new CHERI execution Mode field (M) to
+the capability format, which is only valid for code capabilities, i.e.
+when the <<x_perm>> is set.
+
+* When MXLEN=32, the Mode is encoded in bit 0 of quadrant 1 from the AP field
+_even though it is not a permission_ as shown in <<cap_perms_encoding32>>.
+** Only quadrant 1 represents executable capabilities, and so it's the only
+one which encodes the Mode.
+* When MXLEN=64, the Mode is encoded separately; a new <<m_bit>> field is
+added to the capability format as shown in
+xref:cap_perms_encoding64[xrefstyle=short].
+The <<m_bit>> is only valid for code capabilities, otherwise the field is reserved.
+
+NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It is
+orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
+
+In both encodings:
+
+* Mode (M)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
+* Mode (M)={INT_MODE_VALUE} indicates {cheri_int_mode_name}.
+
+The current CHERI execution mode is given by the <<m_bit>> of the <<pcc>> and the <<section_cheri_disable,CHERI register access settings>> as follows:
+
+* The Mode is {cheri_cap_mode_name} when the <<m_bit>> of the <<pcc>> is {CAP_MODE_VALUE}, *and* <<section_cheri_disable,CHERI register access is enabled>> for the current privilege.
+* Otherwise the Mode is {cheri_int_mode_name}.
+
+When the <<m_bit>> can be set, the rules defined by <<ACPERM>> must be followed.
+
+[#m_bit_observe,reftext="Observing the CHERI Execution Mode"]
+==== Observing the CHERI Execution Mode
+
+The effective CHERI execution mode is given by the values of some CSRs and the
+<<m_bit>> from the PCC. The following code sequences demonstrate how a program
+can observe the current, effective CHERI execution mode depending on the
+machine's privilege mode.
+
+In debug mode, the following sequence executed from the program buffer will
+write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and
+{INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
+
+```
+csrr  c1, dinfc
+gctag x1, c1
+```
+
+In any other privilege mode, the following sequence will write {CAP_MODE_VALUE}
+for {cheri_cap_mode_name} and {INT_MODE_VALUE} for
+{cheri_int_mode_name} to `x1`:
+
+```
+auipc c1, 0
+gctag x1, c1
+```
+
+[#section_hybrid_ext_instructions]
+=== {cheri_default_ext_name} Instructions
+
+{cheri_default_ext_name} introduces a small number of new mode-switching and
+capability manipulation instructions to the base RISC-V integer ISA, as shown
+in <<Zcheri_hybrid_instruction_extension>>.
+Additionally, the behavior of some existing instructions changes depending on the current CHERI execution mode.
+
+==== Capability Load and Store Instructions
+
+The load and store capability instructions change behaviour depending on the
+CHERI execution mode although the instruction's encoding remains unchanged.
+
+The load capability instruction is <<LC>>. When the CHERI execution mode is
+{cheri_cap_mode_name}; the instruction behaves as described in
+xref:section_cap_instructions[xrefstyle=short].
+In {cheri_int_mode_name}, the capability authorising the memory access
+is <<ddc>>, so the effective address is obtained by adding the *x* register to
+the sign-extended offset.
+
+The store capability instruction is <<SC>>. When the CHERI execution mode is
+{cheri_cap_mode_name}; the instruction behaves as described in
+xref:section_cap_instructions[xrefstyle=short].
+In {cheri_int_mode_name}, the capability authorising the memory access
+is <<ddc>>, so the effective address is obtained by adding the *x* register to
+the sign-extended offset.
+
+==== Capability Manipulation Instructions
+
+A new <<SCMODE>> instruction allows setting a capability's CHERI execution
+mode to the indicated value. The output is written to an unprivileged *c*
+register, not <<pcc>>.
+
+A new <<GCMODE>> instruction allows decoding the CHERI execution mode from an
+arbitrary capability held in an *x* register. The output is written to an
+unprivileged *x* register.
+
+==== Mode Change Instructions
+
+A new CHERI execution mode switch (<<MODESW>>) instruction allows software
+to toggle the hart's current CHERI execution mode. If the current mode in the
+<<pcc>> is {cheri_int_mode_name}, then the mode after executing <<MODESW>> is {cheri_cap_mode_name}
+and vice-versa. This instruction effectively writes the CHERI execution mode
+bit M of the capability currently installed in the <<pcc>>.
+
+=== Existing RISC-V Instructions
+
+The CHERI execution mode introduced in {cheri_default_ext_name} affects the
+behaviour of instructions that have at least one memory address operand. When
+in {cheri_cap_mode_name}, the address input or output operands may include *c* registers.
+When in {cheri_int_mode_name}, the address input or output operands are *x/f/v* registers;
+the tag and metadata of that register are implicitly set to 0.
+
+==== Control Transfer Instructions
+
+The unconditional jump instructions change behaviour depending on the CHERI
+execution mode although the instruction's encoding remains unchanged.
+
+The jump and link instruction <<JAL>> when the CHERI execution mode is
+Capability; behaves as described in
+xref:section_existing_riscv_insns[xrefstyle=short].
+When the mode is {cheri_int_mode_name}. In this case, the address of the instruction
+following the jump (*pc* + 4) is written to an *x* register; that register's
+tag and capability metadata are zeroed.
+
+The jump and link register instruction is <<JALR>> when the CHERI execution mode
+is {cheri_cap_mode_name}; behaves as described in
+xref:section_existing_riscv_insns[xrefstyle=short].
+When the mode is {cheri_int_mode_name}. In this case, the target address is obtained by adding
+the sign-extended 12-bit immediate to the *x* register operand, then setting
+the least significant bit of the result to zero. The target address is then
+written to the <<pcc>> address and a representability check is performed. The
+address of the instruction following the jump (*pc* + 4) is written to an *x*
+register; that register's tag and capability metadata are zeroed.
+
+{cheri_default_ext_name} allows changing the current CHERI execution mode when
+executing <<JALR>> from {cheri_cap_mode_name}.
+
+<<JAL>> and <<JALR>> cause CHERI exceptions when a minimum sized instruction
+at the target address is not within the bounds of the <<pcc>>. An
+instruction address misaligned exception is raised when the target address is
+misaligned.
+
+==== Conditional Branches
+
+The behaviour is as shown in xref:condbr-purecap[xrefstyle=short].
+
+==== Load and Store Instructions
+
+Load and store instructions change behavior depending on the CHERI execution
+mode although the instruction's encoding remains unchanged.
+
+Loads and stores behave as described in
+xref:section_existing_riscv_insns[xrefstyle=short] when in {cheri_cap_mode_name}.
+In {cheri_int_mode_name}, the instructions behave as described in
+the RISC-V base ISA and rely on *x* operands
+only. The capability authorising the memory access is <<ddc>> and the memory
+address is given by sign-extending the 12-bit immediate offset and adding it to
+the base address in the *x* register operand.
+
+The exception cases remain as described in
+xref:section_existing_riscv_insns[xrefstyle=short] regardless of the CHERI
+execution mode.
+
+[#zicsr-section-default]
+==== CSR Instructions
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by
+<<CSRRW>>.
+endif::[]
+
+{cheri_default_ext_name} adds the concept of CSRs which contain a capability
+where the address field is visible in {cheri_int_mode_name} (e.g. <<mtvec>>) and the full
+capability is visible in {cheri_cap_mode_name} through a different name (e.g.
+<<mtvecc>>). These are referred to as _extended CSRs_. Also,
+{cheri_default_ext_name} adds the new capability CSRs listed in
+xref:default-csrnames-added[xrefstyle=short].
+
+Extended CSRs have only one address; the access width is determined by the
+execution mode.
+
+When <<CSRRW>> is executed on an extended CSR in {cheri_int_mode_name}:
+
+* The register operand is an *x* register.
+* Only XLEN bits from the *x* source are written to the capability address
+field.
+    ** The tag and metadata are updated as specified in <<extended_CSR_writing>>.
+* Only XLEN bits are read from the capability address field, which are extended
+to MXLEN bits according to cite:[riscv-priv-spec] _(3.1.6.2. Base ISA Control in
+mstatus Register)_ and are then written to the destination *x* register.
+
+When <<CSRRW>> is executed on an extended CSR in {cheri_cap_mode_name}, or
+on a new capability CSR regardless of the CHERI execution mode:
+
+* The register operand is a *c* register.
+* The full capability in the *c* register source is written to the CSR.
+** The capability may require modification before the final written value is
+determined (see <<extended_CSR_writing>>).
+* The full capability is written to destination *c* register.
+
+When an extended CSR or a new capability CSR is used with another CSR
+instruction (<<CSRRWI>>, <<CSRRC>>, <<CSRRCI>>, <<CSRRS>>, <<CSRRSI>>):
+
+* The final address is calculated according to the standard RISC-V CSR rules
+(set bits, clear bits etc).
+* The final address is updated as specified in <<extended_CSR_writing>> for an
+XLEN write.
+* When accessing an extended CSR:
+    ** In {cheri_int_mode_name}, XLEN bits are read from the capability address
+field and written to an output *x* register.
+    ** In {cheri_cap_mode_name}, CLEN bits are read from the CSR and written to
+an output *c* register.
+* When accessing a new capability CSR:
+    ** CLEN bits are read from the CSR and written to an output *c* register.
+
+All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
+<<asr_perm>> and the CSR accessed is not user-mode accessible.
+
+[#section_hybrid_debug_integration]
+=== Integrating {cheri_default_ext_name} with Sdext
+
+A new debug default data capability (<<dddc>>) CSR is added at the CSR number
+shown in xref:default-csrnames-added[xrefstyle=short].
+
+{cheri_default_ext_name} optionally allows <<MODESW>> to execute in debug mode.
+
+When entering debug mode, the core always enters {cheri_cap_mode_name}.
+Implementations may optionally support switching CHERI execution mode by
+executing the <<MODESW>> from the program buffer.
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The mode change instruction <<MODESW>> is new
+and the requirement to optionally support it in debug mode is also new.
+endif::[]
+
+[#dddc,reftext="dddc"]
+=== Debug Default Data Capability (dddc)
+
+<<dddc>> is a register that is able to hold a capability. The address is shown in
+xref:default-csrnames-added[xrefstyle=short].
+
+{TAG_RESET_CSR}
+
+.Debug default data capability
+include::img/dddcreg.edn[]
+
+Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>>'s metadata is
+set to the <<infinite-cap>> capability's metadata (with tag set) and <<ddc>>'s
+address remains unchanged.
+
+When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated to
+the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
+hart's context.
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
+so it does not need to be able to hold all possible invalid addresses.
+
+[#section_cheri_disable]
+=== Disabling CHERI Registers
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
+per-privilege enable bits.
+
+NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
+it is not possible to disable CHERI checks completely.
+endif::[]
+
+{cheri_default_ext_name} includes functions to disable explicit access to CHERI
+registers.  The following occurs when executing code in a privilege mode that
+has CHERI register access disabled:
+
+* The CHERI instructions in xref:section_cap_instructions[xrefstyle=short] and
+xref:instruction-modes[xrefstyle=short]
+cause illegal instruction exceptions
+* Executing CSR instructions accessing any CSR added by {cheri_default_ext_name}
+ (see <<default-csrnames-added>>) causes an illegal
+instruction exception
+* Executing CSR instructions accessing any extended CSR
+ (see xref:csr-numbers-section[xrefstyle=short]) only allows XLEN access.
+* All allowed instructions execute as if the CHERI execution mode is {cheri_int_mode_name}.
+The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
+
+CHERI register access is disabled if
+
+* XLEN in the current mode is less than MXLEN, or
+* the endianness in the current mode is not the reset value of <<mstatus>>.MBE, or
+* the effective CRE for the current privilege is 0.
+
+The effective CRE for the current privilege is:
+
+* Machine: `mseccfg.CRE`
+* Supervisor: `mseccfg.CRE & menvcfg.CRE`
+* User: `mseccfg.CRE & menvcfg.CRE & senvcfg.CRE`
+
+NOTE: The effective CRE is always 1 in debug mode.
+
+Disabling CHERI register access has no effect on implicit accesses or security
+checks.  The last capability installed in <<pcc>> and <<ddc>> before disabling
+CHERI register access will be used to authorise instruction execution and data
+memory accesses.
+
+NOTE: Disabling CHERI register access prevents low-privileged {cheri_int_mode_name} software
+from interfering with the correct operation of higher-privileged {cheri_int_mode_name} software
+that do not perform <<ddc>> switches on trap entry and return.
+
+=== Added CLEN-wide CSRs
+
+{cheri_default_ext_name} adds the CLEN-wide CSRs shown in
+xref:default-csrnames-added[xrefstyle=short].
+
+[[default-csrnames-added]]
+.CLEN-wide CSRs added in {cheri_default_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+|===
+include::generated/csr_added_hybrid_table_body.adoc[]
+|===
+
+[#mstatus_hybrid]
+==== Machine Status Registers (mstatus and mstatush)
+
+{cheri_default_ext_name} eliminates some restrictions for SXL and UXL imposed in
+{cheri_base_ext_name} to allow implementations supporting multiple base ISAs.
+Namely, the SXL and UXL fields may be writable.
+
+Setting the SXL or UXL field to a value that is not MXLEN disables most
+CHERI features and instructions, as described in
+xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
+
+NOTE: If CHERI register access must be disabled in a mode for security reasons,
+software should set CRE to 0 regardless of the SXL and UXL fields.
+
+Whenever XLEN in any mode is set to a value less than MXLEN, standard RISC-V
+rules from cite:[riscv-unpriv-spec] are followed. This means that all operations
+must ignore source operand register bits above the configured XLEN, and must
+sign-extend results to fill all MXLEN bits in the destination register.
+Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it
+is sign-extended to fill MXLEN. The integer writing rule from CHERI is
+followed, so that every register write also zeroes the metadata and tag of the
+destination register.
+
+However, CHERI operations and security checks will continue using the entire
+hardware register (i.e. CLEN bits) to correctly decode capability bounds.
+
+{cheri_default_ext_name} eliminates some restrictions for MBE, SBE, and UBE
+imposed in {cheri_base_ext_name} to allow implementations supporting multiple
+endiannesses.  Namely, the MBE, SBE, and UBE fields may be writable if the
+corresponding privilege mode is implemented.
+
+Setting the MBE, SBE, or UBE field to a value that is not the reset value of
+MBE disables most CHERI features and instructions, as described in
+xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
+
+[#mtdc,reftext="mtdc"]
+==== Machine Trap Default Capability Register (mtdc)
+
+The <<mtdc>> register is a capability width read/write register dedicated
+for use by machine mode. Typically, it is used to hold a data capability to a
+machine-mode hart-local context space, to load into <<ddc>>.
+
+{TAG_RESET_CSR}
+
+{REQUIRE_CRE_CSR}
+
+.Machine-mode trap data capability register
+include::img/mtdcreg.edn[]
+
+[#mseccfg,reftext="mseccfg"]
+==== Machine Security Configuration Register (mseccfg)
+
+{cheri_default_ext_name} adds a new enable bit to <<mseccfg>> as shown in
+xref:mseccfgmodereg[xrefstyle=short].
+
+.Machine security configuration register (*mseccfg*)
+[#mseccfgmodereg]
+include::img/mseccfgreg.edn[]
+
+The CHERI Register Enable (CRE) bit controls whether M-mode and lower privilege
+levels have access to capability registers and instructions.
+When <<mseccfg>>.CRE=1, all CHERI instructions and registers can be accessed.
+When <<mseccfg>>.CRE=0, CHERI register and instruction access is prohibited for
+M-mode and lower privilege levels as described in xref:section_cheri_disable[xrefstyle=short].
+
+The reset value is 0.
+
+[#menvcfg,reftext="menvcfg"]
+==== Machine Environment Configuration Register (menvcfg)
+
+{cheri_default_ext_name} adds a new enable bit to <<menvcfg>> as shown in
+xref:menvcfgmodereg[xrefstyle=short].
+
+.Machine environment configuration register (*menvcfg*)
+[#menvcfgmodereg]
+include::img/menvcfgmodereg.edn[]
+
+The CHERI Register Enable (CRE) bit controls whether less privileged levels can
+perform explicit accesses to CHERI registers. When <<menvcfg>>.CRE=1 and <<mseccfg>>.CRE=1,
+CHERI registers can be read and written by less privileged levels. When <<menvcfg>>.CRE=0,
+CHERI registers are disabled in less privileged levels as described in
+xref:section_cheri_disable[xrefstyle=short].
+
+The reset value is 0.
+
+[#stdc,reftext="stdc"]
+==== Supervisor Trap Default Capability Register (stdc)
+
+The <<stdc>> register is a capability width read/write register dedicated
+for use by supervisor mode. Typically, it is used to hold a data capability to
+a supervisor-mode hart-local context space, to load into <<ddc>>.
+
+{TAG_RESET_CSR}
+
+{REQUIRE_CRE_CSR}
+
+.Supervisor trap data capability register (*stdc*)
+include::img/stdcreg.edn[]
+
+[#senvcfg,reftext="senvcfg"]
+==== Supervisor Environment Configuration Register (senvcfg)
+
+The *senvcfg* register operates as described in the RISC-V Privileged
+Specification. {cheri_default_ext_name} adds a new enable bit as shown in
+xref:senvcfgreg[xrefstyle=short].
+
+.Supervisor environment configuration register (*senvcfg*)
+[#senvcfgreg]
+include::img/senvcfgreg.edn[]
+
+The CHERI Register Enable (CRE) bit controls whether U-mode can perform
+explicit accesses to CHERI registers. When <<senvcfg>>.CRE=1 and <<menvcfg>>.CRE=1 and
+<<mseccfg>>.CRE=1 CHERI registers can be read and written by U-mode. When <<senvcfg>>.CRE=0,
+CHERI registers are disabled in U-mode as described in
+xref:section_cheri_disable[xrefstyle=short].
+
+The reset value is 0.
+
+[#ddc,reftext="ddc"]
+==== Default Data Capability (ddc)
+
+The <<ddc>> CSR is a read-write capability register implicitly used as an
+operand to authorise all data memory accesses when the current CHERI mode is
+{cheri_int_mode_name}. This register must be readable in any implementation. Its reset value
+is the <<infinite-cap>> capability.
+
+{REQUIRE_CRE_CSR}
+
+NOTE: CRE is not required for the implicit access required by checking memory accesses against <<ddc>>
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<ddc>> is a data pointer,
+so it does not need to be able to hold all possible invalid addresses.
+
+.Unprivileged default data capability register
+include::img/ddcreg.edn[]

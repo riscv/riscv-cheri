@@ -11,40 +11,42 @@ Expands to <<JAL>> following the expansion rule from cite:[riscv-unpriv-spec].
 Synopsis::
 Jump and link
 
-Capability Mode Mnemonic::
+{cheri_cap_mode_name} Mnemonic::
 `jal cd, offset`
 
-Legacy Mode Mnemonic::
+{cheri_int_mode_name} Mnemonic::
 `jal rd, offset`
 
 Encoding::
 include::wavedrom/ct-unconditional.adoc[]
 
-Capability Mode Description::
+{cheri_cap_mode_name} Description::
 JAL's immediate encodes a signed offset in multiple of 2 bytes. The <<pcc>> is
 incremented by the sign-extended offset to form the jump target capability. The
 target capability is written to <<pcc>>. The <<pcc>> of the next instruction
-following the jump (<<pcc>> + 4) is sealed and written to `cd`.
+following the jump is sealed and written to `cd`.
 
-Legacy Mode Description::
+{cheri_int_mode_name} Description::
 JAL's immediate encodes a signed offset in multiple of 2 bytes. The
 sign-extended offset is added to the <<pcc>>'s address to form the target
 address which is written to the <<pcc>>'s address field. The address of the
-instruction following the jump (<<pcc>> + 4) is written to `rd`.
+instruction following the jump is written to `rd`.
 
 Exceptions::
-CHERI fault exceptions occur when a minimum length instruction at the target
-address is not within the bounds of the <<pcc>>. In this case, _CHERI jump or
-branch fault_ is reported in the TYPE field and Length Violation is reported in
-the CAUSE field of <<mtval>> or <<stval>>.
+[%autowidth,options=header,align=center]
+|==============================================================================
+| CAUSE                      | {cheri_int_mode_name} | {cheri_cap_mode_name} | Reason
+| Invalid address violation  | ✔    | ✔     | The target address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
+| Bounds violation           | ✔    | ✔     | Minimum length instruction is not within the target capability's bounds.
+|==============================================================================
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for Capability Mode::
+Prerequisites for {cheri_cap_mode_name}::
 {cheri_base_ext_name}
 
-Prerequisites for Legacy Mode::
-{cheri_legacy_ext_name}
+Prerequisites for {cheri_int_mode_name}::
+{cheri_default_ext_name}
 
 Operation::
 +
