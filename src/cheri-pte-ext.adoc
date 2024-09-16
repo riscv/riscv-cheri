@@ -127,22 +127,22 @@ bit value of the capability read. This will introduce additional traps during re
 
 [[pte_cw_crg_load_summary]]
 .Summary of Load CW and CRG behavior in the PTEs
-[%autowidth,float="center",align="left",cols="<,<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|PTE.CW |PTE.CRG                          |Load/AMO
-| 0     | X                               | Clear loaded tag
-| 1     |!=<<sstatusreg_pte,sstatus>>.CRG | Page fault, or page fault if tag is set
-| 1     |==<<sstatusreg_pte,sstatus>>.CRG | Normal operation
+|PTE.CW |PTE.CRG                                |Load/AMO
+| 0     | X                                     | Clear loaded tag
+| 1     |&#8800; <<sstatusreg_pte,sstatus>>.CRG | Page fault, or page fault if tag is set
+| 1     |=      <<sstatusreg_pte,sstatus>>.CRG  | Normal operation
 |===
 
 [[pte_cw_crg_store_summary]]
 .Summary of Store CW and CRG behavior in the PTEs
-[%autowidth,float="center",align="left",cols="<,<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|PTE.CW |PTE.CRG           |Store/AMO
-| 0     | 0                | Page fault if stored tag is set
-| 0     | 1                | Page fault if stored tag is set, or hardware CW and CRG update^1^
-| 1     | X                | Normal operation
+|PTE.CW |PTE.CRG |Store/AMO
+| 0     | 0      | Page fault if stored tag is set
+| 0     | 1      | Page fault if stored tag is set, or hardware CW and CRG update^1^
+| 1     | X      | Normal operation
 |===
 
 ^1^ The choice here follows the pattern of whether to implement the _Svade_ extension
