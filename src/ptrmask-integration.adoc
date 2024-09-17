@@ -8,9 +8,9 @@ are interpreted as being XLEN-wide, and may be subject to pointer masking.
 All data accesses are checked against <<ddc>> which is unaffected by
 pointer masking. Therefore no capability bounds encoding is affected.
 
-In {cheri_cap_mode_name} all pointers are capabilities, and the bounds
-encoding relies on XLEN-wide addresses, and therefore the definitions of the bounds
-will need to be updated to be usable for pointer masking.
-
-Therefore supporting pointer masking in {cheri_cap_mode_name} is future work, and so
-Xenfcfg.PMM is currently ignored in {cheri_cap_mode_name}.
+In {cheri_cap_mode_name} all pointers are capabilities. If pointer masking is enabled
+then the masked bits are replaced with sign extension of the highest unmasked bit
+before the bounds calculation.
+Therefore the bounds calculation is always performed using the address field of the
+capability only. The masked bits are never used by the calculation, and so are not
+considered part of the capability.
