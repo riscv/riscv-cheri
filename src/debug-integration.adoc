@@ -182,7 +182,10 @@ The reset value is the <<infinite-cap>> capability with the <<m_bit>> set to {CA
 regardless of whether {cheri_default_ext_name} (see xref:section-cheri-execution-mode[xrefstyle=short])
 is implemented:
 
-The current CHERI execution mode can be determined in debug mode by reading <<dinfc>>.
+The current CHERI execution mode can be determined in debug mode by reading <<dinfc>>, as the
+<<m_bit>> is updated by the hardware. The value of the <<m_bit>> when the core is not in debug
+mode is either the reset value or the value of the <<m_bit>> in debug mode when the core last
+resumed execution.
 
 <<dinfc>> is read/write but with no writeable fields, and so writes are
 ignored.
