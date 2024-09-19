@@ -178,17 +178,17 @@ include::img/dscratch1creg.edn[]
 
 The <<dinfc>> register is a CLEN-bit plus tag bit CSR only accessible in debug mode.
 
-The reset value is the <<infinite-cap>> capability with the <<m_bit>> set to {CAP_MODE_VALUE},
-regardless of whether {cheri_default_ext_name} (see xref:section-cheri-execution-mode[xrefstyle=short])
-is implemented:
+The reset value is the <<infinite-cap>> capability.
 
-The current CHERI execution mode can be determined in debug mode by reading <<dinfc>>, as the
-<<m_bit>> is updated by the hardware. The value of the <<m_bit>> when the core is not in debug
-mode is either the reset value or the value of the <<m_bit>> in debug mode when the core last
-resumed execution.
+If {cheri_default_ext_name} is implemented:
 
-<<dinfc>> is read/write but with no writeable fields, and so writes are
-ignored.
+* The <<m_bit>> is reset to be {cheri_default_ext_name}.
+* The debugger can set the <<m_bit>> to {cheri_base_mode_ext} by reading the CSR, using <<SCMODE>> and then writing the CSR.
+** This only needs doing once after resetting the core.
+* The <<m_bit>> is used on debug mode entry to determine which CHERI execution mode to enter.
+
+The <<m_bit>> is the only writeable field in <<dinfc>>.
+Therefore if {cheri_default_ext_name} is not implemented then it is read-write with no writeable fields.
 
 NOTE: A future version of this specification may add writeable fields to allow creation
  of other capabilities, if, for example, a future extension requires multiple formats for
