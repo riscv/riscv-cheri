@@ -819,6 +819,8 @@ authorising capability which caused the exception.
 
 <<mtval2>> is set to zero for all PCC faults, and follows the standard rules for non-CHERI exceptions.
 
+If <<mtval>> is read-only-zero then <<mtval2>> is also read-only-zero.
+
 .Machine trap value register 2
 [#mtval2-format]
 include::img/mtval2reg.edn[]
@@ -1032,16 +1034,36 @@ The fields are identical to <<mtval>> for CHERI exceptions.
 
 The <<stval2>> register is an SXLEN-bit read-write register.
 
-The CSR address is 0x14b.
+The CSR address is 0x24b.
 
 When a fault is taken into S-mode <<stval2>> is updated as for <<mtval2>> for all CHERI memory access traps.
 It is set to zero in all other cases.
 
 NOTE: This is not a standard RISC-V CSR, but <<mtval2>> is. 0x14b is the regular location for the CSR.
 
+<<stval2>> holds the same set of values that <<mtval2>> can hold.
+
 .Supervisor trap value register 2
 [#stval2-format]
 include::img/stval2reg.edn[]
+
+[#vstval2,reftext="vstval2"]
+==== Virtual Supervisor Trap Value Register 2 (vstval2)
+
+The <<vstval2>> register is an SXLEN-bit read-write register.
+
+The CSR address is 0x24b.
+
+When a fault is taken into VS-mode <<vstval2>> is updated as for <<mtval2>> for all CHERI memory access traps.
+It is set to zero in all other cases.
+
+NOTE: This is not a standard RISC-V CSR, but <<mtval2>> is. 0x24b is the regular location for the CSR.
+
+<<vstval2>> holds the same set of values that <<stval2>> can hold.
+
+.Virtual supervisor trap value register 2
+[#vstval2-format]
+include::img/vstval2reg.edn[]
 
 === Unprivileged CSRs
 
