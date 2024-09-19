@@ -771,6 +771,20 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 | 3-15                      | Reserved
 |==============================================================================
 
+.Encoding of CAP_IDX field
+[#mtval-cheri-cap-idx,width=65%,float="center",align="center",options=header,cols="30%,70%"]
+|==============================================================================
+| CHERI CAP_IDX Code        | Description
+| 0                         | Faulting cap was c0
+| 1                         | Faulting cap was c1
+| ...                       |
+| 30                        | Faulting cap was c30
+| 31                        | Faulting cap was c31
+| 32                        | Faulting cap was <<ddc>>
+| 33                        | Faulting cap was <<pcc>>
+| 34-63                     | Reserved
+|==============================================================================
+
 .Encoding of CAUSE field
 [#mtval-cheri-causes,width=55%,float="center",align="center",options=header]
 |==============================================================================
@@ -790,6 +804,23 @@ CHERI violations have the following order in priority:
 . Permission violation
 . Invalid address violation
 . Bounds violation (_Lowest_)
+
+[#mtval2,reftext="mtval2"]
+==== Machine Trap Value Register 2 (mtval2)
+
+The <<mtval2>> register is an MXLEN-bit read-write register, which is added as part of the
+Hypervisor extension. {cheri_base_ext_name} also requires the implementation of this CSR.
+
+When a CHERI fault is taken on any data memory access into into M-mode, <<mtval2>> is written
+with the MXLEN-bit address which caused the fault. This can be used together with the
+CAP_IDX field of <<mtval>> to diagnose the authorising capability which caused the
+exception.
+
+<<mtval2>> is set to zero for all PCC faults, and follows the standard rules for non-CHERI exceptions.
+
+.Machine trap value register 2
+[#mtval2-format]
+include::img/mtval2reg.edn[]
 
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
@@ -995,8 +1026,24 @@ include::img/stvalreg.edn[]
 
 TYPE is a CHERI-specific fault type that caused the exception while CAUSE
 is the cause of the fault. The possible CHERI types and causes are encoded as
-shown in xref:mtval-cheri-type[xrefstyle=short] and
+shown in xref:mtval-cheri-type[xrefstyle=short], xref:mtval-cheri-cap-idx[xrefstyle=short] and
 xref:mtval-cheri-causes[xrefstyle=short] respectively.
+
+[#stval2,reftext="stval2"]
+==== Supervisor Trap Value Register 2 (stval2)
+
+The <<stval2>> register is an SXLEN-bit read-write register.
+
+The CSR address is 0x14b.
+
+When a fault is taken into S-mode <<stval2>> is updated as for <<mtval2>> for all CHERI memory access traps.
+It is set to zero in all other cases.
+
+NOTE: This is not a standard RISC-V CSR, but <<mtval2>> is. 0x14b is the regular location for the CSR.
+
+.Supervisor trap value register 2
+[#stval2-format]
+include::img/stval2reg.edn[]
 
 === Unprivileged CSRs
 
