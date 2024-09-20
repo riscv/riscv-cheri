@@ -280,19 +280,11 @@ shown in xref:default-csrnames-added[xrefstyle=short].
 {cheri_default_ext_name} optionally allows <<MODESW>> to execute in debug mode.
 
 When entering debug mode, whether the core enters {cheri_int_mode_name} or
-{cheri_cap_mode_name} is UNSPECIFIED.
+{cheri_cap_mode_name} is controlled by the <<m_bit>> in <<dinfc>>.
 Implementations may optionally support switching CHERI execution mode by
 executing <<MODESW>> from the program buffer.
 
 The current mode can be read from <<dinfc>>.
-
-NOTE: Entering debug mode in {cheri_int_mode_name} allows non-CHERI aware debuggers
-the ability to connect to, and debug, CHERI cores without any software
-change. Entering in {cheri_cap_mode_name} allows CHERI aware debuggers to
-connect directly and make use of the CHERI features without needing to
-switch modes. It is anticipated that, over time, debuggers will move to
-being updated to talk to CHERI cores, allowing {cheri_cap_mode_name} to
-become to obvious mode to switch to when entering debug mode.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The mode change instruction <<MODESW>> is new
