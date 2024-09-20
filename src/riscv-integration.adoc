@@ -771,19 +771,19 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 | 3-15                      | Reserved
 |==============================================================================
 
-.Encoding of CAP_IDX field
-[#mtval-cheri-cap-idx,width=65%,float="center",align="center",options=header,cols="30%,70%"]
-|==============================================================================
-| CHERI CAP_IDX Code        | Description
-| 0                         | Faulting cap was c0
-| 1                         | Faulting cap was c1
-| ...                       |
-| 30                        | Faulting cap was c30
-| 31                        | Faulting cap was c31
-| 32                        | Faulting cap was <<ddc>>
-| 33                        | Faulting cap was <<pcc>>
-| 34-63                     | Reserved
-|==============================================================================
+//.Encoding of CAP_IDX field
+//[#mtval-cheri-cap-idx,width=65%,float="center",align="center",options=header,cols="30%,70%"]
+//|==============================================================================
+//| CHERI CAP_IDX Code        | Description
+//| 0                         | Faulting cap was c0
+//| 1                         | Faulting cap was c1
+//| ...                       |
+//| 30                        | Faulting cap was c30
+//| 31                        | Faulting cap was c31
+//| 32                        | Faulting cap was <<ddc>>
+//| 33                        | Faulting cap was <<pcc>>
+//| 34-63                     | Reserved
+//|==============================================================================
 
 .Encoding of CAUSE field
 [#mtval-cheri-causes,width=55%,float="center",align="center",options=header]
@@ -814,8 +814,8 @@ Hypervisor extension. {cheri_base_ext_name} also requires the implementation of 
 When a CHERI fault is taken on any data memory access into into M-mode, <<mtval2>> is written
 with the MXLEN-bit effective address which caused the fault. This follows the existing rules for reporting
 load/store addresses to <<mtval>> from [riscv-priv-spec].
-This reported address can be used together with the CAP_IDX field of <<mtval>> to diagnose the
-authorising capability which caused the exception.
+//This reported address can be used together with the CAP_IDX field of <<mtval>> to diagnose the
+//authorising capability which caused the exception.
 
 <<mtval2>> is set to zero for all PCC faults, and follows the standard rules for non-CHERI exceptions.
 
