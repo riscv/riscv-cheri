@@ -164,6 +164,36 @@ present when the implementation supports {cheri_default_ext_name}.
 .Virtual supervisor trap default capability register
 include::img/vstdcreg.edn[]
 
+[#vstval,reftext="vstval"]
+=== Virtual Supervisor Trap Value Register (vstval)
+
+The <<vstval>> register is an SXLEN-bit read-write register.
+
+When a fault is taken into VS-mode <<vstval>> is updated as for <<stval>> for all CHERI exceptions.
+
+.Virtual supervisor trap value register
+[#vstval-format]
+include::img/vstvalreg.edn[]
+
+
+[#vstval2,reftext="vstval2"]
+=== Virtual Supervisor Trap Value Register 2 (vstval2)
+
+The <<vstval2>> register is a VSXLEN-bit read-write register.
+
+The CSR address is 0x24b.
+
+When a fault is taken into VS-mode <<vstval2>> is updated as for <<mtval2>> for all CHERI exceptions.
+It is set to zero in all other cases.
+
+NOTE: This is not a standard RISC-V CSR, but <<mtval2>> is. 0x24b is the regular location for the CSR.
+
+<<vstval2>> holds the same set of values that <<stval2>> can hold.
+
+.Virtual supervisor trap value register 2
+[#vstval2-format]
+include::img/vstval2reg.edn[]
+
 === Existing Hypervisor Load and Store Instructions
 
 The hypervisor extension defines several integer load and store instructions

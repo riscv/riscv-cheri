@@ -791,6 +791,24 @@ CHERI violations have the following order in priority:
 . Invalid address violation
 . Bounds violation (_Lowest_)
 
+[#mtval2,reftext="mtval2"]
+==== Machine Trap Value Register 2 (mtval2)
+
+The <<mtval2>> register is an MXLEN-bit read-write register, which is added as part of the
+Hypervisor extension. {cheri_base_ext_name} also requires the implementation of this CSR.
+
+When a CHERI fault is taken on any data memory access into into M-mode, <<mtval2>> is written
+with the MXLEN-bit effective address which caused the fault. This follows the existing rules for reporting
+load/store addresses to <<mtval>> from cite:[riscv-priv-spec].
+
+<<mtval2>> is set to zero for all other CHERI exceptions, and follows the standard rules for non-CHERI exceptions.
+
+If <<mtval>> is read-only-zero then <<mtval2>> is also read-only-zero.
+
+.Machine trap value register 2
+[#mtval2-format]
+include::img/mtval2reg.edn[]
+
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
 
@@ -993,10 +1011,25 @@ xref:stval-format[xrefstyle=short] to assist software in handling the trap.
 [#stval-format]
 include::img/stvalreg.edn[]
 
-TYPE is a CHERI-specific fault type that caused the exception while CAUSE
-is the cause of the fault. The possible CHERI types and causes are encoded as
-shown in xref:mtval-cheri-type[xrefstyle=short] and
-xref:mtval-cheri-causes[xrefstyle=short] respectively.
+The fields are identical to <<mtval>> for CHERI exceptions.
+
+[#stval2,reftext="stval2"]
+==== Supervisor Trap Value Register 2 (stval2)
+
+The <<stval2>> register is an SXLEN-bit read-write register.
+
+The CSR address is 0x24b.
+
+When a fault is taken into S-mode <<stval2>> is updated as for <<mtval2>> for all CHERI exceptions.
+It is set to zero in all other cases.
+
+NOTE: This is not a standard RISC-V CSR, but <<mtval2>> is. 0x14b is the regular location for the CSR.
+
+<<stval2>> holds the same set of values that <<mtval2>> can hold.
+
+.Supervisor trap value register 2
+[#stval2-format]
+include::img/stval2reg.edn[]
 
 === Unprivileged CSRs
 
