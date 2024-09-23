@@ -99,8 +99,8 @@ write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and
 {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
 
 ```
-csrr  c1, dinfc
-gctag x1, c1
+csrr   c1, dinfc
+gcmode x1, c1
 ```
 
 In any other privilege mode, the following sequence will write {CAP_MODE_VALUE}
@@ -279,9 +279,12 @@ shown in xref:default-csrnames-added[xrefstyle=short].
 
 {cheri_default_ext_name} optionally allows <<MODESW>> to execute in debug mode.
 
-When entering debug mode, the core always enters {cheri_cap_mode_name}.
+When entering debug mode, whether the core enters {cheri_int_mode_name} or
+{cheri_cap_mode_name} is controlled by the <<m_bit>> in <<dinfc>>.
 Implementations may optionally support switching CHERI execution mode by
-executing the <<MODESW>> from the program buffer.
+executing <<MODESW>> from the program buffer.
+
+The current mode can be read from <<dinfc>>.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The mode change instruction <<MODESW>> is new

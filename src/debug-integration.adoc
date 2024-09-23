@@ -5,9 +5,6 @@ This section describes changes to integrate the Sdext ISA and
 {cheri_base_ext_name}. It must be implemented to make external debug compatible
 with {cheri_base_ext_name}. Modifications to Sdext are kept to a minimum.
 
-WARNING: This section is preliminary as no-one has yet built debug support
- for CHERI-RISC-V so change is likely.
-
 The following features, which are optional in Sdext, must be implemented for
 use with {cheri_base_ext_name}:
 
@@ -178,12 +175,18 @@ include::img/dscratch1creg.edn[]
 
 The <<dinfc>> register is a CLEN-bit plus tag bit CSR only accessible in debug mode.
 
-The reset value is the <<infinite-cap>> capability with the <<m_bit>> set to {CAP_MODE_VALUE},
-regardless of whether {cheri_default_ext_name} (see xref:section-cheri-execution-mode[xrefstyle=short])
-is implemented:
+The reset value is the <<infinite-cap>> capability.
 
-<<dinfc>> is read/write but with no writeable fields, and so writes are
-ignored.
+If {cheri_default_ext_name} is implemented:
+
+* The <<m_bit>> is reset to be {cheri_default_ext_name} ({INT_MODE_VALUE}).
+* The debugger can set the <<m_bit>> to {cheri_base_mode_ext} ({CAP_MODE_VALUE}) by executing <<MODESW>> from the program buffer
+** if <<MODESW>> is not supported in debug mode then the same can be done by reading the CSR, using <<SCMODE>> and then writing the CSR.
+** This only needs doing once after resetting the core.
+* The <<m_bit>> is used on debug mode entry to determine which CHERI execution mode to enter.
+
+The <<m_bit>> is the only writeable field in <<dinfc>>.
+Therefore if {cheri_default_ext_name} is not implemented then it is read-write with no writeable fields.
 
 NOTE: A future version of this specification may add writeable fields to allow creation
  of other capabilities, if, for example, a future extension requires multiple formats for
