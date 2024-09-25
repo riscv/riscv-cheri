@@ -54,11 +54,32 @@ The reset value is 0.
 === Hypervisor Trap Value Register (htval)
 
 The <<htval>> register operates as described in cite:[riscv-priv-spec].
-Additionally, <<htval>> may be written with the exception codes described in
-xref:mtval[xrefstyle=short] when a CHERI exception occurs.
+Additionally, when a data memory access gives rise to a CHERI fault taken into
+HS-mode, <<htval>> is either zero or written with the HSXLEN-bit
+effective address which caused the fault according to the existing rules for
+reporting load/store addresses from cite:[riscv-priv-spec].
 
 .Hypervisor trap value register
 include::img/htvalreg.edn[]
+
+[#htval2,reftext="htval2"]
+=== Hypervisor Trap Value Register 2 (htval2)
+
+The <<htval2>> register is an HSXLEN-bit read-write register, which is added as
+part of {cheri_base_ext_name} when the hypervisor extension is supported. Its
+CSR address is 0x64b.
+
+When a CHERI fault is taken into HS-mode, <<htval2>> is either zero or written
+with additional CHERI-specific exception information with the format shown in
+xref:hstval2-format[xrefstyle=short] to assist software in handling the trap.
+The behavior of <<htval2>> is the same as for <<stval2>>.
+
+NOTE: <<htval2>> and <<stval2>> are not standard RISC-V CSRs, but <<mtval2>>
+is.
+
+.Hypervisor trap value register 2
+[#hstval2-format]
+include::img/htval2reg.edn[]
 
 [#vsstatus,reftext="vsstatus"]
 === Virtual Supervisor Status Register (vsstatus)
@@ -182,14 +203,17 @@ The <<vstval2>> register is a VSXLEN-bit read-write register, which is added as
 part of {cheri_base_ext_name} when the hypervisor extension is supported. Its
 CSR address is 0x24b.
 
-When a CHERI fault is taken into VS-mode, <<vstval2>> is updated as for
-<<stval2>>.
+When a CHERI fault is taken into VS-mode, <<vstval2>> is either zero or written
+with additional CHERI-specific exception information with the format shown in
+xref:vstval2-format[xrefstyle=short] to assist software in handling the trap.
+The behavior of <<vstval2>> is the same as for <<stval2>>.
 
-NOTE: <<vstval2>> and <<stval2>> are not standard RISC-V CSRs, but <<mtval2>> is.
+NOTE: <<vstval2>> and <<stval2>> are not standard RISC-V CSRs, but <<mtval2>>
+is.
 
-.Virtual supervisor trap value register 2
-[#vstval2-format]
-include::img/vstval2reg.edn[]
+#.Virtual supervisor trap value register 2
+#[#vstval2-format]
+#include::img/vstval2reg.edn[]
 
 === Existing Hypervisor Load and Store Instructions
 
