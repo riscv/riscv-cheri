@@ -169,26 +169,23 @@ include::img/vstdcreg.edn[]
 
 The <<vstval>> register is an SXLEN-bit read-write register.
 
-When a fault is taken into VS-mode <<vstval>> is updated as for <<stval>> for all CHERI exceptions.
+When a fault is taken into VS-mode <<vstval>> is updated as for <<stval>>.
 
 .Virtual supervisor trap value register
 [#vstval-format]
 include::img/vstvalreg.edn[]
 
-
 [#vstval2,reftext="vstval2"]
 === Virtual Supervisor Trap Value Register 2 (vstval2)
 
-The <<vstval2>> register is a VSXLEN-bit read-write register.
+The <<vstval2>> register is a VSXLEN-bit read-write register, which is added as
+part of {cheri_base_ext_name} when the hypervisor extension is supported. Its
+CSR address is 0x24b.
 
-The CSR address is 0x24b.
+When a CHERI fault is taken into VS-mode, <<vstval2>> is updated as for
+<<stval2>>.
 
-When a fault is taken into VS-mode <<vstval2>> is updated as for <<mtval2>> for all CHERI exceptions.
-It is set to zero in all other cases.
-
-NOTE: This is not a standard RISC-V CSR, but <<mtval2>> is. 0x24b is the regular location for the CSR.
-
-<<vstval2>> holds the same set of values that <<stval2>> can hold.
+NOTE: <<vstval2>> and <<stval2>> are not standard RISC-V CSRs, but <<mtval2>> is.
 
 .Virtual supervisor trap value register 2
 [#vstval2-format]
