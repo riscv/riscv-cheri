@@ -744,25 +744,46 @@ WARNING: *CHERI v9 Note:* Encoding and values changed, and generally were
 simplified.
 endif::[]
 
-The <<mtval>> register is an MXLEN-bit read-write register. When a CHERI fault
-is taken into M-mode, <<mtval>> is written with additional CHERI-specific
-exception information with the format shown in
-xref:mtval-format[xrefstyle=short] to assist software in handling the trap.
+The <<mtval>> register is an MXLEN-bit read-write register formatted as shown
+in xref:mtval-format[xrefstyle=short]. When a data memory access gives rise to
+a CHERI fault taken into M-mode, <<mtval>> is either zero or written with the
+MXLEN-bit effective address which caused the fault according to the existing
+rules for reporting load/store addresses from cite:[riscv-priv-spec].
 
-If the hardware platform specifies that no exceptions set <<mtval>> to a
-nonzero value, then <<mtval>> is read-only zero.
+The behavior of <<mtval>> is otherwise as described in cite:[riscv-priv-spec].
 
 .Machine trap value register
 [#mtval-format]
 include::img/mtvalreg.edn[]
 
+[#mtval2,reftext="mtval2"]
+==== Machine Trap Value Register 2 (mtval2)
+
+ifdef::cheri_v9_annotations[]
+WARNING: *CHERI v9 Note:* This CSR was not part of CHERIv9.
+endif::[]
+
+The <<mtval2>> register is an MXLEN-bit read-write register, which is added as part of the
+Hypervisor extension cite:[riscv-priv-spec]. {cheri_base_ext_name} also requires the implementation of this CSR.
+
+When a CHERI fault is taken into M-mode, <<mtval2>> is either zero or written
+with additional CHERI-specific exception information with the format shown in
+xref:mtval2-format[xrefstyle=short] to assist software in handling the trap.
+
+If the hardware platform specifies that no exceptions set <<mtval2>> to a
+nonzero value, then <<mtval2>> is read-only zero.
+
+.Machine trap value register 2
+[#mtval2-format]
+include::img/mtval2reg.edn[]
+
 TYPE is a CHERI-specific fault type that caused the exception while CAUSE
 is the cause of the fault. The possible CHERI types and causes are encoded as
-shown in xref:mtval-cheri-type[xrefstyle=short] and
-xref:mtval-cheri-causes[xrefstyle=short] respectively.
+shown in xref:mtval2-cheri-type[xrefstyle=short] and
+xref:mtval2-cheri-causes[xrefstyle=short] respectively.
 
 .Encoding of TYPE field
-[#mtval-cheri-type,width=65%,float="center",align="center",options=header,cols="30%,70%"]
+[#mtval2-cheri-type,width=65%,float="center",align="center",options=header,cols="30%,70%"]
 |==============================================================================
 | CHERI Type Code           | Description
 | {cheri_excep_type_pcc}    | CHERI instruction access fault
@@ -772,7 +793,7 @@ xref:mtval-cheri-causes[xrefstyle=short] respectively.
 |==============================================================================
 
 .Encoding of CAUSE field
-[#mtval-cheri-causes,width=55%,float="center",align="center",options=header]
+[#mtval2-cheri-causes,width=55%,float="center",align="center",options=header]
 |==============================================================================
 | CHERI Cause Code              | Description
 | {cheri_excep_cause_tag}       | Tag violation
@@ -790,24 +811,6 @@ CHERI violations have the following order in priority:
 . Permission violation
 . Invalid address violation
 . Bounds violation (_Lowest_)
-
-[#mtval2,reftext="mtval2"]
-==== Machine Trap Value Register 2 (mtval2)
-
-The <<mtval2>> register is an MXLEN-bit read-write register, which is added as part of the
-Hypervisor extension. {cheri_base_ext_name} also requires the implementation of this CSR.
-
-When a CHERI fault is taken on any data memory access into into M-mode, <<mtval2>> is written
-with the MXLEN-bit effective address which caused the fault. This follows the existing rules for reporting
-load/store addresses to <<mtval>> from cite:[riscv-priv-spec].
-
-<<mtval2>> is set to zero for all other CHERI exceptions, and follows the standard rules for non-CHERI exceptions.
-
-If <<mtval>> is read-only-zero then <<mtval2>> is also read-only-zero.
-
-.Machine trap value register 2
-[#mtval2-format]
-include::img/mtval2reg.edn[]
 
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
@@ -1002,30 +1005,34 @@ _Reserved_
 [#stval,reftext="stval"]
 ==== Supervisor Trap Value Register (stval)
 
-The <<stval>> register is an SXLEN-bit read-write register. When a CHERI fault
-is taken into S-mode, <<stval>> is written with additional CHERI-specific
-exception information with the format shown in
-xref:stval-format[xrefstyle=short] to assist software in handling the trap.
+The <<stval>> register is an SXLEN-bit read-write register formatted as shown
+in xref:stval-format[xrefstyle=short]. When a data memory access gives rise to
+a CHERI fault taken into S-mode, <<stval>> is either zero or written with the
+SXLEN-bit effective address which caused the fault according to the existing
+rules for reporting load/store addresses from cite:[riscv-priv-spec].
 
 .Supervisor trap value register
 [#stval-format]
 include::img/stvalreg.edn[]
 
-The fields are identical to <<mtval>> for CHERI exceptions.
-
 [#stval2,reftext="stval2"]
 ==== Supervisor Trap Value Register 2 (stval2)
 
-The <<stval2>> register is an SXLEN-bit read-write register.
+The <<stval2>> register is an SXLEN-bit read-write register, which is added as
+part of {cheri_base_ext_name} when the implementation supports S-mode. Its CSR
+address is 0x14b.
 
-The CSR address is 0x24b.
+When a CHERI fault is taken into S-mode, <<stval2>> is either zero or written
+with additional CHERI-specific exception information with the format shown in
+xref:stval2-format[xrefstyle=short] to assist software in handling the trap.
+<<stval2>> is set to zero in all other cases.
 
-When a fault is taken into S-mode <<stval2>> is updated as for <<mtval2>> for all CHERI exceptions.
-It is set to zero in all other cases.
+If the hardware platform specifies that no exceptions set <<stval2>> to a
+nonzero value, then <<stval2>> is read-only zero.
 
-NOTE: This is not a standard RISC-V CSR, but <<mtval2>> is. 0x14b is the regular location for the CSR.
+The fields are idential to <<mtval2>> for CHERI exceptions.
 
-<<stval2>> holds the same set of values that <<mtval2>> can hold.
+NOTE: <<stval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 
 .Supervisor trap value register 2
 [#stval2-format]
