@@ -746,11 +746,16 @@ endif::[]
 
 The <<mtval>> register is an MXLEN-bit read-write register formatted as shown
 in xref:mtval-format[xrefstyle=short]. When a data memory access gives rise to
-a CHERI fault taken into M-mode, <<mtval>> is either zero or written with the
+a CHERI fault taken into M-mode, <<mtval>> is either written with the
 MXLEN-bit effective address which caused the fault according to the existing
-rules for reporting load/store addresses from cite:[riscv-priv-spec].
+rules for reporting load/store addresses from cite:[riscv-priv-spec] when
+TYPE field of <<mtval2>> shown in xref:mtval2-cheri-type[xrefstyle=short] is
+set to {cheri_excep_type_data}. For all other CHERI faults it is set to zero.
 
 The behavior of <<mtval>> is otherwise as described in cite:[riscv-priv-spec].
+
+If the hardware platform specifies that no exceptions set <<mtval>> to a
+nonzero value, then <<mtval>> is read-only zero.
 
 .Machine trap value register
 [#mtval-format]
@@ -766,12 +771,9 @@ endif::[]
 The <<mtval2>> register is an MXLEN-bit read-write register, which is added as part of the
 Hypervisor extension cite:[riscv-priv-spec]. {cheri_base_ext_name} also requires the implementation of this CSR.
 
-When a CHERI fault is taken into M-mode, <<mtval2>> is either zero or written
+When a CHERI fault is taken into M-mode, <<mtval2>> written
 with additional CHERI-specific exception information with the format shown in
 xref:mtval2-format[xrefstyle=short] to assist software in handling the trap.
-
-If the hardware platform specifies that no exceptions set <<mtval2>> to a
-nonzero value, then <<mtval2>> is read-only zero.
 
 .Machine trap value register 2
 [#mtval2-format]
