@@ -145,12 +145,8 @@ bit value of the capability read. This will introduce additional traps during re
 | 1     | X      | Normal operation
 |===
 
-^1^ The choice here is whether to take a data dependent exceptions on loads or atomic operations.
- If the exception is taken then the software will sweep the page and update the generation
- (CRG). If the exception is taken without checking the tag, then the sweep will happen sooner.
- The choice on whether to check the tag or not can be static or dynamic. It is also permitted to
- check the tag for certain instructions and not for others, for example, checking the tag on loads
- and not on atomics. The implementation is free to define if and when to check the tag.
+^1^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
+ The implementation is free to define when (if ever) it checks the tag.
 
 ^2^ The choice here follows the pattern of whether to implement the _Svade_ extension
  to take page-fault exceptions for A and D PTE bit state changes, or whether to implement
