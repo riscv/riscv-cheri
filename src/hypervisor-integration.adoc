@@ -187,9 +187,10 @@ include::img/vstdcreg.edn[]
 [#vstval,reftext="vstval"]
 === Virtual Supervisor Trap Value Register (vstval)
 
-The <<vstval>> register is an SXLEN-bit read-write register.
+The <<vstval>> register is a VSXLEN-bit read-write register.
 
-When a fault is taken into VS-mode <<vstval>> is updated as for <<stval>>.
+<<vstval>> is updated following the same rules as <<mtval>> for CHERI exceptions
+which are taken in VS-mode.
 
 .Virtual supervisor trap value register
 [#vstval-format]
@@ -207,8 +208,7 @@ which are taken in VS-mode.
 
 The fields are identical to <<mtval2>> for CHERI exceptions.
 
-NOTE: <<vstval2>> is not a standard RISC-V CSR, but <<mtval2>>
-is.
+NOTE: <<vstval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 
 .Virtual supervisor trap value register 2
 [#vstval2-format]
