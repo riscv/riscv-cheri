@@ -54,10 +54,9 @@ The reset value is 0.
 === Hypervisor Trap Value Register (htval)
 
 The <<htval>> register operates as described in cite:[riscv-priv-spec].
-Additionally, when a data memory access gives rise to a CHERI fault taken into
-HS-mode, <<htval>> is either zero or written with the HSXLEN-bit
-effective address which caused the fault according to the existing rules for
-reporting load/store addresses from cite:[riscv-priv-spec].
+
+<<htval>> is updated following the same rules as <<mtval>> for CHERI exceptions
+which are taken in HS-mode.
 
 .Hypervisor trap value register
 include::img/htvalreg.edn[]
@@ -69,12 +68,12 @@ The <<htval2>> register is an HSXLEN-bit read-write register, which is added as
 part of {cheri_base_ext_name} when the hypervisor extension is supported. Its
 CSR address is 0x64b.
 
-When a CHERI fault is taken into HS-mode, <<htval2>> is either zero or written
-with additional CHERI-specific exception information with the format shown in
-xref:hstval2-format[xrefstyle=short] to assist software in handling the trap.
-The behavior of <<htval2>> is the same as for <<stval2>>.
+<<htval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
+which are taken in HS-mode.
 
-NOTE: <<htval2>> and <<stval2>> are not standard RISC-V CSRs, but <<mtval2>>
+The fields are identical to <<mtval2>> for CHERI exceptions.
+
+NOTE: <<htval2>> is not a standard RISC-V CSR, but <<mtval2>>
 is.
 
 .Hypervisor trap value register 2
@@ -203,12 +202,12 @@ The <<vstval2>> register is a VSXLEN-bit read-write register, which is added as
 part of {cheri_base_ext_name} when the hypervisor extension is supported. Its
 CSR address is 0x24b.
 
-When a CHERI fault is taken into VS-mode, <<vstval2>> is either zero or written
-with additional CHERI-specific exception information with the format shown in
-xref:vstval2-format[xrefstyle=short] to assist software in handling the trap.
-The behavior of <<vstval2>> is the same as for <<stval2>>.
+<<vstval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
+which are taken in VS-mode.
 
-NOTE: <<vstval2>> and <<stval2>> are not standard RISC-V CSRs, but <<mtval2>>
+The fields are identical to <<mtval2>> for CHERI exceptions.
+
+NOTE: <<vstval2>> is not a standard RISC-V CSR, but <<mtval2>>
 is.
 
 .Virtual supervisor trap value register 2

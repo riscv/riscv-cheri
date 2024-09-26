@@ -755,7 +755,7 @@ set to {cheri_excep_type_data}. For all other CHERI faults it is set to zero.
 The behavior of <<mtval>> is otherwise as described in cite:[riscv-priv-spec].
 
 If the hardware platform specifies that no exceptions set <<mtval>> to a
-nonzero value, then <<mtval>> is read-only zero.
+non-zero value, then <<mtval>> is read-only zero for all CHERI exceptions.
 
 .Machine trap value register
 [#mtval-format]
@@ -774,6 +774,9 @@ Hypervisor extension cite:[riscv-priv-spec]. {cheri_base_ext_name} also requires
 When a CHERI fault is taken into M-mode, <<mtval2>> written
 with additional CHERI-specific exception information with the format shown in
 xref:mtval2-format[xrefstyle=short] to assist software in handling the trap.
+
+If <<mtval>> is read-only zero for CHERI exceptions then <<mtval2>> is also read-only zero
+for CHERI exceptions.
 
 .Machine trap value register 2
 [#mtval2-format]
@@ -1008,10 +1011,10 @@ _Reserved_
 ==== Supervisor Trap Value Register (stval)
 
 The <<stval>> register is an SXLEN-bit read-write register formatted as shown
-in xref:stval-format[xrefstyle=short]. When a data memory access gives rise to
-a CHERI fault taken into S-mode, <<stval>> is either zero or written with the
-SXLEN-bit effective address which caused the fault according to the existing
-rules for reporting load/store addresses from cite:[riscv-priv-spec].
+in xref:stval-format[xrefstyle=short]. 
+
+<<stval>> is updated following the same rules as <<mtval>> for CHERI exceptions
+which are delegated to S-mode.
 
 .Supervisor trap value register
 [#stval-format]
@@ -1024,15 +1027,10 @@ The <<stval2>> register is an SXLEN-bit read-write register, which is added as
 part of {cheri_base_ext_name} when the implementation supports S-mode. Its CSR
 address is 0x14b.
 
-When a CHERI fault is taken into S-mode, <<stval2>> is either zero or written
-with additional CHERI-specific exception information with the format shown in
-xref:stval2-format[xrefstyle=short] to assist software in handling the trap.
-<<stval2>> is set to zero in all other cases.
+<<stval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
+which are delegated to S-mode.
 
-If the hardware platform specifies that no exceptions set <<stval2>> to a
-nonzero value, then <<stval2>> is read-only zero.
-
-The fields are idential to <<mtval2>> for CHERI exceptions.
+The fields are identical to <<mtval2>> for CHERI exceptions.
 
 NOTE: <<stval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 
