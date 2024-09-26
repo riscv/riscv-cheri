@@ -1,0 +1,18 @@
+[#section_pointer_masking_integration]
+== Integrating {cheri_base_ext_name} and {cheri_default_ext_name} with Pointer Masking
+
+The pointer masking extensions Smmpm, Smnpm, SSnpm, Sspm and Supm are compatible with {cheri_default_ext_name}.
+
+For instructions using integer addresses (e.g. loads/stores in {cheri_int_mode_name}), they
+are interpreted as being XLEN-wide, and may be subject to pointer masking.
+All data accesses are checked against <<ddc>> which is unaffected by
+pointer masking. Therefore no capability bounds encoding is affected.
+
+For instructions using capabilities (e.g. loads/stores in {cheri_cap_mode_name}), the final access address is subject to pointer masking, but the computed bounds are not. The entire address field, including any bits representing the pointer mask, are used
+for bounds calculation. When pointer masking is enabled, the dereferenced address has the masked bits replaced by sign
+extension before the bounds check.
+
+NOTE: This scheme doesn't seem very useful, but the problem is the dynamic configuration
+ of pointer masking which can arbitrarily update the meaning of the address within the capability,
+ so the full address field must be used to calculate bounds.
+ There is future work required to determine a more useful way of applying pointer masking to capabilities.
