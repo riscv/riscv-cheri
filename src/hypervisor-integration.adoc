@@ -54,11 +54,31 @@ The reset value is 0.
 === Hypervisor Trap Value Register (htval)
 
 The <<htval>> register operates as described in cite:[riscv-priv-spec].
-Additionally, <<htval>> may be written with the exception codes described in
-xref:mtval[xrefstyle=short] when a CHERI exception occurs.
+
+<<htval>> is updated following the same rules as <<mtval>> for CHERI exceptions
+which are taken in HS-mode.
 
 .Hypervisor trap value register
 include::img/htvalreg.edn[]
+
+[#htval2,reftext="htval2"]
+=== Hypervisor Trap Value Register 2 (htval2)
+
+The <<htval2>> register is an HSXLEN-bit read-write register, which is added as
+part of {cheri_base_ext_name} when the hypervisor extension is supported. Its
+CSR address is 0x64b.
+
+<<htval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
+which are taken in HS-mode.
+
+The fields are identical to <<mtval2>> for CHERI exceptions.
+
+NOTE: <<htval2>> is not a standard RISC-V CSR, but <<mtval2>>
+is.
+
+.Hypervisor trap value register 2
+[#hstval2-format]
+include::img/htval2reg.edn[]
 
 [#vsstatus,reftext="vsstatus"]
 === Virtual Supervisor Status Register (vsstatus)
@@ -167,28 +187,28 @@ include::img/vstdcreg.edn[]
 [#vstval,reftext="vstval"]
 === Virtual Supervisor Trap Value Register (vstval)
 
-The <<vstval>> register is an SXLEN-bit read-write register.
+The <<vstval>> register is a VSXLEN-bit read-write register.
 
-When a fault is taken into VS-mode <<vstval>> is updated as for <<stval>> for all CHERI exceptions.
+<<vstval>> is updated following the same rules as <<mtval>> for CHERI exceptions
+which are taken in VS-mode.
 
 .Virtual supervisor trap value register
 [#vstval-format]
 include::img/vstvalreg.edn[]
 
-
 [#vstval2,reftext="vstval2"]
 === Virtual Supervisor Trap Value Register 2 (vstval2)
 
-The <<vstval2>> register is a VSXLEN-bit read-write register.
+The <<vstval2>> register is a VSXLEN-bit read-write register, which is added as
+part of {cheri_base_ext_name} when the hypervisor extension is supported. Its
+CSR address is 0x24b.
 
-The CSR address is 0x24b.
+<<vstval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
+which are taken in VS-mode.
 
-When a fault is taken into VS-mode <<vstval2>> is updated as for <<mtval2>> for all CHERI exceptions.
-It is set to zero in all other cases.
+The fields are identical to <<mtval2>> for CHERI exceptions.
 
-NOTE: This is not a standard RISC-V CSR, but <<mtval2>> is. 0x24b is the regular location for the CSR.
-
-<<vstval2>> holds the same set of values that <<stval2>> can hold.
+NOTE: <<vstval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 
 .Virtual supervisor trap value register 2
 [#vstval2-format]
