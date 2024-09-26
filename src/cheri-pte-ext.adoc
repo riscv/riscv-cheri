@@ -131,7 +131,7 @@ bit value of the capability read. This will introduce additional traps during re
 |===
 |PTE.CW |PTE.CRG                                |Load/AMO
 | 0     | X                                     | Clear loaded tag
-| 1     |&#8800; <<sstatusreg_pte,sstatus>>.CRG | Page fault, or page fault if tag is set
+| 1     |&#8800; <<sstatusreg_pte,sstatus>>.CRG | Page fault, or page fault if tag is set^1^
 | 1     |=      <<sstatusreg_pte,sstatus>>.CRG  | Normal operation
 |===
 
@@ -141,11 +141,18 @@ bit value of the capability read. This will introduce additional traps during re
 |===
 |PTE.CW |PTE.CRG |Store/AMO
 | 0     | 0      | Page fault if stored tag is set
-| 0     | 1      | Page fault if stored tag is set, or hardware CW and CRG update^1^
+| 0     | 1      | Page fault if stored tag is set, or hardware CW and CRG update^2^
 | 1     | X      | Normal operation
 |===
 
-^1^ The choice here follows the pattern of whether to implement the _Svade_ extension
+^1^ The choice here is whether to take a data dependent exceptions on loads or atomic operations.
+ If the exception is taken then the software will sweep the page and update the generation
+ (CRG). If the exception is taken without checking the tag, then the sweep will happen sooner.
+ The choice on whether to check the tag or not can be static or dynamic. It is also permitted to
+ check the tag for certain instructions and not for others, for example, checking the tag on loads
+ and not on atomics. The implementation is free to define if and when to check the tag.
+
+^2^ The choice here follows the pattern of whether to implement the _Svade_ extension
  to take page-fault exceptions for A and D PTE bit state changes, or whether to implement
  a hardware updating mechanism.
 
