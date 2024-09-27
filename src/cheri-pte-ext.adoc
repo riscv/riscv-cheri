@@ -146,7 +146,8 @@ bit value of the capability read. This will introduce additional traps during re
 |===
 
 ^1^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
- The implementation is free to define when (if ever) it checks the tag.
+ It is legal for the implementation to fault even if the tag is not set since this behaviour is only an optimization for software.
+ This means it is also legal to only check the tag under certain conditions and conservatively fault otherwise.
 
 ^2^ The choice here follows the pattern of whether to implement the _Svade_ extension
  to take page-fault exceptions for A and D PTE bit state changes, or whether to implement
