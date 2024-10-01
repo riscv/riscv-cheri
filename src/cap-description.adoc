@@ -137,6 +137,9 @@ If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a cap
 The rules specified by <<ACPERM>> are followed when <<w_perm>> and <<lm_perm>> are removed, so additional permissions may also be removed.
 Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
 
+NOTE: Implementations are allowed to propagate, but not alter, reserved permissions when performing <<lm_perm>> check on a loaded capability.
+ This simplifies the number of cases handled by the implementation as it's a choice whether to remove _all_ permissions.
+
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow read and write access to all
 privileged (M-mode and S-mode) CSRs.
