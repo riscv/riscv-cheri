@@ -3,15 +3,13 @@
 
 {cheri_levels_ext_name} is an extension to {cheri_base_ext_name} that adds support for associating a level with capabilities and limiting the flow of capabilities to specific memory region subsets.
 This extension allows assigning a level to capabilities, which in conjunction with two new permissions allows enforcing invariants on capability propagation.
-For example, this can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g. the callee's stack frame).
+For example, this can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g. the callee's stack frame but not the heap).
 It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
 
 NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
 
 The number of supported capability levels is implementation-defined, but this specification currently only requires supporting two levels (_local_ and _global_).
 
-NOTE: Support for {cheri_levels_ext_name} requires support for at least `LVLBITS=1`, and `LVLBITS>1` is considered an experimental enhancement of this extension.
-See <<section_ext_cheri_multiple_levels>> for the mechanics when `LVLBITS>1`.
 
 === Capability format changes
 {cheri_levels_ext_name} adds a new `LVLBITS`-bit field to the <<section_cap_encoding,capability encoding>>, the _<<section_cap_level>>_.
@@ -23,11 +21,14 @@ NOTE: The <<cap_encoding_xlen64,`MXLEN=64` capability encoding>> diagram shows t
 
 - For `MXLEN=32` the capability's <<cap_encoding_xlen32,AP>> field is able to encoding these permissions without increasing in size (provided that LVLBITS&#8804;2).
 
+NOTE: {cheri_levels_ext_name} requires that LVLBITS&#8805;1 although LVLBITS>1 is considered an experimental enhancement of this extension.
+See <<section_ext_cheri_multiple_levels>> for the mechanics when LVLBITS>1.
+
 [#section_cap_level,reftext="capability level"]
 ==== Capability Level (CL)
 
 With `LVLBITS=1`, the _Capability Level_ can hold two values: when set to 1 the capability is _global_ (in general allowing it to be stored using any authorizing capability), and when set to 0 the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
-Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabilities -- causing the loaded value to be _local_ instead.
+Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabilities -- causing the hardware to automatically set the level of loaded capabilities to _local_ instead.
 
 NOTE: The current specification only defines two levels, equivalent to _local_ and _global_ capabilities from CHERI v9, Morello and CHERIoT.
 
@@ -110,7 +111,7 @@ Similarly, <<sl_perm>> is set to `min(rs2[SL], cs1[SL])` (equivalent to `rs2[SL]
 When storing capabilities, the <<sl_perm>> checks need to perform a `LVLBITS`-wide integer comparison instead of just testing a single bit.
 Considering for an example `LVLBITS=2`:
 
-[grid=rows,cols="2,3,6"]
+[options=header,grid=rows,cols="2,3,6"]
 |===
 |<<sl_perm>> | Permitted for levels| Resulting semantics
 |3 | As low as `~0b11=0` | Authorizes stores of capabilities with any level
