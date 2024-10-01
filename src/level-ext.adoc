@@ -1,21 +1,27 @@
 [#section_ext_cheri_levels]
 == "{cheri_levels_ext_name}" Extension for Capability Levels
 
-{cheri_levels_ext_name} is an optional extension to {cheri_base_ext_name} that adds support for associating a level with capabilities and limiting flow of capabilities to specific memory region subsets.
+{cheri_levels_ext_name} is an extension to {cheri_base_ext_name} that adds support for associating a level with capabilities and limiting the flow of capabilities to specific memory region subsets.
 This extension allows assigning a level to capabilities, which in conjunction with two new permissions allows enforcing invariants on capability propagation.
-For example, this can be used to ensure that a callee cannot store a copy of the passed in argument to memory or to avoid sharing of compartment-local data between compartments.
-The number of supported levels is configurable, but this specification currently only requires supporting two levels (_local_ and _global_).
+For example, this can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g. the callee's stack frame).
+It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
 
-=== Capability format changes
-The {cheri_levels_ext_name} adds a new `LVLBITS`-bit field to the <<section_cap_encoding,capability encoding>>, the _<<section_cap_level>>_.
-It also adds two new permission fields, <<el_perm>> and <<sl_perm>>.
+NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
 
-- For `XLEN=64` <<section_cap_encoding,capability encoding>>, the AP field is widened by `LVLBITS+1` bits (i.e. 2 bits for `LVLBITS=1`)
-- For `XLEN=32` the <<section_cap_perms,AP>> field of the capability is able to encoding these permissions without increasing in size (currently up to `LVLBITS=2`).
+The number of supported capability levels is implementation-defined, but this specification currently only requires supporting two levels (_local_ and _global_).
 
 NOTE: Support for {cheri_levels_ext_name} requires support for at least `LVLBITS=1`, and `LVLBITS>1` is considered an experimental enhancement of this extension.
 See <<section_ext_cheri_multiple_levels>> for the mechanics when `LVLBITS>1`.
 
+=== Capability format changes
+{cheri_levels_ext_name} adds a new `LVLBITS`-bit field to the <<section_cap_encoding,capability encoding>>, the _<<section_cap_level>>_.
+It also adds two new permission fields, <<el_perm>> and <<sl_perm>>.
+
+- For `MXLEN=64` <<section_cap_encoding,capability encoding>>, the AP field is widened by `LVLBITS+1` bits (i.e. 2 bits for `LVLBITS=1`)
+
+NOTE: The <<cap_encoding_xlen64,`MXLEN=64` capability encoding>> diagram shows the layout for `LVLBITS=1`
+
+- For `MXLEN=32` the capability's <<cap_encoding_xlen32,AP>> field is able to encoding these permissions without increasing in size (provided that LVLBITS&#8804;2).
 
 [#section_cap_level,reftext="capability level"]
 ==== Capability Level (CL)
@@ -23,28 +29,30 @@ See <<section_ext_cheri_multiple_levels>> for the mechanics when `LVLBITS>1`.
 With `LVLBITS=1`, the _Capability Level_ can hold two values: when set to 1 the capability is _global_ (in general allowing it to be stored using any authorizing capability), and when set to 0 the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
 Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabilities -- causing the loaded value to be _local_ instead.
 
-NOTE: This specification only defines the implementation of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
-
 NOTE: The current specification only defines two levels, equivalent to _local_ and _global_ capabilities from CHERI v9, Morello and CHERIoT.
 
-As with permissions, the capability level can only be reduced but never increased (without deriving from a capability with a higher level).
+As with permissions, the capability level can only be decreased but never increased (without deriving from a capability with a higher level).
 Therefore, the capability level is adjusted using the <<ACPERM>> instruction (see <<section_cap_level_change>>) and are queried using <<GCPERM>>.
 
 ==== New capability permissions
 {cheri_levels_ext_name} introduces two new capability permissions:
 [#sl_perm,reftext="SL-permission"]
-Store Level Permission (SL):: This is a `LVLBITS` wide field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> less than the inverse of <<sl_perm>> will be stored with the tag cleared.
-With `LVLBITS=1`, i.e. one bit for SL and CL each, this permission functions as follows:
-// This awkward wording above allows a multi-bit scheme where capabilities as low as level = ~store_level can be stored.
-// The one bit scheme simplifies to:
-// 1 -> allow storing as low as level ~1 = 0 -> level 0 (local) and 1 (global) is okay
-// 0 -> allow storing as low as level ~0 = 1 -> only level 1 (global)
+Store Level Permission (SL):: This is a `LVLBITS` wide field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> less than the inverse of the authorizing capability's <<sl_perm>> will be stored with the tag cleared.
+With `LVLBITS=1` there is a single bit comparison, so it behaves as follows:
 - If this field (as well as <<c_perm>> and <<w_perm>>) is set to 1 then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
 - If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e. _local_), will be stored with the tag cleared.
 
+NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9, Morello and CHERIoT.
+
 [#el_perm,reftext="EL-permission"]
-Elevate Level Permission (EL):: If this permission is not set then any tagged capabilities loaded via this capability will have the <<el_perm>> cleared and the <<section_cap_level>> restricted to the <<section_cap_level>> of the authorizing capability.
+Elevate Level Permission (EL):: Any capability with tag set to 1 that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
 This permission is similar to the existing <<lm_perm>>, but instead of applying to the <<w_perm>> on the loaded capability it restricts the <<section_cap_level,CL>> field.
+
+
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is similar to CHERIoT's _LoadGlobal_ permission, except that any _global_ capability implicitly grants _LoadGlobal_.
+endif::[]
 
 .Encoding of architectural permissions for MXLEN=32 when {cheri_levels_ext_name} is implemented
 [#cap_perms_encoding_levels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
@@ -67,8 +75,7 @@ This permission is similar to the existing <<lm_perm>>, but instead of applying 
 | 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |     | Mode^1^  | Execute + Data & Cap RW
 | 6-7   | ✔ | ✔ |   |    |    | N/A |   |     | Mode^1^  | Execute + Data RW
 11+| *Quadrant 2: Restricted capability data read/write*
-11+| bit[2] - write. R and C implicitly granted, LM dependent on W permission.
-11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted, LM dependent on W permission.
 |Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
 | 3       | ✔ |   | ✔ |    |    | N/A   |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
@@ -77,7 +84,7 @@ This permission is similar to the existing <<lm_perm>>, but instead of applying 
 | 6       | ✔ | ✔ | ✔ | ✔  |    | 1     |   |     | N/A | Data & Cap RW (with store _local_, no <<el_perm>>)
 | 7       | ✔ | ✔ | ✔ | ✔  |    | 0     |   |     | N/A | Data & Cap RW (no store _local_, no <<el_perm>>)
 11+| *Quadrant 3: Capability data read/write*
-11+| [2] - write. R and C implicitly granted.
+11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted.
 11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
 |Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
@@ -91,12 +98,8 @@ This permission is similar to the existing <<lm_perm>>, but instead of applying 
 [#section_cap_level_change]
 === Changing capability levels and permissions
 While capability levels are conceptually a label on the capability rather than a permission granted by the capability, they are adjusted using the <<ACPERM>> instruction.
-This avoids the need for a dedicated instruction and allows reducing the level and removing <<el_perm>> in a single instruction as this is a common code sequence.
+This avoids the need for a dedicated instruction and allows reducing the level and removing <<el_perm>> in a single instruction.
 
-
-=== Example use cases for {cheri_levels_ext_name}
-
-FIXME: Add something here before merging.
 
 [#section_ext_cheri_multiple_levels]
 === Extending {cheri_levels_ext_name} to more than two levels
@@ -117,3 +120,5 @@ Considering for an example `LVLBITS=2`:
 |===
 
 NOTE: While this extra negation is non-intuitive, it is required such that <<ACPERM>> can use a monotonically decreasing operation for both <<section_cap_level,CL>> <<sl_perm>>.
+
+NOTE: The layout of the <<ACPERM>> input / <<GCPERM>> result is not yet defined, but existing bits will not be moved around so the <<sl_perm,SL>>/<<section_cap_level,CL>> fields will be non-contiguous.
