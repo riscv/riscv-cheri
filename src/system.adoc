@@ -1,0 +1,58 @@
+[appendix]
+== CHERI System Implications
+
+CHERI processors need memory systems which support the capability validity tags in memory.
+
+There are, or will soon be, a wide range of CHERI systems in existence from tiny IoT devices up to server chips.
+
+There are two types of bus connections used in chips which contain CHERI CPUs:
+
+. Tag-aware busses, where the bus protocol is extended to carry the tag along with the data.  This is typically done using a user defined bit in the protocol.
+.. These busses will read tags from memory (if tags are present in the target memory) and return them to the requestor.
+.. These busses will write the tag to memory as an extension of the data write.
+. Non-tag aware busses, i.e. normal non-CHERI aware busses.
+.. Reads of tagged memory will not read the tag.
+.. Writes to tagged memory will clear the tag of any CLEN-aligned CLEN-wide memory location where any byte matches the memory write.
+
+The fundamental rule for any CHERI system is that the tag and data are always accessed atomically. For every CLEN-aligned CLEN-wide memory location in memory It must never be possible to:
+
+. Update any data bytes without also writing the tag
+.. This implies clearing the tag if a non-CHERI aware bus master overwrites a capability in memory
+. Update the tag without also writing the data.
+
+=== Small CHERI system example
+
+[#small_cheri_system]
+.Example small CHERI system with local capability tag storage
+image::small_cheri_system.drawio.png[width=80%,align=center]
+
+This example shows a minimum sized system where only the local memory is extended to support capability tags.
+The tag-aware region is highlighted.
+All tags are created by the CHERI CPU, and only stored locally. The memory is shared with the system, probably via a secure DMA, which is not tag aware.
+
+Therefore the connection between CPU and memory is tag-aware, and the connection to the system is not tag aware.
+
+All writes from the system port to the memory must clear any memory tags to follow the rules from above.
+
+=== Large CHERI system example
+
+[#large_cheri_system]
+.Example large CHERI system with tag cache
+image::large_cheri_system.drawio.png[width=80%,align=center]
+
+In the case of a large CHERI SoC with caches, all the cached memory visible to the CHERI CPUs must support tags.
+All memory is backed up by DRAM, and DRAM does not offer 129-bit words and so a typical system will have a tag cache IP.
+
+A region of DRAM is reserved for CHERI tag storage.
+
+The tag cache sits on the boundary of the tag-aware and non-tag-aware memory domains, and it provides the bridge between the two.
+It stores tags locally in its cache, and if there is a miss, it will create an extra bus request to access the region of DRAM reserved for tag storage.
+Therefore in the case of a miss a single access is split into two - one to access the data and one to access the tag.
+
+The key property of the tag cache is to preserve the atomic access of data and tags in the memory system so that all CPUs have a consistent view of tags and data.
+
+The region of DRAM reserved for tag storage must be only accessible by the tag cache, or any other tag-aware bus master.
+
+For further information on the tag cache see cite:[tagged-memory].
+
+NOTE: An alternative to having a tag cache IP is to store the tag bits in the ECC bits on the DRAM chips. In this case the tag aware bus will extend all the way to the DRAM controller.
