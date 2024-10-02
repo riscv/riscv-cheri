@@ -112,10 +112,10 @@ This avoids the need for a dedicated instruction and allows reducing the level a
 [#cap_level_store_summary,width="100%",options=header,align="center",cols="1,1,1,1,5"]
 |==============================================================================
 3+|Auth cap field | Data cap field | Notes
-|*W*|*C*|*SL*|*CL*|
-|1  | 1 | 1  | X  | Store data capability unmodified
-|1  | 1 | 0  | 1  | Store data capability unmodified
-|1  | 1 | 0  | 0  | Store data capability with tag cleared
+|*W*|*C*|*~SL*|*CL*|
+|1  | 1 | 0  | X  | Store data capability unmodified
+|1  | 1 | 1  | 1  | Store data capability unmodified (CL ≥ ~SL)
+|1  | 1 | 1  | 0  | Store data capability with tag cleared (CL < ~SL)
 |==============================================================================
 
 NOTE: if W=0 or C=0 then SL is irrelevant
