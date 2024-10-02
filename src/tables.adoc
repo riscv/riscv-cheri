@@ -196,22 +196,22 @@ other than debug mode.
 // Header
 | <<section_cheri_disable,CRE>>
 | <<pcc>>.<<m_bit,m>>
-| Authorizing capability^*^
-| <<zicsr-section-default,New CHERI CSRs>>^**^
-| <<zicsr-section-default,Extended CHERI CSRs>>^+^
-| CHERI instructions^†^
-| <<legacy_mnemonics,Compressed instructions remapped>>^‡^
+| Authorizing capability^1^
+| <<zicsr-section-default,New CHERI CSRs>>^2^
+| <<zicsr-section-default,Extended CHERI CSRs>>^3^
+| CHERI instructions^4^
+| <<legacy_mnemonics,Compressed instructions remapped>>^5^
 | Note
 
 // Body
 | 0
-| X^¶^
+| X^6^
 | <<ddc>> or <<pcc>>
 | ✘
 | XLEN
 | ✘
 | No
-| **_Fully RISC-V compatible_**^§^
+| **_Fully RISC-V compatible_**^7^
 
 | 1
 | 0
@@ -232,24 +232,24 @@ other than debug mode.
 | **{cheri_cap_mode_name}**
 |==============================================================================
 
-^*^ Authorizing capability for memory access instructions.
+^1^ Authorizing capability for memory access instructions.
 
-^**^ Whether accesses to <<zicsr-section-default,new CHERI CSRs>> are permitted
+^2^ Whether accesses to <<zicsr-section-default,new CHERI CSRs>> are permitted
 or raise illegal instruction exceptions. If permitted, then the bit width of
 the CSR read/write with <<CSRRW>> is indicated.
 
-^+^ The bit width of accesses to <<zicsr-section-default,extended CHERI CSRs>>
+^3^ The bit width of accesses to <<zicsr-section-default,extended CHERI CSRs>>
 using <<CSRRW>>.
 
-^†^ Whether CHERI instructions are permitted or raise illegal instruction
+^4^ Whether CHERI instructions are permitted or raise illegal instruction
 exceptions.
 
-^‡^ See xref:legacy_mnemonics[xrefstyle=short] for a list of remapped
+^5^ See xref:legacy_mnemonics[xrefstyle=short] for a list of remapped
 instructions.
 
-^¶^ <<pcc>>.<<m_bit,m>> is irrelevant when <<section_cheri_disable,CRE>>=0.
+^6^ <<pcc>>.<<m_bit,m>> is irrelevant when <<section_cheri_disable,CRE>>=0.
 
-^§^ The hart is fully compatible with standard RISC-V when
+^7^ The hart is fully compatible with standard RISC-V when
 <<section_cheri_disable,CRE>>=0 provided that <<pcc>>, <<mtvecc>>, <<mepcc>>,
 <<stvecc>>, <<sepcc>>, <<vstvecc>>, <<vsepcc>> and <<ddc>>  hold the
 <<infinite-cap>> capability.
