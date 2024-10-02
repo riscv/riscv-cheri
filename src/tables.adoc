@@ -181,3 +181,43 @@ if it does not implement the {cheri_default_ext_name} extension.
 |==============================================================================
 include::generated/illegal_insns_table_body.adoc[]
 |==============================================================================
+
+<<<
+
+xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart
+supporting both {cheri_base_ext_name} and {cheri_default_ext_name} in
+connection with the <<section_cheri_disable,CRE>> and the
+<<section-cheri-execution-mode,CHERI execution mode>> while in a privilege
+other than debug mode.
+
+.Hart's behavior depending on the effective <<section_cheri_disable,CRE>> and <<section-cheri-execution-mode,CHERI execution mode>>
+[#cheri_behavior_cre_mode]
+[width=100%,options=header,align=center,cols="10,45,45"]
+|==============================================================================
+| | <<section_cheri_disable,CRE>>=0 | <<section_cheri_disable,CRE>>=1
+
+| <<pcc>>.<<m_bit,m>>={INT_MODE_VALUE}
+.2+| **_Fully compatibility with standard RISC-V:^*^_** +
+- All memory accesses authorized by <<ddc>> and <<pcc>> as if the mode is {cheri_int_mode_name} +
+- Accesses to <<zicsr-section-default,new CHERI CSRs>> raise illegal instruction exceptions +
+- Accesses to <<zicsr-section-default,extended CHERI CSRs>> read/write XLEN bits +
+- CHERI instructions raise illegal instruction exceptions +
+| **{cheri_int_mode_name}:** +
+- All memory accesses authorized by <<ddc>> and <<pcc>> +
+- Accesses to <<zicsr-section-default,new CHERI CSRs>> are permitted +
+- Accesses to <<zicsr-section-default,extended CHERI CSRs>> read/write XLEN bits +
+- CHERI instructions are permitted and only these instructions have capability operands
+
+| <<pcc>>.<<m_bit,m>>={CAP_MODE_VALUE}
+| **{cheri_cap_mode_name}:** +
+- All memory accesses authorized by each instruction's capability operands +
+- Accesses to <<zicsr-section-default,new CHERI CSRs>> are permitted +
+- Accesses to <<zicsr-section-default,extended CHERI CSRs>> read/write CLEN bits +
+- CHERI instructions are permitted +
+- Some compressed instruction encodings are remapped (see xref:legacy_mnemonics[xrefstyle=short])
+|==============================================================================
+
+^*^ The hart is fully compatible with standard RISC-V when
+<<section_cheri_disable,CRE>>=0 and <<pcc>>.<<m_bit,m>>={INT_MODE_VALUE}
+provided that <<pcc>>, <<mtvecc>>, <<mepcc>>, <<stvecc>>, <<sepcc>>,
+<<vstvecc>>, <<vsepcc>> and <<ddc>>  hold the <<infinite-cap>> capability.
