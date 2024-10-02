@@ -19,13 +19,15 @@ It also adds two new permission fields, <<el_perm>> and <<sl_perm>>.
 
 NOTE: The <<cap_encoding_xlen64,`MXLEN=64` capability encoding>> diagram shows the layout for `LVLBITS=1`
 
-- For `MXLEN=32` the capability's <<cap_encoding_xlen32,AP>> field is able to encoding these permissions without increasing in size (provided that LVLBITS&#8804;2).
+- For `MXLEN=32` the capability's <<cap_encoding_xlen32,AP>> field is able to encode these permissions without increasing in size (provided that LVLBITS&#8804;2).
 
 NOTE: {cheri_levels_ext_name} requires that LVLBITS&#8805;1 although LVLBITS>1 is considered an experimental enhancement of this extension.
 See <<section_ext_cheri_multiple_levels>> for the mechanics when LVLBITS>1.
 
 [#section_cap_level,reftext="capability level"]
 ==== Capability Level (CL)
+
+The Capability Level (CL) is a new field added to the capability encoding, as shown in xref:section_cap_encoding[xrefstyle=short].
 
 With `LVLBITS=1`, the _Capability Level_ can hold two values: when set to 1 the capability is _global_ (in general allowing it to be stored using any authorizing capability), and when set to 0 the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
 Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabilities -- causing the hardware to automatically set the level of loaded capabilities to _local_ instead.
@@ -46,7 +48,7 @@ With `LVLBITS=1` there is a single bit comparison, so it behaves as follows:
 NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9, Morello and CHERIoT.
 
 [#el_perm,reftext="EL-permission"]
-Elevate Level Permission (EL):: Any capability with tag set to 1 that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
+Elevate Level Permission (EL):: Any capability with its tag set to 1 that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
 This permission is similar to the existing <<lm_perm>>, but instead of applying to the <<w_perm>> on the loaded capability it restricts the <<section_cap_level,CL>> field.
 
 
@@ -101,6 +103,34 @@ endif::[]
 While capability levels are conceptually a label on the capability rather than a permission granted by the capability, they are adjusted using the <<ACPERM>> instruction.
 This avoids the need for a dedicated instruction and allows reducing the level and removing <<el_perm>> in a single instruction.
 
+<<<
+
+[#section_cap_level_summary]
+=== Capability level summary table
+
+.{cheri_levels_ext_name} `LVLBITS=1` summary table for stored capabilities
+[#cap_level_store_summary,width="100%",options=header,align="center",cols="1,1,1,1,5"]
+|==============================================================================
+3+|Auth cap field | Data cap field | Notes
+|*W*|*C*|*SL*|*CL*|
+|1  | 1 | 1  | X  | Store data capability unmodified
+|1  | 1 | 0  | 1  | Store data capability unmodified
+|1  | 1 | 0  | 0  | Store data capability with tag cleared
+|==============================================================================
+
+NOTE: if W=0 or C=0 then SL is irrelevant
+
+.{cheri_levels_ext_name} `LVLBITS=1` summary table for loaded capabilities
+[#cap_level_load_summary,width="100%",options=header,align="center",cols="1,1,1,1,5"]
+|==============================================================================
+4+|Auth cap field | Notes
+|*R*|*C*|*EL*|*CL*|
+|1  | 1 | 1  | X  | Load data capability unmodified
+|1  | 1 | 0  | 1  | Load data capability unmodified
+|1  | 1 | 0  | 0  | Load data capability with CL=0
+|==============================================================================
+
+NOTE: if R=0 or C=0 then EL and CL are irrelevant
 
 [#section_ext_cheri_multiple_levels]
 === Extending {cheri_levels_ext_name} to more than two levels
