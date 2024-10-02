@@ -121,13 +121,14 @@ This avoids the need for a dedicated instruction and allows reducing the level a
 NOTE: if W=0 or C=0 then SL is irrelevant
 
 .{cheri_levels_ext_name} `LVLBITS=1` summary table for loaded capabilities
-[#cap_level_load_summary,width="100%",options=header,align="center",cols="1,1,1,1,5"]
+[#cap_level_load_summary,width="100%",options=header,align="center",cols="1,1,1,1,1,5"]
 |==============================================================================
-4+|Auth cap field | Notes
-|*R*|*C*|*EL*|*CL*|
-|1  | 1 | 1  | X  | Load data capability unmodified
-|1  | 1 | 0  | 1  | Load data capability unmodified
-|1  | 1 | 0  | 0  | Load data capability with CL=0
+4+|Auth cap field | Data cap field |Notes
+|*R*|*C*|*EL*|*CL*| Tag            |
+|1  | 1 | 1  | X  | X              |Load data capability unmodified
+|1  | 1 | 0  | 1  | X              |Load data capability unmodified
+|1  | 1 | 0  | 0  | 1              |Load data capability with CL=0
+|1  | 1 | 0  | 0  | 0              |Load data capability unmodified
 |==============================================================================
 
 NOTE: if R=0 or C=0 then EL and CL are irrelevant
