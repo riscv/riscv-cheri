@@ -18,7 +18,8 @@ The fundamental rule for any CHERI system is that the tag and data are always ac
 
 . Update any data bytes without also writing the tag
 .. This implies clearing the tag if a non-CHERI aware bus master overwrites a capability in memory
-. Update the tag without also writing the data.
+. Set the tag without also writing the data.
+.. Clearing tags in memory does not require updating the data
 
 === Small CHERI system example
 
@@ -51,8 +52,14 @@ Therefore in the case of a miss a single access is split into two - one to acces
 
 The key property of the tag cache is to preserve the atomic access of data and tags in the memory system so that all CPUs have a consistent view of tags and data.
 
-The region of DRAM reserved for tag storage must be only accessible by the tag cache, or any other tag-aware bus master.
+The region of DRAM reserved for tag storage must be only accessible by the tag cache, therefore no bus initiators should be able to write to the DRAM without the transactions passing through the tag cache.
+
+NOTE: It would be possible to allow a DMA to access the tagged memory region of the DRAM directly to allow swap to/from DRAM and external devices such as flash.
+ This will require the highest level of security in the SoC, as the CHERI protection model relies on integrity of the tags, and so the root-of-trust will need to authenticate and encrypt the transfer, with anti-rollback protection.
 
 For further information on the tag cache see cite:[tagged-memory].
 
 NOTE: An alternative to having a tag cache IP is to store the tag bits in the ECC bits on the DRAM chips. In this case the tag aware bus will extend all the way to the DRAM controller.
+
+NOTE: An enhanced CHERI aware bus master may use an additional bit to state that it is accessing a page with a non-taggable PMA (see xref:section_pma[xrefstyle=short]).
+ This information can be used to optimise the memory access, for example, by bypassing the tag read in the tag cache.
