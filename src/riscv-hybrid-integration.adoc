@@ -358,9 +358,20 @@ checks.  The last capability installed in <<pcc>> and <<ddc>> before disabling
 CHERI register access will be used to authorise instruction execution and data
 memory accesses.
 
-NOTE: Disabling CHERI register access prevents low-privileged {cheri_int_mode_name} software
+[NOTE]
+====
+Disabling CHERI register access prevents low-privileged {cheri_int_mode_name} software
 from interfering with the correct operation of higher-privileged {cheri_int_mode_name} software
 that do not perform <<ddc>> switches on trap entry and return.
+
+Disable CHERI register access also allows harts supporting CHERI to be fully
+compatible with standard RISC-V, so CHERI instructions, such as <<CRAM>>, that
+do not change the state of CHERI CSRs raise exceptions when CRE=0.
+====
+
+NOTE: xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of
+a hart in connection with the <<section_cheri_disable,CRE>> and the
+<<m_bit,CHERI execution mode>>.
 
 === Added CLEN-wide CSRs
 
