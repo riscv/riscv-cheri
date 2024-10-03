@@ -109,26 +109,26 @@ This avoids the need for a dedicated instruction and allows reducing the level a
 === Capability level summary table
 
 .{cheri_levels_ext_name} `LVLBITS=1` summary table for stored capabilities
-[#cap_level_store_summary,width="100%",options=header,align="center",cols="1,1,1,1,5"]
+[#cap_level_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
 |==============================================================================
-3+|Auth cap field | Data cap field | Notes
-|*W*|*C*|*~SL*|*CL*|
-|1  | 1 | 0  | X  | Store data capability unmodified
-|1  | 1 | 1  | 1  | Store data capability unmodified (CL ≥ ~SL)
-|1  | 1 | 1  | 0  | Store data capability with tag cleared (CL < ~SL)
+   3+|Auth cap field       | Data cap field |
+    h|*W*    h|*C* h|*SL* h|*CL* h| Notes
+.3+.^|1  .3+.^| 1   | 1    | X    | Store data capability unmodified
+               .2+.^| 0    | 1    | Store data capability unmodified (CL ≥ ~SL)
+                           | 0    | Store data capability with tag cleared (CL < ~SL)
 |==============================================================================
 
 NOTE: if W=0 or C=0 then SL is irrelevant
 
 .{cheri_levels_ext_name} `LVLBITS=1` summary table for loaded capabilities
-[#cap_level_load_summary,width="100%",options=header,align="center",cols="1,1,1,1,1,5"]
+[#cap_level_load_summary,width="100%",options=header,align=center,cols="1,1,1,1,1,6"]
 |==============================================================================
-4+|Auth cap field | Data cap field |Notes
-|*R*|*C*|*EL*|*CL*| Tag            |
-|1  | 1 | 1  | X  | X              |Load data capability unmodified
-|1  | 1 | 0  | 1  | X              |Load data capability unmodified
-|1  | 1 | 0  | 0  | 1              |Load data capability with CL=0
-|1  | 1 | 0  | 0  | 0              |Load data capability unmodified
+   4+|Auth cap field             | Data cap field |
+    h|*R*   h|*C* h|*EL* h|*CL* h| Tag           h|Action
+.4+.^|1 .4+.^| 1   | 1    | X    | X              |Load data capability unmodified
+              .3+.^| 0    | 1    | X              |Load data capability unmodified
+                     .2+.^| 0    | 1              |Load data capability with CL=0,EL=0
+                                 | 0              |Load data capability unmodified
 |==============================================================================
 
 NOTE: if R=0 or C=0 then EL and CL are irrelevant
