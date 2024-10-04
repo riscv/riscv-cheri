@@ -151,11 +151,11 @@ unprivileged *x* register.
 
 ==== Mode Change Instructions
 
-A new CHERI execution mode switch (<<MODESW>>) instruction allows software
+A new CHERI execution mode switch (<<MODESW_CAP>>/<<MODESW_INT>>) instruction allows software
 to toggle the hart's current CHERI execution mode. If the current mode in the
-<<pcc>> is {cheri_int_mode_name}, then the mode after executing <<MODESW>> is {cheri_cap_mode_name}
-and vice-versa. This instruction effectively writes the CHERI execution mode
-bit M of the capability currently installed in the <<pcc>>.
+<<pcc>> is {cheri_int_mode_name}, then the mode after executing <<MODESW_CAP>> is {cheri_cap_mode_name}
+and similarly for <<MODESW_INT>> when in {cheri_cap_mode_name}. This instruction effectively writes the CHERI execution mode
+<<m_bit>> of the capability currently installed in the <<pcc>>.
 
 === Existing RISC-V Instructions
 
@@ -277,17 +277,17 @@ All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 A new debug default data capability (<<dddc>>) CSR is added at the CSR number
 shown in xref:default-csrnames-added[xrefstyle=short].
 
-{cheri_default_ext_name} optionally allows <<MODESW>> to execute in debug mode.
+{cheri_default_ext_name} optionally allows <<MODESW_CAP>>/<<MODESW_INT>> to execute in debug mode.
 
 When entering debug mode, whether the core enters {cheri_int_mode_name} or
 {cheri_cap_mode_name} is controlled by the <<m_bit>> in <<dinfc>>.
 Implementations may optionally support switching CHERI execution mode by
-executing <<MODESW>> from the program buffer.
+executing <<MODESW_CAP>>/<<MODESW_INT>> from the program buffer.
 
 The current mode can be read from <<dinfc>>.
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The mode change instruction <<MODESW>> is new
+NOTE: *CHERI v9 Note:* The mode change instructions <<MODESW_CAP>>/<<MODESW_INT>> are new
 and the requirement to optionally support it in debug mode is also new.
 endif::[]
 
