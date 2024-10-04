@@ -14,7 +14,7 @@ There are two types of bus connections used in chips which contain CHERI CPUs:
 .. Reads of tagged memory will not read the tag.
 .. Writes to tagged memory will clear the tag of any CLEN-aligned CLEN-wide memory location where any byte matches the memory write.
 
-The fundamental rule for any CHERI system is that the tag and data are always accessed atomically. For every CLEN-aligned CLEN-wide memory location in memory It must never be possible to:
+The fundamental rule for any CHERI system is that the tag and data are always accessed atomically. For every naturally aligned CLEN-wide memory location, it must never be possible to:
 
 . Update any data bytes without also writing the tag
 .. This implies clearing the tag if a non-CHERI aware bus master overwrites a capability in memory
