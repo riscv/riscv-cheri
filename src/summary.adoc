@@ -48,7 +48,7 @@ This means the following state is added:
 
 Every memory access performed by a CHERI core must be authorised by a capability.
 It is explicitly defined for every instruction where to find the capability to check against.
-In *purecap* code, the capability and address are used together, so e.g. `lw t0, 16(csp)` loads a word from memory, getting the address and bounds from the `csp` register.
+In *purecap* code, where all pointers are individual capabilities, the capability and address are used together, so e.g. `lw t0, 16(csp)` loads a word from memory, getting the address and bounds from the `csp` register.
 For code that has not yet been fully adapted to CHERI (*hybrid* code), the processor can run in a pointer mode (not to be confused with a privilege mode) where the authorising capability is instead taken from a special CSR: the *Default Data Capability* (`DDC`)
 
 Instruction fetch is also authorised by a capability: the *Program Counter Capability* (`PCC`) which extends `PC`.
