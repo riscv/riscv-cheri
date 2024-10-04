@@ -18,7 +18,7 @@ GEN_SCRIPT   = $(SCRIPTS_DIR)/generate_tables.py
 
 # Version and date
 DATE    ?= $(shell date +%Y-%m-%d)
-VERSION ?= v0.8.3
+VERSION ?= v9.0.0
 REVMARK ?= Draft
 
 # URLs for downloaded CSV files
