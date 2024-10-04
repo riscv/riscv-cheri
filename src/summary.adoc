@@ -55,7 +55,7 @@ Instruction fetch is also authorised by a capability: the program counter capabi
 This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
 Where {cheri_default_ext_name} is supported, the <<pcc>> also contains the <<m_bit,mode bit>> indicating whether the processor is running in integer or capability pointer mode.
 Changing the bounds used for instruction fetch or the pointer mode can be as easy as performing a capability-based jump (<<JALR>> in capability pointer mode).
-A <<MODESW>> instruction and compressed version is also added to allow cheap mode switching.
+<<MODESW_CAP>> and <<MODESW_INT>> instructions are also added to allow cheap mode switching.
 
 Exception codes are added for CHERI-specific exceptions on fetch, jumps, and memory access.
 No other exception paths are added: in particular, capability manipulations do not trap, but may clear the tag on the result capability if the operation is not permitted.
