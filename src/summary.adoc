@@ -54,7 +54,7 @@ For code that has not yet been fully adapted to CHERI (*hybrid* code), the proce
 Instruction fetch is also authorised by a capability: the *Program Counter Capability* (`PCC`) which extends `PC`.
 This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
 Where {cheri_default_ext_name} is supported, the `PCC` also contains the mode bit indicating whether the processor is running in integer or capability pointer mode.
-Changing the bounds used for instruction fetch or the pointer mode can be as easy as performing a capability-based jump (`cjalr`).
+Changing the bounds used for instruction fetch or the pointer mode can be as easy as performing a capability-based jump (`jalr` in capability pointer mode).
 
 Exception codes are added to `xcause` for CHERI-specific exceptions on fetch, jumps, and memory access.
 No other exception paths are added: in particular, capability manipulations do not trap, but may clear the tag on the result capability if the operation is not permitted.
