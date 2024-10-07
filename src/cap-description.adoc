@@ -169,6 +169,8 @@ Therefore, it is only possible to encode a subset of all combinations.
 ^| 64    | {cap_rv64_perms_width} | Separate bits for each architectural permission.
 |==============================================================================
 
+NOTE: if {cheri_levels_ext_name} is supported then there are {cap_rv64_perms_levels_width} architectural permission bits.
+
 For MXLEN=32, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
 The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadrant.
@@ -225,8 +227,8 @@ reserved values as if it were 0b00000 (no permissions). Future extensions may as
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
-A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64. In
-this case, there is a bit per permission as shown in
+A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64 ({cap_rv64_perms_levels_width}-bit if {cheri_levels_ext_name} is supported).
+In this case, there is a bit per permission as shown in
 xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
 corresponding bit is set, otherwise the capability does not grant that
 permission.
