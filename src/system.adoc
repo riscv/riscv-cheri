@@ -5,12 +5,12 @@ CHERI processors need memory systems which support the capability validity tags 
 
 There are, or will soon be, a wide range of CHERI systems in existence from tiny IoT devices up to server chips.
 
-There are two types of bus connections used in chips which contain CHERI CPUs:
+There are two types of bus connections used in SoCs which contain CHERI CPUs:
 
-. Tag-aware busses, where the bus protocol is extended to carry the tag along with the data.  This is typically done using a user defined bit in the protocol.
+. Tag-aware busses, where the bus protocol is extended to carry the tag along with the data.  This is typically done using user defined bits in the protocol.
 .. These busses will read tags from memory (if tags are present in the target memory) and return them to the requestor.
 .. These busses will write the tag to memory as an extension of the data write.
-. Non-tag aware busses, i.e. normal non-CHERI aware busses.
+. Non-tag aware busses, i.e. current non-CHERI aware busses.
 .. Reads of tagged memory will not read the tag.
 .. Writes to tagged memory will clear the tag of any CLEN-aligned CLEN-wide memory location where any byte matches the memory write.
 
