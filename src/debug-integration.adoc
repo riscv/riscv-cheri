@@ -185,8 +185,12 @@ If {cheri_default_ext_name} is implemented:
 ** This only needs doing once after resetting the core.
 * The <<m_bit>> is used on debug mode entry to determine which CHERI execution mode to enter.
 
-The <<m_bit>> is the only writeable field in <<dinfc>>.
-Therefore if {cheri_default_ext_name} is not implemented then it is read-write with no writeable fields.
+The <<m_bit>> is the only writeable field in <<dinfc>>:
+
+* It is only updated on a <<CSRRW>> write _if_ the capability being written has a valid <<m_bit>>.
+* If any other CSR instruction is used, or if the written <<m_bit>> is not valid then <<dinfc>> is not updated.
+
+If {cheri_default_ext_name} is not implemented then <<dinfc>> is read-write with no writeable fields.
 
 NOTE: A future version of this specification may add writeable fields to allow creation
  of other capabilities, if, for example, a future extension requires multiple formats for
