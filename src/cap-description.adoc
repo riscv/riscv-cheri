@@ -624,8 +624,9 @@ or 'root' capability.
 | SDP           | ones  | Grants all permissions
 | AP (MXLEN=32) | 0x8/0x9^1^  (see xref:cap_perms_encoding32[xrefstyle=short])
                         | Grants all permissions
-| AP (MXLEN=64) | 0x3F (see xref:cap_perms_encoding64[xrefstyle=short])
+| AP (MXLEN=64) | 0xFF (see xref:cap_perms_encoding64[xrefstyle=short])
                         | Grants all permissions
+| CL            | one^2^| _Global_
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
 | L~8~          | zero  | Top address reconstruction bit (MXLEN=32 only)
@@ -642,6 +643,8 @@ or 'root' capability.
 
 * For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the AP field, giving the value 0x9
 * For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
+
+^2^ This field only exists if {cheri_levels_ext_name} is implemented.
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
