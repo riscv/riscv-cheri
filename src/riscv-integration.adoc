@@ -786,9 +786,12 @@ xref:mtval2-format[xrefstyle=short] to assist software in handling the trap.
 If <<mtval>> is read-only zero for CHERI exceptions then <<mtval2>> is also read-only zero
 for CHERI exceptions.
 
-.Machine trap value register 2
+.Machine trap value register 2 format for CHERI faults
 [#mtval2-format]
 include::img/mtval2reg.edn[]
+
+NOTE: <<mtval2>> is also used for Hypervisor guest physical addresses, and so the implemented bits must also cover that use case.
+ If Hypervisor is not implemented then all WPRI fields in <<mtval2-format>> are read-only-zero.
 
 TYPE is a CHERI-specific fault type that caused the exception while CAUSE
 is the cause of the fault. The possible CHERI types and causes are encoded as
