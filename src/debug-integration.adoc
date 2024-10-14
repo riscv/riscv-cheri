@@ -181,7 +181,7 @@ If {cheri_default_ext_name} is implemented:
 
 * The <<m_bit>> is reset to {cheri_int_mode_name} ({INT_MODE_VALUE}).
 * The debugger can set the <<m_bit>> to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing <<MODESW_CAP>> from the program buffer.
-** Executing <<MODESW_CAP>> causes the next instruction from the program buffer to be executed in {cheri_cap_mode_name}, and also sets the CHERI execution mode to {cheri_cap_mode_name} on future entry into debug mode.
+** Executing <<MODESW_CAP>> causes subsequent instruction execution from the program buffer, starting from the next instruction, to be executed in {cheri_cap_mode_name}. It also sets the CHERI execution mode to {cheri_cap_mode_name} on future entry into debug mode.
 ** Therefore to enable use of a CHERI debugger, a single <<MODESW_CAP>> only needs to be executed once from the program buffer after resetting the core.
 ** The debugger can also execute <<MODESW_INT>> to change the mode back to {cheri_int_mode_name}, which also affects the execution of the next instruction in the program buffer, updates the <<m_bit>> of <<dinfc>> and controls which CHERI execution mode to enter on the next entry into debug mode.
 
