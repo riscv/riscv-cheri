@@ -180,13 +180,12 @@ The reset value is the <<infinite-cap>> capability.
 If {cheri_default_ext_name} is implemented:
 
 * The <<m_bit>> is reset to {cheri_int_mode_name} ({INT_MODE_VALUE}).
-* The debugger can set the <<m_bit>> to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing <<MODESW_CAP>> from the program buffer
-** if <<MODESW_CAP>> is not supported in debug mode then the same can be done by reading the CSR, using <<SCMODE>> and then writing the CSR.
-** This only needs doing once after resetting the core.
-* The <<m_bit>> is used on debug mode entry to determine which CHERI execution mode to enter.
+* The debugger can set the <<m_bit>> to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing <<MODESW_CAP>> from the program buffer.
+** Executing <<MODESW_CAP>> causes the next instruction from the program buffer to be executed in {cheri_cap_mode_name}, and also sets the CHERI execution mode to {cheri_cap_mode_name} on future entry into debug mode.
+** Therefore to enable use of a CHERI debugger, a single <<MODESW_CAP>> only needs to be executed once from the program buffer after resetting the core.
+** The debugger can also execute <<MODESW_INT>> to change the mode back to {cheri_int_mode_name}, which also affects the execution of the next instruction in the program buffer, updates the <<m_bit>> of <<dinfc>> and controls which CHERI execution mode to enter on the next entry into debug mode.
 
-The <<m_bit>> is the only writeable field in <<dinfc>>.
-Therefore if {cheri_default_ext_name} is not implemented then it is read-write with no writeable fields.
+The <<m_bit>> of <<dinfc>> is _only_ updated by executing <<MODESW_CAP>> or <<MODESW_INT>> from the program buffer.
 
 NOTE: A future version of this specification may add writeable fields to allow creation
  of other capabilities, if, for example, a future extension requires multiple formats for

@@ -278,18 +278,16 @@ All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 A new debug default data capability (<<dddc>>) CSR is added at the CSR number
 shown in xref:default-csrnames-added[xrefstyle=short].
 
-{cheri_default_ext_name} optionally allows <<MODESW_CAP>> and <<MODESW_INT>> to execute in debug mode.
+{cheri_default_ext_name} allows <<MODESW_CAP>> and <<MODESW_INT>> to execute in debug mode.
 
 When entering debug mode, whether the core enters {cheri_int_mode_name} or
 {cheri_cap_mode_name} is controlled by the <<m_bit>> in <<dinfc>>.
-Implementations may optionally support switching CHERI execution mode by
-executing <<MODESW_CAP>> or <<MODESW_INT>> from the program buffer.
 
 The current mode can be read from <<dinfc>>.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The mode change instructions <<MODESW_CAP>> and <<MODESW_INT>> are new
-and the requirement to optionally support it in debug mode is also new.
+and the requirement to support them in debug mode is also new.
 endif::[]
 
 [#dddc,reftext="dddc"]
