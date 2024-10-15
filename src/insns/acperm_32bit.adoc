@@ -50,6 +50,10 @@ The common rules are:
 .. Clear <<m_bit>> unless <<x_perm>> is set
 . <<lm_perm>> cannot be set without <<c_perm>> being set
 .. Clear <<lm_perm>> unless <<c_perm>> is set.
+. <<sl_perm>> cannot be set without <<c_perm>> being set
+.. Zero <<sl_perm>> unless <<c_perm>> is set.
+. <<el_perm>> cannot be set without <<c_perm>> being set
+.. Zero <<sl_perm>> unless <<c_perm>> is set.
 
 NOTE: The combination of <<x_perm>> clear and <<m_bit>> set is reserved for future extensions.
 
@@ -63,6 +67,10 @@ The MXLEN=32 additional rules are:
 .Capability permissions bit field
 [#acperm_bit_field]
 include::../img/acperm_bit_field.edn[]
+
+NOTE: The <<el_perm,EL>>, <<sl_perm,SL>> and <<section_cap_level,CL>> fields are only defined if the implementation supports <<section_ext_cheri_levels,{cheri_levels_ext_name}>>.
+
+NOTE: Even though being included here <<section_cap_level,CL>> is not considered an architectural permission.
 
 Exceptions::
 include::require_cre.adoc[]

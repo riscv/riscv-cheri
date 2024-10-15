@@ -19,9 +19,7 @@ include::wavedrom/hypv-virt-store-cap.adoc[]
 Store a CLEN+1 bit value in `cs2` to memory as though V=1; i.e., with the
 address translation and protection, and endianness, that apply to memory
 accesses in either VS-mode or VU-mode. The effective address is the address of
-`cs1`. The authorising capability for the operation is `cs1`. The capability
-written to memory has the tag set to 0 if the tag of `cs2` is 0 or `cs1` does
-not grant <<c_perm>>.
+`cs1`. The authorising capability for the operation is `cs1`.
 +
 include::load_store_c0.adoc[]
 
@@ -29,9 +27,9 @@ include::load_store_c0.adoc[]
 Store a CLEN+1 bit value in `cs2` to memory as though V=1; i.e., with the
 address translation and protection, and endianness, that apply to memory
 accesses in either VS-mode or VU-mode. The effective address is the `rs1`. The
-authorising capability for the operation is <<ddc>>. The capability written to
-memory has the tag set to 0 if the tag of `cs2` is 0 or <<ddc>> does not grant
-<<c_perm>>.
+authorising capability for the operation is <<ddc>>.
+
+include::store_tag_perms.adoc[]
 
 include::malformed_no_check.adoc[]
 

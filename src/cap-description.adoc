@@ -60,6 +60,8 @@ Reserved bits are available for future extensions to {cheri_base_ext_name}.
 
 NOTE: Reserved bits must be 0 in tagged capabilities.
 
+NOTE: The CL field is only present if {cheri_levels_ext_name} is implemented, otherwise it is reserved.
+
 === Components of a Capability
 
 Capabilities contain the software accessible fields described in this section.
@@ -102,6 +104,7 @@ The byte-address of a memory location is encoded as MXLEN integer value.
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9 Note:* The permissions are encoded differently in this
 specification.
+Additionally, this specification incorporates permissions that were present in Morello and/or CHERIoT but not CHERI v9.
 endif::[]
 
 This field encodes architecturally defined permissions of the capability.
@@ -166,6 +169,8 @@ Therefore, it is only possible to encode a subset of all combinations.
 ^| 64    | {cap_rv64_perms_width} | Separate bits for each architectural permission.
 |==============================================================================
 
+NOTE: if {cheri_levels_ext_name} is supported then there are {cap_rv64_perms_levels_width} architectural permission bits.
+
 For MXLEN=32, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
 The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadrant.
@@ -222,8 +227,8 @@ reserved values as if it were 0b00000 (no permissions). Future extensions may as
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
-A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64. In
-this case, there is a bit per permission as shown in
+A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64 ({cap_rv64_perms_levels_width}-bit if {cheri_levels_ext_name} is supported).
+In this case, there is a bit per permission as shown in
 xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
 corresponding bit is set, otherwise the capability does not grant that
 permission.
@@ -240,8 +245,10 @@ permission.
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
 | 5   | <<lm_perm>>
-//| 6   | <<m_bit>>
+| 6   | <<el_perm>>^1^
+| 7   | <<sl_perm>>^1^
 |==============================================================================
+^1^ This permission is only supported if the implementation supports <<section_ext_cheri_levels,{cheri_levels_ext_name}>>.
 
 The <<m_bit>> is only assigned meaning when the
 implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
@@ -617,8 +624,9 @@ or 'root' capability.
 | SDP           | ones  | Grants all permissions
 | AP (MXLEN=32) | 0x8/0x9^1^  (see xref:cap_perms_encoding32[xrefstyle=short])
                         | Grants all permissions
-| AP (MXLEN=64) | 0x3F (see xref:cap_perms_encoding64[xrefstyle=short])
+| AP (MXLEN=64) | 0xFF (see xref:cap_perms_encoding64[xrefstyle=short])
                         | Grants all permissions
+| CL            | one^2^| _Global_
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
 | L~8~          | zero  | Top address reconstruction bit (MXLEN=32 only)
@@ -635,6 +643,8 @@ or 'root' capability.
 
 * For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the AP field, giving the value 0x9
 * For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
+
+^2^ This field only exists if {cheri_levels_ext_name} is implemented.
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
