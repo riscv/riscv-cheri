@@ -81,20 +81,20 @@ This specification is based on publicly available documentation including
 cite:[cheri-v9-spec] and cite:[woodruff2019cheri]. It defines the following
 extensions to support CHERI alongside RISC-V:
 
-{cheri_base_ext_name}:: Introduces key, minimal CHERI concepts and features to
+<<cheri_base_ext,{cheri_base_ext_name}>>:: Introduces key, minimal CHERI concepts and features to
 the RISC-V ISA. The resulting extended ISA is not
 backwards-compatible with RISC-V.
-{cheri_default_ext_name}:: Extends {cheri_base_ext_name} with features to ensure
+<<cheri_default_ext,{cheri_default_ext_name}>>:: Extends {cheri_base_ext_name} with features to ensure
 that the ISA extended with CHERI allows backwards binary compatibility with
 RISC-V.
-{sh4add_ext_name}::   Addition of <<SH4ADD>> and <<SH4ADD_UW>> for RV64 only, as CHERI capabilities are 16 bytes when XLEN=64
-{lr_sc_bh_ext_name}:: Addition of <<LR_B>>, <<LR_H>>, <<SC_B>>, <<SC_H>> for more accurate atomic locking as the memory ranges are restricted by using bounds, therefore precise locking is needed.
-{cheri_pte_ext_name}:: CHERI extension for RISC-V harts supporting page-based
+<<sh4add_ext,{sh4add_ext_name}>>::   Addition of <<SH4ADD>> and <<SH4ADD_UW>> for RV64 only, as CHERI capabilities are 16 bytes when XLEN=64
+<<lr_sc_bh_ext,{lr_sc_bh_ext_name}>>:: Addition of <<LR_B>>, <<LR_H>>, <<SC_B>>, <<SC_H>> for more accurate atomic locking as the memory ranges are restricted by using bounds, therefore precise locking is needed.
+<<cheri_pte_ext,{cheri_pte_ext_name}>>:: CHERI extension for RISC-V harts supporting page-based
 virtual-memory.
-{cheri_levels_ext_name}:: Extension for supporting capability flow control.
-This extension allows limiting storing of capabilities to specific regions and can be used e.g. for safer data sharing between compartments.
-{tid_ext_name}:: Extension for supporting thread identifiers. This extension
+<<tid_ext,{tid_ext_name}>>:: Extension for supporting thread identifiers. This extension
 improves software compartmentalization on CHERI systems.
+<<cheri_levels_ext,{cheri_levels_ext_name}>>:: Extension for supporting capability flow control.
+This extension allows limiting storing of capabilities to specific regions and can be used e.g. for safer data sharing between compartments.
 
 CAUTION: The extension names are provisional and subject to change.
 
@@ -103,13 +103,13 @@ CAUTION: The extension names are provisional and subject to change.
 [options=header,align=center,width="90%",cols="25,23,52"]
 |==============================================================================
 | Extension               | Status    | Comment
-|{cheri_base_ext_name}    | Stable    | This extension is a candidate for freezing
-|{cheri_default_ext_name} | Stable    | This extension is a candidate for freezing
-|{sh4add_ext_name}        | Stable    | This extension is a candidate for freezing
-|{lr_sc_bh_ext_name}      | Stable    | This extension is a candidate for freezing
-|{cheri_pte_ext_name}     | Prototype | This extension is a prototype, software is being developed to use it to increase the maturity level
-|{tid_ext_name}           | Prototype | This extension is a prototype, software is being developed to use it to increase the maturity level
-|{cheri_levels_ext_name}  | Prototype | This extension is a prototype, software is being developed to use it to increase the maturity level
+|<<cheri_base_ext,   {cheri_base_ext_name}>>    | Stable    | This extension is a candidate for freezing
+|<<cheri_default_ext,{cheri_default_ext_name}>> | Stable    | This extension is a candidate for freezing
+|<<sh4add_ext,       {sh4add_ext_name}>>        | Stable    | This extension is a candidate for freezing
+|<<lr_sc_bh_ext,     {lr_sc_bh_ext_name}>>      | Stable    | This extension is a candidate for freezing
+|<<cheri_pte_ext,    {cheri_pte_ext_name}>>     | Prototype | This extension is a prototype, software is being developed to use it to increase the maturity level
+|<<tid_ext,          {tid_ext_name}>>           | Prototype | This extension is a prototype, software is being developed to use it to increase the maturity level
+|<<cheri_levels_ext, {cheri_levels_ext_name}>>  | Prototype | This extension is a prototype, software is being developed to use it to increase the maturity level
 |==============================================================================
 
 {cheri_base_ext_name} is defined as the base extension which all CHERI RISC-V
