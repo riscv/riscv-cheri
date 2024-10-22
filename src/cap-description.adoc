@@ -589,21 +589,24 @@ expanded base is 0 and top is 2^MXLEN^.
 .Field values of the NULL capability
 [#null-cap,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
 |==============================================================================
-| Field    | Value | Comment
-| Tag      | zero  | Capability is not valid
-| SDP      | zeros | Grants no permissions
-| AP       | zeros | Grants no permissions
-| M        | zero  | No meaning since non-executable (MXLEN=64 only)
-| CT       | zero  | Unsealed
-| EF       | zero  | Internal exponent format
-| L~8~     | zero  | Top address reconstruction bit (MXLEN=32 only)
-| T        | zeros | Top address bits
-| T~E~     | zeros | Exponent bits
-| B        | zeros | Base address bits
-| B~E~     | zeros | Exponent bits
-| Address  | zeros | Capability address
-| Reserved | zeros | All reserved fields
+| Field    | Value  | Comment
+| Tag      | zero   | Capability is not valid
+| SDP      | zeros  | Grants no permissions
+| AP       | zeros  | Grants no permissions
+| M        | zero   | No meaning since non-executable (MXLEN=64 only)
+| CL       | zero^1^| _Local_
+| CT       | zero   | Unsealed
+| EF       | zero   | Internal exponent format
+| L~8~     | zero   | Top address reconstruction bit (MXLEN=32 only)
+| T        | zeros  | Top address bits
+| T~E~     | zeros  | Exponent bits
+| B        | zeros  | Base address bits
+| B~E~     | zeros  | Exponent bits
+| Address  | zeros  | Capability address
+| Reserved | zeros  | All reserved fields
 |==============================================================================
+
+^1^ This field only exists if {cheri_levels_ext_name} is implemented.
 
 [#section_infinite_cap]
 ==== Infinite Capability
