@@ -8,7 +8,7 @@ If <<c_perm>> is not granted then store the memory tag as zero, and load `cd.tag
 +
 If the authorizing capability does not grant <<lm_perm>>, and the tag of `cd` is 1 and `cd` is not sealed, then an implicit <<ACPERM>> clearing <<w_perm>> and <<lm_perm>> is performed to obtain the intermediate permissions on `cd` (see <<LC>>).
 +
-If the authorizing capability does not grant <<el_perm>>, and the tag of `cd` is 1, then an implicit <<ACPERM>> clearing <<el_perm>> and restricting <<section_cap_level>> to the level of the authorizing capability is performed to obtain the final permissions on `cd` (see <<LC>>).
+If the authorizing capability does not grant <<el_perm>>, the authorizing <<section_cap_level>> is _local_ and the tag of `cd` is 1, then an implicit <<ACPERM>> clearing <<el_perm>> and restricting the <<section_cap_level>> to the level of the authorizing capability is performed to obtain the final permissions on `cd` (see <<LC>>).
 +
 endif::[]
 ifndef::cap_atomic[]
