@@ -45,11 +45,11 @@ The rules from <<acperm_rules>> must be followed When removing permissions.
 | Rule | Permission   | Only valid if
 |  1   | <<c_perm>>   | <<r_perm>> or <<w_perm>>
 3+| See <<acperm_rules_rv32>> for rules 2-5 (RV32 only)
-|  6   | <<sl_perm>>  | <<w_perm>> and <<c_perm>>
-|  7   | <<el_perm>>  | <<c_perm>> and <<r_perm>>
-|  8   | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
-|  9   | <<asr_perm>> | <<x_perm>>
-| 10   | <<m_bit>>    | <<x_perm>>
+|  7   | <<sl_perm>>  | <<w_perm>> and <<c_perm>>
+|  8   | <<el_perm>>  | <<c_perm>> and <<r_perm>>
+|  9   | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
+| 10   | <<asr_perm>> | <<x_perm>>
+| 11   | <<m_bit>>    | <<x_perm>>
 3+| See <<acperm_rules_rv32>> for rule 12 (RV32 only)
 |===
 
@@ -70,8 +70,9 @@ These rules are specifically to meet the encoding requirements for <<cap_perms_e
 |  2   | <<c_perm>>   | <<r_perm>>
 |  3   | <<x_perm>>   | <<r_perm>>
 |  4   | <<w_perm>>   | not(<<c_perm>>) or (<<c_perm>> and not(<<lm_perm>>))
-|  5   | <<x_perm>>   | <<w_perm>> or (<<c_perm>> and <<lm_perm>> and <<el_perm>>)
-| 11   | <<asr_perm>> | All other permissions are set.
+|  5   | <<x_perm>>   | <<w_perm>> or <<c_perm>>
+|  6   | <<x_perm>>   | <<c_perm>> == <<lm_perm>> == <<el_perm>>
+| 12   | <<asr_perm>> | All other permissions are set.
 |===
 
 In all cases invalid permissions from <<acperm_rules_rv32>> are cleared.
