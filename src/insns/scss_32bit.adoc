@@ -14,7 +14,7 @@ endif::[]
 include::new_encoding_note.adoc[]
 
 Synopsis::
-Capability test subset
+Set Capability Subset
 
 Mnemonic::
 `scss rd, cs1, cs2`
@@ -23,12 +23,16 @@ Encoding::
 include::wavedrom/scss.adoc[]
 
 Description::
-`rd` is set to 1 if the tag of capabilities `cs1` and `cs2` are equal and the
-bounds and permissions of `cs2` are a subset of those of `cs1`. Output 0 to
-`rd` if either `cs1` or `cs2`:
-. Have bounds which are <<section_cap_malformed,malformed>>, or
-. Have any bits set in reserved fields, or
-. Have permissions that could not have been legally produced by <<ACPERM>>
+`rd` is set to 1 if:
+. the tag of capabilities `cs1` and `cs2` are equal, and
+. the bounds and permissions of `cs2` are a subset of those of `cs1`, and
+. `cs2` 's <<section_cap_level>> is equal to or lower than `cs1` 's
+.. _This is only relevant if {cheri_levels_ext_name} is implemented._
+. neither `cs1` or `cs2` have bounds which are <<section_cap_malformed,malformed>>, and
+. neither `cs1` or `cs2` have any bits set in reserved fields, and
+. neither `cs1` or `cs2` have permissions that could not have been legally produced by <<ACPERM>>
+
+Otherwise set `rd` to 0.
 
 NOTE: The implementation of this instruction is similar to <<CBLD>>, although
 <<SCSS>> does not include the sealed bit in the check.
