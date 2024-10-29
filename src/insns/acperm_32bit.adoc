@@ -30,7 +30,7 @@ format shown in xref:acperm_bit_field[xrefstyle=short].
 . Calculate the bitwise AND of the bit field with the mask `rs2`.
 . If the AP and <<m_bit>> field in `cs1` could not have been produced by <<ACPERM>> then
 clear all AP permissions, and the <<m_bit>> to {CAP_MODE_VALUE}. Skip the next step.
-.. If {cheri_levels_ext_name} is implemented then also set <<sl_perm>> to 0 (_local_).
+.. If <<cheri_levels_ext,{cheri_levels_ext_name}>> is implemented then also set <<sl_perm>> to 0 (_local_).
 . Clear AP permissions as required to meet the rules below.
 . Encode the AP permissions for RV32 according to <<cap_perms_encoding32>>.
 . Copy `cs1` to `cd`, and update the AP and SDP fields with the newly calculated versions.
@@ -42,14 +42,14 @@ The rules from <<acperm_rules>> must be followed When removing permissions.
 .ACPERM common rules
 [%autowidth,float="center",align="center",cols="2,3,3",options="header"]
 |===
-| Rule | Permission   | Only valid if             
-|  1   | <<c_perm>>   | <<r_perm>> or <<w_perm>>  
+| Rule | Permission   | Only valid if
+|  1   | <<c_perm>>   | <<r_perm>> or <<w_perm>>
 3+| See <<acperm_rules_rv32>> for rules 2-5 (RV32 only)
-|  6   | <<sl_perm>>  | <<w_perm>> and <<c_perm>> 
-|  7   | <<el_perm>>  | <<c_perm>> and <<r_perm>> 
-|  8   | <<lm_perm>>  | <<c_perm>> and <<r_perm>> 
-|  9   | <<asr_perm>> | <<x_perm>>                
-| 10   | <<m_bit>>    | <<x_perm>>                
+|  6   | <<sl_perm>>  | <<w_perm>> and <<c_perm>>
+|  7   | <<el_perm>>  | <<c_perm>> and <<r_perm>>
+|  8   | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
+|  9   | <<asr_perm>> | <<x_perm>>
+| 10   | <<m_bit>>    | <<x_perm>>
 3+| See <<acperm_rules_rv32>> for rule 12 (RV32 only)
 |===
 
