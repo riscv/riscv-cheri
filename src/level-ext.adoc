@@ -122,19 +122,15 @@ NOTE: A capability with <<section_cap_level,CL>>=1 is _global_ and with <<sectio
 
 NOTE: if W=0 or C=0 then SL is irrelevant
 
-.{cheri_levels_ext_name} `LVLBITS=1` summary table for loaded capabilities
-[#cap_level_load_summary,width="100%",options=header,align=center,cols="1,1,1,1,1,6"]
+.{cheri_levels_ext_name} additional rules for loading capabilities
+[#cap_level_load_summary,width="100%",options=header,align=center,cols="1,1,1,1,1,1,6"]
 |==============================================================================
-   4+|Auth cap field             | Data cap field |
-    h|*R*   h|*C* h|*EL* h|*CL* h| Tag           h|Action
-.5+.^|1 .5+.^| 1   | 1    | X    | X              |Load data capability unmodified
-              .4+.^| 0    | 1    | 1              |Load data capability with EL=0
-                          | 1    | 0              |Load data capability unmodified
-                     .2+.^| 0    | 1              |Load data capability with CL=0,EL=0
-                                 | 0              |Load data capability unmodified
+   4+|Auth cap field                  2+| Data cap field |
+    h|*R*   h|*C* h|*EL*      h|*CL*   h| Tag h| Sealed h|Action
+.2+.^|1 .2+.^| 1 .2+.^| 0 .2+.^| X .2+.^| 1    | Yes     |Load data capability with `CL=min(auth.CL, data.CL)`, EL unchanged
+                                               | No      |Load data capability with `EL=0, CL=min(auth.CL, data.CL)`
+   6+| All other cases                                   |Load data capability with EL, CL unmodified
 |==============================================================================
-
-NOTE: if R=0 or C=0 then EL and CL are irrelevant
 
 [#section_ext_cheri_multiple_levels]
 === Extending {cheri_levels_ext_name} to more than two levels
