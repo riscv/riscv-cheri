@@ -43,7 +43,7 @@ The rules from <<acperm_rules>> must be followed when removing permissions.
 
 [#acperm_rules]
 .ACPERM common rules
-[float="center",align="center",cols="2,2,3",options="header"]
+[float="center",align="center",cols="2,2,4",options="header"]
 |===
 | Rule            | Permission   | Only valid if
 |  1  (RV32 only) | <<asr_perm>> | All other permissions are set.
@@ -54,11 +54,14 @@ The rules from <<acperm_rules>> must be followed when removing permissions.
 |  6  (RV32 only) | <<x_perm>>   | <<w_perm>> or <<c_perm>>
 |  7              | <<el_perm>>  | <<c_perm>> and <<r_perm>>
 |  8              | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
-|  9  (RV32 only) | <<x_perm>>   | (<<c_perm>> == <<lm_perm>> == <<el_perm>>) and (<<sl_perm>> == ∞)
-| 10              | <<sl_perm>>  | <<c_perm>>
+|  9              | <<sl_perm>>  | <<c_perm>>
+| 10  (RV32 only) | <<x_perm>>   | (<<c_perm>> and <<lm_perm>> and <<el_perm>> and (<<sl_perm>> == ∞)) or +
+                                   (not(<<c_perm>> and not(<<lm_perm>>) and not(<<el_perm>>) and (<<sl_perm>>==0)))^1^
 | 11              | <<asr_perm>> | <<x_perm>>
 | 12              | <<m_bit>>    | <<x_perm>>
 |===
+
+^1^ All the listed permissions in the set are either minimum or maximum.
 
 The behaviour of currently illegal combinations from <<acperm_rules>> is to clear the permission if invalid (or in the case of <<sl_perm>> set it to 0 (_local_)).
 

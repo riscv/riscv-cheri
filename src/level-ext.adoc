@@ -76,7 +76,7 @@ endif::[]
 | 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
 | 2-3   | ✔ |   | ✔ | ✔  | ✔  | ∞^1^| ✔ |     | Mode^1^  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |     | Mode^1^  | Execute + Data & Cap RW
-| 6-7   | ✔ | ✔ |   |    |    | ∞^1^| ✔ |     | Mode^1^  | Execute + Data RW
+| 6-7   | ✔ | ✔ |   |    |    | 0^1^| ✔ |     | Mode^1^  | Execute + Data RW
 11+| *Quadrant 2: Restricted capability data read/write*
 11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted, LM dependent on W permission.
 |Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
@@ -98,7 +98,7 @@ endif::[]
 | 7       | ✔ | ✔ | ✔ | ✔  | ✔  | 0     |   |     | N/A | Data & Cap RW (no store _local_)
 |==============================================================================
 
-^1^ SL isn't applicable in these cases, but reports this value in <<GCPERM>> to simplify the rules followed by <<ACPERM>>
+^1^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>>
 
 [#section_cap_level_change]
 === Changing capability levels and permissions
