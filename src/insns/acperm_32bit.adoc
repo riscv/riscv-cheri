@@ -34,7 +34,11 @@ clear all AP permissions, and the <<m_bit>> to {CAP_MODE_VALUE}. Skip the next s
 . Encode the AP permissions for RV32 according to <<cap_perms_encoding32>>.
 . Copy `cs1` to `cd`, and update the AP and SDP fields with the newly calculated versions.
 . Set `cd.tag=0` if `cs1` is sealed or if any reserved fields of `cs1` are set.
-
++
+Some combinations of permissions cannot be encoded for MXLEN=32, and are not useful when MXLEN=64.
+These cases are defined to return useful minimal sets of permissions, which may be no permissions.
++
+NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
 The rules from <<acperm_rules>> must be followed when removing permissions.
 
 [#acperm_rules]
