@@ -52,9 +52,9 @@ The rules from <<acperm_rules>> must be followed when removing permissions.
 |  4  (RV32 only) | <<x_perm>>   | <<r_perm>>
 |  5  (RV32 only) | <<w_perm>>   | not(<<c_perm>>) or <<lm_perm>>
 |  6  (RV32 only) | <<x_perm>>   | <<w_perm>> or <<c_perm>>
-|  7              | <<el_perm>>  | <<c_perm>> and <<r_perm>>
-|  8              | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
-|  9              | <<sl_perm>>  | <<c_perm>>
+|  7              | <<el_perm>>  | <<c_perm>> and <<r_perm>> and <<lm_perm>>
+|  8              | <<lm_perm>>  | <<c_perm>> and <<r_perm>> and (<<w_perm>> or <<el_perm>>)
+|  9              | <<sl_perm>>  | (<<c_perm>> and <<lm_perm>> and (<<x_perm>> or <<w_perm>>)
 | 10  (RV32 only) | <<x_perm>>   | (<<c_perm>> and <<lm_perm>> and <<el_perm>> and (<<sl_perm>> == ∞)) or +
                                    (not(<<c_perm>> and not(<<lm_perm>>) and not(<<el_perm>>) and (<<sl_perm>>==0)))^1^
 | 11              | <<asr_perm>> | <<x_perm>>
