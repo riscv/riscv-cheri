@@ -82,8 +82,8 @@ endif::[]
 |Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
 | 3       | ✔ |   | ✔ |    |    | 0^1^  |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
-| 4       | ✔ | ✔ | ✔ | ✔  |    | _(3)_ |   |     | N/A | Reserved for `LVLBITS=2`
-| 5       | ✔ | ✔ | ✔ | ✔  |    | _(2)_ |   |     | N/A | Reserved for `LVLBITS=2`
+| 4       | ✔ | ✔ | ✔ | ✔  |    | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^2^
+| 5       | ✔ | ✔ | ✔ | ✔  |    | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^2^
 | 6       | ✔ | ✔ | ✔ | ✔  |    | 1     |   |     | N/A | Data & Cap RW (with store _local_, no <<el_perm>>)
 | 7       | ✔ | ✔ | ✔ | ✔  |    | 0     |   |     | N/A | Data & Cap RW (no store _local_, no <<el_perm>>)
 11+| *Quadrant 3: Capability data read/write*
@@ -92,13 +92,14 @@ endif::[]
 |Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
 | 3       | ✔ |   | ✔ | ✔  | ✔  | 0^1^  |   |     | N/A | Data & Cap R0
-| 4       | ✔ | ✔ | ✔ | ✔  | ✔  | _(3)_ |   |     | N/A | Reserved for `LVLBITS=2`
-| 5       | ✔ | ✔ | ✔ | ✔  | ✔  | _(2)_ |   |     | N/A | Reserved for `LVLBITS=2`
+| 4       | ✔ | ✔ | ✔ | ✔  | ✔  | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^2^
+| 5       | ✔ | ✔ | ✔ | ✔  | ✔  | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^2^
 | 6       | ✔ | ✔ | ✔ | ✔  | ✔  | 1     |   |     | N/A | Data & Cap RW (with store _local_)
 | 7       | ✔ | ✔ | ✔ | ✔  | ✔  | 0     |   |     | N/A | Data & Cap RW (no store _local_)
 |==============================================================================
 
-^1^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>>
+^1^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>> +
+^2^ These entries are reserved when `LVLBITS=1` and in use when `LVLBITS=2`
 
 [#section_cap_level_change]
 === Changing capability levels and permissions
