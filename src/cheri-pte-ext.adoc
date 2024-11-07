@@ -10,6 +10,8 @@ capabilities in memory at the page granularity. For this reason, the
 {cheri_pte_ext_name} extension adds new bits to RISC-V's Page Table Entry (PTE)
 format.
 
+{cheri_pte_ext_name} requires at least one virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) to be implemented.
+
 === Limiting Capability Propagation
 
 Page table enforcement can allow the operating system to limit the flow
@@ -160,6 +162,7 @@ bit value of the capability read. This will introduce additional traps during re
 The <<mstatusreg_pte,mstatus>>, <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) bit as shown.
 
 <<mstatusreg_pte,mstatus>>.CRG is made visible in <<sstatusreg_pte,sstatus>>.CRG.
+It is an SRW field, and so can be read and written from either Machine or Supervisor mode.
 
 When V=1 <<vsstatusreg_pte,vsstatus>>.CRG is in effect.
 
