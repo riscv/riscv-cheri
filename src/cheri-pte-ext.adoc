@@ -10,6 +10,8 @@ capabilities in memory at the page granularity. For this reason, the
 {cheri_pte_ext_name} extension adds new bits to RISC-V's Page Table Entry (PTE)
 format.
 
+{cheri_pte_ext_name} requires at least one virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) to be implemented.
+
 === Limiting Capability Propagation
 
 Page table enforcement can allow the operating system to limit the flow
@@ -155,55 +157,11 @@ bit value of the capability read. This will introduce additional traps during re
  a hardware updating mechanism.
 
 [#xstatus_pte]
-=== Extending the Machine (mstatus), Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
+=== Extending the Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
 
-The <<mstatusreg_pte,mstatus>>, <<sstatusreg_pte,status>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) bit as shown.
+The <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) bit as shown.
 
-mstatus.CRG is made visible in sstatus.CRG.
-
-When V=1 vsstatus.CRG is in effect.
-
-[#mstatusreg_pte]
-.Machine-mode status (*mstatus*) register when MXLEN=64
-[wavedrom, ,svg]
-....
-{reg: [
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SIE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MIE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SPIE'},
-  {bits:  1, name: 'UBE'},
-  {bits:  1, name: 'MPIE'},
-  {bits:  1, name: 'SPP'},
-  {bits:  2, name: 'VS[1:0]'},
-  {bits:  2, name: 'MPP[1:0]'},
-  {bits:  2, name: 'FS[1:0]'},
-  {bits:  2, name: 'XS[1:0]'},
-  {bits:  1, name: 'MPRV'},
-  {bits:  1, name: 'SUM'},
-  {bits:  1, name: 'MXR'},
-  {bits:  1, name: 'TVM'},
-  {bits:  1, name: 'TW'},
-  {bits:  1, name: 'TSR'},
-  {bits:  1, name: 'SPELP'},
-  {bits:  1, name: 'SDT'},
-  {bits:  7, name: 'WPRI'},
-  {bits:  2, name: 'UXL[1:0]'},
-  {bits:  2, name: 'SXL[1:0]'},
-  {bits:  1, name: 'SBE'},
-  {bits:  1, name: 'MBE'},
-  {bits:  1, name: 'GVA'},
-  {bits:  1, name: 'MPV'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MPELP'},
-  {bits:  1, name: 'MDT'},
-  {bits: 19, name: 'WPRI'},
-  {bits:  1, name: 'CRG'},
-  {bits:  1, name: 'SD'},
-], config:{lanes: 4, hspace:1024}}
-....
+When V=1 <<vsstatusreg_pte,vsstatus>>.CRG is in effect.
 
 [#sstatusreg_pte]
 .Supervisor-mode status (*sstatus*) register when SXLEN=64
