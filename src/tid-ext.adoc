@@ -74,9 +74,15 @@ include::img/stidreg.edn[]
 [#vstid,reftext="vstid"]
 ==== Virtual Supervisor Thread Identifier (vstid)
 
-The <<vstid>> register is a VSLEN-bit read-write register. It is used to
-identify the current thread in virtual supervisor mode. The reset value of this
-register is UNSPECIFIED.
+The <<vstid>> register is a VSLEN-bit read-write register. It is VS-mode's
+version of supervisor register <<stid>> used to identify the current
+thread in virtual supervisor mode. As other Virtual Supervisor registers
+when V=1, <<vstid>> substitutes for the usual <<stid>>, so that
+instructions that normally read or modify <<stid>> actually access
+<<vstid>> instead. When V=0, <<vstid>> does not directly affect the
+behaviour of the machine.
+
+The reset value of this register is UNSPECIFIED.
 
 .Virtual supervisor thread identifier register
 include::img/vstidreg.edn[]
@@ -122,8 +128,13 @@ include::img/stidcreg.edn[]
 ==== Virtual Supervisor Thread Identifier Capability (vstidc)
 
 The <<vstidc>> register is a CLEN-bit read-write capability register.
-It is the capability extension of the <<vstid>> register.
-It is used to identify the current thread in virtual supervisor mode.
+It is the capability extension of the <<stidc>> register used to
+identify the current thread in virtual supervisor mode.
+As other Virtual Supervisor registers when V=1, <<vstidc>> substitutes
+for the usual <<stidc>>, so that instructions that normally read or modify
+<<stidc>> actually access <<vstidc>> instead.
+When V=0, <<vstidc>> does not directly affect the
+behaviour of the machine.
 On reset the tag of <<vstidc>> will be set to 0 and the remainder
 of the data is UNSPECIFIED.
 
