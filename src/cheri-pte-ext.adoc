@@ -10,7 +10,9 @@ capabilities in memory at the page granularity. For this reason, the
 {cheri_pte_ext_name} extension adds new bits to RISC-V's Page Table Entry (PTE)
 format.
 
-Implementing any virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) requires {cheri_pte_ext_name} to be implemented.
+Implementing any virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) and {cheri_base_ext_name} requires {cheri_pte_ext_name} to be implemented.
+
+NOTE: There is no explicit mechanism for enabling or disabling {cheri_pte_ext_name}. A VM-enabled legacy (non-CHERI) OS running in {cheri_int_mode_name} will not load or store capabilities, and so the default state of CW=0 causing loaded capabilities to have their tags cleared, and stored capabilities with their tags set to cause a page fault, won't occur. A CHERI-aware OS running a VM-enabled OS is required to support {cheri_pte_ext_name}, and the minimum level of support is to set CW to 1 in all PTEs and leave <<sstatusreg_pte,sstatus>>.CRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
 
 === Limiting Capability Propagation
 
