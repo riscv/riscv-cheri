@@ -1,6 +1,6 @@
 [#section_sv_cheri]
 [#cheri_pte_ext]
-== "{cheri_pte_ext_name}" Extension for CHERI Page-Based Virtual-Memory Systems
+== "{cheri_pte_ext_name}" Extension for CHERI Page-Based Virtual-Memory Systems (RV64 only)
 
 CHERI is a security mechanism that is generally orthogonal to page-based
 virtual-memory management as defined in cite:[riscv-priv-spec].
@@ -10,9 +10,15 @@ capabilities in memory at the page granularity. For this reason, the
 {cheri_pte_ext_name} extension adds new bits to RISC-V's Page Table Entry (PTE)
 format.
 
-Implementing any virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) and {cheri_base_ext_name} requires {cheri_pte_ext_name} to be implemented.
+NOTE: There is no explicit mechanism for enabling or disabling {cheri_pte_ext_name}. A VM-enabled legacy (non-CHERI) OS running in {cheri_int_mode_name} will not load or store capabilities, and so the default state of CW=0 causing loaded capabilities to have their tags cleared, and stored capabilities with their tags set to cause a page fault, won't occur.
 
-NOTE: There is no explicit mechanism for enabling or disabling {cheri_pte_ext_name}. A VM-enabled legacy (non-CHERI) OS running in {cheri_int_mode_name} will not load or store capabilities, and so the default state of CW=0 causing loaded capabilities to have their tags cleared, and stored capabilities with their tags set to cause a page fault, won't occur. A CHERI-aware OS running a VM-enabled OS is required to support {cheri_pte_ext_name}, and the minimum level of support is to set CW to 1 in all PTEs and leave <<sstatusreg_pte,sstatus>>.CRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
+A CHERI-aware OS running a VM-enabled OS is strongly recommended to support {cheri_pte_ext_name}, and the minimum level of support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.CRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
+
+Therefore when implementing any RV64 virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) and {cheri_base_ext_name}, implementing {cheri_pte_ext_name} is strongly recommended.
+
+NOTE: It is possible to detect the presence of {cheri_pte_ext_name} in software, by configuring a page table entry without programming CW and without setting <<sstatusreg_pte,sstatus>>.CRG, and testing for an exception on storing a tagged capability.
+
+NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so this extension cannot be implemented.
 
 === Limiting Capability Propagation
 
@@ -94,7 +100,7 @@ If the CW bit is clear then:
 * When CRG is clear, the "no capability state", a store page fault exception
  is raised when a capability store or AMO instruction is executed and the tag bit
  of the capability being written is set.
-* When CRG is set, the "pre-CW state", two schemes are permitted:
+* When CRG is set, the "pre-CW state", two schemes are permitted (also see <<section_hardware_pte_updates>>):
 
 ** The same behavior as when CRG is clear, allowing software interpretation
 of this state.
@@ -154,9 +160,16 @@ bit value of the capability read. This will introduce additional traps during re
  It is legal for the implementation to fault even if the tag is not set since this behaviour is only an optimization for software.
  This means it is also legal to only check the tag under certain conditions and conservatively fault otherwise.
 
-^2^ The choice here follows the pattern of whether to implement the _Svade_ extension
- to take page-fault exceptions for A and D PTE bit state changes, or whether to implement
- a hardware updating mechanism.
+^2^ See <<section_hardware_pte_updates>>.
+
+[#section_hardware_pte_updates]
+=== Enabling Software or Hardware PTE updates
+
+The decision about whether to take exceptions on capability stores with the tag set to a page with PTE.CW=0 and PTE.CRG=1 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
+These cause PTE Accessed and Dirty updates to be done in software, via the exception handler, or by a hardware mechanism respectively.
+
+* If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a page fault.
+* If only _Svadu_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then do the hardware update of setting PTE.CW=1 and setting PTE.CRG=<<sstatusreg_pte,sstatus>>.CRG as described in <<section_extending_pte>>.
 
 [#xstatus_pte]
 === Extending the Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
