@@ -38,7 +38,7 @@ This means the following state is added:
 * Tags in registers, caches, and memory:
 
 ** Every register has a one-bit tag, indicating whether the capability in the register is valid to be dereferenced.
-  This tag is cleared if the register is written as an integer.
+   Among other reasons, this tag is cleared if the register is written as an integer.
 
 ** The tags are also tracked through the memory subsystem: every aligned CLEN-bits wide region has a non-addressable one-bit tag, which the hardware manages atomically with the data.
    The tag is cleared if the memory region is ever written other than using a capability store from a tagged capability register.
@@ -58,7 +58,7 @@ Changing the bounds used for instruction fetch or the pointer mode can be as eas
 <<MODESW_CAP>> and <<MODESW_INT>> instructions are also added to allow cheap mode switching.
 
 Exception codes are added for CHERI-specific exceptions on fetch, jumps, and memory access.
-No other exception paths are added: in particular, capability manipulations do not trap, but may clear the tag on the result capability if the operation is not permitted.
+No other exception paths are added: In particular, capability manipulations do not trap, but may clear the tag on the result capability if the operation is not permitted.
 
 === Added Instructions
 
@@ -76,7 +76,7 @@ The added instructions can be split into the following categories:
 
 === Existing Instructions
 
-Existing RISC-V instructions are largely unmodified: in {cheri_int_mode_name}, there is binary compatibility.
+Existing RISC-V instructions are largely unmodified: In {cheri_int_mode_name}, there is binary compatibility.
 Instructions that access memory, as well as branches and jumps, are automatically checked against <<ddc>> and <<pcc>>, raising an exception if the checks fail.
 However, <<ddc>> and <<pcc>> are reset to <<infinite-cap>> capabilities, meaning the checks will always pass on systems that have not written to CHERI system registers.
 
