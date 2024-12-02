@@ -1200,10 +1200,12 @@ hold all invalid addresses, under the following circumstances:
 The procedure is:
 
 . If A's address is invalid, A does not have infinite bounds (see
-xref:section_cap_encoding[xrefstyle=short]), and A's address has been modified due
-to illegal address conversion, then A's tag is set to 0.
+xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
+
+NOTE: When A's address is invalid and happens to match an invalid address which the CSR
+can hold, then it is implementation defined whether to clear A's tag.
 
 ===== Branches and Jumps
 
