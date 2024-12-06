@@ -23,7 +23,7 @@ used to authorize all data memory accesses when in
 {cheri_int_mode_name}.
 
 The current CHERI execution mode is given by the <<m_bit>> field of <<pcc>> that
-is encoded as described in xref:section-cheri-execution-mode[xrefstyle=short].
+is encoded as described in xref:m_bit[xrefstyle=short].
 
 The CHERI execution mode impacts the instruction set in the following ways:
 
@@ -55,7 +55,7 @@ Setting both registers to <<infinite-cap>> ensures that:
 * The bounds authorize accesses to the entire address space i.e base is 0 and
 top is 2^MXLEN^
 
-[#m_bit,reftext="M-bit"]
+[#m_bit,reftext="CHERI Execution Mode Encoding"]
 === CHERI Execution Mode Encoding
 
 {cheri_default_ext_name} adds a new CHERI execution Mode field (M) to
@@ -172,7 +172,7 @@ The unconditional jump instructions change behavior depending on the CHERI
 execution mode although the instruction's encoding remains unchanged.
 
 The jump and link instruction <<JAL>> when the CHERI execution mode is
-Capability; behaves as described in
+{cheri_cap_mode_name}; behaves as described in
 xref:section_existing_riscv_insns[xrefstyle=short].
 When the mode is {cheri_int_mode_name}. In this case, the address of the instruction
 following the jump (*pc* + 4) is written to an *x* register; that register's
