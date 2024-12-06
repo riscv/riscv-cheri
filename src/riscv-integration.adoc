@@ -1190,8 +1190,9 @@ accessing memory.
 
 ===== Updating CSRs
 
-The procedure below must be used when update a CSR with a capability A, and the CSR cannot
-hold all invalid addresses, under the following circumstances:
+Some capability-holding CSRs are unable to hold arbitrary addresses.
+For a given such CSR, addresses that cannot be stored are termed "invalid".
+Some situations may appear to require that the CSR come to hold a capability with an invalid address:
 
 * executing instructions, such as <<CSRRW>>
 * hardware updates to CSRs such as storing the <<pcc>> (which becomes capability A) into
