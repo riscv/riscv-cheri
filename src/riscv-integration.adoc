@@ -1190,9 +1190,11 @@ accessing memory.
 
 ===== Updating CSRs
 
-Some capability-holding CSRs are unable to hold arbitrary addresses.
-For a given such CSR, addresses that cannot be stored are termed "invalid".
-Some situations may appear to require that the CSR come to hold a capability with an invalid address:
+Some capability-holding CSRs need not be able to hold all invalid virtual addresses.
+Prior to writing to those CSRs, implementations may convert an invalid address into some other invalid address that the CSR is capable of holding.
+This is problematic for CHERI as updating the address may invalidate the bounds as a result, if the bounds are not those of the <<infinite-cap>> capability.
+
+Some situations may require that a CSR may be updated to hold a capability with an invalid address:
 
 * executing instructions, such as <<CSRRW>>
 * hardware updates to CSRs such as storing the <<pcc>> (which becomes capability A) into
