@@ -1188,16 +1188,27 @@ this section describes how invalid address handling must be supported in
 {cheri_base_ext_name} when accessing CSRs, branching and jumping, and
 accessing memory.
 
-===== Accessing CSRs
+===== Updating CSRs
 
-The following procedure must be used when executing instructions, such
-as <<CSRRW>>, that write a capability A to a CSR that cannot hold all invalid
-addresses:
+Some capability-holding CSRs need not be able to hold all invalid virtual addresses.
+Prior to writing to those CSRs, implementations may convert an invalid address into some other invalid address that the CSR is capable of holding.
+This is problematic for CHERI as updating the address may invalidate the bounds as a result, if the bounds are not those of the <<infinite-cap>> capability.
+
+Some situations may require that a CSR may be updated to hold a capability with an invalid address:
+
+* executing instructions, such as <<CSRRW>>
+* hardware updates to CSRs such as storing the <<pcc>> (which becomes capability A) into
+ <<mepcc>>/<<sepcc>> etc. when taking an exception.
+
+In order to satisfy the definitions of such CSRs and preserve capability system invariants, the following procedure must be used as part of write-back to the CSR:
 
 . If A's address is invalid and A does not have infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
+
+NOTE: When A's address is invalid and happens to match an invalid address which the CSR
+can hold, then it is implementation defined whether to clear A's tag.
 
 ===== Branches and Jumps
 
