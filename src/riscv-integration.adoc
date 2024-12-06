@@ -1198,9 +1198,9 @@ Some situations may appear to require that the CSR come to hold a capability wit
 * hardware updates to CSRs such as storing the <<pcc>> (which becomes capability A) into
  <<mepcc>>/<<sepcc>> etc. when taking an exception.
 
-The procedure is:
+In order to satisfy the definitions of such CSRs and preserve capability system invariants, the following procedure must be used as part of write-back to the CSR:
 
-. If A's address is invalid, A does not have infinite bounds (see
+. If A's address is invalid and A does not have infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
