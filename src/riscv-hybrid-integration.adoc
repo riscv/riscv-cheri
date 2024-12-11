@@ -79,9 +79,9 @@ In both encodings:
 * Mode (M)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
 * Mode (M)={INT_MODE_VALUE} indicates {cheri_int_mode_name}.
 
-The current CHERI execution mode is given by the <<m_bit>> of the <<pcc>> and the <<section_cheri_disable,CHERI register access settings>> as follows:
+The current CHERI execution mode is given by the <<m_bit>> of the <<pcc>> and the <<section_cheri_disable,CHERI register and instruction access settings>> as follows:
 
-* The Mode is {cheri_cap_mode_name} when the <<m_bit>> of the <<pcc>> is {CAP_MODE_VALUE}, *and* <<section_cheri_disable,CHERI register access is enabled>> for the current privilege.
+* The Mode is {cheri_cap_mode_name} when the <<m_bit>> of the <<pcc>> is {CAP_MODE_VALUE}, *and* <<section_cheri_disable,CHERI register and instruction access is enabled>> for the current privilege.
 * Otherwise the Mode is {cheri_int_mode_name}.
 
 When the <<m_bit>> can be set, the rules defined by <<ACPERM>> must be followed.
@@ -313,7 +313,7 @@ As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
 so it does not need to be able to hold all possible invalid addresses.
 
 [#section_cheri_disable]
-=== Disabling CHERI Registers
+=== Disabling CHERI Registers and Instructions
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
