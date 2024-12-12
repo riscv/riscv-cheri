@@ -128,8 +128,8 @@ CLEN-bits is cleared.
 
 [#c_perm,reftext="C-permission"]
 Capability Permission \(C):: Allow reading capability data from memory if the
-authorising capability also grants <<r_perm>>. Allow writing capability data to
-memory if the authorising capability also grants <<w_perm>>.
+authorizing capability also grants <<r_perm>>. Allow writing capability data to
+memory if the authorizing capability also grants <<w_perm>>.
 
 [#x_perm,reftext="X-permission"]
 Execute Permission (X):: Allow instruction execution.
@@ -140,15 +140,15 @@ If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a cap
 The rules specified by <<ACPERM>> are followed when <<w_perm>> and <<lm_perm>> are removed, so additional permissions may also be removed.
 Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
 
-NOTE: Implementations are allowed to retain invalid capability permissions loaded from memory instead of following the <<ACPERM>> behaviour of reducing them to _no permissions_.
+NOTE: Implementations are allowed to retain invalid capability permissions loaded from memory instead of following the <<ACPERM>> behavior of reducing them to _no permissions_.
 
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow read and write access to all
 privileged (M-mode and S-mode) CSRs.
-If {tid_ext_name} is supported the <<utid>>, <<utidc>>, <<stid>>, <<stidc>>, <<mtid>>,
-<<mtidc>> registers are all considered privileged for the purposes of writing
-and unprivileged for reading, and thus require ASR-permission for writes but not reads.
-In all cases a suitable privilege mode is required for access.
+If {tid_ext_name} is supported the <<utid>>, <<utidc>>, <<vstid>>, <<vstidc>>, <<stid>>,
+<<stidc>>, <<mtid>>, <<mtidc>> registers are all considered privileged for the purposes
+of writing and unprivileged for reading, and thus require ASR-permission for writes but
+not reads. In all cases a suitable privilege mode is required for access.
 
 [#cap_permissions_encoding]
 ===== Permission Encoding
@@ -295,7 +295,7 @@ references if that SDP bit is set because it "owns" that object.
 
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
-The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has CSEALENTRY for sealed entry (sentry) capabilities.
+The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
 endif::[]
 
 This bit indicates the type of the capability: it is a sealed capability if the bit is 1 or unsealed if it is 0.
@@ -507,7 +507,7 @@ disambiguate the location of the bounds with respect to an out-of-bounds address
 R is calculated
 relative to the base by subtracting 2^MW-2^ from B.
 If B, T or _a_[E + MW - 1:E] is less than R, it is inferred that they lie in the
-2^E+MW^ aligned region above R labelled space~U~ in
+2^E+MW^ aligned region above R labeled space~U~ in
 xref:cap_bounds_map[xrefstyle=short] and the corrections _c~t~_ and _c~b~_ are
 computed accordingly. The overall effect is that the address can roam
 2^E+MW^/4 bytes below

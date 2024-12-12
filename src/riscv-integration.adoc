@@ -39,7 +39,7 @@ also circular, so address 0 is within the <<section_cap_representable_check>> of
 where address 2^MXLEN^ - 1 is within the bounds.
 However, the decoded top field of a capability is MXLEN + 1 bits wide and does *not* wrap, so
 a capability with base 2^MXLEN^ - 1 and top 2^MXLEN^ + 1 is not a subset of the
-<<infinite-cap>> capability and does not authorise access to the byte at address 0.
+<<infinite-cap>> capability and does not authorize access to the byte at address 0.
 Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
 a CHERI core to generate a tagged capability with top > 2^MXLEN^.
 If such a capability exists then it must have been caused by a logic or memory fault.
@@ -68,7 +68,7 @@ capability.
 [#pcc,reftext="pcc"]
 ==== PCC - The Program Counter Capability
 
-An authorising capability with appropriate permissions is required to execute
+An authorizing capability with appropriate permissions is required to execute
 instructions in {cheri_base_ext_name}. Therefore, the unprivileged program
 counter (*pc*) register is extended so that it is able to hold a capability.
 The extended register is called the program counter capability (<<pcc>>). The
@@ -178,17 +178,17 @@ endif::[]
 ==== Capability Load and Store Instructions
 
 A load capability instruction, <<LC>>, reads CLEN bits from memory together with
-its tag and writes the result to a *c* register. The capability authorising the
+its tag and writes the result to a *c* register. The capability authorizing the
 memory access is provided in a *c* source register, so the effective address is
 obtained by incrementing that capability with the sign-extended 12-bit offset.
 
 A store capability instruction, <<SC>>, writes CLEN bits and the tag in a *c* register
-to memory. The capability authorising the memory access is provided in a *c*
+to memory. The capability authorizing the memory access is provided in a *c*
 source register, so the effective address is obtained by incrementing that
 capability with the sign-extended 12-bit offset.
 
 <<LC>> and <<SC>> instructions cause CHERI exceptions if the
-authorising capability fails any of the following checks:
+authorizing capability fails any of the following checks:
 
 * The tag is zero
 * The capability is sealed
@@ -218,14 +218,14 @@ misaligned bits without a tag, use integer loads and stores.
 
 [#tags_cleared_by_permissions]
 For loads, the tag of the capability loaded from memory is cleared if the
-authorising capability does not grant permission to read capabilities (i.e.
+authorizing capability does not grant permission to read capabilities (i.e.
 both <<r_perm>> and <<c_perm>> must be set in AP). For stores, the tag of the
-capability written to memory is cleared if the authorising capability does not
+capability written to memory is cleared if the authorizing capability does not
 grant permission to write capabilities (i.e. both <<w_perm>> and <<c_perm>>
 must be set in AP).
 
 WARNING: #TODO: these cases may cause exceptions in the future - we need a way
-for software to discover and/or control the behaviour#
+for software to discover and/or control the behavior#
 
 [#section_existing_riscv_insns]
 === Existing RISC-V Instructions
@@ -253,7 +253,7 @@ written to a *c* register.
 
 Control transfer instructions operate as described in the base RISC-V
 ISA. They also may cause metadata updates and/or cause exceptions in addition
-to the base behaviour as described below.
+to the base behavior as described below.
 
 ===== Unconditional Jumps
 
@@ -305,13 +305,13 @@ Integer load and store instructions transfer the amount of integer data describe
 the base RISC-V ISA between the registers and memory. For example, <<LD>> and
 <<LW>> load 64-bit and 32-bit values respectively from memory into an *x*
 register.  However, the address operands for load and store instructions are
-interpreted differently in {cheri_base_ext_name}: the capability authorising
+interpreted differently in {cheri_base_ext_name}: the capability authorizing
 the access is in the *c* register operand and the memory address is given by
 incrementing the address of that capability by the sign-extended 12-bit
 immediate offset.
 
 All load and store instructions cause CHERI exceptions if the
-authorising capability fails any of the following checks:
+authorizing capability fails any of the following checks:
 
 * The tag is set
 * The capability is unsealed
@@ -338,7 +338,7 @@ is outside the <<section_cap_representable_check>> of a CSR capability being wri
 This section describes how the CSR instructions operate on these CSRs in
 {cheri_base_ext_name}.
 
-The CLEN-bit CSRs are summarised in xref:clen_csr_summary[xrefstyle=short].
+The CLEN-bit CSRs are summarized in xref:clen_csr_summary[xrefstyle=short].
 
 [#zicsr-section-purecap]
 ==== CSR Instructions
@@ -362,7 +362,7 @@ When <<CSRRS>> and <<CSRRC>> instructions are accessing a capability width CSR,
 such as <<mtvecc>>, then the destination operand is a *c* register and the
 source operand is an *x* register. Therefore, the instructions atomically read
 CLEN bits from the CSR, calculate the final address using standard RISC-V
-behaviour (set bits, clear bits, etc.), and that final address is written to the
+behavior (set bits, clear bits, etc.), and that final address is written to the
 CSR capability's address field. The update typically uses the semantics of a
 <<SCADDR>> instruction which clears the tag if the capability is sealed, or
 if the updated address is not representable. <<extended_CSR_writing>> shows the
@@ -544,12 +544,12 @@ capability. Its reset value is the <<infinite-cap>> capability.
 .Machine exception program counter capability register
 include::img/mepccreg.edn[]
 
-Capabilities written to <<mepcc>> must be legalised by implicitly zeroing bit
+Capabilities written to <<mepcc>> must be legalized by implicitly zeroing bit
 **mepcc[0]**. Additionally, if an implementation allows IALIGN to be
 either 16 or 32, then whenever IALIGN=32, the capability read from <<mepcc>>
-must be legalised by implicitly zeroing **mepcc[1]**. Therefore, the
-capability read or written has its tag bit cleared if the legalised address is
-not within the <<section_cap_representable_check>> or if the legalisation
+must be legalized by implicitly zeroing **mepcc[1]**. Therefore, the
+capability read or written has its tag bit cleared if the legalized address is
+not within the <<section_cap_representable_check>> or if the legalization
 changes the address and the capability is sealed.
 
 NOTE: When reading or writing a sealed capability in <<mepcc>>, the

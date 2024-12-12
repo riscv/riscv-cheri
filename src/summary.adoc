@@ -1,13 +1,13 @@
 == Quick Start
 
 This document describes the RISC-V extensions for supporting CHERI capabilities in hardware.
-Capabilities can be used to provide memory safety, mitigating up to 70% of memory safety issues cite:[msrc-cheri-eval], as well as to provide efficient compartmentalisation.
+Capabilities can be used to provide memory safety, mitigating up to 70% of memory safety issues cite:[msrc-cheri-eval], as well as to provide efficient compartmentalization.
 The extensions are split into the core features required for a working capability system ({cheri_base_ext_name}), and features required to support a mix-and-match of binaries compiled for CHERI and unchanged binaries ({cheri_default_ext_name}).
 Some other smaller extensions are described that provide additional functionality relevant to CHERI.
 
 === Capability Properties
 
-Capabilities are 2*XLEN (which we call CLEN) bit structures, containing all the information required to identify and authorise access to a region of memory.
+Capabilities are 2*XLEN (which we call CLEN) bit structures, containing all the information required to identify and authorize access to a region of memory.
 This includes:
 
  * An XLEN bit address, describing where the capability currently points.
@@ -38,7 +38,7 @@ This means the following state is added:
 * Tags in registers, caches, and memory:
 
 ** Every register has a one-bit tag, indicating whether the capability in the register is valid to be dereferenced.
-  This tag is cleared if the register is written as an integer.
+   Among other reasons, this tag is cleared if the register is written as an integer.
 
 ** The tags are also tracked through the memory subsystem: every aligned CLEN-bits wide region has a non-addressable one-bit tag, which the hardware manages atomically with the data.
    The tag is cleared if the memory region is ever written other than using a capability store from a tagged capability register.
@@ -46,12 +46,12 @@ This means the following state is added:
 
 === Checking Memory
 
-Every memory access performed by a CHERI core must be authorised by a capability.
+Every memory access performed by a CHERI core must be authorized by a capability.
 It is explicitly defined for every instruction where to find the capability to check against.
 In _purecap_ code, where all pointers are individual capabilities, the capability and address are used together, so e.g. `lw t0, 16(csp)` loads a word from memory, getting the address and bounds from the `csp` register.
-For code that has not yet been fully adapted to CHERI (_hybrid_ code), the processor can run in a pointer mode (not to be confused with a privilege mode) where the authorising capability is instead taken from a special CSR: the default data capability (<<ddc>>).
+For code that has not yet been fully adapted to CHERI (_hybrid_ code), the processor can run in a pointer mode (not to be confused with a privilege mode) where the authorizing capability is instead taken from a special CSR: the default data capability (<<ddc>>).
 
-Instruction fetch is also authorised by a capability: the program counter capability (<<pcc>>) which extends PC.
+Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends PC.
 This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
 Where {cheri_default_ext_name} is supported, the <<pcc>> also contains the <<m_bit,mode bit>> indicating whether the processor is running in integer or capability pointer mode.
 Changing the bounds used for instruction fetch or the pointer mode can be as easy as performing a capability-based jump (<<JALR>> in capability pointer mode).
