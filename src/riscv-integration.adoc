@@ -786,7 +786,9 @@ xref:mtval2-format[xrefstyle=short] to assist software in handling the trap.
 If <<mtval>> is read-only zero for CHERI exceptions then <<mtval2>> is also read-only zero
 for CHERI exceptions.
 
-.Machine trap value register 2 format for CHERI faults
+===== mtval2 values for CHERI faults
+
+.Machine trap value register 2 format for CHERI Faults
 [#mtval2-format]
 include::img/mtval2reg.edn[]
 
@@ -798,26 +800,21 @@ is the cause of the fault. The possible CHERI types and causes are encoded as
 shown in xref:mtval2-cheri-type[xrefstyle=short] and
 xref:mtval2-cheri-causes[xrefstyle=short] respectively.
 
-.Encoding of TYPE field
+.Encoding of TYPE field for CHERI exceptions
 [#mtval2-cheri-type,width=65%,float="center",align="center",options=header,cols="30%,70%"]
 |==============================================================================
 | CHERI Type Code             | Description
 | {cheri_excep_type_pcc}      | CHERI instruction fetch fault
 | {cheri_excep_type_data}     | CHERI data fault due to load, store or AMO
 | {cheri_excep_type_jump}     | CHERI jump or branch fault
-| {cheri_excep_type_lpf}      | CHERI <<cheri_pte_ext,PTE>> load page fault^1^
-| {cheri_excep_type_spf_crg0} | CHERI <<cheri_pte_ext,PTE>> store page fault^1^ (PTE.CRG=0)
-| {cheri_excep_type_spf_crg1} | CHERI <<cheri_pte_ext,PTE>> store page fault^1^ (PTE.CRG=1)
-| 6-15                        | Reserved
+| 3-15                        | Reserved
 |==============================================================================
-
-^1^ if {cheri_pte_ext_name} is implemented
 
 .Encoding of CAUSE field
 [#mtval2-cheri-causes,width=55%,float="center",align="center",options=header]
 |==============================================================================
 | CHERI Cause Code              | Description
-| {cheri_excep_cause_tag}       | Tag violation, or TYPE is a <<cheri_pte_ext,PTE>> fault
+| {cheri_excep_cause_tag}       | Tag violation
 | {cheri_excep_cause_seal}      | Seal violation
 | {cheri_excep_cause_perm}      | Permission violation
 | {cheri_excep_cause_inv_addr}  | Invalid address violation
@@ -832,6 +829,14 @@ CHERI violations have the following order in priority:
 . Permission violation
 . Invalid address violation
 . Bounds violation (_Lowest_)
+
+===== mtval2 values for Load Page Faults
+
+If a load page fault is caused by a CHERI <<cheri_pte_ext,PTE>> fault, then set bit zero of <<mtval2>> to 1 and all other bits to 0, otherwise set all bits to zero.
+
+===== mtval2 values for Store Page Faults
+
+If a store page fault is caused by a CHERI <<cheri_pte_ext,PTE>> fault, then set bit zero of <<mtval2>> to 1 and all other bits to 0, otherwise set all bits to zero.
 
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
@@ -1045,7 +1050,8 @@ address is 0x14b.
 <<stval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
 which are delegated to S-mode.
 
-The fields are identical to <<mtval2>> for CHERI exceptions.
+The fields are identical to <<mtval2>> for CHERI exceptions, and for load and
+store page fault exceptions if {cheri_pte_ext_name} is implemented.
 
 NOTE: <<stval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 
@@ -1103,10 +1109,6 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_bounds}   |`auth_cap` bounds          | all bytes of cache block out of `auth_cap` bounds
 | CBO.INVAL*                                     | {cheri_excep_mcause} | {cheri_excep_type_pcc}  | {cheri_excep_cause_perm}     |<<pcc>> permission         | not(<<pcc>>.<<asr_perm>>)
 | capability stores                              | 6                    | N/A                     | N/A                          |capability alignment       | Misaligned capability store
-6+| *CHERI PTE Page Faults*
-| all capability loads, all capability atomics   | 13                   | {cheri_excep_type_lpf}      | 0 | Revocation sweep fault | Fault if PTE.CW=1 and PTE.CRG &#8800; <<sstatusreg_pte,sstatus>>.CRG, with an optional check on the loaded tag
-| all capability stores, all capability atomics  | 15                   | {cheri_excep_type_spf_crg0} | 0 | Revocation sweep fault | Fault if PTE.CW=0 and PTE.CRG = 0 and storing a valid tag
-| all capability stores, all capability atomics  | 15                   | {cheri_excep_type_spf_crg1} | 0 | Revocation sweep fault | Fault if PTE.CW=0 and PTE.CRG = 1 and storing a valid tag and _Svade_ is implemented
 |=========================================================================================
 
 ^1^ This check is architecturally required, but is impossible to encounter so may not required in an implementation.
