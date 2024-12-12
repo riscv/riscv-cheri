@@ -87,9 +87,10 @@ include::img/sv48pte.edn[]
 [#sv57pte]
 include::img/sv57pte.edn[]
 
-NOTE: All behaviour related to {cheri_pte_ext_name} requires the authorizing capability to have
- <<c_perm>>. If <<c_perm>> is _not_ granted then all capability load/stores and AMOs always clear
- the tag and the behaviour in this section is not relevant.
+NOTE: The behaviour in this section isn't relevant if:
+
+. The authorizing capability doesn't have <<c_perm>>, for loads, stores and AMOs.
+. {cheri_levels_ext_name} has cleared the stored tag, for stores and AMOs.
 
 The CW bit indicates whether reading or writing capabilities with the tag set to
 the virtual page is permitted. When the CW bit is set, capabilities are written
