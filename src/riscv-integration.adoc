@@ -425,8 +425,7 @@ include::generated/csr_renamed_purecap_mode_u_table_body.adoc[]
 === Machine-Level CSRs
 
 {cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
-otherwise add new functions. <<pcc>> must grant <<asr_perm>> to access M-mode
-CSRs regardless of the RISC-V privilege mode.
+otherwise add new functions. <<asr-perm>> in the <<pcc>> is typically required for access.
 
 [#mstatus,reftext="mstatus"]
 ==== Machine Status Registers (mstatus and mstatush)
@@ -758,7 +757,7 @@ a CHERI fault taken into M-mode, <<mtval>> is written with the
 MXLEN-bit effective address which caused the fault according to the existing
 rules for reporting load/store addresses from cite:[riscv-priv-spec]. In this case
 the TYPE field of <<mtval2>> shown in xref:mtval2-cheri-type[xrefstyle=short] is
-set to {cheri_excep_type_data}. For all other CHERI faults it is set to zero.
+set to {cheri_excep_type_data}. For all other CHERI faults <<mtval>> is set to zero.
 
 The behavior of <<mtval>> is otherwise as described in cite:[riscv-priv-spec].
 
@@ -832,8 +831,7 @@ CHERI violations have the following order in priority:
 === Supervisor-Level CSRs
 
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
-hold capabilities or with other new functions. <<pcc>> must grant <<asr_perm>>
-to access S-mode CSRs regardless of the RISC-V privilege mode.
+hold capabilities or with other new functions. <<asr-perm>> in the <<pcc>> is typically required for access.
 
 [#stvec,reftext="stvec"]
 ==== Supervisor Trap Vector Base Address Register (stvec)
@@ -1050,7 +1048,8 @@ include::img/stval2reg.edn[]
 
 === Unprivileged CSRs
 
-Unlike machine and supervisor level CSRs, {cheri_base_ext_name} does not require
+In {cheri_base_ext_name}, the only register that requires <<asr_perm>> is <<utidc>>
+(for updates but not for reads), and all other unprivileged CSRs do not require
 <<pcc>> to grant <<asr_perm>> to access unprivileged CSRs.
 
 === CHERI Exception handling
@@ -1187,16 +1186,27 @@ this section describes how invalid address handling must be supported in
 {cheri_base_ext_name} when accessing CSRs, branching and jumping, and
 accessing memory.
 
-===== Accessing CSRs
+===== Updating CSRs
 
-The following procedure must be used when executing instructions, such
-as <<CSRRW>>, that write a capability A to a CSR that cannot hold all invalid
-addresses:
+Some capability-holding CSRs need not be able to hold all invalid virtual addresses.
+Prior to writing to those CSRs, implementations may convert an invalid address into some other invalid address that the CSR is capable of holding.
+This is problematic for CHERI as updating the address may invalidate the bounds as a result, if the bounds are not those of the <<infinite-cap>> capability.
+
+Some situations may require that a CSR may be updated to hold a capability with an invalid address:
+
+* executing instructions, such as <<CSRRW>>
+* hardware updates to CSRs such as storing the <<pcc>> (which becomes capability A) into
+ <<mepcc>>/<<sepcc>> etc. when taking an exception.
+
+In order to satisfy the definitions of such CSRs and preserve capability system invariants, the following procedure must be used as part of write-back to the CSR:
 
 . If A's address is invalid and A does not have infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
+
+NOTE: When A's address is invalid and happens to match an invalid address which the CSR
+can hold, then it is implementation defined whether to clear A's tag.
 
 ===== Branches and Jumps
 
