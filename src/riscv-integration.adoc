@@ -426,7 +426,7 @@ include::generated/csr_renamed_purecap_mode_u_table_body.adoc[]
 === Machine-Level CSRs
 
 {cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
-otherwise add new functions. <<asr-perm>> in the <<pcc>> is typically required for access.
+otherwise add new functions. <<asr_perm>> in the <<pcc>> is typically required for access.
 
 [#mstatus,reftext="mstatus"]
 ==== Machine Status Registers (mstatus and mstatush)
@@ -786,7 +786,9 @@ xref:mtval2-format[xrefstyle=short] to assist software in handling the trap.
 If <<mtval>> is read-only zero for CHERI exceptions then <<mtval2>> is also read-only zero
 for CHERI exceptions.
 
-.Machine trap value register 2 format for CHERI faults
+===== mtval2 values for CHERI faults
+
+.Machine trap value register 2 format for CHERI Faults
 [#mtval2-format]
 include::img/mtval2reg.edn[]
 
@@ -798,7 +800,7 @@ is the cause of the fault. The possible CHERI types and causes are encoded as
 shown in xref:mtval2-cheri-type[xrefstyle=short] and
 xref:mtval2-cheri-causes[xrefstyle=short] respectively.
 
-.Encoding of TYPE field
+.Encoding of TYPE field for CHERI Faults
 [#mtval2-cheri-type,width=65%,float="center",align="center",options=header,cols="30%,70%"]
 |==============================================================================
 | CHERI Type Code           | Description
@@ -828,11 +830,19 @@ CHERI violations have the following order in priority:
 . Invalid address violation
 . Bounds violation (_Lowest_)
 
+===== mtval2 values for Load Page Faults
+
+If a load page fault is caused by a CHERI <<cheri_pte_ext,PTE>> fault, then set bit zero of <<mtval2>> to 1 and all other bits to 0, otherwise set all bits to zero.
+
+===== mtval2 values for Store Page Faults
+
+If a store page fault is caused by a CHERI <<cheri_pte_ext,PTE>> fault, then set bit zero of <<mtval2>> to 1 and all other bits to 0, otherwise set all bits to zero.
+
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
 
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
-hold capabilities or with other new functions. <<asr-perm>> in the <<pcc>> is typically required for access.
+hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is typically required for access.
 
 [#stvec,reftext="stvec"]
 ==== Supervisor Trap Vector Base Address Register (stvec)
@@ -1040,7 +1050,8 @@ address is 0x14b.
 <<stval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
 which are delegated to S-mode.
 
-The fields are identical to <<mtval2>> for CHERI exceptions.
+The fields are identical to <<mtval2>> for CHERI exceptions, and for load and
+store page fault exceptions if {cheri_pte_ext_name} is implemented.
 
 NOTE: <<stval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 
@@ -1062,7 +1073,7 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 [#cheri_exception_combs_descriptions]
 [width="100%",options=header,cols="2,1,1,1,3,4"]
 |=========================================================================================
-| Instructions | Xcause | Xtval. TYPE | Xtval. CAUSE | Description | Check
+| Instructions | Xcause | Xtval2. TYPE | Xtval2. CAUSE | Description | Check
 6+| *All instructions have these exception checks first*
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}      | <<pcc>> tag             | not(<<pcc>>.tag)
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}     | <<pcc>> seal            | isCapSealed(<<pcc>>)^1^
