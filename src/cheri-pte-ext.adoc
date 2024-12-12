@@ -71,7 +71,9 @@ The page table entry format remains unchanged for Sv32. However, two new
 bits, Capability Write (CW) and Capability Read
 Generation (CRG), are added to leaf PTEs in Sv39, Sv48 and Sv57 as shown in
 xref:sv39pte[xrefstyle=short], xref:sv48pte[xrefstyle=short] and
-xref:sv57pte[xrefstyle=short] respectively.
+xref:sv57pte[xrefstyle=short] respectively. For non-leaf PTEs these bits
+remain reserved and must be cleared by software for forward compatibility,
+or else a page-fault exception is raised.
 
 .Sv39 page table entry
 [#sv39pte]
@@ -85,9 +87,10 @@ include::img/sv48pte.edn[]
 [#sv57pte]
 include::img/sv57pte.edn[]
 
-NOTE: All behaviour related to {cheri_pte_ext_name} requires the authorizing capability to have
- <<c_perm>>. If <<c_perm>> is _not_ granted then all capability load/stores and AMOs always clear
- the tag and the behaviour in this section is not relevant.
+NOTE: The behaviour in this section isn't relevant if:
+
+. The authorizing capability doesn't have <<c_perm>>, for loads, stores and AMOs.
+. {cheri_levels_ext_name} has cleared the stored tag, for stores and AMOs.
 
 The CW bit indicates whether reading or writing capabilities with the tag set to
 the virtual page is permitted. When the CW bit is set, capabilities are written
@@ -102,11 +105,15 @@ If the CW bit is clear then:
  of the capability being written is set.
 * When CRG is set, the "pre-CW state", two schemes are permitted (also see <<section_hardware_pte_updates>>):
 
+NOTE: The tag bit of the stored capability is checked _after_ it is potentially
+cleared <<tags_cleared_by_permissions,due to lack of permissions>>.
+
 ** The same behavior as when CRG is clear, allowing software interpretation
 of this state.
 ** When a capability store or AMO instruction is executed
 and the tag bit of the capability being written is set, the
 implementation sets the CW bit and assigns the CRG bit equal to <<sstatusreg_pte,sstatus>>.CRG.
++
 The PTE update must be
 atomic with respect to other accesses to the PTE, and must atomically check
 that the PTE is valid and grants sufficient permissions. Updates to the CW bit
@@ -128,13 +135,10 @@ When CW is set, the CRG bit indicates the current generation of the virtual memo
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
 * A load page fault exception is raised when a capability load or AMO instruction is executed
-and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.CRG.
-* A load page fault exception is raised when a capability load or AMO instruction is executed,
-the capability read from memory has tag set
-and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.CRG.
-
-NOTE: An implementation may avoid a dependency on the tag
-bit value of the capability read. This will introduce additional traps during revocation sweeps.
+with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.CRG.
+* A load page fault exception is raised when a capability load or AMO instruction is executed
+with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.CRG
+and the capability read from memory optionally has its tag set^1^.
 
 [[pte_cw_crg_load_summary]]
 .Summary of Load CW and CRG behavior in the PTEs
@@ -159,6 +163,7 @@ bit value of the capability read. This will introduce additional traps during re
 ^1^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
  It is legal for the implementation to fault even if the tag is not set since this behaviour is only an optimization for software.
  This means it is also legal to only check the tag under certain conditions and conservatively fault otherwise.
+ Taking a trap when the tag is not set will introduce additional traps during revocation sweeps.
 
 ^2^ See <<section_hardware_pte_updates>>.
 
