@@ -125,7 +125,7 @@ class Zcheri_purecap_insns(table):
                 elif i == self.function_idx:
                     # Drop references to DDC authorization in the purecap table.
                     cell_value = cell_value.replace(" via int pointer", " via capability register")
-                    cell_value = cell_value.replace(", authorise with DDC", "")
+                    cell_value = cell_value.replace(", authorize with DDC", "")
                 out_str += '|' + cell_value
             self.file.write(out_str + '\n')
 
