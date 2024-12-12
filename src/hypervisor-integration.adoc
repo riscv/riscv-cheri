@@ -56,36 +56,6 @@ The reset value is 0.
 Bit 28 of <<hedeleg>> now refers to a valid exception and so can be used to
 delegate CHERI exceptions to virtual supervisor mode.
 
-[#htval,reftext="htval"]
-=== Hypervisor Trap Value Register (htval)
-
-The <<htval>> register operates as described in cite:[riscv-priv-spec].
-
-<<htval>> is updated following the same rules as <<mtval>> for CHERI exceptions
-which are taken in HS-mode.
-
-.Hypervisor trap value register
-include::img/htvalreg.edn[]
-
-[#htval2,reftext="htval2"]
-=== Hypervisor Trap Value Register 2 (htval2)
-
-The <<htval2>> register is an HSXLEN-bit read-write register, which is added as
-part of {cheri_base_ext_name} when the hypervisor extension is supported. Its
-CSR address is 0x64b.
-
-<<htval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions,
-load page fault and store page fault exceptions which are taken in HS-mode.
-
-The fields are identical to <<mtval2>> for CHERI exceptions.
-
-NOTE: <<htval2>> is not a standard RISC-V CSR, but <<mtval2>>
-is.
-
-.Hypervisor trap value register 2
-[#hstval2-format]
-include::img/htval2reg.edn[]
-
 [#vsstatus,reftext="vsstatus"]
 === Virtual Supervisor Status Register (vsstatus)
 
