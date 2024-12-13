@@ -168,12 +168,11 @@ and the capability read from memory optionally has its tag set^1^.
 
 ^2^ See <<section_hardware_pte_updates>>.
 
-The exceptions added by {cheri_pte_ext_name}:
-
-* reuse the load page fault and store/AMO page fault exception cause values,
+The exceptions added by {cheri_pte_ext_name} reuse the load page fault and store/AMO page fault exception cause values,
 and so the cause of the exception can be determined by software by checking bit zero of <<mtval2>>,
 <<stval2>> etc.
-* are all prioritized _above_ standard page fault exceptions.
+
+They are prioritized against the standard page fault exceptions as shown in <<exception-priority>>.
 
 [#section_hardware_pte_updates]
 === Enabling Software or Hardware PTE updates
