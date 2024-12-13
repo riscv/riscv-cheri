@@ -698,7 +698,7 @@ _Reserved_
 
 [[exception-priority]]
 .Synchronous exception priority in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
-[%autowidth,float="center",align="center",cols="<,>,<",options="header"]
+[float="center",align="center",cols="<1,>1,<8",options="header"]
 |===
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
@@ -729,14 +729,21 @@ Load/store/AMO address breakpoint
 Optionally: +
 Load/store/AMO address misaligned
 | .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
-First encountered page fault or access fault
+First encountered *CHERI PTE page fault*^12^, page fault or access fault
 | .>|5,7 .<|With physical address for an explicit memory access: +
 Load/store/AMO access fault
-.>|_Lowest_ .>|4,6 .<|If not higher priority: +
-Load/store/AMO address misaligned
+| .>|4,6 .<|If not higher priority: +
+.>|_Lowest_ .>|13 .<|If not higher priority: +
+CHERI load PTE fault^3^
 |===
 
-NOTE: The full details of the CHERI exceptions are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
+^1^ The higher priority CHERI <<cheri_pte_ext,PTE>> page fault covers capability loads or atomics where the loaded tag _is not_ checked, and all capability stores and atomics where the stored tag is set.
+
+^2^ CHERI <<cheri_pte_ext,PTE>> page fault exceptions have the same priority against access faults as normal RISC-V page faults. If a normal RISC-V page fault _and_ a CHERI <<cheri_pte_ext,PTE>> fault are both detected, then the CHERI fault takes priority.
+
+^3^ The lower priority <<cheri_pte_ext,PTE>> fault only covers capability loads and atomics where the loaded tag _is_ checked.
+
+NOTE: The full details of the CHERI exceptions with cause value {cheri_excep_mcause} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
 [#medeleg,reftext="medeleg"]
 ==== Machine Trap Delegation Register (medeleg)
