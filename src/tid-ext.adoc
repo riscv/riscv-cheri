@@ -1,5 +1,5 @@
 [#tid_ext]
-== "{tid_ext_name}" Extension for Thread Identification
+== "{tid_ext_name}" Extension for Software Thread Identification
 
 {tid_ext_name} is an optional extension to the RISC-V base ISA.
 Implementations that support {cheri_base_ext_name} and {tid_ext_name}
@@ -8,7 +8,7 @@ software compartmentalization of CHERI programs.
 
 === Control and Status Registers (CSRs)
 
-{tid_ext_name} adds new CSRs to implement a trusted thread
+{tid_ext_name} adds new CSRs to implement a trusted software thread
 identifier (TID) used in compartmentalization. These CSRs are listed in
 xref:tid-mcsrnames-added[xrefstyle=short],
 xref:tid-scsrnames-added[xrefstyle=short],
@@ -55,7 +55,7 @@ xref:tid-ucsrnames-added[xrefstyle=short].
 ==== Machine Thread Identifier (mtid)
 
 The <<mtid>> register is an MXLEN-bit read-write register. It is used to
-identify the current thread in machine mode. The reset value of this
+identify the current software thread in machine mode. The reset value of this
 register is UNSPECIFIED.
 
 .Supervisor thread identifier register
@@ -65,7 +65,7 @@ include::img/mtidreg.edn[]
 ==== Supervisor Thread Identifier (stid)
 
 The <<stid>> register is an SXLEN-bit read-write register. It is used to
-identify the current thread in supervisor mode. The reset value of
+identify the current software thread in supervisor mode. The reset value of
 this register is UNSPECIFIED.
 
 .Supervisor thread identifier register
@@ -76,7 +76,7 @@ include::img/stidreg.edn[]
 
 The <<vstid>> register is a VSLEN-bit read-write register. It is VS-mode's
 version of supervisor register <<stid>> used to identify the current
-thread in virtual supervisor mode. As other Virtual Supervisor registers
+software thread in virtual supervisor mode. As other Virtual Supervisor registers
 when V=1, <<vstid>> substitutes for <<stid>>, so that
 instructions that normally read or modify <<stid>> actually access
 <<vstid>> instead. When V=0, <<vstid>> does not directly affect the
@@ -91,7 +91,7 @@ include::img/vstidreg.edn[]
 ==== User Thread Identifier (utid)
 
 The <<utid>> register is an UXLEN-bit read-write register. It is used to
-identify the current thread in user mode. The reset value of
+identify the current software thread in user mode. The reset value of
 this register is UNSPECIFIED.
 
 .User thread identifier register
@@ -105,7 +105,7 @@ extended as follows:
 
 The <<mtidc>> register is an CLEN-bit read-write capability register.
 It is the capability extension of the <<mtid>> register.
-It is used to identify the current thread in machine mode.
+It is used to identify the current software thread in machine mode.
 On reset the tag of <<mtidc>> will be set to 0 and the remainder
 of the data is UNSPECIFIED.
 
@@ -117,7 +117,7 @@ include::img/mtidcreg.edn[]
 
 The <<stidc>> register is an CLEN-bit read-write capability register.
 It is the capability extension of the <<stid>> register.
-It is used to identify the current thread in supervisor mode.
+It is used to identify the current software thread in supervisor mode.
 On reset the tag of <<stidc>> will be set to 0 and the remainder
 of the data is UNSPECIFIED.
 
@@ -129,7 +129,7 @@ include::img/stidcreg.edn[]
 
 The <<vstidc>> register is a CLEN-bit read-write capability register.
 It is the capability extension of the <<vstid>> register used to
-identify the current thread in virtual supervisor mode.
+identify the current software thread in virtual supervisor mode.
 As other Virtual Supervisor registers when V=1, <<vstidc>> substitutes
 for <<stidc>>, so that instructions that normally read or modify
 <<stidc>> actually access <<vstidc>> instead.
@@ -146,7 +146,7 @@ include::img/vstidcreg.edn[]
 
 The <<utidc>> register is an CLEN-bit read-write capability register.
 It is the capability extension of the <<utid>> register.
-It is used to identify the current thread in user mode.
+It is used to identify the current software thread in user mode.
 On reset the tag of <<utidc>> will be set to 0 and the remainder
 of the data is UNSPECIFIED.
 
@@ -221,13 +221,13 @@ to separate the privileges between different protection units, e.g.,
 two or more libraries. Code can be separated by sentries, which allow
 for giving out code capabilities to untrusted code where the untrusted
 code can only call the code capability, but not modify it. Sentries can
-be called from different threads and thus there needs to be a way of
-identifying the current thread. While identifying the current thread
+be called from different software threads and thus there needs to be a way of
+identifying the current software thread. While identifying the current software thread
 can be done by privileged code, e.g., the kernel, the implied performance
 overhead of this is not bearable for CHERI systems with many compartments.
 
 The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
-usable for the purpose of reliably identifying the current thread because
+usable for the purpose of reliably identifying the current software thread because
 the tp register is a general purpose register and can be changed arbitrarily
 by untrusted code. Therefore, this specification offers additional CSRs
 that facilitate a trusted source for the thread ID. All registers are readable
