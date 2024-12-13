@@ -851,6 +851,11 @@ If both are detected at once, then both are recorded.
 | RISC-V page fault and CHERI <<cheri_pte_ext,PTE>> fault | 2
 |==============================================================================
 
+NOTE: Reporting both allows the software the choice about which action to take first, for example a write to a
+ page with no write permission, _and_ the incorrect value of PTE.CRG requires two actions.
+ Software can then decide whether to prioritize the copy-on-write procedure to fix the lack of write
+ permission, or to sweep the page.
+
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
 
