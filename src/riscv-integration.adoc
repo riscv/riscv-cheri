@@ -739,7 +739,7 @@ CHERI load PTE fault^3^
 
 ^1^ The higher priority CHERI <<cheri_pte_ext,PTE>> page fault covers capability loads or atomics where the loaded tag _is not_ checked, and all capability stores and atomics where the stored tag is set.
 
-^2^ CHERI <<cheri_pte_ext,PTE>> page fault exceptions have the same priority against access faults as normal RISC-V page faults. If a normal RISC-V page fault _and_ a CHERI <<cheri_pte_ext,PTE>> fault are both detected simultaneously, then both are recorded as shown in <<mtval2-page-faults>>
+^2^ CHERI <<cheri_pte_ext,PTE>> page fault exceptions have the same priority against access faults as normal RISC-V page faults. If a normal RISC-V page fault _and_ a CHERI <<cheri_pte_ext,PTE>> fault are both detected simultaneously, then both are recorded as shown in <<mtval2-page-fault>>.
 
 ^3^ The lower priority <<cheri_pte_ext,PTE>> fault only covers capability loads and atomics where the loaded tag _is_ checked.
 
@@ -843,7 +843,7 @@ Page faults can be caused by normal RISC-V page faults and also by CHERI <<cheri
 If both are detected at once, then both are recorded.
 
 .mtval2 for page faults
-[#mtval2-page-faults,width=55%,float="center",align="center",options=header]
+[#mtval2-page-fault,width=70%,float="center",align="center",cols="2,1",options=header]
 |==============================================================================
 | Fault                                                   | Value
 | RISC-V page fault                                       | 0
