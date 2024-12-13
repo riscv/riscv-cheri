@@ -100,7 +100,7 @@ If the CW bit is clear then:
 
 * When a capability load or AMO instruction is executed, the implementation
  clears the tag bit of the capability read from the virtual page.
-* When CRG is clear, the "no capability state", a store page fault exception
+* When CRG is clear, the "no capability state", a store/AMO page fault exception
  is raised when a capability store or AMO instruction is executed and the tag bit
  of the capability being written is set.
 * When CRG is set, the "pre-CW state", two schemes are permitted (also see <<section_hardware_pte_updates>>):
@@ -166,6 +166,13 @@ and the capability read from memory optionally has its tag set^1^.
  Taking a trap when the tag is not set will introduce additional traps during revocation sweeps.
 
 ^2^ See <<section_hardware_pte_updates>>.
+
+The exceptions added by {cheri_pte_ext_name}:
+
+* reuse the load page fault and store/AMO page fault exception cause values,
+and so the cause of the exception can be determined by software by checking bit zero of <<mtval2>>,
+<<stval2>> etc.
+* are all prioritized _above_ standard page fault exceptions.
 
 [#section_hardware_pte_updates]
 === Enabling Software or Hardware PTE updates
