@@ -491,15 +491,20 @@ the address. The tag of the capability written to <<mtvecc>> is cleared if
 either check fails.
 
 Additionally, when MODE=Vectored the capability has its tag bit cleared if the
-capability address + 4 x HICAUSE is not within the representable bounds.
+capability address + 4 x HICAUSE is not within the <<section_cap_representable_check>>.
 HICAUSE is the largest exception cause value that the implementation can write
-to <<mcause>> when an interrupt is taken.
+to <<mcause>> or <<scause>>/<<vscause>> when an interrupt is taken.
 
 NOTE: When MODE=Vectored, it is only required that address + 4 x HICAUSE is
-within representable bounds instead of the capability's bounds. This ensures
+within the <<section_cap_representable_check>> instead of the capability's bounds.
+This ensures
 that software is not forced to allocate a capability granting access to more
 memory for the trap-vector than necessary to handle the trap causes that
 actually occur in the system.
+
+NOTE: If either the capability address _or_ the capability address + 4 x HICAUSE are
+invalid then the <<section_invalid_addr_conv>> rules are followed which may require
+the tag being cleared.
 
 [#mscratch, reftext="mscratch"]
 ==== Machine Scratch Register (mscratch)
