@@ -698,7 +698,7 @@ _Reserved_
 
 [[exception-priority]]
 .Synchronous exception priority in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
-[%autowidth,float="center",align="center",cols="<,>,<",options="header"]
+[float="center",align="center",cols="<1,>1,<8",options="header"]
 |===
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
@@ -729,14 +729,21 @@ Load/store/AMO address breakpoint
 Optionally: +
 Load/store/AMO address misaligned
 | .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
-First encountered page fault or access fault
+First encountered *CHERI PTE page fault*^12^, page fault or access fault
 | .>|5,7 .<|With physical address for an explicit memory access: +
 Load/store/AMO access fault
-.>|_Lowest_ .>|4,6 .<|If not higher priority: +
-Load/store/AMO address misaligned
+| .>|4,6 .<|If not higher priority: +
+.>|_Lowest_ .>|13 .<|If not higher priority: +
+CHERI load PTE fault^3^
 |===
 
-NOTE: The full details of the CHERI exceptions are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
+^1^ The higher priority CHERI <<cheri_pte_ext,PTE>> page fault covers capability loads or atomics where the loaded tag _is not_ checked, and all capability stores and atomics where the stored tag is set.
+
+^2^ CHERI <<cheri_pte_ext,PTE>> page fault exceptions have the same priority against access faults as normal RISC-V page faults. If a normal RISC-V page fault _and_ a CHERI <<cheri_pte_ext,PTE>> fault are both detected simultaneously, then both are recorded as shown in <<mtval2-page-fault>>.
+
+^3^ The lower priority <<cheri_pte_ext,PTE>> fault only covers capability loads and atomics where the loaded tag _is_ checked.
+
+NOTE: The full details of the CHERI exceptions with cause value {cheri_excep_mcause} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
 [#medeleg,reftext="medeleg"]
 ==== Machine Trap Delegation Register (medeleg)
@@ -830,13 +837,24 @@ CHERI violations have the following order in priority:
 . Invalid address violation
 . Bounds violation (_Lowest_)
 
-===== mtval2 values for Load Page Faults
+===== mtval2 values for Load/Store/AMO Page Faults
 
-If a load page fault is caused by a CHERI <<cheri_pte_ext,PTE>> fault, then set bit zero of <<mtval2>> to 1 and all other bits to 0, otherwise set all bits to zero.
+Page faults can be caused by normal RISC-V page faults and also by CHERI <<cheri_pte_ext,PTE>> faults.
+If both are detected at once, then both are recorded.
 
-===== mtval2 values for Store Page Faults
+.mtval2 for page faults
+[#mtval2-page-fault,width=70%,float="center",align="center",cols="2,1",options=header]
+|==============================================================================
+| Fault                                                   | Value
+| RISC-V page fault                                       | 0
+| CHERI <<cheri_pte_ext,PTE>> fault                       | 1
+| RISC-V page fault and CHERI <<cheri_pte_ext,PTE>> fault | 2
+|==============================================================================
 
-If a store page fault is caused by a CHERI <<cheri_pte_ext,PTE>> fault, then set bit zero of <<mtval2>> to 1 and all other bits to 0, otherwise set all bits to zero.
+NOTE: Reporting both allows the software the choice about which action to take first, for example a write to a
+ page with no write permission, _and_ the incorrect value of PTE.CRG requires two actions.
+ Software can then decide whether to prioritize the copy-on-write procedure to fix the lack of write
+ permission, or to sweep the page.
 
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs
@@ -1051,7 +1069,7 @@ address is 0x14b.
 which are delegated to S-mode.
 
 The fields are identical to <<mtval2>> for CHERI exceptions, and for load and
-store page fault exceptions if {cheri_pte_ext_name} is implemented.
+store/AMO page fault exceptions if {cheri_pte_ext_name} is implemented.
 
 NOTE: <<stval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 
