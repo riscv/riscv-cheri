@@ -502,9 +502,11 @@ that software is not forced to allocate a capability granting access to more
 memory for the trap-vector than necessary to handle the trap causes that
 actually occur in the system.
 
-NOTE: If either the capability address _or_ the capability address + 4 x HICAUSE are
-invalid then the <<section_invalid_addr_conv>> rules are followed which may require
-the tag being cleared.
+NOTE: When MODE=Vectored, if either the capability address _or_ the capability
+address + 4 x HICAUSE are invalid then the <<section_invalid_addr_conv>> rules
+are followed which may require the tag to be cleared. In particular, if any part
+of the range is in the invalid address space then clearing the tag is strongly
+recommended.
 
 [#mscratch, reftext="mscratch"]
 ==== Machine Scratch Register (mscratch)
