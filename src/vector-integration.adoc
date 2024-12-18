@@ -26,11 +26,7 @@ _no_ CHERI fault will be taken.
 This is consistent with other exceptions such as page faults which are only taken
 on _active_ elements.
 
-In the case of fault-only-first loads, only the first element will cause a CHERI
-length violation. If a later element causes a length violation, then it will be
-treated the same way as a page fault and vl will be reduced.
-All other CHERI exceptions, such as tag and permission violations are checked on
-the first element, and so will be taken as expected.
+In the case of fault-only-first loads, a trap caused by a CHERI exception will only be taken if it caused by element 0 (and then only if element 0 is active). If another active element causes a CHERI exception then it is treated the same way as other exceptions, the trap is not taken and instead vl is reduced.
 
 NOTE: Indexed loads in {cheri_cap_mode_name} check the bounds of every access against
 the authority capability in `cs1`. Therefore the approach of having a zero base
