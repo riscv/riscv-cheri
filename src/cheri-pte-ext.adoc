@@ -12,11 +12,11 @@ format.
 
 NOTE: There is no explicit mechanism for enabling or disabling {cheri_pte_ext_name}. A VM-enabled legacy (non-CHERI) OS running in {cheri_int_mode_name} will not load or store capabilities, and so the default state of CW=0 causing loaded capabilities to have their tags cleared, and stored capabilities with their tags set to cause a page fault, won't occur.
 
-A CHERI-aware OS running a VM-enabled OS is strongly recommended to support {cheri_pte_ext_name}, and the minimum level of support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.CRGS/CRGU and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
+A CHERI-aware OS running a VM-enabled OS is strongly recommended to support {cheri_pte_ext_name}, and the minimum level of support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.SCRG/UCRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
 
 Therefore when implementing any RV64 virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) and {cheri_base_ext_name}, implementing {cheri_pte_ext_name} is strongly recommended.
 
-NOTE: It is possible to detect the presence of {cheri_pte_ext_name} in software, by configuring a page table entry without programming CW and without setting <<sstatusreg_pte,sstatus>>.CRGS/CRGU, and testing for an exception on storing a tagged capability.
+NOTE: It is possible to detect the presence of {cheri_pte_ext_name} in software, by configuring a page table entry without programming CW and without setting <<sstatusreg_pte,sstatus>>.SCRG/UCRG, and testing for an exception on storing a tagged capability.
 
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so this extension cannot be implemented.
 
@@ -109,14 +109,14 @@ NOTE: The tag bit of the stored capability is checked _after_ it is potentially
 cleared <<tags_cleared_by_permissions,due to lack of permissions>>.
 
 NOTE: Two capability revocation generation bits (CRG) are implemented in <<sstatusreg_pte,sstatus>>,
-one for kernel-space code running in supervisor mode (CRGS) and one for user-space code running
-in user mode (CRGU). The relevant bit to use is only controlled by the current operating mode.
+one for kernel-space code running in supervisor mode (SCRG) and one for user-space code running
+in user mode (UCRG). The relevant bit to use is only controlled by the current operating mode.
 
 ** The same behavior as when CRG is clear, allowing software interpretation
 of this state.
 ** When a capability store or AMO instruction is executed
 and the tag bit of the capability being written is set, the
-implementation sets the CW bit and assigns the CRG bit equal to <<sstatusreg_pte,sstatus>>.CRGS/CRGU.
+implementation sets the CW bit and assigns the CRG bit equal to <<sstatusreg_pte,sstatus>>.SCRG/UCRG.
 +
 The PTE update must be
 atomic with respect to other accesses to the PTE, and must atomically check
@@ -139,22 +139,24 @@ When CW is set, the CRG bit indicates the current generation of the virtual memo
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
 * A load page fault exception is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.CRGS/CRGU.
+with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.SCRG/UCRG.
 * A load page fault exception is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.CRGS/CRGU.
+with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.SCRG/UCRG.
 and the capability read from memory optionally has its tag set^1^.
 
 [[pte_cw_crg_load_summary]]
 .Summary of Load CW and CRG behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|PTE.CW |Mode |PTE.CRG                                 |Load/AMO
+|PTE.CW |Mode^1^ |PTE.CRG                                 |Load/AMO
 | 0     | S/U | X                                      | Clear loaded tag
-| 1     | S   |&#8800; <<sstatusreg_pte,sstatus>>.CRGS | Page fault, or page fault if tag is set^1^
-| 1     | U   |&#8800; <<sstatusreg_pte,sstatus>>.CRGU | Page fault, or page fault if tag is set^1^
-| 1     | S   |=      <<sstatusreg_pte,sstatus>>.CRGS  | Normal operation
-| 1     | U   |=      <<sstatusreg_pte,sstatus>>.CRGU  | Normal operation
+| 1     | S   |&#8800; <<sstatusreg_pte,sstatus>>.SCRG | Page fault, or page fault if tag is set^1^
+| 1     | U   |&#8800; <<sstatusreg_pte,sstatus>>.UCRG | Page fault, or page fault if tag is set^1^
+| 1     | S   |=      <<sstatusreg_pte,sstatus>>.SCRG  | Normal operation
+| 1     | U   |=      <<sstatusreg_pte,sstatus>>.UCRG  | Normal operation
 |===
+
+^1^ This is the current privilege mode, not the effective mode of the access and so is not affected by <<sstatusreg_pte>>.SUM.
 
 [[pte_cw_crg_store_summary]]
 .Summary of Store CW and CRG behavior in the PTEs
@@ -187,18 +189,18 @@ The decision about whether to take exceptions on capability stores with the tag 
 These cause PTE Accessed and Dirty updates to be done in software, via the exception handler, or by a hardware mechanism respectively.
 
 * If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a page fault.
-* If only _Svadu_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then do the hardware update of setting PTE.CW=1 and setting PTE.CRG=<<sstatusreg_pte,sstatus>>.CRGS/CRGU as described in <<section_extending_pte>>.
+* If only _Svadu_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then do the hardware update of setting PTE.CW=1 and setting PTE.CRG=<<sstatusreg_pte,sstatus>>.SCRG/UCRG as described in <<section_extending_pte>>.
 
 [#xstatus_pte]
 === Extending the Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
 
 The <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) bit as shown.
 
-When V=1 <<vsstatusreg_pte,vsstatus>>.CRGS/CRGU is in effect.
+When V=1 <<vsstatusreg_pte,vsstatus>>.SCRG/UCRG is in effect.
 
-<<mstatusreg_pte,mstatus>>.CRGS/CRGU also exist. Reading or writing them is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.CRGS/CRGU.
+<<mstatusreg_pte,mstatus>>.SCRG/UCRG also exist. Reading or writing them is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.SCRG/UCRG.
 
-NOTE: As there is no M-mode translation available in RISC-V, there is no current software use for <<mstatusreg_pte,mstatus>>.CRGS/CRGU or an M-mode equivalent bit.
+NOTE: As there is no M-mode translation available in RISC-V, there is no current software use for <<mstatusreg_pte,mstatus>>.SCRG/UCRG or an M-mode equivalent bit.
 It is _only_ included not to break the rule that <<sstatusreg_pte,sstatus>> is required to be a subset of <<mstatusreg_pte,mstatus>>.
 
 
@@ -239,8 +241,8 @@ It is _only_ included not to break the rule that <<sstatusreg_pte,sstatus>> is r
   {bits:  1, name: 'MPELP'},
   {bits:  1, name: 'MDT'},
   {bits: 18, name: 'WPRI'},
-  {bits:  1, name: 'CRGU'},
-  {bits:  1, name: 'CRGS'},
+  {bits:  1, name: 'UCRG'},
+  {bits:  1, name: 'SCRG'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
 ....
@@ -270,8 +272,8 @@ It is _only_ included not to break the rule that <<sstatusreg_pte,sstatus>> is r
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
   {bits: 27, name: 'WPRI'},
-  {bits:  1, name: 'CRGU'},
-  {bits:  1, name: 'CRGS'},
+  {bits:  1, name: 'UCRG'},
+  {bits:  1, name: 'SCRG'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
 ....
@@ -298,8 +300,8 @@ It is _only_ included not to break the rule that <<sstatusreg_pte,sstatus>> is r
   {bits: 12, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
   {bits: 27, name: 'WPRI'},
-  {bits:  1, name: 'CRGU'},
-  {bits:  1, name: 'CRGS'},
+  {bits:  1, name: 'UCRG'},
+  {bits:  1, name: 'SCRG'},
   {bits:  1, name: 'SD'}
 ], config:{lanes: 4, hspace:1024}}
 ....
