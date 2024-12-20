@@ -21,11 +21,6 @@ DATE    ?= $(shell date +%Y-%m-%d)
 VERSION ?= v0.9.2
 REVMARK ?= Draft
 
-# URLs for downloaded CSV files
-URL_BASE = https://docs.google.com/spreadsheets/d/1nyxKamsYZaeTyG8qP-JX4_oQwcuQ_4nZ_Ihm3RK0NEY/gviz/tq?tqx=out:csv
-URL_ISA  = $(URL_BASE)&gid=0
-URL_CSR  = $(URL_BASE)&gid=1927549494
-
 # Directories and files
 BUILD_DIR   = build
 SRC_DIR     = src
@@ -130,7 +125,6 @@ pdf: $(PDF_RESULT)
 html: $(HTML_RESULT)
 all: pdf html
 generate: $(GEN_SRC)
-download: $(CSVS)
 
 $(BUILD_DIR):
 	@echo "  DIR $@"
@@ -144,23 +138,14 @@ $(BUILD_DIR):
 	@echo "  DOC $@"
 	$(BUILD_COMMAND)
 
-# Rule to generate all the src/generated/*.adoc from the downloaded CSVs using a Python script.
+# Rule to generate all the src/generated/*.adoc from the CSVs using a Python script.
 $(GEN_SRC) &: $(CSVS) $(GEN_SCRIPT)
 	@echo "  GEN $@"
 	@$(GEN_SCRIPT) -o $(GEN_DIR) --csr $(CSV_DIR)/CHERI_CSR.csv --isa $(CSV_DIR)/CHERI_ISA.csv
-
-# Rule to download CSVs. These files are checked in and only re-downloaded when you `make download`.
-$(CSVS) &:
-	@echo "  DOWN CSV (isa)"
-	@curl -Lo src/csv/CHERI_ISA.csv "$(URL_ISA)"
-	@echo >> src/csv/CHERI_ISA.csv
-	@echo "  DOWN CSV (csr)"
-	@curl -Lo src/csv/CHERI_CSR.csv "$(URL_CSR)"
-	@echo >> src/csv/CHERI_CSR.csv
 
 # Clean
 clean:
 	@echo "  CLEAN"
 	@$(RM) -r $(PDF_RESULT) $(HTML_RESULT) $(GEN_SRC)
 
-.PHONY: all generate download clean
+.PHONY: all generate clean
