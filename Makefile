@@ -21,11 +21,6 @@ DATE    ?= $(shell date +%Y-%m-%d)
 VERSION ?= v0.9.2
 REVMARK ?= Draft
 
-# URLs for downloaded CSV files
-URL_BASE = https://docs.google.com/spreadsheets/d/1nyxKamsYZaeTyG8qP-JX4_oQwcuQ_4nZ_Ihm3RK0NEY/gviz/tq?tqx=out:csv
-URL_ISA  = $(URL_BASE)&gid=0
-URL_CSR  = $(URL_BASE)&gid=1927549494
-
 # Directories and files
 BUILD_DIR   = build
 SRC_DIR     = src
@@ -42,6 +37,12 @@ CSV_DIR	    = $(SRC_DIR)/csv
 CSVS	    = $(wildcard $(CSV_DIR)/*.csv)
 GEN_DIR     = $(SRC_DIR)/generated
 SCRIPTS_DIR = $(SRC_DIR)/scripts
+
+# Downloaded Sail Asciidoc JSON, which includes all of
+# the Sail code and can be embedded. We don't vendor it
+# into this repo since it's quite large (~4MB).
+SAIL_ASCIIDOC_JSON_URL_FILE = riscv_RV64.json.url
+SAIL_ASCIIDOC_JSON = $(GEN_DIR)/riscv_RV64.json
 
 # Output files
 PDF_RESULT    := $(BUILD_DIR)/riscv-cheri.pdf
@@ -94,7 +95,8 @@ ASCIIDOC_OPTIONS  = --trace --verbose                                \
                     --failure-level=ERROR $(EXTRA_ASCIIDOC_OPTIONS)
 ASCIIDOC_REQUIRES = --require=asciidoctor-bibtex       \
                     --require=asciidoctor-diagram      \
-                    --require=asciidoctor-mathematical
+                    --require=asciidoctor-mathematical \
+                    --require=asciidoctor-sail
 
 # File extension to backend map.
 ASCIIDOC_BACKEND_.html = html5
@@ -130,37 +132,33 @@ pdf: $(PDF_RESULT)
 html: $(HTML_RESULT)
 all: pdf html
 generate: $(GEN_SRC)
-download: $(CSVS)
 
 $(BUILD_DIR):
 	@echo "  DIR $@"
 	@mkdir -p $@
 
-%.pdf: $(SRCS) $(IMGS) $(GEN_SRC) | $(BUILD_DIR)
+%.pdf: $(SRCS) $(IMGS) $(GEN_SRC) $(SAIL_ASCIIDOC_JSON) | $(BUILD_DIR)
 	@echo "  DOC $@"
 	$(BUILD_COMMAND)
 
-%.html: $(SRCS) $(IMGS) $(GEN_SRC) | $(BUILD_DIR)
+%.html: $(SRCS) $(IMGS) $(GEN_SRC) $(SAIL_ASCIIDOC_JSON) | $(BUILD_DIR)
 	@echo "  DOC $@"
 	$(BUILD_COMMAND)
 
-# Rule to generate all the src/generated/*.adoc from the downloaded CSVs using a Python script.
+# Rule to generate all the src/generated/*.adoc from the CSVs using a Python script.
 $(GEN_SRC) &: $(CSVS) $(GEN_SCRIPT)
 	@echo "  GEN $@"
 	@$(GEN_SCRIPT) -o $(GEN_DIR) --csr $(CSV_DIR)/CHERI_CSR.csv --isa $(CSV_DIR)/CHERI_ISA.csv
 
-# Rule to download CSVs. These files are checked in and only re-downloaded when you `make download`.
-$(CSVS) &:
-	@echo "  DOWN CSV (isa)"
-	@curl -Lo src/csv/CHERI_ISA.csv "$(URL_ISA)"
-	@echo >> src/csv/CHERI_ISA.csv
-	@echo "  DOWN CSV (csr)"
-	@curl -Lo src/csv/CHERI_CSR.csv "$(URL_CSR)"
-	@echo >> src/csv/CHERI_CSR.csv
+# Download the Sail JSON. The URL is stored in a file so if the URL changes
+# Make will know to download it again.
+# TODO: Remove iconv once this is fixed: https://github.com/Alasdair/asciidoctor-sail/issues/6
+$(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE)
+	@curl --location '$(shell cat $<)' | iconv -f UTF-8 -t ASCII//TRANSLIT >$@
 
 # Clean
 clean:
 	@echo "  CLEAN"
-	@$(RM) -r $(PDF_RESULT) $(HTML_RESULT) $(GEN_SRC)
+	@$(RM) -r $(PDF_RESULT) $(HTML_RESULT) $(GEN_SRC) $(SAIL_ASCIIDOC_JSON)
 
-.PHONY: all generate download clean
+.PHONY: all generate clean
