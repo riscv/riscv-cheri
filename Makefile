@@ -38,6 +38,12 @@ CSVS	    = $(wildcard $(CSV_DIR)/*.csv)
 GEN_DIR     = $(SRC_DIR)/generated
 SCRIPTS_DIR = $(SRC_DIR)/scripts
 
+# Downloaded Sail Asciidoc JSON, which includes all of
+# the Sail code and can be embedded. We don't vendor it
+# into this repo since it's quite large (~4MB).
+SAIL_ASCIIDOC_JSON_URL_FILE = riscv_RV64.json.url
+SAIL_ASCIIDOC_JSON = $(GEN_DIR)/riscv_RV64.json
+
 # Output files
 PDF_RESULT    := $(BUILD_DIR)/riscv-cheri.pdf
 HTML_RESULT   := $(BUILD_DIR)/riscv-cheri.html
@@ -89,7 +95,8 @@ ASCIIDOC_OPTIONS  = --trace --verbose                                \
                     --failure-level=ERROR $(EXTRA_ASCIIDOC_OPTIONS)
 ASCIIDOC_REQUIRES = --require=asciidoctor-bibtex       \
                     --require=asciidoctor-diagram      \
-                    --require=asciidoctor-mathematical
+                    --require=asciidoctor-mathematical \
+                    --require=asciidoctor-sail
 
 # File extension to backend map.
 ASCIIDOC_BACKEND_.html = html5
@@ -130,11 +137,11 @@ $(BUILD_DIR):
 	@echo "  DIR $@"
 	@mkdir -p $@
 
-%.pdf: $(SRCS) $(IMGS) $(GEN_SRC) | $(BUILD_DIR)
+%.pdf: $(SRCS) $(IMGS) $(GEN_SRC) $(SAIL_ASCIIDOC_JSON) | $(BUILD_DIR)
 	@echo "  DOC $@"
 	$(BUILD_COMMAND)
 
-%.html: $(SRCS) $(IMGS) $(GEN_SRC) | $(BUILD_DIR)
+%.html: $(SRCS) $(IMGS) $(GEN_SRC) $(SAIL_ASCIIDOC_JSON) | $(BUILD_DIR)
 	@echo "  DOC $@"
 	$(BUILD_COMMAND)
 
@@ -143,9 +150,14 @@ $(GEN_SRC) &: $(CSVS) $(GEN_SCRIPT)
 	@echo "  GEN $@"
 	@$(GEN_SCRIPT) -o $(GEN_DIR) --csr $(CSV_DIR)/CHERI_CSR.csv --isa $(CSV_DIR)/CHERI_ISA.csv
 
+# Download the Sail JSON. The URL is stored in a file so if the URL changes
+# Make will know to download it again.
+$(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE)
+	@curl --location '$(shell cat $<)' --output $@
+
 # Clean
 clean:
 	@echo "  CLEAN"
-	@$(RM) -r $(PDF_RESULT) $(HTML_RESULT) $(GEN_SRC)
+	@$(RM) -r $(PDF_RESULT) $(HTML_RESULT) $(GEN_SRC) $(SAIL_ASCIIDOC_JSON)
 
 .PHONY: all generate clean
