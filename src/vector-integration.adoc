@@ -26,7 +26,9 @@ _no_ CHERI fault will be taken.
 This is consistent with other exceptions such as page faults which are only taken
 on _active_ elements.
 
-In the case of fault-only-first loads, a trap caused by a CHERI exception will only be taken if it caused by element 0 (and then only if element 0 is active). If another active element causes a CHERI exception then it is treated the same way as other exceptions, the trap is not taken and instead vl is reduced.
+In the case of fault-only-first loads, a CHERI bounds violation is only taken if any bytes of element 0 are out of bounds, or if the CHERI bounds are <<section_cap_malformed,malformed>> and there are any _active_ elements.
+If another _active_ element causes a CHERI bounds violation then it is treated the same way as other exceptions, the trap is not taken and instead vl is reduced.
+All other CHERI fault types, such as tag violations, are taken if there are any _active_ elements.
 
 NOTE: Indexed loads in {cheri_cap_mode_name} check the bounds of every access against
 the authority capability in `cs1`. Therefore the approach of having a zero base
