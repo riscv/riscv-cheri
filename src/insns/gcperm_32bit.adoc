@@ -25,6 +25,7 @@ Convert the unpacked AP permissions as well as the SDP fields of capability `cs1
 into a bit field, with the format shown in xref:gcperm_bit_field[xrefstyle=short],
 and write the result to `rd`. A bit set to 1 in the bit field indicates that
 `cs1` grants the corresponding permission.
+All bits in the `[0:23]` range that are reserved or assigned to extensions that are not implemented by the current hart always report 1.
 +
 If the AP field cannot be produced by <<ACPERM>> then all architectural
 permission bits in `rd` are set to 0.
@@ -32,6 +33,12 @@ permission bits in `rd` are set to 0.
 .Capability permissions bit field
 [#gcperm_bit_field]
 include::../img/acperm_bit_field.edn[]
+
+NOTE: When {cheri_levels_ext_name} is not implemented, the `CL`, `SL`, and `EL` fields always report 1.
+This ensures forwards-compatibility since loads/stores on a core without {cheri_levels_ext_name} behave as if these permissions are always present.
+
+NOTE: Any future extension that defines new permission that are a refinement of existing permissions (e.g. finer-grained <<asr_perm>>) must be allocated to the bits that are currently reported as 1 to ensure forward-compatibility.
+Completely new permissions (e.g. sealing) should use the bits that are reported as zero in the current specification.
 
 Exceptions::
 include::require_cre.adoc[]
