@@ -16,9 +16,11 @@ NOTE: There is no explicit mechanism for enabling or disabling {cheri_pte_ext_na
 
 NOTE: A future version of this specification may include kernel revocation which may require an <<sstatusreg_pte,sstatus>>.SCRG bit.
 
-The remainder of this chapter specifies the behavior of PTE.CW, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG.
+The remainder of this chapter jointly specifies the behavior of PTE.CW, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG.
 
-If {cheri_pte_ext_name} is _not_ implemented then PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG are considered to exist but to be read-only-zero for the purpose of the specification, however a CHERI-aware hart running a VM-enabled OS is strongly recommended to support {cheri_pte_ext_name}.
+NOTE: The description below assumes that {cheri_pte_ext_name} has been implemented.
+ If that is _not_ the case then PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG should be taken as read-only-zero for purpose of the description in the remainder of this chapter only.
+ PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG remain reserved in this case.
 
 The minimum level of PTE support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
 
@@ -202,7 +204,7 @@ When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
 
 <<mstatusreg_pte,mstatus>>.UCRG also exists. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.UCRG.
 
-NOTE: As there is no M-mode translation available in RISC-V, there is no current software use for <<mstatusreg_pte,mstatus>>.UCRG or an M-mode equivalent bit in the future.
+NOTE: There is no current software use for <<mstatusreg_pte,mstatus>>.UCRG.
 It is _only_ included not to break the rule that <<sstatusreg_pte,sstatus>> is required to be a subset of <<mstatusreg_pte,mstatus>>.
 
 
