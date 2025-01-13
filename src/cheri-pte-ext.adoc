@@ -153,14 +153,20 @@ and the capability read from memory optionally has its tag set^1^.
 |===
 |PTE.CW |Mode^1^ |PTE.CRG                              |Load/AMO
 | 0     | S/U | X                                      | Clear loaded tag
-| 1     | U   |&#8800; <<sstatusreg_pte,sstatus>>.UCRG | Page fault, or page fault if tag is set
+| 1     | U   |&#8800; <<sstatusreg_pte,sstatus>>.UCRG | Page fault, or page fault if tag is set^2^
 | 1     | U   |=       <<sstatusreg_pte,sstatus>>.UCRG | Normal operation
-| 1     | S   | X                                      | Normal operation^2^
+| 1     | S   | X                                      | Normal operation^3^
 |===
 
 ^1^ This is the effective privilege mode of the memory access.
 
-^2^ A future version of this specification may check an SCRG bit in <<sstatusreg_pte,sstatus>> for kernel revocation.
+^2^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
+ It is legal for the implementation to fault even if the tag is not set since this behavior is only an optimization for software.
+ This means it is also legal to only check the tag under certain conditions and conservatively fault otherwise.
+ Taking a trap when the tag is not set will introduce additional traps during revocation sweeps.
+ Checking the loaded tag affects the exception priority, see <<exception-priority>>.
+
+^3^ A future version of this specification may check an SCRG bit in <<sstatusreg_pte,sstatus>> for kernel revocation.
 
 [[pte_cw_crg_store_summary]]
 .Summary of Store CW and CRG behavior in the PTEs
@@ -168,17 +174,9 @@ and the capability read from memory optionally has its tag set^1^.
 |===
 |PTE.CW |PTE.CRG |Store/AMO
 | 0     | 0      | Page fault if stored tag is set
-| 0     | 1      | Page fault if stored tag is set, or hardware CW and CRG update^2^
+| 0     | 1      | Page fault if stored tag is set, or <<section_hardware_pte_updates, hardware CW and CRG update>>
 | 1     | X      | Normal operation
 |===
-
-^1^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
- It is legal for the implementation to fault even if the tag is not set since this behavior is only an optimization for software.
- This means it is also legal to only check the tag under certain conditions and conservatively fault otherwise.
- Taking a trap when the tag is not set will introduce additional traps during revocation sweeps.
- Checking the loaded tag affects the exception priority, see <<exception-priority>>.
-
-^2^ See <<section_hardware_pte_updates>>.
 
 The exceptions added by {cheri_pte_ext_name} reuse the load page fault and store/AMO page fault exception cause values,
 and so the cause of the exception can be determined by software by checking the value in <<mtval2>>,
