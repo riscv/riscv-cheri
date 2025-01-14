@@ -75,16 +75,16 @@ endif::[]
 11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
 |Bits[4:3]| R | W | C | LM | EL | SL  | X | ASR | Mode^1^ |
 | 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
-| 2-3   | ✔ |   | ✔ | ✔  | ✔  | ∞^1^| ✔ |     | Mode^1^  | Execute + Data & Cap RO
+| 2-3   | ✔ |   | ✔ | ✔  | ✔  | ∞^2^| ✔ |     | Mode^1^  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |     | Mode^1^  | Execute + Data & Cap RW
-| 6-7   | ✔ | ✔ |   |    |    | 0^1^| ✔ |     | Mode^1^  | Execute + Data RW
+| 6-7   | ✔ | ✔ |   |    |    | 0^2^| ✔ |     | Mode^1^  | Execute + Data RW
 11+| *Quadrant 2: Restricted capability data read/write*
 11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted, LM dependent on W permission.
 |Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
 | 3       | ✔ |   | ✔ |    |    | 0^1^  |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
-| 4       | ✔ | ✔ | ✔ | ✔  |    | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^2^
-| 5       | ✔ | ✔ | ✔ | ✔  |    | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^2^
+| 4       | ✔ | ✔ | ✔ | ✔  |    | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 5       | ✔ | ✔ | ✔ | ✔  |    | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
 | 6       | ✔ | ✔ | ✔ | ✔  |    | 1     |   |     | N/A | Data & Cap RW (with store _local_, no <<el_perm>>)
 | 7       | ✔ | ✔ | ✔ | ✔  |    | 0     |   |     | N/A | Data & Cap RW (no store _local_, no <<el_perm>>)
 11+| *Quadrant 3: Capability data read/write*
@@ -92,15 +92,17 @@ endif::[]
 11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
 |Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
-| 3       | ✔ |   | ✔ | ✔  | ✔  | 0^1^  |   |     | N/A | Data & Cap R0
-| 4       | ✔ | ✔ | ✔ | ✔  | ✔  | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^2^
-| 5       | ✔ | ✔ | ✔ | ✔  | ✔  | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^2^
+| 3       | ✔ |   | ✔ | ✔  | ✔  | 0^2^  |   |     | N/A | Data & Cap R0
+| 4       | ✔ | ✔ | ✔ | ✔  | ✔  | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 5       | ✔ | ✔ | ✔ | ✔  | ✔  | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
 | 6       | ✔ | ✔ | ✔ | ✔  | ✔  | 1     |   |     | N/A | Data & Cap RW (with store _local_)
 | 7       | ✔ | ✔ | ✔ | ✔  | ✔  | 0     |   |     | N/A | Data & Cap RW (no store _local_)
 |==============================================================================
 
-^1^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>> +
-^2^ These entries are reserved when `LVLBITS=1` and in use when `LVLBITS=2`
+^1^ _Mode (<<m_bit>>) can only be set on a tagged capability when {cheri_default_ext_name}
+is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._ +
+^2^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>> +
+^3^ These entries are reserved when `LVLBITS=1` and in use when `LVLBITS=2`
 
 [#section_cap_level_change]
 === Changing capability levels and permissions
