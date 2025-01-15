@@ -22,7 +22,7 @@ is a new unprivileged register: the default data capability, <<ddc>>, that is
 used to authorize all data memory accesses when in
 {cheri_int_mode_name}.
 
-The current CHERI execution mode is given by the <<m_bit>> field of <<pcc>> that
+The current CHERI execution mode is given by the <<m_bit>> of <<pcc>> that
 is encoded as described in xref:m_bit[xrefstyle=short].
 
 The CHERI execution mode impacts the instruction set in the following ways:
@@ -55,7 +55,7 @@ Setting both registers to <<infinite-cap>> ensures that:
 * The bounds authorize accesses to the entire address space i.e base is 0 and
 top is 2^MXLEN^
 
-[#m_bit,reftext="CHERI Execution Mode Encoding"]
+[#m_bit,reftext="M-bit"]
 === CHERI Execution Mode Encoding
 
 {cheri_default_ext_name} adds a new CHERI execution Mode field (M) to
@@ -66,10 +66,15 @@ when the <<x_perm>> is set.
 _even though it is not a permission_ as shown in <<cap_perms_encoding32>>.
 ** Only quadrant 1 represents executable capabilities, and so it's the only
 one which encodes the Mode.
-* When MXLEN=64, the Mode is encoded separately; a new <<m_bit>> field is
+** If {cheri_default_ext_name} not implemented, then setting the <<m_bit>> to
+ {int_mode_value} for {cheri_int_mode_name} in quadrant 1 causes the permissions
+ to be invalid, i.e. an encoding which cannot be produced by <<ACPERM>>.
+* When MXLEN=64, the Mode is encoded separately; a new <<m_bit>> is
 added to the capability format as shown in
 xref:cap_perms_encoding64[xrefstyle=short].
 The <<m_bit>> is only valid for code capabilities, otherwise the field is reserved.
+** When {cheri_default_ext_name} is not implemented then the bit allocated to the <<m_bit>>
+ is _reserved_ for future use.
 
 NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It is
 orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
