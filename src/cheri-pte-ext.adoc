@@ -1,25 +1,33 @@
 [#section_sv_cheri]
 [#cheri_pte_ext]
-== "{cheri_pte_ext_name}" Extension for CHERI Page-Based Virtual-Memory Systems (RV64 only)
+== Extending Page-Based Virtual-Memory Systems for CHERI (RV64 only), including "{cheri_pte_ext_name}"
 
-CHERI is a security mechanism that is generally orthogonal to page-based
-virtual-memory management as defined in cite:[riscv-priv-spec].
-However, it is helpful in CHERI harts to extend RISC-V's virtual-memory
-management to facilitate capability revocation and control the flow of
-capabilities in memory at the page granularity. For this reason, the
-{cheri_pte_ext_name} extension adds new bits to RISC-V's Page Table Entry (PTE)
-format.
+NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
-NOTE: There is no explicit mechanism for enabling or disabling {cheri_pte_ext_name}. A VM-enabled legacy (non-CHERI) OS running in {cheri_int_mode_name} will not load or store capabilities, and so the default state of CW=0 causing loaded capabilities to have their tags cleared, and stored capabilities with their tags set to cause a page fault, won't occur.
+In CHERI harts the Page Table Entry (PTE) format is extended to control the flow of capabilities in memory (see <<limit_cap_prop>>).
+This is achieved by adding the PTE.CW bit described below and is a mandatory feature when any virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) is implemented on an RV64 system.
+By default PTE.CW=0 which will prevent legacy OSs from being able to load or store tagged capabilities without software modification.
 
-A CHERI-aware OS running a VM-enabled OS is strongly recommended to support {cheri_pte_ext_name}, and the minimum level of support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.CRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
+Additionally the {cheri_pte_ext_name} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG bit, and <<sstatusreg_pte,sstatus>>.UCRG as described below.
 
-Therefore when implementing any RV64 virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) and {cheri_base_ext_name}, implementing {cheri_pte_ext_name} is strongly recommended.
+NOTE: {cheri_pte_ext_name} is strongly recommended but not mandatory as a future version of this specification may specify an improved method.
 
-NOTE: It is possible to detect the presence of {cheri_pte_ext_name} in software, by configuring a page table entry without programming CW and without setting <<sstatusreg_pte,sstatus>>.CRG, and testing for an exception on storing a tagged capability.
+NOTE: There is no explicit mechanism for enabling or disabling {cheri_pte_ext_name}.
 
-NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so this extension cannot be implemented.
+NOTE: If software ignores the new PTE bits then there is no change in functionality unless capabilities are accessed.
 
+NOTE: A future version of this specification may include kernel revocation which may require an <<sstatusreg_pte,sstatus>>.SCRG bit.
+
+The remainder of this chapter jointly specifies the behavior of PTE.CW, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG.
+
+NOTE: The description below assumes that {cheri_pte_ext_name} has been implemented.
+ If that is _not_ the case then PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG should be taken as read-only-zero for purpose of the description in the remainder of this chapter only.
+ PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG remain reserved in this case.
+
+The minimum level of PTE support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. private anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
+
+
+[#limit_cap_prop]
 === Limiting Capability Propagation
 
 Page table enforcement can allow the operating system to limit the flow
@@ -46,6 +54,7 @@ a natural solution.
 
 ^*^ _allocated using mmap_
 
+[#cap_revocation]
 === Capability Revocation
 
 Page table enforcement can accelerate concurrent capability revocation
@@ -112,7 +121,7 @@ cleared <<tags_cleared_by_permissions,due to lack of permissions>>.
 of this state.
 ** When a capability store or AMO instruction is executed
 and the tag bit of the capability being written is set, the
-implementation sets the CW bit and assigns the CRG bit equal to <<sstatusreg_pte,sstatus>>.CRG.
+implementation sets the CW bit and assigns the CRG bit equal to <<sstatusreg_pte,sstatus>>.UCRG.
 +
 The PTE update must be
 atomic with respect to other accesses to the PTE, and must atomically check
@@ -135,29 +144,20 @@ When CW is set, the CRG bit indicates the current generation of the virtual memo
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
 * A load page fault exception is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.CRG.
+with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG in user mode.
 * A load page fault exception is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.CRG
+with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG in user mode.
 and the capability read from memory optionally has its tag set^1^.
 
 [[pte_cw_crg_load_summary]]
 .Summary of Load CW and CRG behavior in the PTEs
-[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|PTE.CW |PTE.CRG                                |Load/AMO
-| 0     | X                                     | Clear loaded tag
-| 1     |&#8800; <<sstatusreg_pte,sstatus>>.CRG | Page fault, or page fault if tag is set^1^
-| 1     |=      <<sstatusreg_pte,sstatus>>.CRG  | Normal operation
-|===
-
-[[pte_cw_crg_store_summary]]
-.Summary of Store CW and CRG behavior in the PTEs
-[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
-|===
-|PTE.CW |PTE.CRG |Store/AMO
-| 0     | 0      | Page fault if stored tag is set
-| 0     | 1      | Page fault if stored tag is set, or hardware CW and CRG update^2^
-| 1     | X      | Normal operation
+|PTE.CW |PTE.U|PTE.CRG                                 |Load/AMO
+| 0     | X   | X                                      | Clear loaded tag
+| 1     | 1   |&#8800; <<sstatusreg_pte,sstatus>>.UCRG | Page fault, or page fault if tag is set^1^
+| 1     | 1   |=       <<sstatusreg_pte,sstatus>>.UCRG | Normal operation
+| 1     | 0   | X                                      | Normal operation^2^
 |===
 
 ^1^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
@@ -166,7 +166,17 @@ and the capability read from memory optionally has its tag set^1^.
  Taking a trap when the tag is not set will introduce additional traps during revocation sweeps.
  Checking the loaded tag affects the exception priority, see <<exception-priority>>.
 
-^2^ See <<section_hardware_pte_updates>>.
+^2^ A future version of this specification may check an SCRG bit in <<sstatusreg_pte,sstatus>> for kernel revocation.
+
+[[pte_cw_crg_store_summary]]
+.Summary of Store CW and CRG behavior in the PTEs
+[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
+|===
+|PTE.CW |PTE.CRG |Store/AMO
+| 0     | 0      | Page fault if stored tag is set
+| 0     | 1      | Page fault if stored tag is set, or <<section_hardware_pte_updates, hardware CW and CRG update>>
+| 1     | X      | Normal operation
+|===
 
 The exceptions added by {cheri_pte_ext_name} reuse the load page fault and store/AMO page fault exception cause values,
 and so the cause of the exception can be determined by software by checking the value in <<mtval2>>,
@@ -181,19 +191,16 @@ The decision about whether to take exceptions on capability stores with the tag 
 These cause PTE Accessed and Dirty updates to be done in software, via the exception handler, or by a hardware mechanism respectively.
 
 * If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a page fault.
-* If only _Svadu_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then do the hardware update of setting PTE.CW=1 and setting PTE.CRG=<<sstatusreg_pte,sstatus>>.CRG as described in <<section_extending_pte>>.
+* If only _Svadu_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then do the hardware update of setting PTE.CW=1 and setting PTE.CRG=<<sstatusreg_pte,sstatus>>.UCRG as described in <<section_extending_pte>>.
 
 [#xstatus_pte]
 === Extending the Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
 
 The <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) bit as shown.
 
-When V=1 <<vsstatusreg_pte,vsstatus>>.CRG is in effect.
+When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
 
-<<mstatusreg_pte,mstatus>>.CRG also exists. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.CRG.
-
-NOTE: As there is no M-mode translation available in RISC-V, there is no current software use for <<mstatusreg_pte,mstatus>>.CRG.
-It is _only_ included not to break the rule that <<sstatusreg_pte,sstatus>> is required to be a subset of <<mstatusreg_pte,mstatus>>.
+<<mstatusreg_pte,mstatus>>.UCRG also exists. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.UCRG.
 
 
 [#mstatusreg_pte]
@@ -232,8 +239,9 @@ It is _only_ included not to break the rule that <<sstatusreg_pte,sstatus>> is r
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'MPELP'},
   {bits:  1, name: 'MDT'},
-  {bits: 19, name: 'WPRI'},
-  {bits:  1, name: 'CRG'},
+  {bits: 18, name: 'WPRI'},
+  {bits:  1, name: 'UCRG'},
+  {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
 ....
@@ -262,8 +270,9 @@ It is _only_ included not to break the rule that <<sstatusreg_pte,sstatus>> is r
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 28, name: 'WPRI'},
-  {bits:  1, name: 'CRG'},
+  {bits: 27, name: 'WPRI'},
+  {bits:  1, name: 'UCRG'},
+  {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
 ....
@@ -289,8 +298,9 @@ It is _only_ included not to break the rule that <<sstatusreg_pte,sstatus>> is r
   {bits:  1, name: 'SUM'},
   {bits: 12, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 28, name: 'WPRI'},
-  {bits:  1, name: 'CRG'},
+  {bits: 27, name: 'WPRI'},
+  {bits:  1, name: 'UCRG'},
+  {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'}
 ], config:{lanes: 4, hspace:1024}}
 ....
