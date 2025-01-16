@@ -61,12 +61,14 @@ The rules from <<acperm_rules>> must be followed when removing permissions.
 | 13  (RV32 only) | <<x_perm>>   | (<<c_perm>> and <<lm_perm>> and <<el_perm>> and (<<sl_perm>> == ∞)) or +
                                    (not(<<c_perm>> and not(<<lm_perm>>) and not(<<el_perm>>) and (<<sl_perm>>==0)))^1^
 | 14              | <<asr_perm>> | <<x_perm>>
-| 15^2^           | <<m_bit>>    | <<x_perm>>
+| 15^2^ (RV32 only) | <<m_bit>>  | <<x_perm>> and {cheri_default_ext_name} is implemented
 |===
 
 ^1^ All the listed permissions in the set are either minimum or maximum. +
-^2^ The <<m_bit>> only exists if {cheri_default_ext_name} is implemented.
- Otherwise it is reserved and this rule is not relevant.
+^2^ For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
+ are only valid if {cheri_default_ext_name} is implemented. Otherwise those encodings represent invalid permissions.
+
+CAUTION: For RV64 without {cheri_default_ext_name}, the <<m_bit>> is a _reserved_ bit, and so is not relevant to ACPERM.
 
 The behavior of currently illegal combinations from <<acperm_rules>> is to clear the permission if invalid (or in the case of <<sl_perm>> set it to 0 (_local_)).
 
