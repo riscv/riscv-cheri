@@ -353,11 +353,13 @@ CHERI register access is disabled if
 
 The effective CRE for the current privilege is:
 
-* Machine: `mseccfg.CRE`
-* Supervisor: `mseccfg.CRE & menvcfg.CRE`
-* User: `mseccfg.CRE & menvcfg.CRE & senvcfg.CRE`
+* Machine: `<<mseccfg>>.CRE`
+* Supervisor: `<<mseccfg>>.CRE & <<menvcfg>>.CRE`
+* User: `<<mseccfg>>.CRE & <<menvcfg>>.CRE & <<senvcfg>>.CRE`
 
 NOTE: The effective CRE is always 1 in debug mode.
+
+NOTE: On reset CHERI register access is disabled (<<mseccfg>>.CRE resets to zero).
 
 Disabling CHERI register access has no effect on implicit accesses or security
 checks.  The last capability installed in <<pcc>> and <<ddc>> before disabling
@@ -370,9 +372,10 @@ Disabling CHERI register access prevents low-privileged {cheri_int_mode_name} so
 from interfering with the correct operation of higher-privileged {cheri_int_mode_name} software
 that do not perform <<ddc>> switches on trap entry and return.
 
-Disable CHERI register access also allows harts supporting CHERI to be fully
+Disabling CHERI register access allows harts supporting CHERI to be fully
 compatible with standard RISC-V, so CHERI instructions, such as <<CRAM>>, that
 do not change the state of CHERI CSRs raise exceptions when CRE=0.
+This is the default behavior on reset.
 ====
 
 NOTE: xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of
