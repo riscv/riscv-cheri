@@ -117,10 +117,9 @@ to this specification. The <<pcc>> metadata has no architectural effect in debug
 mode. Therefore <<asr_perm>> is implicitly granted for access to all CSRs and
 no CHERI instruction fetch faults are possible.
 
-<<dpcc>> (and consequently <<dpc>>) are updated with the
+On debug mode entry <<dpcc>> (and consequently <<dpc>>) are updated with the
 capability in <<pcc>> whose address field is set to the address of the next
-instruction to be executed as described in cite:[riscv-debug-spec] upon
-debug mode entry.
+instruction to be executed upon debug mode exit as described in cite:[riscv-debug-spec].
 
 When leaving debug mode, the capability in <<dpcc>> is unsealed and written
 into <<pcc>>.  A debugger may write <<dpcc>> to change where the hart resumes
