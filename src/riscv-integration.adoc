@@ -99,7 +99,7 @@ instructions, such as <<AUIPC>> or <<JAL>>, in debug mode.
 include::img/pccreg.edn[]
 
 <<pcc>> is an executable
-vector, so it need not be able to hold all possible invalid addresses.
+vector, so it need not be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
 [#section_cap_instructions]
 === Capability Instructions
@@ -570,7 +570,7 @@ encountered an exception. Otherwise, <<mepcc>> is never written by the
 implementation, though it may be explicitly written by software.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<mepcc>> is an executable
-vector, so it does not need to be able to hold all possible invalid addresses.
+vector, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 Additionally, the capability in <<mepcc>> is unsealed when it is installed in
 <<pcc>> on execution of an <<MRET>> instruction.
 
@@ -939,7 +939,7 @@ The <<sepcc>> register is a renamed extension of <<sepc>> that is able to hold a
 capability. Its reset value is the <<infinite-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<sepcc>> is an executable
-vector, so it need not be able to hold all possible invalid addresses.
+vector, so it need not be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 Additionally, the capability in <<sepcc>> is unsealed when it is installed in
 <<pcc>> on execution of an <<SRET>> instruction. The handling of <<sepcc>> is
 otherwise identical to <<mepcc>>, but in supervisor mode.
