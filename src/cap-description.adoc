@@ -678,7 +678,7 @@ In the bounds encoding in this specification, the top and bottom capability
 bounds are formed of two or three sections:
 
 * Upper bits from the address
-** This is only if the other sections do not fill the available bits (E + MW &#8804; MXLEN)
+** This is only if the other sections do not fill the available bits (E + MW < MXLEN)
 * Middle bits from T and B decoded from the metadata
 * Lower bits are set to zero
 ** This is only if there is an internal exponent (EF=0)
@@ -686,17 +686,10 @@ bounds are formed of two or three sections:
 .Composition of the decoded top address bound
 [#comp_addr_bounds,options=header,align="center",cols="2,4,2,2"]
 |==============================================================================
-| Configuration  | Upper Section (if E + MW &#8804; MXLEN) | Middle Section | Lower Section
-| EF=0           | address[MXLEN:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
-| EF=1, i.e. E=0 | address[MXLEN:MW] + ct   2+| T[MW - 1:0]
+| Configuration  | Upper Section (if E + MW < MXLEN) | Middle Section | Lower Section
+| EF=0           | address[MXLEN-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
+| EF=1, i.e. E=0 | address[MXLEN-1:MW] + ct   2+| T[MW - 1:0]
 |==============================================================================
-
-The top bound described by xref:comp_addr_bounds[xrefstyle=short] is MXLEN+1 bits
-wide to allow capabilities to span the whole address space. The address is
-zero-extended by one bit. The malformed check (see
-xref:section_cap_malformed[xrefstyle=short]) ensures that the top never
-overflows into MXLEN+2 bits and that the base never overflows into MXLEN+1
-bits.
 
 The _representable range_ defines the range of addresses which do not corrupt
 the bounds encoding. The encoding was first introduced in
@@ -718,6 +711,5 @@ This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
 is _representable_.
 
-NOTE: Even though address[MXLEN] in xref:comp_addr_bounds[xrefstyle=short] affects
- the value of the top bound, it does not have an affect on the _representable range_
- calculation and so can be excluded from the check.
+NOTE: If E > CAP_MAX_E - 3, then the representability check always passes, even
+ though the bounds are only infinite if E = CAP_MAX_E.
