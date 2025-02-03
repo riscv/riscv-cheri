@@ -592,7 +592,7 @@ class csr_perms(table):
         return row[self.header.index("CLEN CSR")] != ""
 
 class csr_exevectors(table):
-    cols = ["CLEN CSR", "Executable Vector", "Data Pointer", "Unseal On Execution"]
+    cols = ["CLEN CSR", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -614,7 +614,7 @@ class csr_exevectors(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Executable Vector")] == "✔" or \
+        return row[self.header.index("Code Pointer")] == "✔" or \
             row[self.header.index("Unseal On Execution")] == "✔" or \
             row[self.header.index("Data Pointer")] == "✔"
 
