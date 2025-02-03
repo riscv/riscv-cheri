@@ -457,7 +457,7 @@ ISAs must support both {cheri_base_ext_name} and {cheri_default_ext_name}.
 ==== Machine Trap Vector Base Address Register (mtvec)
 
 The <<mtvec>> register is as defined in cite:[riscv-priv-spec]. It is an
-MXLEN-bit register used as the executable vector jumped to when taking traps
+MXLEN-bit register used as the code pointer jumped to when taking traps
 into machine mode. It is extended into <<mtvecc>>.
 
 
@@ -469,7 +469,7 @@ include::img/mtvecreg.edn[]
 
 The <<mtvecc>> register is a renamed extension of <<mtvec>> that holds a
 capability.  Its reset value is the <<infinite-cap>> capability. The capability
-represents an executable vector.
+represents a code pointer.
 
 .Machine-mode trap-vector base-capability register
 include::img/mtveccreg.edn[]
@@ -877,7 +877,7 @@ hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is ty
 ==== Supervisor Trap Vector Base Address Register (stvec)
 
 The <<stvec>> register is as defined in cite:[riscv-priv-spec]. It is an
-SXLEN-bit register used as the executable vector jumped to when taking traps
+SXLEN-bit register used as the code pointer jumped to when taking traps
 into supervisor mode. It is extended into <<stvecc>>.
 
 .Supervisor trap-vector base-address register
