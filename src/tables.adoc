@@ -111,10 +111,10 @@ include::generated/csr_exevectors_table_body.adoc[]
 |==============================================================================
 
 Some CSRs store code pointers or data pointers as shown in xref:CSR_exevectors[xrefstyle=short].
-These CSRs are WARL do not need to store the full width address on RV64, and so need not be capable
-of holding all possible invalid addresses. Prior to writing they allow conversion from an invalid
-address into another invalid address which the CSR is capable of holding.
-CSRs that store fewer address bits are subject to the invalid address
+These are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so need not be capable
+of holding all possible invalid addresses. Prior to writing an invalid address to these CSRs,
+the address must be converted to another invalid address that the CSR is capable of holding.
+CSRs that store fewer address bits are also subject to the invalid address
 check in <<section_invalid_addr_conv>> on writing.
 
 .CLEN-wide CSRs which store all CLEN+1 bits
