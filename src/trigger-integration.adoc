@@ -22,7 +22,7 @@ mcontrol/mcontrol6 after (on previous instruction)
 | .>|*{cheri_excep_mcause}* .<|*Prior to instruction address translation:* +
 *CHERI fault due to PCC checks (tag, execute permission, invalid address and bounds)* |
 | .>|12, 1 .<|During instruction address translation: +
-First encountered *CHERI PTE page fault*, page fault or access fault |
+First encountered *<<cheri_pte_ext,CHERI PTE page fault>>*, page fault or access fault |
 | .>|1 .<|With physical address for instruction: +
 Instruction access fault |
 
@@ -49,14 +49,14 @@ Environment break |
 | .>|4,6 .<|Optionally: +
 Load/store/AMO address misaligned |
 | .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
-First encountered *CHERI <<cheri_pte_ext,PTE>> page fault*, page fault or access fault |
+First encountered *<<cheri_pte_ext,CHERI PTE page fault>>*, page fault or access fault |
 | .>|5,7 .<|With physical address for an explicit memory access: +
 Load/store/AMO access fault |
 |  .>|4,6 .<|If not higher priority: +
 Load/store/AMO address misaligned |
 | .>|13 .<|If not higher priority: +
-CHERI load <<cheri_pte_ext,PTE>> fault |
+<<cheri_pte_ext,CHERI PTE load page fault>> |
 |_Lowest_ .>|3 .<| |mcontrol/mcontrol6 load data before
 |===
 
-NOTE: See the notes beneath <<exception-priority>> for details about CHERI <<cheri_pte_ext,PTE>> page fault priority.
+NOTE: See the notes beneath <<exception-priority>> for details about <<cheri_pte_ext,CHERI PTE page fault>> priority.
