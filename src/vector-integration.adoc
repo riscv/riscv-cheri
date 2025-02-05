@@ -28,7 +28,7 @@ on _active_ elements.
 
 In the case of fault-only-first loads, a CHERI bounds violation is only taken if any bytes of element 0 are out of bounds, or if the CHERI bounds are <<section_cap_malformed,malformed>> and there are any _active_ elements.
 If another _active_ element causes a CHERI bounds violation then it is treated the same way as other exceptions, the trap is not taken and instead vl is reduced.
-All other CHERI fault types, such as tag violations, are taken if there are any _active_ elements.
+All other CHERI fault types, such as tag violations, are only taken if element zero is _active_.
 
 NOTE: Indexed loads in {cheri_cap_mode_name} check the bounds of every access against
 the authority capability in `cs1`. Therefore the approach of having a zero base
