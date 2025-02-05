@@ -424,6 +424,25 @@ include::generated/csr_renamed_purecap_mode_vs_table_body.adoc[]
 include::generated/csr_renamed_purecap_mode_u_table_body.adoc[]
 |===
 
+=== CHERI fault reporting
+
+CHERI faults require additional information to be reported.
+The CSRs updated depend on the mode the trap is taken into, as shown in
+<<cheri-fault-reporting>>.
+
+The additional information is written for CHERI faults and <<cheri_pte_ext,CHERI PTE page faults>>, and
+is otherwise written to zero for all other exceptions, except as listed otherwise by other
+future extensions.
+
+.CHERI fault reporting
+[#cheri-fault-reporting,width=65%,float="center",align="center",options=header,cols="1,1,1"]
+|==============================================================================
+| Trap taken into  | Faulting address | Additional CHERI fault information
+| M-mode           | <<mtval>>        | <<mtval2>>
+| HS-mode / S-mode | <<stval>>        | <<stval2>>
+| VS-mode          | <<vstval>>       | <<vstval2>>
+|==============================================================================
+
 === Machine-Level CSRs
 
 {cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
@@ -737,7 +756,7 @@ Load/store/AMO address breakpoint
 Optionally: +
 Load/store/AMO address misaligned
 | .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
-First encountered *CHERI PTE page fault*^23^, page fault or access fault
+First encountered *<<cheri_pte_ext,CHERI PTE page fault>>*^23^, page fault or access fault
 | .>|5,7 .<|With physical address for an explicit memory access: +
 Load/store/AMO access fault
 | .>|4,6 .<|If not higher priority: +
@@ -748,11 +767,11 @@ CHERI load PTE fault^4^
 ^1^ PCC bounds are intended to be checked against all the bytes of fetched instructions.
  In the case of variable length instruction encoding, and that the fetch has failed to return any data, then only a minimum length instruction is checked against the PCC bounds.
 
-^2^ The higher priority CHERI <<cheri_pte_ext,PTE>> page fault covers capability loads or atomics where the loaded tag _is not_ checked, and all capability stores and atomics where the stored tag is set.
+^2^ The higher priority <<cheri_pte_ext,CHERI PTE page fault>> covers capability loads or atomics where the loaded tag _is not_ checked, and all capability stores and atomics where the stored tag is set.
 
-^3^ CHERI <<cheri_pte_ext,PTE>> page fault exceptions have the same priority against access faults as normal RISC-V page faults. If a normal RISC-V page fault _and_ a CHERI <<cheri_pte_ext,PTE>> fault are both detected simultaneously, then both are recorded as shown in <<mtval2-page-fault>>.
+^3^ <<cheri_pte_ext,CHERI PTE page fault>> exceptions have the same priority against access faults as normal RISC-V page faults. If a normal RISC-V page fault _and_ a <<cheri_pte_ext,CHERI PTE page fault>> are both detected simultaneously, then both are recorded as shown in <<mtval2-page-fault>>.
 
-^4^ The lower priority <<cheri_pte_ext,PTE>> fault only covers capability loads and atomics where the loaded tag _is_ checked.
+^4^ The lower priority <<cheri_pte_ext,CHERI PTE page fault>> only covers capability loads and atomics where the loaded tag _is_ checked.
 
 NOTE: The full details of the CHERI exceptions with cause value {cheri_excep_mcause} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
@@ -797,9 +816,15 @@ endif::[]
 The <<mtval2>> register is an MXLEN-bit read-write register, which is added as part of the
 Hypervisor extension cite:[riscv-priv-spec]. {cheri_base_ext_name} also requires the implementation of this CSR.
 
-When a CHERI fault is taken into M-mode, <<mtval2>> is written
+When a CHERI fault, or <<cheri_pte_ext,CHERI PTE page fault>>, is taken into M-mode, <<mtval2>> is written
 with additional CHERI-specific exception information with the format shown in
 xref:mtval2-format[xrefstyle=short] to assist software in handling the trap.
+
+<<mtval2>> is written to zero for all other exceptions, except as listed otherwise by
+the Hypervisor extension in cite:[riscv-priv-spec], or by other future extensions.
+
+NOTE: the use of <<mtval2>>/<<stval2>>/<<vstval2>> may be irregular as the Hypervisor uses
+ <<mtval2>> and _htval_ for guest page addresses on guest page fault, and CHERI has no use for _htval_.
 
 If <<mtval>> is read-only zero for CHERI exceptions then <<mtval2>> is also read-only zero
 for CHERI exceptions.
@@ -856,10 +881,10 @@ If both are detected at once, then both are recorded.
 .mtval2 for page faults
 [#mtval2-page-fault,width=70%,float="center",align="center",cols="2,1",options=header]
 |==============================================================================
-| Fault                                                   | Value
-| RISC-V page fault                                       | 0
-| CHERI <<cheri_pte_ext,PTE>> fault                       | 1
-| RISC-V page fault and CHERI <<cheri_pte_ext,PTE>> fault | 2
+| Fault                                                        | Value
+| RISC-V page fault                                            | 0
+| <<cheri_pte_ext,CHERI PTE page fault>>                       | 1
+| RISC-V page fault and <<cheri_pte_ext,CHERI PTE page fault>> | 2
 |==============================================================================
 
 NOTE: Reporting both allows the software the choice about which action to take first, for example a write to a
@@ -1077,7 +1102,9 @@ part of {cheri_base_ext_name} when the implementation supports S-mode. Its CSR
 address is 0x14b.
 
 <<stval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
-which are delegated to S-mode.
+and <<cheri_pte_ext,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
+It is written to zero for all other exceptions, except as listed otherwise by other
+future extensions.
 
 The fields are identical to <<mtval2>> for CHERI exceptions, and for load and
 store/AMO page fault exceptions if {cheri_pte_ext_name} is implemented.
@@ -1267,8 +1294,8 @@ the instruction's behavior.
 . If T is invalid and A does not have infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then the instruction gives rise to
 a CHERI fault; the _CHERI jump or branch_ fault is reported in the TYPE field
-and invalid address violation is reported in the CAUSE field of <<mtval2>> or
-<<stval2>>.
+and invalid address violation is reported in the CAUSE field of <<mtval2>>,
+<<stval2>> or <<vstval2>>.
 . If T is invalid and A has infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then A's tag is unchanged and T is
 written into A's address field. Attempting to execute the instruction at
@@ -1292,7 +1319,7 @@ instruction's behavior.
 . If any byte in R is invalid and A does not have infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then the instruction gives rise to
 a CHERI fault; the _CHERI data_ fault is reported in the TYPE field and invalid
-address violation is reported in the CAUSE field of <<mtval2>> or <<stval2>>.
+address violation is reported in the CAUSE field of <<mtval2>>, <<stval2>> or <<vstval2>>.
 . If any byte in R is invalid and A has infinite bounds (see xref:section_cap_encoding[xrefstyle=short]),
 the hart will raise an access fault or page fault as is usual in RISC-V.
 . Otherwise all bytes in R are valid and the instruction behaves as normal.
