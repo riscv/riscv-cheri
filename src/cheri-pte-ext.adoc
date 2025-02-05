@@ -115,10 +115,6 @@ If the CW bit is clear then:
  is raised when a capability store or AMO instruction is executed and the tag bit
  of the capability being written is set.
 * When CRG is set, the "pre-CW state", two schemes are permitted (also see <<section_hardware_pte_updates>>):
-
-NOTE: The tag bit of the stored capability is checked _after_ it is potentially
-cleared <<tags_cleared_by_permissions,due to lack of permissions>>.
-
 ** The same behavior as when CRG is clear, allowing software interpretation
 of this state.
 ** When a capability store or AMO instruction is executed
@@ -141,6 +137,9 @@ The PTE update is not required to be atomic with respect to the explicit memory
 access that caused the update, and the sequence is interruptible. However, the
 hart must not perform explicit memory access before the PTE update is globally
 visible.
+
+NOTE: The tag bit of the stored capability is checked _after_ it is potentially
+cleared <<tags_cleared_by_permissions,due to lack of permissions>>.
 
 When CW is set, the CRG bit indicates the current generation of the virtual memory page with
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
