@@ -445,12 +445,17 @@ Reconstituting the top two bits of T:
 T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
 ```
 
-Decoding the bounds:
+The bounds are decoded as shown in xref:top_bound_dec[xrefstyle=short] and
+xref:base_bound_dec[xrefstyle=short].
 
-```
-top:    t = { {1'b0, a[MXLEN - 1:E + MW]} + ct, T[MW - 1:0], {E{1'b0}} }
-base:   b = {        a[MXLEN - 1:E + MW]  + cb, B[MW - 1:0], {E{1'b0}} }
-```
+.Decoding of the MXLEN+1 wide top (_t_) bound
+[#top_bound_dec]
+include::img/top-bound-dec.edn[]
+
+.Decoding of the MXLEN wide base (_b_) bound
+[#base_bound_dec]
+include::img/base-bound-dec.edn[]
+
 The corrections c~t~ and c~b~ are calculated as as shown below using the
 definitions in xref:cap_encoding_ct[xrefstyle=short] and
 xref:cap_encoding_cb[xrefstyle=short].
