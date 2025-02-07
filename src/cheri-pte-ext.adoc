@@ -107,6 +107,9 @@ The CW bit indicates whether reading or writing capabilities with the tag set to
 the virtual page is permitted. When the CW bit is set, capabilities are written
 as usual, and capability reads are controlled by the CRG bit.
 
+NOTE: The tag bit of the stored capability is checked _after_ it is potentially
+cleared <<tags_cleared_by_permissions,due to lack of permissions>>.
+
 If the CW bit is clear then:
 
 * When a capability load or AMO instruction is executed, the implementation
@@ -115,10 +118,6 @@ If the CW bit is clear then:
  is raised when a capability store or AMO instruction is executed and the tag bit
  of the capability being written is set.
 * When CRG is set, the "pre-CW state", two schemes are permitted (also see <<section_hardware_pte_updates>>):
-
-NOTE: The tag bit of the stored capability is checked _after_ it is potentially
-cleared <<tags_cleared_by_permissions,due to lack of permissions>>.
-
 ** The same behavior as when CRG is clear, allowing software interpretation
 of this state.
 ** When a capability store or AMO instruction is executed
