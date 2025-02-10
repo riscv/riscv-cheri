@@ -542,17 +542,6 @@ NOTE: A capability has infinite bounds if E=CAP_MAX_E and it is not
 malformed (see xref:section_cap_malformed[xrefstyle=short]); this check is
 equivalent to _b_=0 and _t_&#8805;2^MXLEN^.
 
-[#section_top_out_of_range]
-===== The Top Bound is Out Of Range
-
-The top bound of the <<infinite-cap>> is defined to be 2^MXLEN^.
-
-There are cases where the decoded bounds of a capability could, in theory, exceed this value.
-
-These cases are computationally expensive to detect without expanding the bounds, therefore
-all instructions such as <<CBLD>> which expand bounds and output a capability will clear
-the output tag if the top bound is out of range.
-
 [#section_cap_malformed]
 ===== Malformed Capability Bounds
 
@@ -577,7 +566,6 @@ CHERI enforces the following invariants for all valid (i.e., tagged) capabilitie
 . The bounds are not malformed.
 . No reserved bit in the capability encoding is set.
 . The permissions can be legally produced by <<ACPERM>>.
-. The <<section_top_out_of_range,top bound must be no greater than 2^MXLEN^>>.
 
 A tagged capability that violates those invariants (i.e., a tagged but malformed capability or a tagged
 capability with any reserved bit set) can only possibly be caused by
