@@ -18,7 +18,7 @@ GEN_SCRIPT   = $(SCRIPTS_DIR)/generate_tables.py
 
 # Version and date
 DATE    ?= $(shell date +%Y-%m-%d)
-VERSION ?= v0.9.4
+VERSION ?= v0.9.4.1
 REVMARK ?= Draft
 
 # Directories and files
