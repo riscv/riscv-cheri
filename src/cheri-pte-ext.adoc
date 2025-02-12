@@ -26,6 +26,19 @@ NOTE: The description below assumes that {cheri_pte_ext_name} has been implement
 
 The minimum level of PTE support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. private anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
 
+[#cheri_pte_fault]
+=== CHERI PTE page faults
+
+CHERI adds the concept of _CHERI PTE page faults_.
+These reuse the load page fault and store/AMO page fault exception causes, and write additional
+information to <<mtval2>>/<<stval2>>/<<vstval2>>.
+
+Page faults are considered to be _CHERI PTE page faults_ if the `Xtval2` register is written with a non-zero value.
+
+NOTE: It is possible for both a _normal_ page fault and a _CHERI PTE page fault_ to both trigger at once, as represented in the `Xtval2` value, as shown in <<mtval2-page-fault>>.
+
+All RV64 harts with virtual memory can raise _CHERI store/AMO PTE page faults_.
+Only harts which implement {cheri_pte_ext_name} can raise _CHERI load PTE page faults_.
 
 [#limit_cap_prop]
 === Limiting Capability Propagation
@@ -114,7 +127,7 @@ If the CW bit is clear then:
 
 * When a capability load or AMO instruction is executed, the implementation
  clears the tag bit of the capability read from the virtual page.
-* When CRG is clear, the "no capability state", a store/AMO page fault exception
+* When CRG is clear, the "no capability state", a <<cheri_pte_fault,CHERI store/AMO PTE page fault>> exception
  is raised when a capability store or AMO instruction is executed and the tag bit
  of the capability being written is set.
 * When CRG is set, the "pre-CW state", two schemes are permitted (also see <<section_hardware_pte_updates>>):
@@ -144,9 +157,9 @@ visible.
 When CW is set, the CRG bit indicates the current generation of the virtual memory page with
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
-* A load page fault exception is raised when a capability load or AMO instruction is executed
+* A <<cheri_pte_fault,CHERI load PTE page fault>> exception is raised when a capability load or AMO instruction is executed
 with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG in user mode.
-* A load page fault exception is raised when a capability load or AMO instruction is executed
+* A <<cheri_pte_fault,CHERI load PTE page fault>> exception is raised when a capability load or AMO instruction is executed
 with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG in user mode.
 and the capability read from memory optionally has its tag set^1^.
 
@@ -154,36 +167,36 @@ and the capability read from memory optionally has its tag set^1^.
 .Summary of Load CW and CRG behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|PTE.CW |PTE.U|PTE.CRG                                 |Load/AMO
-| 0     | X   | X                                      | Clear loaded tag
-| 1     | 1   |&#8800; <<sstatusreg_pte,sstatus>>.UCRG | Page fault, or page fault if tag is set^1^
-| 1     | 1   |=       <<sstatusreg_pte,sstatus>>.UCRG | Normal operation
-| 1     | 0   | X                                      | Normal operation^2^
+|PTE.CW |PTE.U|PTE.CRG^1^                                 |Load/AMO
+| 0     | X   | X                                         | Clear loaded tag
+| 1     | 1   |&#8800; <<sstatusreg_pte,sstatus>>.UCRG    | <<cheri_pte_fault,CHERI load PTE page fault>>, or <<cheri_pte_fault,CHERI load PTE page fault>> if tag is set^2^
+| 1     | 1   |=       <<sstatusreg_pte,sstatus>>.UCRG^1^ | Normal operation
+| 1     | 0   | X                                         | Normal operation^3^
 |===
 
-^1^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
+^1^ If {cheri_pte_ext_name} is _not_ implemented then PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG are always both zero, and so always match. Therefore <<cheri_pte_fault,CHERI load PTE page fault>> _are not_ possible.
+
+^2^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
  It is legal for the implementation to fault even if the tag is not set since this behavior is only an optimization for software.
  This means it is also legal to only check the tag under certain conditions and conservatively fault otherwise.
  Taking a trap when the tag is not set will introduce additional traps during revocation sweeps.
  Checking the loaded tag affects the exception priority, see <<exception-priority>>.
 
-^2^ A future version of this specification may check an SCRG bit in <<sstatusreg_pte,sstatus>> for kernel revocation.
+^3^ A future version of this specification may check an SCRG bit in <<sstatusreg_pte,sstatus>> for kernel revocation.
 
 [[pte_cw_crg_store_summary]]
 .Summary of Store CW and CRG behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|PTE.CW |PTE.CRG |Store/AMO
-| 0     | 0      | Page fault if stored tag is set
-| 0     | 1      | Page fault if stored tag is set, or <<section_hardware_pte_updates, hardware CW and CRG update>>
-| 1     | X      | Normal operation
+|PTE.CW |PTE.CRG|Store/AMO
+| 0     | 0^1^  | <<cheri_pte_fault,CHERI store/AMO PTE page fault>> if stored tag is set
+| 0     | 1     | <<cheri_pte_fault,CHERI store/AMO PTE page fault>> if stored tag is set, or <<section_hardware_pte_updates, hardware CW and CRG update>>
+| 1     | X     | Normal operation
 |===
 
-The exceptions added by {cheri_pte_ext_name} reuse the load page fault and store/AMO page fault exception cause values,
-and so the cause of the exception can be determined by software by checking the value in <<mtval2>>,
-<<stval2>> etc.
+^1^ If {cheri_pte_ext_name} is _not_ implemented then PTE.CRG is zero.
+ Therefore <<cheri_pte_fault,CHERI store/AMO PTE page fault>> _are_ possible.
 
-The behavior when multiple page fault types are detected at once is shown in <<mtval2-page-fault>>.
 
 [#section_hardware_pte_updates]
 === Enabling Software or Hardware PTE updates
@@ -191,7 +204,7 @@ The behavior when multiple page fault types are detected at once is shown in <<m
 The decision about whether to take exceptions on capability stores with the tag set to a page with PTE.CW=0 and PTE.CRG=1 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
 These cause PTE Accessed and Dirty updates to be done in software, via the exception handler, or by a hardware mechanism respectively.
 
-* If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a page fault.
+* If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a <<cheri_pte_fault,CHERI store/AMO PTE page fault>>.
 * If only _Svadu_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then do the hardware update of setting PTE.CW=1 and setting PTE.CRG=<<sstatusreg_pte,sstatus>>.UCRG as described in <<section_extending_pte>>.
 
 [#xstatus_pte]
