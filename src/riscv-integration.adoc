@@ -431,7 +431,7 @@ CHERI faults require additional information to be reported.
 The CSRs updated depend on the mode the trap is taken into, as shown in
 <<cheri-fault-reporting>>.
 
-The additional information is written for CHERI faults and <<cheri_pte_ext,CHERI PTE page faults>>, and
+The additional information is written for CHERI faults and <<cheri_pte_fault,CHERI PTE page faults>>, and
 is otherwise written to zero for all other exceptions, except as listed otherwise by other
 future extensions.
 
@@ -712,9 +712,9 @@ Environment call from S-mode +
 _Reserved_ +
 Environment call from M-mode +
 Instruction page fault +
-Load page fault +
+Load page fault^1^ +
 _Reserved_ +
-Store/AMO page fault +
+Store/AMO page fault^2^ +
 _Reserved_ +
 _Designated for custom use_ +
 *CHERI fault* +
@@ -723,6 +723,9 @@ _Reserved_ +
 _Designated for custom use_ +
 _Reserved_
 |===
+
+^1^ Includes <<cheri_pte_fault,CHERI PTE load page faults>> for RV64 harts with virtual memory if {cheri_pte_ext_name} is implemented. +
+^2^ Includes <<cheri_pte_fault,CHERI PTE store/AMO page faults>> for RV64 harts with virtual memory.
 
 [[exception-priority]]
 .Synchronous exception priority in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
@@ -762,7 +765,7 @@ First encountered *<<cheri_pte_ext,CHERI PTE page fault>>*^23^, page fault or ac
 Load/store/AMO access fault
 | .>|4,6 .<|If not higher priority: +
 .>|_Lowest_ .>|13 .<|If not higher priority: +
-CHERI load PTE fault^4^
+CHERI load PTE page fault^4^
 |===
 
 ^1^ PCC bounds are intended to be checked against all the bytes of fetched instructions.
@@ -1070,9 +1073,10 @@ Environment call from U-mode +
 Environment call from S-mode +
 _Reserved_ +
 Instruction page fault +
-Load page fault +
+Load page fault^1^ +
 _Reserved_ +
-Store/AMO page fault +
+Store/AMO page fault^2^
+ +
 _Reserved_ +
 _Designated for custom use_ +
 *CHERI fault* +
@@ -1082,6 +1086,9 @@ _Designated for custom use_ +
 _Reserved_
 |===
 
+^1^ Includes <<cheri_pte_fault,CHERI PTE load page faults>> for RV64 harts with virtual memory if {cheri_pte_ext_name} is implemented. +
+^2^ Includes <<cheri_pte_fault,CHERI PTE store/AMO page faults>> for RV64 harts with virtual memory.
+
 [#stval,reftext="stval"]
 ==== Supervisor Trap Value Register (stval)
 
@@ -1089,7 +1096,7 @@ The <<stval>> register is an SXLEN-bit read-write register formatted as shown
 in xref:stval-format[xrefstyle=short].
 
 <<stval>> is updated following the same rules as <<mtval>> for CHERI exceptions
-which are delegated to S-mode.
+and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
 
 .Supervisor trap value register
 [#stval-format]
@@ -1103,12 +1110,9 @@ part of {cheri_base_ext_name} when the implementation supports S-mode. Its CSR
 address is 0x14b.
 
 <<stval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
-and <<cheri_pte_ext,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
+and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
 It is written to zero for all other exceptions, except as listed otherwise by other
 future extensions.
-
-The fields are identical to <<mtval2>> for CHERI exceptions, and for load and
-store/AMO page fault exceptions if {cheri_pte_ext_name} is implemented.
 
 NOTE: <<stval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 
