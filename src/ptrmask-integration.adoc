@@ -4,6 +4,10 @@
 The pointer masking extensions Smmpm, Smnpm, SSnpm, Sspm and Supm are compatible with both {cheri_base_ext_name} and {cheri_default_ext_name}.
 Whenever pointer masking is enabled, all bounds decoding and bounds checks are affected.
 
+NOTE: The suggestion in this section is based on the pointer masking approach from Morello but with changes
+to sign extension and to address the dynamic nature of bit masking.
+Further evaluation on RISCV, especially for {cheri_cap_mode_name}, is still required.
+
 When bounds are <<section_cap_encoding,encoded or decoded>>, a masked but _not_ sign extended address is used.
 Changing how many bits are masked can therefore change the interpretation of the bounds of a capability,
 both for the purpose of implicit accesses via bounds checks and any instructions that report the bounds of a capability.
@@ -14,6 +18,7 @@ it is not invalid to have a capability that covers a longer range than could be 
 (such as one that covers the entire MXLEN address space).
 For the <<section_cap_representable_check, representable range check>>, both the original and new address
 are masked.
+Bounds setting instructions also mask the address in the same way.
 
 NOTE: Because dynamically changing the number of masked bits changes the interpretation of a capability,
 software must take the same care when sharing capabilities between address spaces with differing pointer masking
@@ -21,4 +26,4 @@ as it generally must when sharing capabilities between address spaces with diffe
 
 Any address that is checked against a capability (whether via loads/stores in {cheri_int_mode_name} or {cheri_cap_mode_name}),
 is also first subject to the same masking as bounds decode (masking without extension).
-After any CHERI operations, the final access address is still subject to sign extension as normal.
+After any CHERI operations, the final access address is still subject to as much sign extension as the masking extensions mandate.
