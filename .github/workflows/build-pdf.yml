@@ -75,11 +75,11 @@ jobs:
           retention-days: 30
 
       # Upload GitHub pages artefacts.
-      - name: Make gitlab pages directory
+      - name: Make GitHub pages directory
         run: mkdir dist && cp build/*.html dist/index.html
-        if: github.event_name == 'push'
+        if: github.event_name == 'workflow_dispatch' || github.event_name == 'push'
 
-      - name: Upload artifact
+      - name: Upload pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
