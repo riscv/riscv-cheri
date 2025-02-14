@@ -80,9 +80,14 @@ The behavior of currently illegal combinations from <<acperm_rules>> is to clear
 [#acperm_bit_field]
 include::../img/acperm_bit_field.edn[]
 
-NOTE: The <<el_perm,EL>>, <<sl_perm,SL>> and <<section_cap_level,CL>> fields are only defined if the implementation supports <<cheri_levels_ext,{cheri_levels_ext_name}>>.
+NOTE: The <<el_perm,EL>>, <<sl_perm,SL>> and <<section_cap_level,CL>> fields are only modifiable if the implementation supports <<cheri_levels_ext,{cheri_levels_ext_name}>>.
 
-NOTE: Even though being included here <<section_cap_level,CL>> is not considered an architectural permission.
+
+NOTE: Even though included here <<section_cap_level,CL>> is not considered an architectural permission.
+
+
+NOTE: If a future extension adds a new permission that is a refinement of an existing permission (e.g. finer-grained <<asr_perm>>), then clearing the superset must also clear the refined permission.
+This ensures software forward-compatibility: for example, a kernel that does not know about finer-grained <<asr_perm>> subsets must still be able to prevent all access to privileged instructions and CSRs by clearing <<asr_perm>>.
 
 Exceptions::
 include::require_cre.adoc[]
