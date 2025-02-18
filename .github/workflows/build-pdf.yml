@@ -87,7 +87,7 @@ jobs:
 
       # Create Release
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           files: |
             build/*.pdf
@@ -96,6 +96,7 @@ jobs:
           name: Release ${{ github.event.inputs.version }}
           draft: ${{ github.event.inputs.draft }}
           prerelease: ${{ github.event.inputs.prerelease }}
+          generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GHTOKEN }}
         if: github.event_name == 'workflow_dispatch'
