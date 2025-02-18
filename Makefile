@@ -19,7 +19,6 @@ GEN_SCRIPT   = $(SCRIPTS_DIR)/generate_tables.py
 # Version and date
 DATE    ?= $(shell date +%Y-%m-%d)
 VERSION ?= v0.9.5
-REVMARK ?= Draft
 
 # Directories and files
 BUILD_DIR   = build
@@ -84,7 +83,6 @@ ASCIIDOC_OPTIONS  = --trace --verbose                                \
                     -a compress                                      \
                     -a mathematical-format=svg                       \
                     -a revnumber=$(VERSION)                          \
-                    -a revremark=$(REVMARK)                          \
                     -a revdate=$(DATE)                               \
                     -a buildir=$(BUILD_DIR)                          \
                     -a srcdir=$(SRC_DIR)                             \

@@ -9,15 +9,6 @@ on:
         description: 'Release version, e.g. X.Y.Z:'
         required: true
         type: string
-      revision_mark:
-        description: 'Set revision mark as Draft, Release or Stable:'
-        required: true
-        type: choice
-        options:
-          - Draft
-          - Release
-          - Stable
-        default: Draft
       prerelease:
         description: Tag as a pre-release?
         required: false
@@ -52,7 +43,6 @@ jobs:
       - name: Update environment variables for releases
         run: |
           echo "VERSION=v${{ github.event.inputs.version }}" >> "$GITHUB_ENV"
-          echo "REVMARK=${{ github.event.inputs.revision_mark }}" >> "$GITHUB_ENV"
         if: github.event_name == 'workflow_dispatch'
 
       - name: Update environment variables for push events
