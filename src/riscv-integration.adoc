@@ -506,10 +506,13 @@ interrupts cause the <<pcc>> to be set to the capability with
 its address incremented by four times the interrupt cause number.
 
 Capabilities written to <<mtvecc>> also include writing the MODE field in
-**mtvecc.address[1:0]**. As a result, a representability and sealing check is
-performed on the capability with the MODE field zeroed in
-the address. The tag of the capability written to <<mtvecc>> is cleared if
-either check fails.
+**mtvecc.address[1:0]**, even though it is not actually part of the exception vector address.
+The capability is _always_ written using <<SCADDR>> semantics to update the address field,
+and so sealed capabilities will always have their tags cleared and the <<section_cap_representable_check>>
+is always checked with **mtvecc.address[1:0]=2'b00**.
+
+NOTE: The representability check must be done on the same address used as the exception vector
+ otherwise it is possible to change the capability address without re-checking the <<section_cap_representable_check>>.
 
 Additionally, when MODE=Vectored the capability has its tag bit cleared if the
 capability address + 4 x HICAUSE is not within the <<section_cap_representable_check>>.
