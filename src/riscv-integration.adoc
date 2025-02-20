@@ -515,8 +515,9 @@ In this situation, the same capability can have more than one address.
 When updating the CSR _all possible_ values of the address must be in the
 <<section_cap_representable_check>>, and the tag cleared if _any_ are not.
 
-The capability is written using <<SCADDR>> semantics to update the address field,
-and so sealed capabilities will always have their tags cleared.
+The capability is always written using <<SCADDR>> semantics to update the address field,
+even when writing the full capability, and so sealed capabilities will always have
+their tags cleared.
 
 Additionally, when MODE=Vectored the capability has its tag bit cleared if the
 capability address + 4 x HICAUSE is not within the <<section_cap_representable_check>>.
