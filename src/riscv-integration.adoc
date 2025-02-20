@@ -506,10 +506,18 @@ interrupts cause the <<pcc>> to be set to the capability with
 its address incremented by four times the interrupt cause number.
 
 Capabilities written to <<mtvecc>> also include writing the MODE field in
-**mtvecc.address[1:0]**. As a result, a representability and sealing check is
-performed on the capability with the legalized (WARL) MODE field included in
-the address. The tag of the capability written to <<mtvecc>> is cleared if
-either check fails.
+**mtvecc.address[1:0]**, which is a WARL field, meaning that the capability address can
+change on writing. If the MODE field is non-zero after any WARL conversion,
+then the address used for the exception vector (which has **mtvecc.address[1:0]=2'b00**)
+will not match the value read by software from the CSR.
+
+In this situation, the same capability can have more than one address.
+When updating the CSR _all possible_ values of the address must be in the
+<<section_cap_representable_check>>, and the tag cleared if _any_ are not.
+
+The capability is always written using <<SCADDR>> semantics to update the address field,
+even when writing the full capability, and so sealed capabilities will always have
+their tags cleared.
 
 Additionally, when MODE=Vectored the capability has its tag bit cleared if the
 capability address + 4 x HICAUSE is not within the <<section_cap_representable_check>>.
