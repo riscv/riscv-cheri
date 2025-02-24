@@ -132,7 +132,7 @@ include::insns/store_32bit_fp.adoc[]
 One group of 16-bit encodings are remapped to different instructions dependent
 upon the CHERI execution mode, MXLEN and which extensions are supported.
 
-NOTE: Zcf and Zilsd are incompatible
+NOTE: Zcf and Zclsd are incompatible
 
 NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 
@@ -144,16 +144,16 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zilsd
-|111    |00      | N/A    | C.FSW   | N/A | N/A        | C.SD
-|011    |00      | N/A    | C.FLW   | N/A | N/A        | C.LD
-|111    |10      | N/A    | C.FSWSP | N/A | N/A        | C.SDSP
-|011    |10      | N/A    | C.FLWSP | N/A | N/A        | C.LDSP
+|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
+|111    |00      | N/A    | <<C.FSW>>   | N/A | N/A        | <<C.SD>>
+|011    |00      | N/A    | <<C.FLW>>   | N/A | N/A        | <<C.LD>>
+|111    |10      | N/A    | <<C.FSWSP>> | N/A | N/A        | <<C.SDSP>>
+|011    |10      | N/A    | <<C.FLWSP>> | N/A | N/A        | <<C.LDSP>>
 
-|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
-|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
-|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
+|101    |00      | N/A    | N/A     | <<C.FSD>>    | reserved^1^       | N/A
+|001    |00      | N/A    | N/A     | <<C.FLD>>    | reserved^1^       | N/A
+|101    |10      | N/A    | N/A     | <<C.FSDSP>>  | <<Zcmp>>/<<Zcmt>> | N/A
+|001    |10      | N/A    | N/A     | <<C.FLDSP>>  | reserved^1^       | N/A
 |==============================================================================
 
 ^1^ reserved for future standard Zcm extensions
@@ -163,11 +163,11 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zilsd
-|111    |00    5+| C.SC
-|011    |00    5+| C.LC
-|111    |10    5+| C.SCSP
-|011    |10    5+| C.LCSP
+|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
+|111    |00    5+| <<C.SC>>
+|011    |00    5+| <<C.LC>>
+|111    |10    5+| <<C.SCSP>>
+|011    |10    5+| <<C.LCSP>>
 
 |101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
 |001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
@@ -185,16 +185,16 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zilsd
-|111    |00      | C.SD   | N/A     | N/A | N/A        | N/A
-|011    |00      | C.LD   | N/A     | N/A | N/A        | N/A
-|111    |10      | C.SDSP | N/A     | N/A | N/A        | N/A
-|011    |10      | C.LDSP | N/A     | N/A | N/A        | N/A
+|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
+|111    |00      | <<C.SD>>   | N/A     | N/A | N/A        | N/A
+|011    |00      | <<C.LD>>   | N/A     | N/A | N/A        | N/A
+|111    |10      | <<C.SDSP>> | N/A     | N/A | N/A        | N/A
+|011    |10      | <<C.LDSP>> | N/A     | N/A | N/A        | N/A
 
-|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
-|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
-|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
+|101    |00      | N/A    | N/A     | <<C.FSD>>    | reserved^1^       | N/A
+|001    |00      | N/A    | N/A     | <<C.FLD>>    | reserved^1^       | N/A
+|101    |10      | N/A    | N/A     | <<C.FSDSP>>  | <<Zcmp>>/<<Zcmt>> | N/A
+|001    |10      | N/A    | N/A     | <<C.FLDSP>>  | reserved^1^       | N/A
 |==============================================================================
 
 .16-bit instruction remapping in {cheri_cap_mode_name}
@@ -202,16 +202,16 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zilsd
-|111    |00      | C.SD   | N/A     | N/A | N/A        | N/A
-|011    |00      | C.LD   | N/A     | N/A | N/A        | N/A
-|111    |10      | C.SDSP | N/A     | N/A | N/A        | N/A
-|011    |10      | C.LDSP | N/A     | N/A | N/A        | N/A
+|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
+|111    |00      | <<C.SD>>   | N/A     | N/A | N/A        | N/A
+|011    |00      | <<C.LD>>   | N/A     | N/A | N/A        | N/A
+|111    |10      | <<C.SDSP>> | N/A     | N/A | N/A        | N/A
+|011    |10      | <<C.LDSP>> | N/A     | N/A | N/A        | N/A
 
-|101    |00    5+| C.SC
-|001    |00    5+| C.LC
-|101    |10    5+| C.SCSP
-|001    |10    5+| C.LCSP
+|101    |00    5+| <<C.SC>>
+|001    |00    5+| <<C.LC>>
+|101    |10    5+| <<C.SCSP>>
+|001    |10    5+| <<C.LCSP>>
 |==============================================================================
 
 include::insns/condbr_16bit.adoc[]
