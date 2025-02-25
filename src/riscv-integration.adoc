@@ -511,8 +511,9 @@ change on writing. If the MODE field is non-zero after any WARL conversion,
 then the address used for the exception vector (which has **mtvecc.address[1:0]=2'b00**)
 will not match the value read by software from the CSR.
 
-In this situation, the same capability can have more than one address.
-When updating the CSR _all possible_ values of the address must be in the
+In this situation, the same capability can effectively have more than one address.
+When updating the CSR _all possible_ values of the address visible either by CSR read,
+or which are used as the <<pcc>> on exception launch, must be in the
 <<section_cap_representable_check>>, and the tag cleared if _any_ are not.
 
 The capability is always written using <<SCADDR>> semantics to update the address field,
@@ -520,11 +521,11 @@ even when writing the full capability, and so sealed capabilities will always ha
 their tags cleared.
 
 Additionally, when MODE=Vectored the capability has its tag bit cleared if the
-capability address + 4 x HICAUSE is not within the <<section_cap_representable_check>>.
+capability address~3 + 4xHICAUSE is not within the <<section_cap_representable_check>>.
 HICAUSE is the largest interrupt cause value that the implementation can write
 to <<mcause>> or <<scause>>/<<vscause>> when an interrupt is taken.
 
-NOTE: When MODE=Vectored, it is only required that address + 4 x HICAUSE is
+NOTE: When MODE=Vectored, it is only required that the capability address + 4xHICAUSE is
 within the <<section_cap_representable_check>> instead of the capability's bounds.
 This ensures
 that software is not forced to allocate a capability granting access to more
@@ -532,7 +533,7 @@ memory for the trap-vector than necessary to handle the trap causes that
 actually occur in the system.
 
 NOTE: When MODE=Vectored, if either the capability address _or_ the capability
-address + 4 x HICAUSE are invalid then the <<section_invalid_addr_conv>> rules
+address + 4xHICAUSE are invalid then the <<section_invalid_addr_conv>> rules
 are followed which may require the tag to be cleared. In particular, if any part
 of the range is in the invalid address space then clearing the tag is strongly
 recommended.
