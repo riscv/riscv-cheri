@@ -37,6 +37,9 @@ Page faults are considered to be _CHERI PTE page faults_ if the `Xtval2` registe
 
 NOTE: It is possible for both a _normal_ page fault and a _CHERI PTE page fault_ to both trigger at once, as represented in the `Xtval2` value, as shown in <<mtval2-page-fault>>.
 
+NOTE: Where two stage translation is enabled, the _CHERI PTE page fault_ is only raised when
+the second stage translation has completed, and so is prioritized below guest page faults.
+
 All RV64 harts with virtual memory can raise _CHERI store/AMO PTE page faults_.
 Only harts which implement {cheri_pte_ext_name} can raise _CHERI load PTE page faults_.
 
