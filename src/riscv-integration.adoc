@@ -329,8 +329,8 @@ two tag bits in memory.
 === Zicsr, Control and Status Register (CSR) Instructions
 
 {cheri_base_ext_name} requires that RISC-V CSRs intended to hold addresses,
-like <<mtvec>>, are now able to hold capabilities. Therefore, such registers are
-renamed and extended to CLEN-bit in {cheri_base_ext_name}.
+are now able to hold capabilities. Therefore, such registers are
+extended to CLEN+1 bits in {cheri_base_ext_name} and a `c` suffix is added (e.g. <<mtvec>> is extended to <<mtvecc>>).
 
 Reading or writing any part of a CLEN-bit CSR may cause
 side effects. For example, the CSR's tag bit may be cleared if a new address
@@ -388,6 +388,9 @@ xref:vscsrnames-renamed[xrefstyle=short] and
 xref:ucsrnames-renamed[xrefstyle=short] from the base RISC-V ISA and its
 extensions. The CSRs are renamed to reflect the fact that they are extended to
 CLEN+1 bits wide, as the *x* registers are renamed to *c* registers.
+Even though the CSR is extended, the CSR index remains identical.
+
+NOTE: If {cheri_default_ext_name} is supported then the <<section-cheri-execution-mode>> determines whether CLEN+1 or XLEN bits are returned (see <<CSRRW>>).
 
 [[dcsrnames-renamed]]
 .Renamed debug-mode CSRs in {cheri_base_ext_name}
@@ -486,9 +489,8 @@ include::img/mtvecreg.edn[]
 [#mtvecc,reftext="mtvecc"]
 ==== Machine Trap Vector Base Address Capability Register (mtvecc)
 
-The <<mtvecc>> register is a renamed extension of <<mtvec>> that holds a
-capability.  Its reset value is the <<infinite-cap>> capability. The capability
-represents a code pointer.
+The <<mtvecc>> register extends <<mtvec>> to hold a code capability.
+Its reset value is the <<infinite-cap>> capability.
 
 .Machine-mode trap-vector base-capability register
 include::img/mtveccreg.edn[]
@@ -528,6 +530,8 @@ are followed which may require the tag to be cleared. In particular, if any part
 of the range is in the invalid address space then clearing the tag is strongly
 recommended.
 
+As shown in xref:CSR_exevectors[xrefstyle=short], <<mtvecc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+
 [#mscratch, reftext="mscratch"]
 ==== Machine Scratch Register (mscratch)
 
@@ -543,8 +547,7 @@ include::img/mscratchreg.edn[]
 [#mscratchc, reftext="mscratchc"]
 ==== Machine Scratch Capability Register (mscratchc)
 
-The <<mscratchc>> register is a renamed extension of <<mscratch>> that is able to
-hold a capability.
+The <<mscratchc>> register extends <<mscratch>> to hold a capability.
 
 {TAG_RESET_CSR}
 
@@ -565,8 +568,8 @@ include::img/mepcreg.edn[]
 [#mepcc,reftext="mepcc"]
 ==== Machine Exception Program Counter Capability (mepcc)
 
-The <<mepcc>> register is a renamed extension of <<mepc>> that is able to hold a
-capability. Its reset value is the <<infinite-cap>> capability.
+The <<mepcc>> register extends <<mepc>> to hold a capability.
+Its reset value is the <<infinite-cap>> capability.
 
 .Machine exception program counter capability register
 include::img/mepccreg.edn[]
@@ -913,11 +916,8 @@ include::img/stvecreg.edn[]
 [#stvecc,reftext="stvecc"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvecc)
 
-The <<stvec>> register is an SXLEN-bit WARL read/write register that holds the
-trap vector configuration, consisting of a vector base address (BASE) and a
-vector mode (MODE). The <<stvecc>> register is a renamed extension of <<stvec>>
-that is able to hold a capability. Its reset value is the <<infinite-cap>>
-capability.
+The <<stvecc>> register extends <<stvec>> that is able to hold a capability.
+Its reset value is the <<infinite-cap>> capability.
 
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
@@ -940,8 +940,7 @@ include::img/sscratchreg.edn[]
 [#sscratchc, reftext="sscratchc"]
 ==== Supervisor Scratch Capability Register (sscratchc)
 
-The <<sscratchc>> register is a renamed extension of <<sscratch>> that is able to
-hold a capability.
+The <<sscratchc>> register extends <<sscratch>> to hold a capability.
 
 {TAG_RESET_CSR}
 
@@ -962,8 +961,8 @@ include::img/sepcreg.edn[]
 [#sepcc,reftext="sepcc"]
 ==== Supervisor Exception Program Counter Capability (sepcc)
 
-The <<sepcc>> register is a renamed extension of <<sepc>> that is able to hold a
-capability. Its reset value is the <<infinite-cap>> capability.
+The <<sepcc>> register extends <<sepc>> to hold a capability.
+Its reset value is the <<infinite-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<sepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 Additionally, the capability in <<sepcc>> is unsealed when it is installed in
