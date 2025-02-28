@@ -1,0 +1,102 @@
+<<<
+
+[#ACPERM,reftext="ACPERM"]
+==== ACPERM
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The implementation of this instruction changes
+because the permission fields are encoded differently in the new
+capability format.
+
+NOTE: *CHERI v9 Note:* this instruction was called CANDPERM.
+endif::[]
+
+include::new_encoding_note.adoc[]
+
+Synopsis::
+Mask capability permissions
+
+Mnemonics::
+`acperm cd, cs1, rs2`
+
+Encoding::
+include::wavedrom/acperm.adoc[]
+
+Description::
+<<ACPERM>> performs the following operations:
+
+. Convert the AP and SDP fields of capability `cs1` into a bit field with the
+format shown in xref:acperm_bit_field[xrefstyle=short].
+. Calculate the bitwise AND of the bit field with the mask `rs2`.^1^
+. If the AP and <<m_bit>> field in `cs1` could not have been produced by <<ACPERM>> then
+clear all AP permissions, and the <<m_bit>> to {CAP_MODE_VALUE}. Skip the next step.
+. Clear AP permissions as required to meet the rules below.
+. Encode the AP permissions for RV32 according to <<cap_perms_encoding32>>.
+. Copy `cs1` to `cd`, and update the AP and SDP fields with the newly calculated versions.
+. Set `cd.tag=0` if `cs1` is sealed or if any reserved fields of `cs1` are set.
++
+^1^ Only mask bits associated with currently defined permissions have an effect, mask bits associated with _reserved_ permissions are ignored.
++
+Some combinations of permissions cannot be encoded for MXLEN=32, and are not useful when MXLEN=64.
+These cases are defined to return useful minimal sets of permissions, which may be no permissions.
++
+NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
+The rules from <<acperm_rules>> must be followed when removing permissions.
+
+[#acperm_rules]
+.ACPERM common rules
+[float="center",align="center",cols="2,2,4",options="header"]
+|===
+| Rule            | Permission   | Only valid if
+|  1  (RV32 only) | <<asr_perm>> | All other permissions are set.
+|  2              | <<c_perm>>   | <<r_perm>> or <<w_perm>>
+|  3  (RV32 only) | <<c_perm>>   | <<r_perm>>
+|  4  (RV32 only) | <<x_perm>>   | <<r_perm>>
+|  5  (RV32 only) | <<w_perm>>   | not(<<c_perm>>) or <<lm_perm>>
+|  6  (RV32 only) | <<x_perm>>   | <<w_perm>> or <<c_perm>>
+|  7              | <<el_perm>>  | <<c_perm>> and <<r_perm>>
+|  8  (RV32 only) | <<el_perm>>  | <<lm_perm>>
+|  9              | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
+| 10  (RV32 only) | <<lm_perm>>  | (<<w_perm>> or <<el_perm>>)
+| 11              | <<sl_perm>>  | <<c_perm>>
+| 12  (RV32 only) | <<sl_perm>>  | (<<lm_perm>> and (<<x_perm>> or <<w_perm>>))
+| 13  (RV32 only) | <<x_perm>>   | (<<c_perm>> and <<lm_perm>> and <<el_perm>> and (<<sl_perm>> == ∞)) or +
+                                   (not(<<c_perm>> and not(<<lm_perm>>) and not(<<el_perm>>) and (<<sl_perm>>==0)))^1^
+| 14              | <<asr_perm>> | <<x_perm>>
+| 15^2^ (RV32 only) | <<m_bit>>  | <<x_perm>> and {cheri_default_ext_name} is implemented
+|===
+
+^1^ All the listed permissions in the set are either minimum or maximum. +
+^2^ For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
+ are only valid if {cheri_default_ext_name} is implemented. Otherwise those encodings represent invalid permissions.
+
+CAUTION: For RV64 without {cheri_default_ext_name}, the <<m_bit>> is a _reserved_ bit, and so is not relevant to ACPERM.
+
+The behavior of currently illegal combinations from <<acperm_rules>> is to clear the permission if invalid (or in the case of <<sl_perm>> set it to 0 (_local_)).
+
+* For RV64 all such combinations may be redefined by future extensions.
+* The RV32 only rules are added because they remove combinations which do not meet the encoding requirements for <<cap_perms_encoding32>>, or
+<<cap_perms_encoding_levels32>> if <<cheri_levels_ext,{cheri_levels_ext_name}>> is implemented.
+
+.Capability permissions bit field
+[#acperm_bit_field]
+include::../img/acperm_bit_field.edn[]
+
+NOTE: The <<el_perm,EL>>, <<sl_perm,SL>> and <<section_cap_level,CL>> fields are only modifiable if the implementation supports <<cheri_levels_ext,{cheri_levels_ext_name}>>.
+
+
+NOTE: Even though included here <<section_cap_level,CL>> is not considered an architectural permission.
+
+
+NOTE: If a future extension adds a new permission that is a refinement of an existing permission (e.g. finer-grained <<asr_perm>>), then clearing the superset must also clear the refined permission.
+This ensures software forward-compatibility: for example, a kernel that does not know about finer-grained <<asr_perm>> subsets must still be able to prevent all access to privileged instructions and CSRs by clearing <<asr_perm>>.
+
+Exceptions::
+include::require_cre.adoc[]
+
+Prerequisites::
+{cheri_base_ext_name}
+
+Operation::
++
+sail::execute[clause="ACPERM(_, _, _)",part=body,unindent]
