@@ -23,17 +23,19 @@ Encoding::
 include::wavedrom/acperm.adoc[]
 
 Description::
-ACPERM performs the following operations:
+<<ACPERM>> performs the following operations:
 
 . Convert the AP and SDP fields of capability `cs1` into a bit field with the
 format shown in xref:acperm_bit_field[xrefstyle=short].
-. Calculate the bitwise AND of the bit field with the mask `rs2`.
+. Calculate the bitwise AND of the bit field with the mask `rs2`.^1^
 . If the AP and <<m_bit>> field in `cs1` could not have been produced by <<ACPERM>> then
 clear all AP permissions, and the <<m_bit>> to {CAP_MODE_VALUE}. Skip the next step.
 . Clear AP permissions as required to meet the rules below.
 . Encode the AP permissions for RV32 according to <<cap_perms_encoding32>>.
 . Copy `cs1` to `cd`, and update the AP and SDP fields with the newly calculated versions.
 . Set `cd.tag=0` if `cs1` is sealed or if any reserved fields of `cs1` are set.
++
+^1^ Only mask bits associated with currently defined permissions have an effect, mask bits associated with _reserved_ permissions are ignored.
 +
 Some combinations of permissions cannot be encoded for MXLEN=32, and are not useful when MXLEN=64.
 These cases are defined to return useful minimal sets of permissions, which may be no permissions.
