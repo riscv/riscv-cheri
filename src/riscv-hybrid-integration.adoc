@@ -296,9 +296,9 @@ and the requirement to support them in debug mode is also new.
 endif::[]
 
 [#dddc,reftext="dddc"]
-=== Debug Default Data Capability (dddc)
+=== Debug Default Data Capability CSR (dddc)
 
-<<dddc>> is a register that is able to hold a capability. The address is shown in
+<<dddc>> is a debug mode accessible capability CSR. The address is shown in
 xref:default-csrnames-added[xrefstyle=short].
 
 {TAG_RESET_CSR}
@@ -382,13 +382,13 @@ NOTE: xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of
 a hart in connection with the <<section_cheri_disable,CRE>> and the
 <<m_bit,CHERI execution mode>>.
 
-=== Added CLEN-wide CSRs
+=== Added Capability CSRs
 
-{cheri_default_ext_name} adds the CLEN-wide CSRs shown in
+{cheri_default_ext_name} adds the capability CSRs shown in
 xref:default-csrnames-added[xrefstyle=short].
 
 [[default-csrnames-added]]
-.CLEN-wide CSRs added in {cheri_default_ext_name}
+.Capability CSRs added in {cheri_default_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
 include::generated/csr_added_hybrid_table_body.adoc[]
@@ -487,11 +487,14 @@ xref:section_cheri_disable[xrefstyle=short].
 The reset value is 0.
 
 [#ddc,reftext="ddc"]
-==== Default Data Capability (ddc)
+==== Default Data Capability CSR (ddc)
 
-The <<ddc>> CSR is a read-write capability register implicitly used as an
+<<ddc>> is a capability CSR. The address is shown in
+xref:default-csrnames-added[xrefstyle=short].
+
+<<ddc>> is a read-write, user mode accessible capability CSR implicitly used as an
 operand to authorize all data memory accesses when the current CHERI mode is
-{cheri_int_mode_name}. This register must be readable in any implementation. Its reset value
+{cheri_int_mode_name}. This CSR must be readable in any implementation. Its reset value
 is the <<infinite-cap>> capability.
 
 {REQUIRE_CRE_CSR}

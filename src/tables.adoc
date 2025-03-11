@@ -62,14 +62,14 @@ include::generated/Zcheri_hybrid_insns_table_body.adoc[]
 [#clen_csr_summary]
 == Capability Width CSR Summary
 
-.CSRs renamed and extended to capability width
+.CSRs aliased and extended to capability width
 [#aliased_CSRs]
 [width="100%",options=header,cols="1,1,1"]
 |==============================================================================
 include::generated/csr_aliases_table_body.adoc[]
 |==============================================================================
 
-.Action taken on writing to extended CSRs^**^
+.Action taken on writing to extended CSRs
 [#extended_CSR_writing]
 [width="100%",options=header,cols="1,2,2"]
 |==============================================================================
@@ -80,21 +80,21 @@ include::generated/csr_alias_action_table_body.adoc[]
  is within bounds of the capability written to `Xtvecc`. The check on writing
  must include the lowest (0 offset) and highest possible offset (e.g. 64 * MXLEN bits where HICAUSE=16).
 
-^**^ XLEN bits of extended capability CSRs are written when executing
+XLEN bits of extended capability CSRs are written when executing
 <<CSRRWI>>, <<CSRRC>>, <<CSRRS>>, <<CSRRCI>> or <<CSRRSI>> regardless of the
 CHERI execution mode. When using <<CSRRW>>, CLEN bits are written when the
 CHERI execution mode is {cheri_cap_mode_name} and XLEN bits are written when
 the mode is {cheri_int_mode_name}; therefore, writing XLEN bits with <<CSRRW>>
 is only possible when {cheri_default_ext_name} is implemented.
 
-.Action taken on writing to new capability CSRs^+^
+.Action taken on writing to capability CSRs
 [#new_cap_CSR_writing]
 [width="100%",options=header,cols="1,2,2"]
 |==============================================================================
 include::generated/new_csr_write_action_table_body.adoc[]
 |==============================================================================
 
-^+^ XLEN bits of new capability CSRs added in {cheri_default_ext_name} are
+XLEN bits of capability CSRs added in {cheri_default_ext_name} are
 written when executing <<CSRRWI>>, <<CSRRC>>, <<CSRRS>>, <<CSRRCI>> or
 <<CSRRSI>> regardless of the CHERI execution mode. CLEN bits are always written
 when using <<CSRRW>> regardless of the CHERI execution mode.
@@ -103,7 +103,7 @@ NOTE: Implementations which allow misa.C to be writable need to legalize *Xepcc*
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.
 
-.CLEN-wide CSRs storing code pointers or data pointers
+.Capability CSRs storing code pointers or data pointers
 [#CSR_exevectors]
 [width="100%",options=header,cols="1,1,1,1"]
 |==============================================================================
@@ -117,17 +117,10 @@ the address must be converted to another invalid address that the CSR is capable
 CSRs that store fewer address bits are also subject to the invalid address
 check in <<section_invalid_addr_conv>> on writing.
 
-.CLEN-wide CSRs which store all CLEN+1 bits
-[#CSR_metadata]
-[width="100%",options=header,cols="1,1"]
-|==============================================================================
-include::generated/csr_metadata_table_body.adoc[]
-|==============================================================================
+xref:all_capability_CSRs[xrefstyle=short] shows all capability CSRs.
 
-xref:CSR_metadata[xrefstyle=short] shows which CLEN-wide CSRs store all CLEN+1 bits. No other CLEN-wide CSRs store any reserved bits. All CLEN-wide CSRs store _all_ non-reserved metadata fields.
-
-.All CLEN-wide CSRs. {cheri_base_ext_name} is a prerequisite for all CSRs in this table
-[#extended_CSRs]
+.All capability CSRs.
+[#all_capability_CSRs]
 [width="100%",options=header,cols="2,1,1,2,2,4"]
 |==============================================================================
 include::generated/csr_permission_table_body.adoc[]
