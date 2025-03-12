@@ -332,14 +332,14 @@ two tag bits in memory.
 are now able to hold capabilities. Therefore, such registers are
 extended to CLEN+1 bits in {cheri_base_ext_name} and a `c` suffix is added (e.g. <<mtvec>> is extended to <<mtvecc>>).
 
-Reading or writing any part of a CLEN-bit CSR may cause
+Reading or writing any part of a capability CSR may cause
 side effects. For example, the CSR's tag bit may be cleared if a new address
 is outside the <<section_cap_representable_check>> of a CSR capability being written.
 
 This section describes how the CSR instructions operate on these CSRs in
 {cheri_base_ext_name}.
 
-The CLEN-bit CSRs are summarized in xref:clen_csr_summary[xrefstyle=short].
+The capability CSRs are summarized in xref:clen_csr_summary[xrefstyle=short].
 
 [#zicsr-section-purecap]
 ==== CSR Instructions
@@ -357,7 +357,7 @@ When the <<CSRRW>> instruction is accessing a capability width CSR, then the sou
 and destination operands are *c* registers and it atomically swaps the values in the
 whole CSR with the CLEN width register operand.
 
-There are special rules for updating specific CLEN-wide CSRs as shown in <<extended_CSR_writing>>.
+There are special rules for updating specific capability CSRs as shown in <<extended_CSR_writing>>.
 
 When <<CSRRS>> and <<CSRRC>> instructions are accessing a capability width CSR,
 such as <<mtvecc>>, then the destination operand is a *c* register and the

@@ -22,20 +22,24 @@ Encoding::
 include::wavedrom/csrw-instr.adoc[]
 
 Description::
-This is a standard RISC-V CSR instructions with extended functionality for
-accessing CLEN-wide CSRs, such as <<mtvec>>/<<mtvecc>>.
+These are standard RISC-V CSR instructions with extended functionality for
+accessing capability CSRs (see xref:all_capability_CSRs[xrefstyle=short]).
 +
-See xref:aliased_CSRs[xrefstyle=short] for a list of CLEN-wide CSRs and
+See xref:aliased_CSRs[xrefstyle=short] for a list of CSRs extended to capabilities and
 xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing each one.
 +
+Capability CSRs and the action taken on accessing them is shown in xref:new_cap_CSR_writing[xrefstyle=short].
++
 CSRRW writes `cs1` to extended CSRs in {cheri_cap_mode_name}, and reads a full capability into `cd`.
++
+CSRRW writes `cs1` to capability CSRs in both modes, and reads a full capability into `cd`.
 +
 CSRRW writes `rs1` to extended CSRs in {cheri_int_mode_name}, and reads the address field into `rd`.
 +
 If `cd` is `c0` (or `rd` is `x0`), then the instruction shall not read the CSR
 and shall not cause any of the side effects that might occur on a CSR read.
 +
-The assembler pseudoinstruction to write a capability CSR in {cheri_cap_mode_name},
+The assembler pseudoinstruction to write a capability CSR
 `csrw csr, cs1`, is encoded as `csrrw c0, csr, cs1`.
 +
 Access to XLEN-wide CSRs from other extensions is as specified by RISC-V.
