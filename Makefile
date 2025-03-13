@@ -61,7 +61,6 @@ GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
           $(GEN_DIR)/new_csr_write_action_table_body.adoc          \
           $(GEN_DIR)/csr_aliases_table_body.adoc                   \
           $(GEN_DIR)/csr_exevectors_table_body.adoc                \
-          $(GEN_DIR)/csr_metadata_table_body.adoc                  \
           $(GEN_DIR)/csr_permission_table_body.adoc                \
           $(GEN_DIR)/csr_renamed_purecap_mode_d_table_body.adoc    \
           $(GEN_DIR)/csr_renamed_purecap_mode_m_table_body.adoc    \

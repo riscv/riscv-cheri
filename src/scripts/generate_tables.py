@@ -618,31 +618,6 @@ class csr_exevectors(table):
             row[self.header.index("Unseal On Execution")] == "✔" or \
             row[self.header.index("Data Pointer")] == "✔"
 
-class csr_metadata(table):
-    cols = ["CLEN CSR", "Store full metadata"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("Store full metadata")] == "✔"
-
 def parse_cmdline_args():
     parser = argparse.ArgumentParser(description="Generate tables for CHERI ISA specification")
 
@@ -678,7 +653,6 @@ if __name__ == "__main__":
         tables.append(csr_added_legacy          (os.path.join(args.output_dir, "csr_added_hybrid_table_body.adoc"),header))
         tables.append(csr_perms                 (os.path.join(args.output_dir, "csr_permission_table_body.adoc"),header))
         tables.append(csr_exevectors            (os.path.join(args.output_dir, "csr_exevectors_table_body.adoc"),header))
-        tables.append(csr_metadata              (os.path.join(args.output_dir, "csr_metadata_table_body.adoc"),header))
 
         for row in reader:
             for t in tables:
