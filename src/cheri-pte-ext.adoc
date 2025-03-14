@@ -26,8 +26,6 @@ NOTE: The description below assumes that {cheri_pte_ext_name} has been implement
 
 The minimum level of PTE support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. private anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
 
-If <<section_cheri_disable,CRE>>=0 then the PTE.CW, PTE.CRG bits become _reserved_ when checking PTE permissions on memory accesses.
-
 NOTE: Hardware initiated memory accesses from the page-table walker are not checked by a capability.
 
 [#cheri_pte_fault]
