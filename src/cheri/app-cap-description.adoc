@@ -535,7 +535,7 @@ while still allowing the bounds to be correctly decoded.
 
 [#cap_bounds_map]
 .Memory address bounds encoded within a capability
-image::cap-bounds-map.png[width=80%,align=center]
+image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
 [#t_bound_msb_inversion]
 ===== Top bound MSB correction
@@ -546,7 +546,7 @@ i.e. _t_ is an MXLEN + 1 bit value. However, _b_ is an
 MXLEN bit value and the size mismatch introduces additional complications
 when decoding, so the following condition is required to correct _t_ for
 capabilities whose <<section_cap_representable_check>> wraps the edge of the address
-space:
+space:D
 
 ```
 if ( (E < (CAP_MAX_E - 1)) & (t[MXLEN: MXLEN - 1] - b[MXLEN - 1] > 1) )

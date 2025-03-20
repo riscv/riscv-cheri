@@ -56,6 +56,15 @@ jobs:
           docker run --rm -v ${{ github.workspace }}:/build riscvintl/riscv-docs-base-container-image:latest \
           /bin/sh -c "make -j$(nproc)"
 
+      - name: Update environment variables for push events
+        run: |
+          echo "EXTRA_ASCIIDOC_OPTIONS=-a github_commit_sha=$GITHUB_SHA" >> "$GITHUB_ENV"
+        if: github.event_name == 'push'
+      - name: Build standalone CHERI spec
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/build riscvintl/riscv-docs-base-container-image:latest \
+          /bin/sh -c "make -j$(nproc) -f Makefile.cheri all"
+
     # Upload the riscv-privileged PDF file
       - name: Upload riscv-privileged.pdf
         if: steps.build_files.outcome == 'success'
@@ -136,6 +145,7 @@ jobs:
           mkdir -p dist/snapshot/unprivileged dist/snapshot/privileged
           cp build/riscv-unprivileged.html dist/snapshot/unprivileged/index.html
           cp build/riscv-privileged.html dist/snapshot/privileged/index.html
+          cp build/riscv-cheri.html dist/index.html
         if: github.event_name == 'workflow_dispatch' || (github.event_name == 'push' && github.ref == 'refs/heads/main')
 
       - name: Upload pages artifact

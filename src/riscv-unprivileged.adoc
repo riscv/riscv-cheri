@@ -155,16 +155,20 @@ Please cite as: “The RISC-V Instruction Set Manual, Volume I: User-Level ISA, 
 Version 20191214-draft”, Editors Andrew Waterman and Krste Asanović, RISC-V Foundation,
 December 2019._
 
+include::cheri/attributes.adoc[]
 //the colophon allows for a section after the preamble that is part of the frontmatter and therefore not assigned a page number.
 include::colophon.adoc[]
 
 include::intro.adoc[]
 include::rv32.adoc[]
 include::rv32e.adoc[]
+include::cheri/riscv-unpriv-integration.adoc[]
 include::rv64.adoc[]
 include::rv128.adoc[]
 include::zifencei.adoc[]
 include::zicsr.adoc[]
+// Reduce the build time to only include the base spec+CHERI changes
+ifndef::minimal_cheri_chages_doc[]
 include::counters.adoc[]
 include::zihintntl.adoc[]
 include::zihintpause.adoc[]
@@ -194,6 +198,9 @@ include::scalar-crypto.adoc[]
 include::vector-crypto.adoc[]
 include::unpriv-cfi.adoc[]
 include::zilsd.adoc[]
+endif::[]
+include::cheri/riscv-hybrid-integration.adoc[]
+ifndef::minimal_cheri_chages_doc[]
 include::rv-32-64g.adoc[]
 include::extending.adoc[]
 include::naming.adoc[]
@@ -205,6 +212,11 @@ include::vector-examples.adoc[]
 include::calling-convention.adoc[]
 //include::fraclmul.adoc[]
 //End of Vector appendices
+endif::[]
+// CHERI appendices
+include::cheri/app-cap-description.adoc[]
+include::cheri/app-cheri-instructions.adoc[]
+// End of CHERI appendices
 include::index.adoc[]
 // this is generated generated from index markers.
 include::bibliography.adoc[]

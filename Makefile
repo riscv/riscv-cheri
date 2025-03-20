@@ -75,7 +75,12 @@ DOCS_HTML := $(addprefix $(BUILD_DIR)/, $(addsuffix .html, $(DOCS)))
 DOCS_EPUB := $(addprefix $(BUILD_DIR)/, $(addsuffix .epub, $(DOCS)))
 
 ENV := LANG=C.utf8
-XTRA_ADOC_OPTS :=
+# Default to building only the CHERI changes
+ifdef CHERI_MINIMAL
+XTRA_ADOC_OPTS ?= -a minimal_cheri_chages_doc=1
+else
+XTRA_ADOC_OPTS ?=
+endif
 ASCIIDOCTOR_PDF := $(ENV) asciidoctor-pdf
 ASCIIDOCTOR_HTML := $(ENV) asciidoctor
 ASCIIDOCTOR_EPUB := $(ENV) asciidoctor-epub3
@@ -90,11 +95,28 @@ OPTIONS := --trace \
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
             --require=asciidoctor-lists \
-            --require=asciidoctor-mathematical
+            --require=asciidoctor-mathematical \
+            --require=asciidoctor-sail
 
-.PHONY: all build clean build-container build-no-container build-docs build-pdf build-html build-epub submodule-check
+# Downloaded Sail Asciidoc JSON, which includes all of
+# the Sail code and can be embedded. We don't vendor it
+# into this repo since it's quite large (~4MB).
+SAIL_ASCIIDOC_JSON_URL_FILE = riscv_RV64.json.url
+CHERI_GEN_DIR = $(SRC_DIR)/cheri/generated
+SAIL_ASCIIDOC_JSON = $(CHERI_GEN_DIR)/riscv_RV64.json
+
+.PHONY: all build clean build-container build-no-container build-docs build-pdf build-html build-epub submodule-check generate
 
 all: build
+
+$(CHERI_GEN_DIR):
+	mkdir -p "$@"
+# Download the Sail JSON. The URL is stored in a file so if the URL changes
+# Make will know to download it again.
+$(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE) | $(CHERI_GEN_DIR)
+	@curl --location '$(shell cat $<)' --output $@
+
+generate: $(SAIL_ASCIIDOC_JSON)
 
 # Check if the docs-resources/global-config.adoc file exists. If not, the user forgot to check out submodules.
 submodule-check:
@@ -109,7 +131,7 @@ build-pdf: $(DOCS_PDF)
 build-html: $(DOCS_HTML)
 build-epub: $(DOCS_EPUB)
 
-ALL_SRCS := $(shell git ls-files $(SRC_DIR))
+ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON)
 
 $(BUILD_DIR)/%.pdf: $(SRC_DIR)/%.adoc $(ALL_SRCS)
 	$(WORKDIR_SETUP)

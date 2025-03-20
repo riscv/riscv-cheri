@@ -1,8 +1,15 @@
 = RISC-V Specification for CHERI Extensions
 
+:gh_org: riscv
+:gh_repo: riscv-cheri
+
 This repository contains the CHERI extension specification, adding hardware capabilities to the RISC-V ISA to enable fine-grained memory protection and scalable compartmentalization.
 
-The latest draft HTML version can be accessed at https://riscv.github.io/riscv-cheri and the latest PDF snapshot can be downloaded from https://github.com/riscv/riscv-cheri/releases.
+The latest draft HTML version can be accessed at https://{gh_org}.github.io/{gh_repo} and the latest PDF snapshot can be downloaded from https://github.com/{gh_org}/{gh_repo}/releases.
+
+* *Draft HTML snapshots of the latest commit* integrated in to the main ISA documents can be viewed at the following locations:
+** https://{gh_org}.github.io/{gh_repo}/snapshot/unprivileged/
+** https://{gh_org}.github.io/{gh_repo}/snapshot/privileged/
 
 == License
 
@@ -40,7 +47,10 @@ git clone --recurse-submodules https://github.com/riscv/riscv-cheri.git
 To start the build process, run:
 
 ```shell
-cd ./riscv-cheri && make all
+# build the standalone spec
+cd ./riscv-cheri && make -f Makefile.cheri all
+# Build the privileged/unprivileged documents
+cd ./riscv-cheri && make build-pdf -j2
 ```
 
 The link:Makefile[] script will check the availability of Docker on your system:
