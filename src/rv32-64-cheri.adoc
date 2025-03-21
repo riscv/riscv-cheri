@@ -100,17 +100,18 @@ Additionally, CSRs that hold pointers are extended to capability, but since no C
 [#base_cap_registers]
 [bytefield]
 ----
-(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 25}])
-(def row-height 40)
+(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 40}])
+(def row-height 100)
 (def row-header-fn nil)
 (def boxes-per-row 65)
-(draw-column-headers {:height 30 :font-size 18 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
+(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
 
 (draw-box "" [:box-first {:span 1}]) (draw-box "c0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
 (draw-box "" [:box-first {:span 1}]) (draw-box "c1" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
 (draw-gap "c2-c30 (extending x2-x30)")
 (draw-box "" [:box-first {:span 1}]) (draw-box "c31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
 (draw-box nil [:box-first {:span 1}]) (draw-box "pcc" [:box-related {:span 32}]) (draw-box "pc" [:box-last {:span 32 }])
+(draw-box "tag" {:span 1 :borders {}}) (draw-box "metadata" {:span 32 :borders {}}) (draw-box "address" {:span 32 :borders {}})
 ----
 
 * Tags in registers, caches, and memory:
