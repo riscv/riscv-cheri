@@ -12,7 +12,8 @@ This mechanism is implemented by providing a new primitive, called a *capability
 {cheri_base_ext_name} introduces a new data type, the _capability_, generally used for architectural pointers.
 Capabilities are unforgeable and delegatable tokens of authority that grant software the ability to perform a specific set of operations.
 In CHERI, integer-based pointers can be replaced by capabilities to provide memory access control.
-Capability registers extend existing XLEN-bit integer registers to `2*XLEN+1` (hereafter referred to as CLEN) bit structures, adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+Capability registers extend existing XLEN-bit integer registers to `2*XLEN` (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+In addition to widening to CLEN, each capability register also gains a one-bit validity tag.
 
 .CHERI Capability structure
 [#cap_structure]
@@ -22,7 +23,7 @@ Capability registers extend existing XLEN-bit integer registers to `2*XLEN+1` (h
 (def row-height 80)
 (def row-header-fn nil)
 (def boxes-per-row 32)
-(draw-column-headers {:height 50 :font-size 18 :labels (reverse ["0" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "XLEN-1" "" ""])})
+(draw-column-headers {:height 50 :font-size 18 :labels (reverse (concat ["0"] (repeat 28 "") ["XLEN-1" "" ""]))})
 
 (draw-box "V"    {:span 1})
 (draw-box "" {:span 1 :borders {}})
@@ -102,14 +103,14 @@ Additionally, CSRs that hold pointers are extended to capability, but since no C
 (defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 25}])
 (def row-height 40)
 (def row-header-fn nil)
-(def boxes-per-row 20)
-(draw-column-headers {:height 30 :font-size 18 :labels (concat ["" "2*XLEN (CLEN-1)"] (vec (repeat 8 "")) ["XLEN"] (vec (repeat 8 "")) ["0"])})
+(def boxes-per-row 65)
+(draw-column-headers {:height 30 :font-size 18 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
 
-(draw-box "c0" [:box-first {:span 10}]) (draw-box "x0" [:box-last {:span 10 }])
-(draw-box "c1" [:box-first {:span 10}]) (draw-box "x1" [:box-last {:span 10 }])
+(draw-box "" [:box-first {:span 1}]) (draw-box "c0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
+(draw-box "" [:box-first {:span 1}]) (draw-box "c1" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
 (draw-gap "c2-c30 (extending x2-x30)")
-(draw-box "c31" [:box-first {:span 10}]) (draw-box "x31" [:box-last {:span 10 }])
-(draw-box "pcc" [:box-first {:span 10}]) (draw-box "pc" [:box-last {:span 10 }])
+(draw-box "" [:box-first {:span 1}]) (draw-box "c31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
+(draw-box nil [:box-first {:span 1}]) (draw-box "pcc" [:box-related {:span 32}]) (draw-box "pc" [:box-last {:span 32 }])
 ----
 
 * Tags in registers, caches, and memory:
