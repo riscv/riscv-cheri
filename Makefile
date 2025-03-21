@@ -1,4 +1,4 @@
-# Makefile for RISC-V specification for CHERI extensions
+# Makefile for RISC-V ISA Manuals
 #
 # This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
 # International License. To view a copy of this license, visit
@@ -10,151 +10,169 @@
 # Description:
 #
 # This Makefile is designed to automate the process of building and packaging
-# the specification document.
+# the documentation for RISC-V ISA Manuals. It supports multiple build targets
+# for generating documentation in various formats (PDF, HTML, EPUB).
+#
+# Building with a preinstalled docker container is recommended.
+# Install by running:
+#
+#   docker pull riscvintl/riscv-docs-base-container-image:latest
+#
 
-# Tools
-DOCKER_IMAGE = riscvintl/riscv-docs-base-container-image:latest
-GEN_SCRIPT   = $(SCRIPTS_DIR)/generate_tables.py
+DOCS := riscv-privileged riscv-unprivileged
 
-# Version and date
-DATE    ?= $(shell date +%Y-%m-%d)
-VERSION ?= v0.9.5
+DATE ?= $(shell date +%Y-%m-%d)
+SKIP_DOCKER ?= $(shell if command -v docker >/dev/null 2>&1 ; then echo false; else echo true; fi)
+DOCKER_IMG := riscvintl/riscv-docs-base-container-image:latest
+ifneq ($(SKIP_DOCKER),true)
+    DOCKER_IS_PODMAN = \
+        $(shell ! docker -v | grep podman >/dev/null ; echo $$?)
+    ifeq "$(DOCKER_IS_PODMAN)" "1"
+        # Modify the SELinux label for the host directory to indicate
+        # that it can be shared with multiple containers. This is apparently
+        # only required for Podman, though it is also supported by Docker.
+        DOCKER_VOL_SUFFIX = :z
+    else
+        DOCKER_IS_ROOTLESS = \
+            $(shell ! docker info -f '{{println .SecurityOptions}}' | grep rootless >/dev/null ; echo $$?)
+        ifneq "$(DOCKER_IS_ROOTLESS)" "1"
+            # Rooted Docker requires this flag so that the files it creates are
+            # owned by the current user instead of root. Rootless docker does not
+            # require it, and Podman doesn't either since it is always rootless.
+            DOCKER_USER_ARG := --user $(shell id -u)
+        endif
+    endif
 
-# Directories and files
-BUILD_DIR   = build
-SRC_DIR     = src
-SRCS        = $(wildcard $(SRC_DIR)/*.adoc)     \
-              $(wildcard $(SRC_DIR)/*/*.adoc)   \
-              $(wildcard $(SRC_DIR)/*/*.bib)    \
-              $(wildcard $(SRC_DIR)/*/*/*.adoc) \
-              $(VERSION_FILE)
-IMG_DIR     = $(SRC_DIR)/img
-IMGS        = $(wildcard $(IMG_DIR)/*.png) \
-              $(wildcard $(IMG_DIR)/*.svg) \
-              $(wildcard $(IMG_DIR)/*.edn)
-CSV_DIR	    = $(SRC_DIR)/csv
-CSVS	    = $(wildcard $(CSV_DIR)/*.csv)
-GEN_DIR     = $(SRC_DIR)/generated
-SCRIPTS_DIR = $(SRC_DIR)/scripts
+    DOCKER_CMD = \
+        docker run --rm \
+            -v ${PWD}/$@.workdir:/build${DOCKER_VOL_SUFFIX} \
+            -v ${PWD}/src:/src:ro \
+            -v ${PWD}/docs-resources:/docs-resources:ro \
+            -w /build \
+            $(DOCKER_USER_ARG) \
+            ${DOCKER_IMG} \
+            /bin/sh -c
+    DOCKER_QUOTE := "
+else
+    DOCKER_CMD = \
+        cd $@.workdir &&
+endif
+
+WORKDIR_SETUP = \
+    rm -rf $@.workdir && \
+    mkdir -p $@.workdir && \
+    ln -sfn ../../src ../../docs-resources $@.workdir/
+
+WORKDIR_TEARDOWN = \
+    mv $@.workdir/$@ $@ && \
+    rm -rf $@.workdir
+
+SRC_DIR := src
+BUILD_DIR := build
+
+DOCS_PDF := $(addprefix $(BUILD_DIR)/, $(addsuffix .pdf, $(DOCS)))
+DOCS_HTML := $(addprefix $(BUILD_DIR)/, $(addsuffix .html, $(DOCS)))
+DOCS_EPUB := $(addprefix $(BUILD_DIR)/, $(addsuffix .epub, $(DOCS)))
+
+ENV := LANG=C.utf8
+# Default to building only the CHERI changes
+ifdef CHERI_MINIMAL
+XTRA_ADOC_OPTS ?= -a minimal_cheri_chages_doc=1
+else
+XTRA_ADOC_OPTS ?=
+endif
+ASCIIDOCTOR_PDF := $(ENV) asciidoctor-pdf
+ASCIIDOCTOR_HTML := $(ENV) asciidoctor
+ASCIIDOCTOR_EPUB := $(ENV) asciidoctor-epub3
+OPTIONS := --trace \
+           -a compress \
+           -a mathematical-format=svg \
+           -a pdf-fontsdir=docs-resources/fonts \
+           -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
+           $(XTRA_ADOC_OPTS) \
+           -D build \
+           --failure-level=ERROR
+REQUIRES := --require=asciidoctor-bibtex \
+            --require=asciidoctor-diagram \
+            --require=asciidoctor-lists \
+            --require=asciidoctor-mathematical \
+            --require=asciidoctor-sail
 
 # Downloaded Sail Asciidoc JSON, which includes all of
 # the Sail code and can be embedded. We don't vendor it
 # into this repo since it's quite large (~4MB).
 SAIL_ASCIIDOC_JSON_URL_FILE = riscv_RV64.json.url
-SAIL_ASCIIDOC_JSON = $(GEN_DIR)/riscv_RV64.json
+CHERI_GEN_DIR = $(SRC_DIR)/cheri/generated
+SAIL_ASCIIDOC_JSON = $(CHERI_GEN_DIR)/riscv_RV64.json
 
-# Output files
-PDF_RESULT    := $(BUILD_DIR)/riscv-cheri.pdf
-HTML_RESULT   := $(BUILD_DIR)/riscv-cheri.html
+.PHONY: all build clean build-container build-no-container build-docs build-pdf build-html build-epub submodule-check generate
 
-# Top asciidoc file of the document
-HEADER_SOURCE := $(SRC_DIR)/riscv-cheri.adoc
+all: build
 
-# Generated files
-GEN_SRC = $(GEN_DIR)/both_mode_insns_table_body.adoc               \
-          $(GEN_DIR)/cap_mode_insns_table_body.adoc                \
-          $(GEN_DIR)/csr_added_hybrid_table_body.adoc              \
-          $(GEN_DIR)/csr_added_purecap_mode_d_table_body.adoc      \
-          $(GEN_DIR)/csr_added_purecap_mode_m_table_body.adoc      \
-          $(GEN_DIR)/csr_added_purecap_mode_s_table_body.adoc      \
-          $(GEN_DIR)/csr_alias_action_table_body.adoc              \
-          $(GEN_DIR)/new_csr_write_action_table_body.adoc          \
-          $(GEN_DIR)/csr_aliases_table_body.adoc                   \
-          $(GEN_DIR)/csr_exevectors_table_body.adoc                \
-          $(GEN_DIR)/csr_permission_table_body.adoc                \
-          $(GEN_DIR)/csr_renamed_purecap_mode_d_table_body.adoc    \
-          $(GEN_DIR)/csr_renamed_purecap_mode_m_table_body.adoc    \
-          $(GEN_DIR)/csr_renamed_purecap_mode_s_table_body.adoc    \
-          $(GEN_DIR)/csr_renamed_purecap_mode_u_table_body.adoc    \
-          $(GEN_DIR)/illegal_insns_table_body.adoc                 \
-          $(GEN_DIR)/legacy_mnemonic_insns_table_body.adoc         \
-          $(GEN_DIR)/legacy_mode_insns_table_body.adoc             \
-          $(GEN_DIR)/xlen_dependent_encoding_insns_table_body.adoc \
-          $(GEN_DIR)/Zabhlrsc_insns_table_body.adoc                \
-          $(GEN_DIR)/Zcheri_hybrid_insns_table_body.adoc           \
-          $(GEN_DIR)/Zcheri_purecap_insns_table_body.adoc
-
-# AsciiDoctor command
-ASCIIDOC          = asciidoctor-pdf
-EXTRA_ASCIIDOC_OPTIONS ?=
-
-ASCIIDOC_OPTIONS  = --trace --verbose                                \
-                    -a compress                                      \
-                    -a mathematical-format=svg                       \
-                    -a revnumber=$(VERSION)                          \
-                    -a revdate=$(DATE)                               \
-                    -a buildir=$(BUILD_DIR)                          \
-                    -a srcdir=$(SRC_DIR)                             \
-                    -a imagesdir=img                                 \
-                    -a imagesoutdir=$(BUILD_DIR)/img                 \
-                    -a pdf-fontsdir=docs-resources/fonts             \
-                    -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
-                    --failure-level=ERROR $(EXTRA_ASCIIDOC_OPTIONS)
-ASCIIDOC_REQUIRES = --require=asciidoctor-bibtex       \
-                    --require=asciidoctor-diagram      \
-                    --require=asciidoctor-mathematical \
-                    --require=asciidoctor-sail
-
-# File extension to backend map.
-ASCIIDOC_BACKEND_.html = html5
-ASCIIDOC_BACKEND_.pdf  = pdf
-
-# Command to run Asciidoc to build a PDF or HTML document, depending on
-# the output file ($@).
-ASCIIDOC_BUILD_COMMAND = $(ASCIIDOC) \
-                         $(ASCIIDOC_OPTIONS) \
-                         $(ASCIIDOC_REQUIRES) \
-                         $(HEADER_SOURCE) \
-                         --backend=$(ASCIIDOC_BACKEND_$(suffix $@)) \
-                         --out-file=$@
-
-DOCKER_PATH  := $(shell command -v docker)
-STDIN_IS_TTY := $(shell test -t 0 && echo yes)
-
-ifdef DOCKER_PATH
-    DOCKER_RUN_ARGS = --rm -v $(PWD):/build -w /build $(DOCKER_IMAGE) /bin/sh -c "$(ASCIIDOC_BUILD_COMMAND)"
-    # `-it` is necessary so that ctrl-c works when running locally, however it
-    # does not work in CI ("the input device is not a TTY") so we test for that too.
-    ifdef STDIN_IS_TTY
-        BUILD_COMMAND = docker run -it $(DOCKER_RUN_ARGS)
-    else
-        BUILD_COMMAND = docker run $(DOCKER_RUN_ARGS)
-    endif
-else
-    BUILD_COMMAND = $(ASCIIDOC_BUILD_COMMAND)
-endif
-
-# Convenience targets
-pdf: $(PDF_RESULT)
-html: $(HTML_RESULT)
-all: pdf html
-generate: $(GEN_SRC)
-
-$(BUILD_DIR):
-	@echo "  DIR $@"
-	@mkdir -p $@
-
-%.pdf: $(SRCS) $(IMGS) $(GEN_SRC) $(SAIL_ASCIIDOC_JSON) | $(BUILD_DIR)
-	@echo "  DOC $@"
-	$(BUILD_COMMAND)
-
-%.html: $(SRCS) $(IMGS) $(GEN_SRC) $(SAIL_ASCIIDOC_JSON) | $(BUILD_DIR)
-	@echo "  DOC $@"
-	$(BUILD_COMMAND)
-
-# Rule to generate all the src/generated/*.adoc from the CSVs using a Python script.
-$(GEN_SRC) &: $(CSVS) $(GEN_SCRIPT)
-	@echo "  GEN $@"
-	@$(GEN_SCRIPT) -o $(GEN_DIR) --csr $(CSV_DIR)/CHERI_CSR.csv --isa $(CSV_DIR)/CHERI_ISA.csv
-
+$(CHERI_GEN_DIR):
+	mkdir -p "$@"
 # Download the Sail JSON. The URL is stored in a file so if the URL changes
 # Make will know to download it again.
-$(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE)
+$(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE) | $(CHERI_GEN_DIR)
 	@curl --location '$(shell cat $<)' --output $@
 
-# Clean
-clean:
-	@echo "  CLEAN"
-	@$(RM) -r $(PDF_RESULT) $(HTML_RESULT) $(GEN_SRC) $(SAIL_ASCIIDOC_JSON)
+generate: $(SAIL_ASCIIDOC_JSON)
 
-.PHONY: all generate clean
+# Check if the docs-resources/global-config.adoc file exists. If not, the user forgot to check out submodules.
+submodule-check:
+	if [ ! -e docs-resources/global-config.adoc ]; then \
+	  echo "WARNING: You must clone with --recurse-submodules to automatically populate the submodule 'docs-resources'." 1>&2; \
+	  echo "Checking out submodules for you via 'git submodule update --init --recurse'..."; \
+	  git submodule update --init --recursive; \
+	fi
+
+build-docs: $(DOCS_PDF) $(DOCS_HTML) $(DOCS_EPUB)
+build-pdf: $(DOCS_PDF)
+build-html: $(DOCS_HTML)
+build-epub: $(DOCS_EPUB)
+
+ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON)
+
+$(BUILD_DIR)/%.pdf: $(SRC_DIR)/%.adoc $(ALL_SRCS)
+	$(WORKDIR_SETUP)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(WORKDIR_TEARDOWN)
+
+$(BUILD_DIR)/%.html: $(SRC_DIR)/%.adoc $(ALL_SRCS)
+	$(WORKDIR_SETUP)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(WORKDIR_TEARDOWN)
+
+$(BUILD_DIR)/%.epub: $(SRC_DIR)/%.adoc $(ALL_SRCS)
+	$(WORKDIR_SETUP)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_EPUB) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(WORKDIR_TEARDOWN)
+
+build: submodule-check
+	@echo "Checking if Docker is available..."
+	@if command -v docker >/dev/null 2>&1 ; then \
+		echo "Docker is available, building inside Docker container..."; \
+		$(MAKE) build-container; \
+	else \
+		echo "Docker is not available, building without Docker..."; \
+		$(MAKE) build-no-container; \
+	fi
+
+build-container: submodule-check
+	@echo "Starting build inside Docker container..."
+	$(MAKE) SKIP_DOCKER=false build-docs
+	@echo "Build completed successfully inside Docker container."
+
+build-no-container: submodule-check
+	@echo "Starting build..."
+	$(MAKE) SKIP_DOCKER=true build-docs
+	@echo "Build completed successfully."
+
+# Update docker image to latest
+docker-pull-latest:
+	docker pull ${DOCKER_IMG}
+
+clean:
+	@echo "Cleaning up generated files..."
+	rm -rf $(BUILD_DIR)
+	@echo "Cleanup completed."

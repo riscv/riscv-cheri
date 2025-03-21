@@ -1,0 +1,66 @@
+// Sail source code
+:sail-doc: src/cheri/generated/riscv_RV64.json
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Top-level CHERI definitions
+///////////////////////////////////////////////////////////////////////////////
+
+// Base CHERI extension (without the mode bit in capability format)
+:cheri_base_ext_name:      RV32CH/RV64CH
+// CHERI extension adding support for integer pointer mode (and mode bit)
+:cheri_default_ext_name:   Zcherihybrid
+// Extension for CHERI PTE bits
+:cheri_pte_ext_name:       Svucrg
+// Extension for capability levels (flow control)
+:cheri_levels_ext_name:             Zcherilevels
+// Extension for thread identification
+:tid_ext_name:             Zstid
+
+:cheri_int_mode_name: pass:quotes[_Integer Pointer Mode_]
+:cheri_cap_mode_name: pass:quotes[_Capability Pointer Mode_]
+
+// Extension for supporting lr/sc.[bh]
+:lr_sc_bh_ext_name: Zabhlrsc
+:sh4add_ext_name:   Zish4add
+
+:c_cheri_base_ext_names:   C or Zca, {cheri_base_ext_name}
+:c_cheri_default_ext_names: C or Zca, {cheri_default_ext_name}
+
+:non-csrrw-or:  <<CSRRWI>>, <<CSRRS>>, <<CSRRSI>>, <<CSRRC>> or <<CSRRCI>>
+:non-csrrw-and:  <<CSRRWI>>, <<CSRRS>>, <<CSRRSI>>, <<CSRRC>> and <<CSRRCI>>
+
+:TAG_RESET_CSR: The tag of the CSR must be reset to zero. The reset values of the metadata and address fields are UNSPECIFIED.
+:REQUIRE_CRE_CSR: Access to this CSR is illegal if <<section_cheri_disable,CHERI register and instruction access is disabled>> for the current privilege.
+:REQUIRE_HYBRID_CSR: This CSR is only implemented if {cheri_default_ext_name} is implemented.
+
+:CAP_MODE_VALUE: 0
+:INT_MODE_VALUE: 1
+
+///////////////////////////////////////////////////////////////////////////////
+// Cap definitions
+///////////////////////////////////////////////////////////////////////////////
+
+:cap_rv32_sdp_width:    2
+:cap_rv64_sdp_width:    4
+:cap_rv32_mw_width:    10
+:cap_rv64_mw_width:    14
+:cap_rv32_perms_width:  5
+//including Zcherilevels, 6 without
+:cap_rv64_perms_width:  6
+//CL is not a permission, so 8 not 9
+:cap_rv64_perms_levels_width:  8
+:cap_rv32_addr_width:  32
+:cap_rv64_addr_width:  64
+:cap_rv32_exp_width:    5
+:cap_rv64_exp_width:    6
+
+:cheri_excep_mcause:         28
+:cheri_excep_type_pcc:       0
+:cheri_excep_type_data:      1
+:cheri_excep_type_jump:      2
+:cheri_excep_cause_tag:      0
+:cheri_excep_cause_seal:     1
+:cheri_excep_cause_perm:     2
+:cheri_excep_cause_inv_addr: 3
+:cheri_excep_cause_bounds:   4
