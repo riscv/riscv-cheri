@@ -455,6 +455,15 @@ include::img/top-bound-dec.edn[]
 [#base_bound_dec]
 include::img/base-bound-dec.edn[]
 
+xref:top_bound_dec[xrefstyle=short] and xref:base_bound_dec[xrefstyle=short]
+include ranges which may not be present when the bounds are decoded:
+
+* If E = 0 the lower section does not exist.
+* If E+MW=MXLEN then the top section is only the least signification bit of
+ c~t~ for the top bound, and top section doesn't exist for the bottom bound.
+* If E+MW>MXLEN then neither top section exists, and so the bounds are calculated
+ with no depending on the address field _a_.
+
 The corrections c~t~ and c~b~ are calculated as as shown below using the
 definitions in xref:cap_encoding_ct[xrefstyle=short] and
 xref:cap_encoding_cb[xrefstyle=short].
@@ -462,8 +471,11 @@ xref:cap_encoding_cb[xrefstyle=short].
 [subs="quotes"]
 ----
 A = a[E + MW - 1:E]
-R  = B - 2^MW-2^
+R = B - 2^MW-2^
 ----
+
+NOTE: The comparisons in xref:cap_encoding_ct[xrefstyle=short] and
+xref:cap_encoding_cb[xrefstyle=short] are _unsigned_.
 
 .Calculation of top address correction
 [#cap_encoding_ct,options=header,cols="^1,^1,^1",width="40%",align="center"]
@@ -522,6 +534,9 @@ while still allowing the bounds to be correctly decoded.
 .Memory address bounds encoded within a capability
 image::cap-bounds-map.png[width=80%,align=center]
 
+[#t_bound_msb_inversion]
+===== Top bound MSB correction
+
 A capability has _infinite_ bounds if its bounds cover the entire address space
 such that the base address _b_=0 and the top address _t_&#8805;2^MXLEN^,
 i.e. _t_ is an MXLEN + 1 bit value. However, _b_ is an
@@ -534,6 +549,8 @@ space:
 if ( (E < (CAP_MAX_E - 1)) & (t[MXLEN: MXLEN - 1] - b[MXLEN - 1] > 1) )
     t[MXLEN] = !t[MXLEN]
 ```
+NOTE: The comparison is _unsigned_.
+
 That is, invert the most significant bit of _t_ if the decoded length of the
 capability is larger than E.
 
@@ -678,6 +695,12 @@ unconditionally clears the capability's tag. Examples are:
 
 ==== Practical Information
 
+An artifact of the bounds encoding is that if an address is changed
+such that `t != t'`, then it is also the case that `b != b'`.
+The inverse is also true, if `b != b'` then `t != t'`.
+Therefore, for representable range checking, it is acceptable
+to either check `t == t'` or `b == b'`.
+
 In the bounds encoding in this specification, the top and bottom capability
 bounds are formed of two or three sections:
 
@@ -702,7 +725,61 @@ form in xref:comp_addr_bounds[xrefstyle=short] to aid this description.
 
 For the address to be valid for the current bounds encoding, the value
 in the _Upper Section_ of xref:comp_addr_bounds[xrefstyle=short] _must
-not change_ as this will change the meaning of the bounds.
+not change_ as this will change the meaning of the bounds.  This
+is because `T`, `B` and `E` will be unchanged for the source and
+destination capabilities.  Therefore, the Middle and Lower sections
+of the bounds calculation are also unchanged for source and
+destination capabilities.
+
+When E > CAP_MAX_E - 2, the calculation of the top bound is entirely derived
+from `T` and `E` which will be identical for both the source and destination
+capabilities, thus guaranteeing that `t == t'`.  Likewise, with such values of E, the
+base bound is entirely derived from `B` and `E` and therefore `b == b'`.
+
+The calculation of the MSB of the top bound maybe inverted as specified
+xref:t_bound_msb_inversion[xrefstyle=short].
+Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follows:
+
+.Top bound MSB inversion truth table
+[#t_bound_msb_inversion_truth_table]
+[options=header,align=center,width="100%"]
+|==============================================================================
+| input_t[MXLEN:MXLEN-1]  | b[MXLEN-1]  | output_t[MXLEN:MXLEN-1]
+|      00                 |      0      | 00
+|      01                 |      0      | 01
+|      10                 |      0      | 00
+|      11                 |      0      | 01
+|     *00*                |     *1*     | *10*
+|      01                 |      1      | 01
+|     *10*                |     *1*     | *10*
+|      11                 |      1      | 01
+|==============================================================================
+
+Inspection of xref:t_bound_msb_inversion_truth_table[xrefstyle=short] shows
+that `output_t[MXLEN]` does not depend on `input_t[MXLEN]` as:
+
+* `output_t[MXLEN] = {input_t[MXLEN-1], b[MXLEN-1]} == 2'b01`.
+
+This leads to the conclusions:
+
+* If `t[MXLEN-1] == t'[MXLEN-1]` and `b[MXLEN-1] == b'[MXLEN-1]`, then it is guaranteed `t[MXLEN] == t'[MXLEN]`.
+* If `t[MXLEN-1] != t'[MXLEN-1]` or `b[MXLEN-1] != b'[MXLEN-1]`, then the representable check will fail regardless of checking `t[MXLEN] == t'[MXLEN]`.
+
+Therefore, for the purposed of representable range checking, it is not
+required to check that `t[MXLEN]==t'[XLEN]`.
+
+Given that `t[MXLEN]` is not part of the representable range check:
+
+* when `E == CAP_MAX_E - 2`, `t[MXLEN-1:E] == T[MW-1:0]` and `b[MXLEN-1:E] == B[MW-1:0]`.
+
+Therefore, `T` and `B` are both derived from the capabilities metadata and are
+therefore constant.  Which means that in this case too, the representable
+range check always passes.
+
+As a result:
+
+* If E > CAP_MAX_E - 3, then the representability check always passes, _even
+though the bounds are only infinite if E = CAP_MAX_E_
 
 This gives a range of `s=2^E+MW^`, as shown in
 xref:cap_bounds_map[xrefstyle=short].
@@ -714,6 +791,3 @@ xref:section_cap_encoding[xrefstyle=short].
 This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
 is _representable_.
-
-NOTE: If E > CAP_MAX_E - 3, then the representability check always passes, even
- though the bounds are only infinite if E = CAP_MAX_E.
