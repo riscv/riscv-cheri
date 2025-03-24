@@ -1,4 +1,5 @@
-[#section_cap_description]
+[appendix]
+[#app_cap_description]
 == Anatomy of Capabilities in {cheri_base_ext_name}
 
 RISC-V defines variants of the base integer instruction set characterized by
@@ -315,9 +316,8 @@ capabilities that describe function entry points, known as sealed entry (sentry)
 to establish a form of control-flow integrity between mutually distrusting code. A program may jump to a
 sentry capability to begin executing the instructions it references. A <<JALR>>
 instruction with zero offset automatically unseals a sentry target capability and installs it in the
-program counter capability (see
-xref:section_riscv_programmers_model[xrefstyle=short]). The jump-and-link instructions
-also seal the return address capability which serves as an entry point the callee can return to but cannot use to authorize memory loads or stores.
+<<pcc,program counter capability>>.
+The jump-and-link instructions also seal the return address capability which serves as an entry point the callee can return to but cannot use to authorize memory loads or stores.
 
 [#section_cap_bounds]
 ==== Bounds (EF, T, TE, B, BE)
