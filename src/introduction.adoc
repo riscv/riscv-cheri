@@ -23,58 +23,6 @@ non-probabilistic protection rather than depending on short random numbers or
 truncated cryptographic hashes that can be leaked and reinjected, or that could
 be brute forced.
 
-CHERI enhances the CPU to add hardware memory access control. It has an
-additional memory access mechanism that protects _references to code and data_
-(pointers), rather than the _location of code and data_ (integer addresses).
-This mechanism is implemented by providing a new primitive, called a
-*capability*, that software components can use to implement strongly protected
-pointers within an address space.
-
-Capabilities are unforgeable and delegatable tokens of authority that grant
-software the ability to perform a specific set of operations. In CHERI,
-integer-based pointers can be replaced by capabilities to provide memory access
-control. In this case, a memory access capability contains an integer memory
-address that is extended with metadata to protect its integrity, limit how it
-is manipulated, and control its use. This metadata includes:
-
-*  an out-of-band _tag_ implementing strong integrity protection
-(differentiating valid and invalid capabilities) that prevents confusion
-between data and capabilities
-* _bounds_ limiting the range of addresses that may be dereferenced
-* _permissions_ controlling the specific operations that may be performed
-* _type_ which is used to support higher-level software encapsulation
-
-The CHERI model is motivated by the _principle of least privilege_, which
-argues that greater security can be obtained by minimizing the privileges
-accessible to running software. A second guiding principle is the _principle of
-intentional use_, which argues that, where many privileges are available to a
-piece of software, the privilege to use should be explicitly named rather than
-implicitly selected. While CHERI does not prevent the expression of vulnerable
-software designs, it provides strong vulnerability mitigation: attackers have a
-more limited vocabulary for attacks, and should a vulnerability be successfully
-exploited, they gain fewer rights, and have reduced access to further attack
-surfaces.
-
-Protection properties for capabilities include the ISA ensuring that
-capabilities are always derived via valid manipulations of other capabilities
-(_provenance_), that corrupted in-memory capabilities cannot be dereferenced
-(_integrity_), and that rights associated with capabilities shall only ever be
-equal or less permissive (_monotonicity_). Tampering or modifying capabilities
-in an attempt to elevate their rights will yield an invalid capability as the
-tag will be cleared. Attempting to dereference via an invalid capability
-will result in a hardware exception.
-
-CHERI capabilities may be held in registers or in memories, and are loaded,
-stored, and dereferenced using CHERI-aware instructions that expect capability
-operands rather than integer addresses. On hardware reset, initial capabilities
-are made available to software via capability
-registers. All other capabilities will be derived from these initial valid
-capabilities through valid capability transformations.
-
-Developers can use CHERI to build fine-grained spatial and temporal memory
-protection into their system software and applications and significantly
-improve their security.
-
 === CHERI Extensions to RISC-V
 
 This specification is based on publicly available documentation including
@@ -87,6 +35,8 @@ backwards-compatible with RISC-V.
 <<cheri_default_ext,{cheri_default_ext_name}>>:: Extends {cheri_base_ext_name} with features to ensure
 that the ISA extended with CHERI allows backwards binary compatibility with
 RISC-V.
+<<section_priv_cheri,{cheri_priv_m_ext}>>:: Machine-Level Privileged extension to support CHERI.
+<<section_priv_cheri,{cheri_priv_s_ext}>>:: Supervisor-Level Privileged extension to support CHERI.
 <<sh4add_ext,{sh4add_ext_name}>>::   Addition of <<SH4ADD>> and <<SH4ADD_UW>> for RV64 only, as CHERI capabilities are 16 bytes when XLEN=64
 <<lr_sc_bh_ext,{lr_sc_bh_ext_name}>>:: Addition of <<LR_B>>, <<LR_H>>, <<SC_B>>, <<SC_H>> for more accurate atomic locking as the memory ranges are restricted by using bounds, therefore precise locking is needed.
 <<cheri_pte_ext,{cheri_pte_ext_name}>>:: CHERI extension for RISC-V harts supporting page-based
@@ -95,6 +45,7 @@ virtual-memory.
 improves software compartmentalization on CHERI systems.
 <<cheri_levels_ext,{cheri_levels_ext_name}>>:: Extension for supporting capability flow control.
 This extension allows limiting storing of capabilities to specific regions and can be used e.g. for safer data sharing between compartments.
+<<section_priv_cheri,{cheri_priv_h_ext}>>:: Privileged extension to integrate CHERI with the Hypervisor extensions.
 
 CAUTION: The extension names are provisional and subject to change.
 
@@ -104,9 +55,13 @@ CAUTION: The extension names are provisional and subject to change.
 |==============================================================================
 | Extension               | Status    | Comment
 |<<cheri_base_ext,   {cheri_base_ext_name}>>    | Stable    | This extension is a candidate for freezing
+|<<section_priv_cheri,{cheri_priv_m_ext}>>      | Stable    | This extension is a candidate for freezing
+|<<section_priv_cheri,{cheri_priv_s_ext}>>      | Stable    | This extension is a candidate for freezing
+|<<cheri_base_ext,   {cheri_base_ext_name}>>    | Stable    | This extension is a candidate for freezing
 |<<cheri_default_ext,{cheri_default_ext_name}>> | Stable    | This extension is a candidate for freezing
 |<<sh4add_ext,       {sh4add_ext_name}>>        | Stable    | This extension is a candidate for freezing
 |<<lr_sc_bh_ext,     {lr_sc_bh_ext_name}>>      | Stable    | This extension is a candidate for freezing
+|<<section_priv_cheri,{cheri_priv_h_ext}>>      | Stabilizing | This extension is a candidate for freeze, software evaluation currently ongoing
 |<<cheri_pte_ext,    {cheri_pte_ext_name}>>     | Stabilizing | This extension is a candidate for freeze, software evaluation currently ongoing
 |<<tid_ext,          {tid_ext_name}>>           | Stabilizing | This extension is a candidate for freeze, software evaluation currently ongoing
 |<<cheri_levels_ext, {cheri_levels_ext_name}>> with `LVLBITS=1` | Stabilizing | This extension is a candidate for freeze, software evaluation currently ongoing
@@ -125,7 +80,7 @@ integer addresses *or* CHERI capabilities for memory accesses. Hybrid software
 requires the CHERI RISC-V hart to support {cheri_base_ext_name} and
 {cheri_default_ext_name}.
 
-See xref:riscv-extensions[xrefstyle=short] for compatibility with other RISC-V
+See xref:app_cheri_instructions[xrefstyle=short] for compatibility with other RISC-V
 extensions.
 
 === Risks and Known Uncertainty

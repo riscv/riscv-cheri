@@ -1,0 +1,388 @@
+[[rv32ch]]
+== RV32CH and RV64CH Base Capability Instruction Sets, Version 1.0
+This chapter describes the RV32CH and RV64CH base capability
+instruction sets, that extend the RV32I and RV64I integer instruction sets with CHERI.
+
+CHERI enhances the base ISA to add hardware memory access control.
+It has an additional memory access mechanism that protects _references to code and data_ (pointers), rather than the _location of code and data_ (integer addresses).
+This mechanism is implemented by providing a new primitive, called a *capability*, that software components can use to implement strongly protected pointers within an address space.
+
+=== CHERI overview
+
+{cheri_base_ext_name} introduces a new data type, the _capability_, generally used for architectural pointers.
+Capabilities are unforgeable and delegatable tokens of authority that grant software the ability to perform a specific set of operations.
+In CHERI, integer-based pointers can be replaced by capabilities to provide memory access control.
+Capability registers extend existing XLEN-bit integer registers to `2*XLEN` (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+In addition to widening to CLEN, each capability register also gains a one-bit validity tag.
+
+.CHERI Capability structure
+[#cap_structure]
+[bytefield]
+----
+(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 25}])
+(def row-height 80)
+(def row-header-fn nil)
+(def boxes-per-row 32)
+(draw-column-headers {:height 50 :font-size 18 :labels (reverse (concat ["0"] (repeat 28 "") ["XLEN-1" "" ""]))})
+
+(draw-box "V"    {:span 1})
+(draw-box "" {:span 1 :borders {}})
+(draw-box "Metadata (bounds, permissions, etc.)"    {:span 30})
+(draw-box "" {:span 2 :borders {}})
+(draw-box "Address"     {:span 30})
+(draw-box "" {:span 2 :borders {}})
+(draw-box "XLEN" {:span 30 :borders {}})
+----
+
+CHERI capabilities consist of:
+
+* An XLEN-bit address, describing where the capability currently points.
+* XLEN bits of metadata:
+** Bounds: a _base_ and a _top_ address, describing the range of addresses the capability can be used to access.
+** Permissions (read, write, execute, ...) describing the kinds of operations the capability can be used for.
+** Sealing information: a capability can be _sealed_, restricting it to only be used or modified in particular ways.
+* A one-bit integrity tag (the `V` field in <<cap_structure>>): this is maintained by hardware and cannot be directly modified by software.
+It indicates whether the capability is valid.
+An initial <<infinite-cap>> capability with access to all of memory (with all permissions) is provided in system registers on reset: all valid capabilities are derived from it.
+This is the only way to obtain a valid capability: no software, even machine mode, can _forge_ a capability.
+
+The exact bitwise layout of capabilities as well as the precise encoding of each field for XLEN=32 and XLEN=64 is described in <<app_cap_description>>.
+
+The CHERI model is motivated by the _principle of least privilege_, which
+argues that greater security can be obtained by minimizing the privileges
+accessible to running software. A second guiding principle is the _principle of
+intentional use_, which argues that, where many privileges are available to a
+piece of software, the privilege to use should be explicitly named rather than
+implicitly selected. While CHERI does not prevent the expression of vulnerable
+software designs, it provides strong vulnerability mitigation: attackers have a
+more limited vocabulary for attacks, and should a vulnerability be successfully
+exploited, they gain fewer rights, and have reduced access to further attack
+surfaces.
+
+Protection properties for capabilities include the ISA ensuring that
+capabilities are always derived via valid manipulations of other capabilities
+(_provenance_), that corrupted in-memory capabilities cannot be dereferenced
+(_integrity_), and that rights associated with capabilities shall only ever be
+equal or less permissive (_monotonicity_). Tampering or modifying capabilities
+in an attempt to elevate their rights will yield an invalid capability as the
+tag will be cleared. Attempting to dereference via an invalid capability
+will result in a hardware exception.
+
+CHERI capabilities may be held in registers or in memories, and are loaded,
+stored, and dereferenced using CHERI-aware instructions that expect capability
+operands rather than integer addresses. On hardware reset, initial capabilities
+are made available to software via capability
+registers. All other capabilities will be derived from these initial valid
+capabilities through valid capability transformations.
+
+Developers can use CHERI to build fine-grained spatial and temporal memory
+protection into their system software and applications and significantly
+improve their security.
+
+==== Added State
+
+A CHERI core adds state to allow capabilities to be used from within registers, and to ensure they are not corrupted as they flow through the system.
+This means the following state is added by {cheri_base_ext_name}:
+
+* Extended <<gprs,general purpose integer registers>>: These XLEN-wide registers (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a validity bit.
+When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
+The existing integer register names refer to the address part of the capability.
+For the ABI register names the a `c` prefix is added, i.e. `csp`, `ca0`.
+The zero register is extended with zero metadata and a cleared tag: this is called the <<null-cap>> capability.
+
+* Extended system registers: system registers that store addresses are extended to contain capabilities.
+In the base {cheri_base_ext_name}, the only such register is the program counter `pc` that is extended to the program counter capability (<<pcc>>). Extending `pc` ensures that the range of branches and jumps for currently executing code can be restricted.
+Additionally, CSRs that hold pointers are extended to capability, but since no CSRs are defined in the RV32I/RV64I base instruction set, the individual chapters that define new CSRs state whether they are extended to CLEN bits.
+
+.CHERI Capability registers extending existing integer registers in {cheri_base_ext_name}
+[#base_cap_registers]
+[bytefield]
+----
+(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 40}])
+(def row-height 100)
+(def row-header-fn nil)
+(def boxes-per-row 65)
+(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
+
+(draw-box "" [:box-first {:span 1}]) (draw-box "c0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
+(draw-box "" [:box-first {:span 1}]) (draw-box "c1" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
+(draw-gap "c2-c30 (extending x2-x30)")
+(draw-box "" [:box-first {:span 1}]) (draw-box "c31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
+(draw-box nil [:box-first {:span 1}]) (draw-box "pcc" [:box-related {:span 32}]) (draw-box "pc" [:box-last {:span 32 }])
+(draw-box "tag" {:span 1 :borders {}}) (draw-box "metadata" {:span 32 :borders {}}) (draw-box "address" {:span 32 :borders {}})
+----
+
+* Tags in registers, caches, and memory:
+
+** Every register has a one-bit tag, indicating whether the capability in the register is valid to be dereferenced.
+This tag is cleared whenever an invalid capability operation is performed. Such invalid operations include e.g. writing only the integer portion of the register or attempting to increase bounds or permissions.
+
+** The tags are also tracked through the memory subsystem: every aligned CLEN-bits wide region has a non-addressable one-bit tag, which the hardware manages atomically with the data.
+The tag is cleared if the memory region is ever written using an operation other than a store of a full capability register.
+Any caches must preserve this abstraction.
+
+==== Instructions using capability registers
+
+{cheri_base_ext_name} adds new instructions to interact with the extended registers.
+These added instructions can be split into the following categories:
+
+* Capability manipulations (e.g. <<CADD>>, <<SCBNDS>>): for security, capabilities can only be modified in restricted ways.
+  Special instructions are provided to perform these allowed operations, for example _shrinking_ the bounds or _reducing_ the permissions.
+  Any attempt to manipulate capabilities without using the instructions clears the tag, rendering them unusable for accessing memory.
+
+* Capability inspection (e.g. <<GCBASE>>, <<GCPERM>>): capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
+  These instructions give convenient access to allow software to query them.
+
+* Memory access instructions (e.g. <<LC>>, <<SC>>): capabilities must be read from and written to memory atomically along with their tag.
+  Instructions are added to perform these wider accesses, allowing capability flow between the memory and the register file.
+
+[#sec_cheri_cap_mode_int_mode]
+==== {cheri_cap_mode_name} and {cheri_int_mode_name}
+Existing RV32I/RV64I instructions as well as instructions defined by unprivileged extensions are largely unmodified.
+The one difference is that a hart using {cheri_base_ext_name} instead of RV32I/RV64I as the base ISA uses capabilities for all memory accesses.
+This is called executing in {cheri_cap_mode_name}.
+In {cheri_cap_mode_name}, instructions that access memory, as well as branches and jumps are modified to check against the full capability from the base address register (e.g. `lw t0, 16(c3)`) instead of just the integer address (i.e. `lw t0, 16(x3)`).
+In some cases, they are also changed to return a full capability value, e.g. <<AUIPC>> will return the full <<pcc>> including the metadata.
+For the full list of instructions that change behavior with {cheri_base_ext_name}, see <<app_cheri_instructions>>.
+
+The new CHERI state and instructions can also be made available to a hart using RV32I/RV64I as the base ISA with full binary compatibility.
+The mechanics for this mode are described by the <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> extension.
+When a hart supports CHERI but is using RV32I/RV64I as the base ISA, it is executing in {cheri_int_mode_name}.
+For instructions that have differing behavior in {cheri_cap_mode_name} and {cheri_int_mode_name} (memory access and pointer arithmetic instructions), the descriptions will list assembler syntax and behavior for both modes.
+
+==== Capability checks
+
+Every memory access performed by a CHERI core must be authorized by a capability.
+The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
+For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` register.
+
+Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends PC.
+This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
+
+With {cheri_base_ext_name} instruction fetches, jumps, and memory accesses may result in a fatal trap if the authorizing capability does grant the required permissions or the access is out of bounds.
+No other exception paths are added: in particular, capability manipulations do not trap, but may clear the tag on the result capability if the operation is not permitted.
+
+[#pcc,reftext="pcc"]
+==== PCC - The Program Counter Capability
+
+An authorizing capability with appropriate permissions is required to execute
+instructions in {cheri_base_ext_name}. Therefore, the unprivileged program
+counter (*pc*) register is extended so that it is able to hold a capability.
+The extended register is called the program counter capability (<<pcc>>). The
+<<pcc>> address field is effectively the *pc* in the base RISC-V ISA so that the
+hardware automatically increments as instructions are executed. The <<pcc>>'s
+metadata and tag are reset to the <<infinite-cap>> capability metadata and tag
+with the address field set to the core boot address.
+
+The hardware performs the following checks on <<pcc>> for each instruction
+executed in addition to the checks already required by the base RISC-V ISA. A
+failing check causes a CHERI exception.
+
+* The tag must be set
+* The capability must not be sealed
+* The capability must grant execute permission
+* All bytes of the instruction must be in bounds
+
+NOTE: Operations that update <<pcc>>, such as changing privilege or executing
+jump instructions, unseal capabilities prior to writing. Therefore,
+implementations do not need to check that that <<pcc>> is unsealed when
+executing each instruction. However, this property has not yet been formally verified and may not hold if additional CHERI extensions beyond {cheri_base_ext_name} are implemented.
+
+.Program Counter Capability
+[#pcc-format]
+include::img/pccreg.edn[]
+
+<<pcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+
+[#section_cap_instructions]
+=== {cheri_base_ext_name} Instructions
+
+{cheri_base_ext_name} introduces new instructions to the base RISC-V integer ISA to inspect and operate on capabilities held in registers.
+
+=== Capability Inspection Instructions
+
+These instructions allow software to inspect the fields of a capability held
+in a *c* register. The output is an integer value written to an *x* register
+representing the decoded field of the capability, such as the permissions or
+bounds. These instructions do not cause exceptions.
+
+include::insns/gctag_32bit.adoc[]
+include::insns/gcperm_32bit.adoc[]
+include::insns/gctype_32bit.adoc[]
+include::insns/gcbase_32bit.adoc[]
+include::insns/gclen_32bit.adoc[]
+include::insns/gchi_32bit.adoc[]
+include::insns/sceq_32bit.adoc[]
+include::insns/scss_32bit.adoc[]
+include::insns/cram_32bit.adoc[]
+
+=== Capability Manipulation Instructions
+
+These instructions allow software to manipulate the fields of a capability held
+in a *c* register. The output is a capability written to a *c* register with
+its fields modified. The output capability has its tag set to 0 if the
+input capability did not have a tag set, the output capability has more
+permissions or larger bounds compared to the input capability, or the operation
+results in a capability with malformed bounds. These instructions do not give
+rise to exceptions.
+
+include::insns/cmv_32bit.adoc[]
+include::insns/cadd_32bit.adoc[]
+include::insns/scaddr_32bit.adoc[]
+include::insns/schi_32bit.adoc[]
+include::insns/acperm_32bit.adoc[]
+include::insns/scbnds_32bit.adoc[]
+include::insns/scbndsr_32bit.adoc[]
+include::insns/sentry_32bit.adoc[]
+include::insns/cbld_32bit.adoc[]
+
+=== Capability Load and Store Instructions
+
+A load capability instruction, <<LC>>, reads CLEN bits from memory together with
+its tag and writes the result to a *c* register. The capability authorizing the
+memory access is provided in a *c* source register, so the effective address is
+obtained by incrementing that capability with the sign-extended 12-bit offset.
+
+A store capability instruction, <<SC>>, writes CLEN bits and the tag in a *c* register
+to memory. The capability authorizing the memory access is provided in a *c*
+source register, so the effective address is obtained by incrementing that
+capability with the sign-extended 12-bit offset.
+
+<<LC>> and <<SC>> instructions cause CHERI exceptions if the
+authorizing capability fails any of the following checks:
+
+* The tag is zero
+* The capability is sealed
+* At least one byte of the memory access is outside the capability's bounds
+* For loads, the read permission must be set in AP
+* For stores, the write permission must be set in AP
+
+Capability load and store instructions also cause load or store/AMO address
+misaligned exceptions if the address is not naturally aligned to a CLEN
+boundary.
+
+Misaligned capability loads and stores are errors.  Implementations must
+generate exceptions for misaligned capability loads and stores even if they
+allow misaligned integer loads and stores to complete normally.  Execution
+environments must report misaligned capability loads and stores as errors
+and not attempt to emulate them using byte access.  The Zicclsm extension
+does not affect capability loads and stores.  Software which uses capability
+loads and stores to copy data other than capabilities must ensure that
+addresses are aligned.
+
+NOTE: Since there is only one tag per aligned CLEN bit block in memory, it is not
+possible to represent a capability value complete with its tag at an
+address not aligned to CLEN. Therefore, <<LC>> and <<SC>> give rise to
+misaligned address fault exceptions when the effective address to access is
+misaligned, even if the implementation supports Zicclsm. To transfer CLEN
+misaligned bits without a tag, use integer loads and stores.
+
+[#tags_cleared_by_permissions]
+For loads, the tag of the capability loaded from memory is cleared if the
+authorizing capability does not grant permission to read capabilities (i.e.
+both <<r_perm>> and <<c_perm>> must be set in AP). For stores, the tag of the
+capability written to memory is cleared if the authorizing capability does not
+grant permission to write capabilities (i.e. both <<w_perm>> and <<c_perm>>
+must be set in AP).
+
+include::insns/load_32bit_cap.adoc[]
+include::insns/store_32bit_cap.adoc[]
+
+[#section_existing_riscv_insns]
+=== Existing RISC-V Instructions
+
+The operands or behavior of some instructions in the base RISC-V ISA changes in
+{cheri_base_ext_name}.
+
+==== Integer Computational Instructions
+
+Most integer computational instructions operate on XLEN bits of values held in
+*x* registers. Therefore, these instructions only operate on the address field
+if the input register of the instruction holds a capability. The output is XLEN
+bits written to an *x* register; the tag and capability metadata of that
+register are zeroed.
+
+The add upper immediate to <<pcc>> instruction (<<AUIPC>>) is used to
+build <<pcc>>-relative capabilities. <<AUIPC>> forms a 32-bit offset from the 20-bit
+immediate and filling the lowest 12 bits with zeros. The <<pcc>> address is then
+incremented by the offset and a representability check is performed so the
+capability's tag is cleared if the new address is outside the <<pcc>>'s
+<<section_cap_representable_check>>. The resulting CLEN value along with the new tag are
+written to a *c* register.
+
+==== Control Transfer Instructions
+
+Control transfer instructions operate as described in the base RISC-V
+ISA. They also may cause metadata updates and/or cause exceptions in addition
+to the base behavior as described below.
+
+===== Unconditional Jumps
+
+<<JAL>> sign-extends the offset and adds it to the address of
+the jump instruction to form the target address. The target address is
+installed in the address field of <<pcc>>. The capability with the address of the
+instruction following the jump is sealed and written to a *c* register.
+
+<<JALR>>
+allows unconditional, indirect jumps to a target capability. The target capability is
+obtained by incrementing the capability in the *c* register operand by the
+sign-extended 12-bit offset, then setting the
+least significant bit of the result to zero.
+The target capability is unsealed if it is a sentry and the instructions has a zero immediate offset.
+The capability with the address of the instruction following the jump is sealed
+and written to a *c* register.
+
+All jumps cause CHERI exceptions when a minimum sized instruction
+at the target address is not within the bounds of the <<pcc>>.
+
+<<JALR>> causes a CHERI exception when:
+
+* The target capability's tag is zero
+* The target capability is sealed and the immediate is not zero
+* A minimum sized instruction at the target capability's address is not
+within bounds
+* The target capability does not grant execute permission
+
+<<JAL>> and <<JALR>> can also cause instruction address misaligned exceptions
+following the standard RISC-V rules.
+
+[#condbr-purecap]
+===== Conditional Branches
+
+Branch instructions (see xref:insns-conbr-32bit[xrefstyle=short]) encode signed
+offsets in multiples of 2 bytes. The offset is sign-extended and added to the
+address of the branch instruction to form the target address.
+
+Branch instructions compare two *x* registers as described in the base RISC-V
+ISA, so the metadata and tag values are disregarded in the comparison if the
+operand registers hold capabilities. If the comparison evaluates to true, then
+the target address is installed in the <<pcc>>'s address field. These instructions cause CHERI exceptions
+when a minimum sized instruction at the target address is not within the
+<<pcc>>'s bounds.
+
+[#section_int_load_store_insns]
+==== Integer Load and Store Instructions
+
+Integer load and store instructions transfer the amount of integer data described in
+the base RISC-V ISA between the registers and memory. For example, <<LD>> and
+<<LW>> load 64-bit and 32-bit values respectively from memory into an *x*
+register.  However, the address operands for load and store instructions are
+interpreted differently in {cheri_base_ext_name}: the capability authorizing
+the access is in the *c* register operand and the memory address is given by
+incrementing the address of that capability by the sign-extended 12-bit
+immediate offset.
+
+All load and store instructions cause CHERI exceptions if the
+authorizing capability fails any of the following checks:
+
+* The tag is set
+* The capability is unsealed
+* All bytes of accessed memory are inside the capability's bounds
+* For loads, the read permission must be set in AP
+* For stores, the write permission must be set in AP
+
+Integer load instructions always zero the tag and metadata of the result register.
+
+Integer stores write zero to the tag associated with the memory locations that
+are naturally aligned to CLEN. Therefore, misaligned stores may clear up to
+two tag bits in memory.

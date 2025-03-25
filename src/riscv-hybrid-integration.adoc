@@ -15,15 +15,15 @@ integer variants of the RISC-V ISA (RV32I and RV64I).
 [#section-cheri-execution-mode,reftext="CHERI Execution Mode"]
 === CHERI Execution Mode
 
-{cheri_default_ext_name} adds CHERI execution modes to ensure backwards
+{cheri_default_ext_name} adds the ability to dynamically change CHERI execution modes to ensure backwards
 compatibility with the base RISC-V ISA while saving instruction encoding space.
-There are two execution modes: {cheri_cap_mode_name} and {cheri_int_mode_name}. Additionally, there
-is a new unprivileged register: the default data capability, <<ddc>>, that is
-used to authorize all data memory accesses when in
-{cheri_int_mode_name}.
-
+As noted in <<sec_cheri_cap_mode_int_mode>>, there are two execution modes: {cheri_cap_mode_name} and {cheri_int_mode_name}.
 The current CHERI execution mode is given by the <<m_bit>> of <<pcc>> that
 is encoded as described in xref:m_bit[xrefstyle=short].
+
+Additionally, {cheri_default_ext_name} adds a new unprivileged CSR: the default data capability, <<ddc>>, that is
+used to authorize all data memory accesses when in
+{cheri_int_mode_name}.
 
 The CHERI execution mode impacts the instruction set in the following ways:
 
@@ -32,7 +32,7 @@ In {cheri_int_mode_name}, <<ddc>> is implicitly used. In {cheri_cap_mode_name}, 
 capability is supplied as an explicit *c* operand register to the instruction.
 * The set of instructions that is available for execution. Some instructions
 are available in {cheri_int_mode_name} but not {cheri_cap_mode_name} and vice-versa (see
-xref:riscv-extensions[xrefstyle=short]).
+xref:app_cheri_instructions[xrefstyle=short]).
 
 NOTE: The implication is that the CHERI execution mode is always {cheri_cap_mode_name} on
 implementations that support {cheri_base_ext_name}, but not
@@ -120,10 +120,14 @@ gctag x1, c1
 [#section_hybrid_ext_instructions]
 === {cheri_default_ext_name} Instructions
 
-{cheri_default_ext_name} introduces a small number of new mode-switching and
-capability manipulation instructions to the base RISC-V integer ISA, as shown
-in <<Zcheri_hybrid_instruction_extension>>.
-Additionally, the behavior of some existing instructions changes depending on the current CHERI execution mode.
+{cheri_default_ext_name} introduces a new instructions to switch CHERI execution modes.
+Additionally, {cheri_default_ext_name} makes all instructions defined by {cheri_default_ext_name} available.
+
+include::insns/modesw_32bit.adoc[]
+
+include::insns/scmode_32bit.adoc[]
+
+include::insns/gcmode_32bit.adoc[]
 
 ==== Capability Load and Store Instructions
 
