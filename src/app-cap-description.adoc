@@ -228,6 +228,9 @@ reserved values as if it were 0b00000 (no permissions). Future extensions may as
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
+NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It is
+orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
+
 A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64 ({cap_rv64_perms_levels_width}-bit if {cheri_levels_ext_name} is supported).
 In this case, there is a bit per permission as shown in
 xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its

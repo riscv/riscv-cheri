@@ -61,25 +61,7 @@ top is 2^MXLEN^
 {cheri_default_ext_name} adds a new CHERI execution Mode field (M) to
 the capability format, which is only valid for code capabilities, i.e.
 when the <<x_perm>> is set.
-
-* When MXLEN=32, the Mode is encoded in bit 0 of quadrant 1 from the AP field
-_even though it is not a permission_ as shown in <<cap_perms_encoding32>>.
-** Only quadrant 1 represents executable capabilities, and so it's the only
-one which encodes the Mode.
-** If {cheri_default_ext_name} not implemented, then setting the <<m_bit>> to
- {int_mode_value} for {cheri_int_mode_name} in quadrant 1 causes the permissions
- to be invalid, i.e. an encoding which cannot be produced by <<ACPERM>>.
-* When MXLEN=64, the Mode is encoded separately; a new <<m_bit>> is
-added to the capability format as shown in
-xref:cap_perms_encoding64[xrefstyle=short].
-The <<m_bit>> is only valid for code capabilities, otherwise the field is reserved.
-** When {cheri_default_ext_name} is not implemented then the bit allocated to the <<m_bit>>
- is _reserved_ for future use.
-
-NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It is
-orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
-
-In both encodings:
+The exact location of the M-bit in the capability format for XLEN=32 and XLEN=64 is described in <<app_cap_description>>.
 
 * Mode (M)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
 * Mode (M)={INT_MODE_VALUE} indicates {cheri_int_mode_name}.
@@ -111,11 +93,26 @@ gctag x1, c1
 {cheri_default_ext_name} introduces a new instructions to switch CHERI execution modes.
 Additionally, {cheri_default_ext_name} makes all instructions defined by {cheri_default_ext_name} available.
 
-include::insns/modesw_32bit.adoc[]
+* A new <<SCMODE>> instruction allows setting a capability's CHERI execution
+mode to the indicated value. The output is written to an unprivileged *c*
+register, not <<pcc>>.
+
+* A new <<GCMODE>> instruction allows decoding the CHERI execution mode from an
+arbitrary capability held in an *x* register. The output is written to an
+unprivileged *x* register.
+
+* CHERI execution mode switch instructions, <<MODESW_CAP>> and
+<<MODESW_INT>>, allow software
+to change the hart's current <<m_bit>> in <<pcc>>. If the current mode in the
+<<pcc>> is {cheri_int_mode_name}, then the mode after executing <<MODESW_CAP>> is {cheri_cap_mode_name}
+and similarly for <<MODESW_INT>> when in {cheri_cap_mode_name}. This instruction effectively writes the CHERI execution mode
+<<m_bit>> of the capability currently installed in the <<pcc>>.
 
 include::insns/scmode_32bit.adoc[]
 
 include::insns/gcmode_32bit.adoc[]
+
+include::insns/modesw_32bit.adoc[]
 
 ==== Capability Load and Store Instructions
 
@@ -136,24 +133,6 @@ In {cheri_int_mode_name}, the capability authorizing the memory access
 is <<ddc>>, so the effective address is obtained by adding the *x* register to
 the sign-extended offset.
 
-==== Capability Manipulation Instructions
-
-A new <<SCMODE>> instruction allows setting a capability's CHERI execution
-mode to the indicated value. The output is written to an unprivileged *c*
-register, not <<pcc>>.
-
-A new <<GCMODE>> instruction allows decoding the CHERI execution mode from an
-arbitrary capability held in an *x* register. The output is written to an
-unprivileged *x* register.
-
-==== Mode Change Instructions
-
-New CHERI execution mode switch instructions, <<MODESW_CAP>> and
-<<MODESW_INT>>, allow software
-to change the hart's current <<m_bit>> in <<pcc>>. If the current mode in the
-<<pcc>> is {cheri_int_mode_name}, then the mode after executing <<MODESW_CAP>> is {cheri_cap_mode_name}
-and similarly for <<MODESW_INT>> when in {cheri_cap_mode_name}. This instruction effectively writes the CHERI execution mode
-<<m_bit>> of the capability currently installed in the <<pcc>>.
 === Existing RISC-V Instructions
 
 The CHERI execution mode introduced in {cheri_default_ext_name} affects the
