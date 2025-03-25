@@ -190,3 +190,53 @@ NOTE: A future version of this specification may add writeable fields to allow c
 
 .Debug infinite capability register
 include::img/dinfcreg.edn[]
+
+[#section_hybrid_debug_integration]
+=== Integrating {cheri_default_ext_name} with Sdext
+
+A new debug default data capability (<<dddc>>) CSR is added at the CSR number
+shown in xref:default-csrnames-added[xrefstyle=short].
+
+{cheri_default_ext_name} allows <<MODESW_CAP>> and <<MODESW_INT>> to execute in debug mode.
+
+When entering debug mode, whether the core enters {cheri_int_mode_name} or
+{cheri_cap_mode_name} is controlled by the <<m_bit>> in <<dinfc>>.
+
+The current mode can be read from <<dinfc>>.
+
+The following sequence executed from the program buffer will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
+
+[source]
+----
+csrr   c1, dinfc
+gcmode x1, c1
+----
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The mode change instructions <<MODESW_CAP>> and <<MODESW_INT>> are new
+and the requirement to support them in debug mode is also new.
+endif::[]
+
+[#dddc,reftext="dddc"]
+==== Debug Default Data Capability CSR (dddc)
+
+<<dddc>> is a debug mode accessible capability CSR. The address is shown in
+xref:default-csrnames-added[xrefstyle=short].
+
+{TAG_RESET_CSR}
+
+{REQUIRE_HYBRID_CSR}
+
+.Debug default data capability
+include::img/dddcreg.edn[]
+
+Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>>'s metadata is
+set to the <<infinite-cap>> capability's metadata (with tag set) and <<ddc>>'s
+address remains unchanged.
+
+When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated to
+the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
+hart's context.
+
+As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
+so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).

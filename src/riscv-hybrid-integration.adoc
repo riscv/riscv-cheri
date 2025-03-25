@@ -95,27 +95,15 @@ When the <<m_bit>> can be set, the rules defined by <<ACPERM>> must be followed.
 ==== Observing the CHERI Execution Mode
 
 The effective CHERI execution mode is given by the values of some CSRs and the
-<<m_bit>> from the <<pcc>>. The following code sequences demonstrate how a program
-can observe the current, effective CHERI execution mode depending on the
-machine's privilege mode.
+<<m_bit>> from the <<pcc>>.
+The following code sequence demonstrate how a program can observe the current, effective CHERI execution mode.
+It will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
 
-In debug mode, the following sequence executed from the program buffer will
-write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and
-{INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
-
-```
-csrr   c1, dinfc
-gcmode x1, c1
-```
-
-In any other privilege mode, the following sequence will write {CAP_MODE_VALUE}
-for {cheri_cap_mode_name} and {INT_MODE_VALUE} for
-{cheri_int_mode_name} to `x1`:
-
-```
+[source]
+----
 auipc c1, 0
 gctag x1, c1
-```
+----
 
 [#section_hybrid_ext_instructions]
 === {cheri_default_ext_name} Instructions
@@ -166,7 +154,6 @@ to change the hart's current <<m_bit>> in <<pcc>>. If the current mode in the
 <<pcc>> is {cheri_int_mode_name}, then the mode after executing <<MODESW_CAP>> is {cheri_cap_mode_name}
 and similarly for <<MODESW_INT>> when in {cheri_cap_mode_name}. This instruction effectively writes the CHERI execution mode
 <<m_bit>> of the capability currently installed in the <<pcc>>.
-
 === Existing RISC-V Instructions
 
 The CHERI execution mode introduced in {cheri_default_ext_name} affects the
@@ -280,48 +267,6 @@ an output *c* register.
 
 All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 <<asr_perm>> and the CSR accessed is not user-mode accessible.
-
-[#section_hybrid_debug_integration]
-=== Integrating {cheri_default_ext_name} with Sdext
-
-A new debug default data capability (<<dddc>>) CSR is added at the CSR number
-shown in xref:default-csrnames-added[xrefstyle=short].
-
-{cheri_default_ext_name} allows <<MODESW_CAP>> and <<MODESW_INT>> to execute in debug mode.
-
-When entering debug mode, whether the core enters {cheri_int_mode_name} or
-{cheri_cap_mode_name} is controlled by the <<m_bit>> in <<dinfc>>.
-
-The current mode can be read from <<dinfc>>.
-
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The mode change instructions <<MODESW_CAP>> and <<MODESW_INT>> are new
-and the requirement to support them in debug mode is also new.
-endif::[]
-
-[#dddc,reftext="dddc"]
-=== Debug Default Data Capability CSR (dddc)
-
-<<dddc>> is a debug mode accessible capability CSR. The address is shown in
-xref:default-csrnames-added[xrefstyle=short].
-
-{TAG_RESET_CSR}
-
-{REQUIRE_HYBRID_CSR}
-
-.Debug default data capability
-include::img/dddcreg.edn[]
-
-Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>>'s metadata is
-set to the <<infinite-cap>> capability's metadata (with tag set) and <<ddc>>'s
-address remains unchanged.
-
-When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated to
-the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
-hart's context.
-
-As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
-so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
 [#section_cheri_disable]
 === Disabling CHERI Registers and Instructions
