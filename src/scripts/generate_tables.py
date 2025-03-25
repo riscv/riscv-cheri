@@ -359,7 +359,7 @@ class csr_added_legacy(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Alias")] == "" and "{cheri_default_ext_name}" in row[self.header.index("Prerequisites")]
+        return row[self.header.index("Alias")] == "" and "{cheri_default_ext_name}" == row[self.header.index("Prerequisites")].strip()
 
 class csr_added_purecap_mode_d(table):
     cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
