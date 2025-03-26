@@ -261,10 +261,11 @@ All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
 xref:default-csrnames-added[xrefstyle=short].
 
 [[default-csrnames-added]]
-.Capability CSRs added in {cheri_default_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+.Unprivileged capability CSRs added in {cheri_default_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-include::generated/csr_added_hybrid_table_body.adoc[]
+|CLEN CSR|Address|Permissions|Description
+|<<ddc>>|0x416|RW|User Default Data Capability
 |===
 
 [#ddc,reftext="ddc"]
@@ -280,12 +281,9 @@ is the <<infinite-cap>> capability.
 
 {REQUIRE_CRE_CSR}
 
-NOTE: CRE is not required for the implicit access required by checking memory accesses against <<ddc>>
+NOTE: <<section_cheri_disable,CHERI register and instruction access>> is not required for the implicit access required by checking memory accesses against <<ddc>>
 
-{REQUIRE_HYBRID_CSR}
-
-As shown in xref:CSR_exevectors[xrefstyle=short], <<ddc>> is a data pointer,
-so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+NOTE: <<ddc>> is a data pointer, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
 .Unprivileged default data capability register
 include::img/ddcreg.edn[]
