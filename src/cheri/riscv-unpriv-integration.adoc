@@ -122,8 +122,8 @@ Additionally, all CSRs that hold pointers are extended to CLEN bits, but since n
 ** Every register has a one-bit tag, indicating whether the capability in the register is valid to be dereferenced.
 This tag is cleared whenever an invalid capability operation is performed. Such invalid operations include e.g. writing only the integer portion of the register or attempting to increase bounds or permissions.
 
-** The tags are also tracked through the memory subsystem: every aligned CLEN-bits wide region has a non-addressable one-bit tag, which the hardware manages atomically with the data.
-The tag is cleared if the memory region is ever written using an operation other than a store of a full capability register.
+** The validity tags are also tracked through the memory subsystem: every aligned CLEN-bits wide region has a non-addressable one-bit tag, which the hardware manages atomically with the data.
+The validity tag is cleared if the memory region is ever written using an operation other than a store of a full capability register.
 Any caches must preserve this abstraction.
 
 ==== Instructions using capability registers
@@ -183,7 +183,7 @@ The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA. A
 failing check causes a CHERI exception.
 
-* The tag must be set
+* The validity tag must be set
 * The capability must not be sealed
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
@@ -262,7 +262,7 @@ capability with the sign-extended 12-bit offset.
 <<LC>> and <<SC>> instructions cause CHERI exceptions if the
 authorizing capability fails any of the following checks:
 
-* The tag is zero
+* The validity tag is zero
 * The capability is sealed
 * At least one byte of the memory access is outside the capability's bounds
 * For loads, the read permission must be set in AP

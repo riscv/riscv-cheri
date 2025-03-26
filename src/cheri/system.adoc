@@ -34,7 +34,7 @@ NOTE: Clearing tags in memory does not necessarily require updating the associat
 image::../cheri/img/small_cheri_system.drawio.png[width=80%,align=center]
 
 This example shows a minimum sized system where only the local memory is extended to support capability tags.
-The tag-aware region is highlighted.
+The validity tag-aware region is highlighted.
 All tags are created by the CHERI CPU, and only stored locally. The memory is shared with the system, probably via a secure DMA, which is not tag aware.
 
 Therefore the connection between CPU and memory is tag-aware, and the connection to the system is not tag aware.
@@ -52,7 +52,7 @@ All memory is backed up by DRAM, and standard DRAM does not offer CLEN+1 bit wor
 
 A region of DRAM is reserved for CHERI tag storage.
 
-The tag cache sits on the boundary of the validity tag-aware and non-tag-aware memory domains, and it provides the bridge between the two.
+The validity tag cache sits on the boundary of the validity tag-aware and non-tag-aware memory domains, and it provides the bridge between the two.
 It stores tags locally in its cache, and if there is a miss, it will create an extra bus request to access the region of DRAM reserved for tag storage.
 Therefore in the case of a miss a single access is split into two - one to access the data and one to access the validity tag.
 
