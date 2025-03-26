@@ -3,44 +3,33 @@
 [#LC,reftext="LC"]
 ==== LC
 
-include::new_encoding_note.adoc[]
-
-NOTE: The RV64 encoding is intended to also allocate the encoding for LQ for RV128.
-
 Synopsis::
 Load capability
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `lc cd, offset(cs1)`
-
-{cheri_int_mode_name} Mnemonic::
-`lc cd, offset(rs1)`
 
 Encoding::
 include::wavedrom/loadcap.adoc[]
 
-{cheri_cap_mode_name} Description::
 Load a CLEN+1 bit value from memory and writes it to `cd`. The capability in `cs1` authorizes the operation. The effective address of the memory access is obtained by adding the address of `cs1` to the sign-extended 12-bit offset.
-+
-include::load_store_c0.adoc[]
 
-{cheri_int_mode_name} Description::
-Loads a CLEN+1 bit value from memory and writes it to `cd`. The capability
-authorizing the operation is <<ddc>>. The effective address of the memory
-access is obtained by adding `rs1` to the sign-extended 12-bit offset.
+This instruction take a misaligned address fault exception when the effective address is not aligned to CLEN/8.
+
+include::load_store_c0.adoc[]
 
 include::load_tag_perms.adoc[]
 
 include::malformed_no_check.adoc[]
 
-:has_cap_data:
-include::load_exceptions.adoc[]
+//:has_cap_data:
+//include::load_exceptions.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {cheri_base_ext_name}
 
-Prerequisites for {cheri_int_mode_name}::
-{cheri_default_ext_name}
+//Prerequisites for {cheri_int_mode_name}::
+//{cheri_default_ext_name}
 
 LC Operation::
 +

@@ -202,38 +202,19 @@ include::img/pccreg.edn[]
 [#section_cap_instructions]
 ==== New and modified Instructions
 
-{cheri_base_ext_name} introduces new instructions to the base RISC-V integer ISA to inspect and operate on capabilities held in registers.
-Additionally, some instructions have altered behavior when using {cheri_base_ext_name} as the base ISA.
-These new and modified instructions are listed in the following sections of this chapter.
+{cheri_base_ext_name} introduce new instructions to the base RISC-V integer ISA to inspect and operate on capabilities held in registers.
+Additionally, all instructions which handle addresses have altered behavior when using {cheri_base_ext_name} as the base ISA.
+The lower XLEN-bits of the result is always the same, but {cheri_base_ext_name} adds checks which may result in exceptions and specifies handling of the metadata.
 
-=== Capability Inspection Instructions
-
-These instructions allow software to inspect the fields of a capability held
-in a *c* register. The output is an integer value written to an *x* register
-representing the decoded field of the capability, such as the permissions or
-bounds. These instructions do not cause exceptions.
-
-include::insns/gctag_32bit.adoc[]
-include::insns/gcperm_32bit.adoc[]
-include::insns/gctype_32bit.adoc[]
-include::insns/gcbase_32bit.adoc[]
-include::insns/gclen_32bit.adoc[]
-include::insns/gchi_32bit.adoc[]
-include::insns/sceq_32bit.adoc[]
-include::insns/scss_32bit.adoc[]
-include::insns/cram_32bit.adoc[]
+The new and modified instructions are listed in the following sections of this chapter.
 
 <<<
 
 === Capability Manipulation Instructions
 
-These instructions allow software to manipulate the fields of a capability held
-in a *c* register. The output is a capability written to a *c* register with
-its fields potentially modified. The output capability has its tag set to 0 if the
-input capability did not have a tag set, the output capability has more
-permissions or larger bounds compared to the input capability, or the operation
-results in a capability with malformed bounds. These instructions do not give
-rise to exceptions.
+These instructions all manipulate or copy capabilities.
+They do not cause exceptions.
+
 
 include::insns/acperm_32bit.adoc[]
 include::insns/cmv_32bit.adoc[]
@@ -247,60 +228,62 @@ include::insns/cbld_32bit.adoc[]
 
 <<<
 
-=== Capability Load and Store Instructions
+=== Capability Inspection Instructions
 
-A load capability instruction, <<LC>>, reads CLEN bits from memory together with
-its tag and writes the result to a *c* register. The capability authorizing the
-memory access is provided in a *c* source register, so the effective address is
-obtained by incrementing that capability with the sign-extended 12-bit offset.
+These instructions all extract information from a capability.
+They do not cause exceptions.
 
-A store capability instruction, <<SC>>, writes CLEN bits and the validity tag in a *c* register
-to memory. The capability authorizing the memory access is provided in a *c*
-source register, so the effective address is obtained by incrementing that
-capability with the sign-extended 12-bit offset.
+include::insns/gctag_32bit.adoc[]
+include::insns/gcperm_32bit.adoc[]
+include::insns/gctype_32bit.adoc[]
+include::insns/gcbase_32bit.adoc[]
+include::insns/gclen_32bit.adoc[]
+include::insns/gchi_32bit.adoc[]
 
-<<LC>> and <<SC>> instructions cause CHERI exceptions if the
-authorizing capability fails any of the following checks:
+=== Miscellaneous Instructions
 
-* The validity tag is zero
-* The capability is sealed
-* At least one byte of the memory access is outside the capability's bounds
-* For loads, the read permission must be set in AP
-* For stores, the write permission must be set in AP
+These instructions either compare capabilities or allow software to determine the alignment of bounds.
+They do not cause exceptions.
 
-Capability load and store instructions also cause load or store/AMO address
-misaligned exceptions if the address is not naturally aligned to a CLEN
-boundary.
+include::insns/sceq_32bit.adoc[]
+include::insns/scss_32bit.adoc[]
+include::insns/cram_32bit.adoc[]
 
-Misaligned capability loads and stores are errors.  Implementations must
-generate exceptions for misaligned capability loads and stores even if they
-allow misaligned integer loads and stores to complete normally.  Execution
-environments must report misaligned capability loads and stores as errors
-and not attempt to emulate them using byte accesses.  The Zicclsm extension
-does not affect capability loads and stores.  Software which uses capability
-loads and stores to copy data other than capabilities must ensure that
-addresses are aligned.
+<<<
 
-NOTE: Since there is only one tag per aligned CLEN bit block in memory, it is not
-possible to represent a capability value complete with its tag at an
-address not aligned to CLEN. Therefore, <<LC>> and <<SC>> give rise to
-misaligned address fault exceptions when the effective address to access is
-misaligned, even if the implementation supports Zicclsm. To transfer CLEN
-misaligned bits without a tag, use integer loads and stores.
+=== Capability Load, Store and Atomic Instructions
 
-[#tags_cleared_by_permissions]
-For loads, the validity tag of the capability loaded from memory is cleared if the
-authorizing capability does not grant permission to read capabilities (i.e.
-both <<r_perm>> and <<c_perm>> must be set in AP). For stores, the validity tag of the
-capability written to memory is cleared if the authorizing capability does not
-grant permission to write capabilities (i.e. both <<w_perm>> and <<c_perm>>
-must be set in AP).
+New loads, stores and atomics are introduced to handle capabilities.
+They all operate in the same manner as the base ISA but access CLEN bits and also the validity tag.
+
+* <<LC>> - load capability
+* <<SC>> - store capability
+* <<AMOSWAP_C>> - atomic capability swap
+** other atomic operations are not currently available
+* <<LR_C>>/<<SC_C>> - load-reserved/store-conditional of a capability
+
+All capability memory access requires <<c_perm>>. If <<c_perm>> is not granted then:
+
+* All capability loads will return CLEN-bits from memory, and a zero validity tag.
+* All capability stores will write CLEN-bits to memory, and write a zero validity tag.
+
+All capability memory access instructions require CLEN aligned addresses, and will
+take the appropriate misaligned exception if this requirement is not met.
+
+NOTE: There is no intention to allow emulation of misaligned capability memory accesses.
 
 include::insns/load_32bit_cap.adoc[]
+//include::insns/load_16bit_cap_sprel.adoc[] // need to be C subsection
 include::insns/store_32bit_cap.adoc[]
+//include::insns/store_16bit_cap_sprel.adoc[] // need to be C subsection
+include::insns/amoswap_32bit_cap.adoc[]
+include::insns/load_res_cap_32bit.adoc[]
+include::insns/store_cond_cap_32bit.adoc[]
 
 [#section_existing_riscv_insns]
 === Changes to Existing RISC-V Instructions
+
+#Tariq: I plan to continue from here....#
 
 {cheri_base_ext_name} introduces minor changes to the execution existing instructions.
 In general, any time an operand is used as a base pointer, {cheri_base_ext_name} changes this operand to a full capability (*c* register) instead of interpreting it as a XLEN-bit address (*x* register).
