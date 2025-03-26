@@ -366,6 +366,7 @@ They all operate in the same manner as the base ISA but access CLEN bits and als
 
 * <<LC>> - load capability
 * <<SC>> - store capability
+// FIXME: atomics should move to A chapter
 * <<AMOSWAP_C>> - atomic capability swap
 ** other atomic operations are not currently available
 * <<LR_C>>/<<SC_C>> - load-reserved/store-conditional of a capability
@@ -378,7 +379,8 @@ All capability memory access requires <<c_perm>>. If <<c_perm>> is not granted t
 All capability memory access instructions require CLEN aligned addresses, and will
 take the appropriate misaligned exception if this requirement is not met.
 
-NOTE: There is no intention to allow emulation of misaligned capability memory accesses.
+NOTE: Misaligned capability memory accesses cannot be emulated.
+  To transfer CLEN misaligned bits without a validity tag, use integer loads and stores.
 
 include::insns/load_32bit_cap.adoc[]
 //include::insns/load_16bit_cap_sprel.adoc[] // need to be C subsection
