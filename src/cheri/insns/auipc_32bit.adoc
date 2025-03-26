@@ -1,18 +1,20 @@
 <<<
 
-[#AUIPC,reftext="AUIPC"]
-==== AUIPC
+[#AUIPC_CHERI,reftext="AUIPC"]
+===== AUIPC
 
 Synopsis::
 Add upper immediate to *pc*/<<pcc>>
 
-NOTE: CHERI extensions which use an alternative capability format may choose to redefine the handling of the immediate operand for this instruction in {cheri_cap_mode_name}.
-
 {cheri_cap_mode_name} Mnemonic::
 `auipc cd, imm`
 
+ifdef::cheri_standalone_spec[]
 {cheri_int_mode_name} Mnemonic::
 `auipc rd, imm`
+
+NOTE: CHERI extensions which use an alternative capability format may choose to redefine the handling of the immediate operand for this instruction in {cheri_cap_mode_name}.
+endif::[]
 
 Encoding::
 include::wavedrom/rv64_lui-auipc.adoc[]
@@ -24,18 +26,14 @@ zeros. Increment the address of the AUIPC instruction's <<pcc>> by the
 output capability is 0 if the incremented address is outside the <<pcc>>'s
 <<section_cap_representable_check>>.
 
+ifdef::cheri_standalone_spec[]
 {cheri_int_mode_name} Description::
 Form a 32-bit offset from the immediate, filling in the lowest 12 bits with
 zeros, adds this offset to the address of the AUIPC instruction, then places
 the result in register `rd`.
 
 include::pcrel_debug_warning.adoc[]
-
-Prerequisites for {cheri_cap_mode_name}::
-{cheri_base_ext_name}
-
-Prerequisites for {cheri_int_mode_name}::
-{cheri_default_ext_name}
+endif::[]
 
 Operation for AUIPC::
 +

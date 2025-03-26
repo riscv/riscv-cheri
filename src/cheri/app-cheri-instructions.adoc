@@ -12,7 +12,7 @@ checked against <<ddc>>
 . In {cheri_int_mode_name}, a minimum length instruction at the target of all indirect
 jumps is bounds checked against <<pcc>>
 . In {cheri_cap_mode_name} a minimum length instruction at the target of all indirect
-jumps is bounds checked against `cs1` (e.g. <<JALR>>)
+jumps is bounds checked against `cs1` (e.g. <<JALR_CHERI>>)
 . A minimum length instruction at the taken target of all direct
 jumps and conditional branches is bounds checked against <<pcc>> regardless of
 CHERI execution mode
@@ -21,21 +21,9 @@ NOTE: Not all RISC-V extensions have been checked against CHERI. Compatible
 extensions will eventually be listed in a CHERI profile.
 
 <<<
-=== RV32I/E and RV64I/E Base Integer Instruction Sets
+=== RV32I/E and RV64I/E Privileged Instruction Sets
 
 There are a number of instructions that are already in RISC-V that have modified behavior when CHERI is included.
-
-include::insns/auipc_32bit.adoc[]
-
-include::insns/condbr_32bit.adoc[]
-
-include::insns/jalr_32bit.adoc[]
-
-include::insns/jal_32bit.adoc[]
-
-include::insns/load_32bit.adoc[]
-
-include::insns/store_32bit.adoc[]
 
 include::insns/mret_sret.adoc[]
 
@@ -368,8 +356,8 @@ See <<CM_JALT>>, <<CM_JT>>.
 
 If the access to the jump table succeeds, then the instructions execute as follows:
 
-** <<CM_JT>> executes as <<J>> or <<AUIPC>>+<<JR>>
-** <<CM_JALT>> executes as <<JAL>> or <<AUIPC>>+<<JALR>>
+** <<CM_JT>> executes as <<JAL_CHERI,J>> or <<AUIPC_CHERI>>+<<JALR_CHERI,JR>>
+** <<CM_JALT>> executes as <<JAL_CHERI>> or <<AUIPC_CHERI>>+<<JALR_CHERI>>
 
 As a result the capability metadata is retained in <<pcc>> during execution.
 

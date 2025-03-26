@@ -142,7 +142,7 @@ Existing RV32I/RV64I instructions as well as instructions defined by unprivilege
 The one difference is that a hart using {cheri_base_ext_name} instead of RV32I/RV64I as the base ISA uses capabilities for all memory accesses.
 This is called executing in {cheri_cap_mode_name}.
 In {cheri_cap_mode_name}, instructions that access memory, as well as branches and jumps are modified to check against the full capability from the base address register (e.g. `lw t0, 16(c3)`) instead of just the integer address (i.e. `lw t0, 16(x3)`).
-In some cases, they are also changed to return a full capability value, e.g. <<AUIPC>> will return the full <<pcc>> including the metadata.
+In some cases, they are also changed to return a full capability value, e.g. <<AUIPC_CHERI>> will return the full <<pcc>> including the metadata.
 For the full list of instructions that change behavior with {cheri_base_ext_name}, see <<app_cheri_instructions>>.
 
 The new CHERI state and instructions can also be made available to a hart using RV32I/RV64I as the base ISA with full binary compatibility.
@@ -289,100 +289,81 @@ include::insns/load_32bit_cap.adoc[]
 include::insns/store_32bit_cap.adoc[]
 
 [#section_existing_riscv_insns]
-=== Existing RISC-V Instructions
+=== Changes to Existing RISC-V Instructions
 
-The operands or behavior of some instructions in the base RISC-V ISA changes in
-{cheri_base_ext_name}.
+{cheri_base_ext_name} introduces minor changes to the execution existing instructions.
+In general, any time an operand is used as a base pointer, {cheri_base_ext_name} changes this operand to a full capability (*c* register) instead of interpreting it as a XLEN-bit address (*x* register).
+For memory accesses and control transfers, all CHERI checks are performed against this operand.
+Additionally, instructions that perform pointer arithmetic are modified to write back a full capability and/or take full capability inputs (e.g. <<AUIPC_CHERI>>).
+The following subsection list all changes to instructions from the <<rv32,base ISA>>, but these same modifications rules also apply to instructions added by other extensions (e.g. floating-point loads/stores or the shift-and-add instruction from <<zba,Zba>>).
+Additionally, <<app_cheri_instructions>> has listings for all unprivileged instructions that change behavior when {cheri_base_ext_name} is used as the base ISA.
 
 ==== Integer Computational Instructions
 
-Most integer computational instructions operate on XLEN bits of values held in
-*x* registers. Therefore, these instructions only operate on the address field
-if the input register of the instruction holds a capability. The output is XLEN
-bits written to an *x* register; the tag and capability metadata of that
-register are zeroed.
+Most integer computational instructions operate on XLEN bits of values held in *x* registers.
+Therefore, these instructions only operate on the address field if the input register of the instruction holds a capability.
+The output is XLEN bits written to an *x* register; the validity tag and capability metadata of that register are zeroed.
 
-The add upper immediate to <<pcc>> instruction (<<AUIPC>>) is used to
-build <<pcc>>-relative capabilities. <<AUIPC>> forms a 32-bit offset from the 20-bit
-immediate and filling the lowest 12 bits with zeros. The <<pcc>> address is then
-incremented by the offset and a representability check is performed so the
-capability's tag is cleared if the new address is outside the <<pcc>>'s
-<<section_cap_representable_check>>. The resulting CLEN value along with the new tag are
-written to a *c* register.
+The only integer computational instruction from the <<rv32,base ISA>> that has changed behavior in {cheri_base_ext_name} is <<int-comp-lui-aiupc,AUIPC>>.
+Instead of returning a XLEN bits address, <<AUIPC_CHERI>> returns a full capability registers with the metadata and tag obtained from <<pcc>>.
 
-==== Control Transfer Instructions
+include::insns/auipc_32bit.adoc[]
 
-Control transfer instructions operate as described in the base RISC-V
-ISA. They also may cause metadata updates and/or cause exceptions in addition
-to the base behavior as described below.
+==== Unconditional Jumps
 
-===== Unconditional Jumps
+Unconditional jumps operate as described in <<ct-insns,the base RISC-V ISA>> but with added bounds and permission checks.
+For jump-and-link instructions, the value written to the link register is a full capability derived from <<pcc>> with the address updated to the link address.
+The resulting jump address is checked against <<pcc>> as described below.
+Additionally, the link register is sealed (as if executing an implicit <<SENTRY>>) to ensure that the callee cannot modify the return address and (maliciously) return to an incorrect instruction.
 
-<<JAL>> sign-extends the offset and adds it to the address of
-the jump instruction to form the target address. The target address is
-installed in the address field of <<pcc>>. The capability with the address of the
-instruction following the jump is sealed and written to a *c* register.
-
-<<JALR>>
-allows unconditional, indirect jumps to a target capability. The target capability is
-obtained by incrementing the capability in the *c* register operand by the
-sign-extended 12-bit offset, then setting the
-least significant bit of the result to zero.
+For indirect jumps, the authorizing capability is not <<pcc>> but the base register (which is read as a full capability instead of an XLEN-bit address).
 The target capability is unsealed if it is a sentry and the instructions has a zero immediate offset.
-The capability with the address of the instruction following the jump is sealed
-and written to a *c* register.
 
-All jumps cause CHERI exceptions when a minimum sized instruction
-at the target address is not within the bounds of the <<pcc>>.
+<<JALR_CHERI>> causes a CHERI exception when:
 
-<<JALR>> causes a CHERI exception when:
-
-* The target capability's tag is zero
+* The target capability's validity tag is zero
 * The target capability is sealed and the immediate is not zero
-* A minimum sized instruction at the target capability's address is not
+* A minimum sized instruction (2 or 4 bytes depending on enabled extensions) at the target capability's address is not
 within bounds
 * The target capability does not grant execute permission
 
-<<JAL>> and <<JALR>> can also cause instruction address misaligned exceptions
+<<JAL_CHERI>> and <<JALR_CHERI>> can also cause instruction address misaligned exceptions
 following the standard RISC-V rules.
 
+include::insns/jal_32bit.adoc[]
+include::insns/jalr_32bit.adoc[]
+
 [#condbr-purecap]
-===== Conditional Branches
+==== Conditional Branches
 
-Branch instructions (see xref:insns-conbr-32bit[xrefstyle=short]) encode signed
-offsets in multiples of 2 bytes. The offset is sign-extended and added to the
-address of the branch instruction to form the target address.
-
-Branch instructions compare two *x* registers as described in the base RISC-V
+Conditional branch instructions compare two *x* registers as described in the base RISC-V
 ISA, so the metadata and tag values are disregarded in the comparison if the
 operand registers hold capabilities. If the comparison evaluates to true, then
-the target address is installed in the <<pcc>>'s address field. These instructions cause CHERI exceptions
-when a minimum sized instruction at the target address is not within the
-<<pcc>>'s bounds.
+the target address is installed in the <<pcc>>'s address field.
+These instructions cause CHERI exceptions when a minimum sized instruction at the target address is not within the <<pcc>>'s bounds.
+
+include::insns/condbr_32bit.adoc[]
 
 [#section_int_load_store_insns]
-==== Integer Load and Store Instructions
+==== Load and Store Instructions
 
-Integer load and store instructions transfer the amount of integer data described in
-the base RISC-V ISA between the registers and memory. For example, <<LD>> and
-<<LW>> load 64-bit and 32-bit values respectively from memory into an *x*
-register.  However, the address operands for load and store instructions are
-interpreted differently in {cheri_base_ext_name}: the capability authorizing
-the access is in the *c* register operand and the memory address is given by
-incrementing the address of that capability by the sign-extended 12-bit
-immediate offset.
+Load and store instructions behave as described in <<ldst>> with one difference:
+For the base operand, the full capability register is used to check the resulting memory access.
+All load and store instructions cause CHERI exceptions if any of these checks fails:
 
-All load and store instructions cause CHERI exceptions if the
-authorizing capability fails any of the following checks:
+* The validity tag must be set
+* The capability must be unsealed
+* All bytes of accessed memory must be inside the capability's bounds
+* For loads, the <<r_perm,read permission>> must be present
+* For stores, the <<w_perm,write permission>> must be present
 
-* The tag is set
-* The capability is unsealed
-* All bytes of accessed memory are inside the capability's bounds
-* For loads, the read permission must be set in AP
-* For stores, the write permission must be set in AP
+Non-capability load instructions always zero the validity tag and metadata of the result register.
 
-Integer load instructions always zero the tag and metadata of the result register.
+Non-capability stores write zero to the validity tag associated with the memory locations that are naturally aligned to CLEN.
+Therefore, misaligned stores may clear up to two validity tag bits in memory.
 
-Integer stores write zero to the tag associated with the memory locations that
-are naturally aligned to CLEN. Therefore, misaligned stores may clear up to
-two tag bits in memory.
+NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
+
+include::insns/load_32bit.adoc[]
+
+include::insns/store_32bit.adoc[]

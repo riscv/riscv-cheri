@@ -150,14 +150,14 @@ the tag and metadata of that register are implicitly set to 0.
 The unconditional jump instructions change behavior depending on the CHERI
 execution mode although the instruction's encoding remains unchanged.
 
-The jump and link instruction <<JAL>> when the CHERI execution mode is
+The jump and link instruction <<JAL_CHERI>> when the CHERI execution mode is
 {cheri_cap_mode_name}; behaves as described in
 xref:section_existing_riscv_insns[xrefstyle=short].
 When the mode is {cheri_int_mode_name}. In this case, the address of the instruction
 following the jump (*pc* + 4) is written to an *x* register; that register's
 tag and capability metadata are zeroed.
 
-The jump and link register instruction is <<JALR>> when the CHERI execution mode
+The jump and link register instruction is <<JALR_CHERI>> when the CHERI execution mode
 is {cheri_cap_mode_name}; behaves as described in
 xref:section_existing_riscv_insns[xrefstyle=short].
 When the mode is {cheri_int_mode_name}. In this case, the target address is obtained by adding
@@ -168,9 +168,9 @@ address of the instruction following the jump (*pc* + 4) is written to an *x*
 register; that register's tag and capability metadata are zeroed.
 
 {cheri_default_ext_name} allows changing the current CHERI execution mode when
-executing <<JALR>> from {cheri_cap_mode_name}.
+executing <<JALR_CHERI>> from {cheri_cap_mode_name}.
 
-<<JAL>> and <<JALR>> cause CHERI exceptions when a minimum sized instruction
+<<JAL_CHERI>> and <<JALR_CHERI>> cause CHERI exceptions when a minimum sized instruction
 at the target address is not within the bounds of the <<pcc>>. An
 instruction address misaligned exception is raised when the target address is
 misaligned.
