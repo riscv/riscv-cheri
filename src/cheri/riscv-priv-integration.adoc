@@ -94,7 +94,7 @@ will not match the value read by software from the CSR.
 
 When updating the CSR _all possible_ values of the address visible either by CSR read,
 or which are used as the <<pcc>> on exception launch, must be in the
-<<section_cap_representable_check>>, and the tag cleared if _any_ are not.
+<<section_cap_representable_check>>, and the validity tag cleared if _any_ are not.
 
 The capability is always written using <<SCADDR>> semantics to update the address field,
 even when writing the full capability, and so sealed capabilities will always have
@@ -114,8 +114,8 @@ actually occur in the system.
 
 NOTE: When MODE=Vectored, if either the capability address _or_ the capability
 address + `4 * HICAUSE` are invalid then the <<section_invalid_addr_conv>> rules
-are followed which may require the tag to be cleared. In particular, if any part
-of the range is in the invalid address space then clearing the tag is strongly
+are followed which may require the validity tag to be cleared. In particular, if any part
+of the range is in the invalid address space then clearing the validity tag is strongly
 recommended.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<mtvecc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
@@ -782,8 +782,8 @@ is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a
 _taggable_ attribute indicating whether a memory region allows storing tagged
 data.
 
-Data loaded from memory regions that are not taggable will always have the tag
-cleared. When the hart attempts to store data with the tag set to memory regions
+Data loaded from memory regions that are not taggable will always have the validity tag
+cleared. When the hart attempts to store data with the validity tag set to memory regions
 that are not taggable, the implementation may:
 
 * Cause an access fault exception

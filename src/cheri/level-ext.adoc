@@ -44,10 +44,10 @@ Therefore, the capability level is adjusted using the <<ACPERM>> instruction (se
 ==== New capability permissions
 {cheri_levels_ext_name} introduces two new capability permissions:
 [#sl_perm,reftext="SL-permission"]
-Store Level Permission (SL):: This is a `LVLBITS` wide field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> less than the inverse of the authorizing capability's <<sl_perm>> will be stored with the tag cleared.
+Store Level Permission (SL):: This is a `LVLBITS` wide field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> less than the inverse of the authorizing capability's <<sl_perm>> will be stored with the validity tag cleared.
 With `LVLBITS=1` there is a single bit comparison, so it behaves as follows:
 - If this field (as well as <<c_perm>> and <<w_perm>>) is set to 1 then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
-- If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e. _local_), will be stored with the tag cleared.
+- If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e. _local_), will be stored with the validity tag cleared.
 
 NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9, Morello and CHERIoT.
 

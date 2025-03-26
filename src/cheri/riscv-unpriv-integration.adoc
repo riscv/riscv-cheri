@@ -89,7 +89,7 @@ improve their security.
 A CHERI core adds state to allow capabilities to be used from within registers, and to ensure they are not corrupted as they flow through the system.
 This means the following state is added by {cheri_base_ext_name}:
 
-* Extended <<gprs,general purpose integer registers>>: These XLEN-wide registers (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a validity bit.
+* Extended <<gprs,general purpose integer registers>>: These XLEN-wide registers (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a validity tag bit.
 When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
 The existing integer register names refer to the address part of the capability.
 For the ABI register names the a `c` prefix is added, i.e. `csp`, `ca0`.
@@ -133,7 +133,7 @@ These added instructions can be split into the following categories:
 
 * Capability manipulations (e.g. <<CADD>>, <<SCBNDS>>): for security, capabilities can only be modified in restricted ways.
   Special instructions are provided to perform these allowed operations, for example _shrinking_ the bounds or _reducing_ the permissions.
-  Any attempt to manipulate capabilities without using the instructions clears the tag, rendering them unusable for accessing memory.
+  Any attempt to manipulate capabilities without using the instructions clears the validity tag, rendering them unusable for accessing memory.
 
 * Capability inspection (e.g. <<GCBASE>>, <<GCPERM>>): capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
   These instructions give convenient access to allow software to query them.
@@ -165,7 +165,7 @@ Instruction fetch is also authorized by a capability: the program counter capabi
 This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
 
 With {cheri_base_ext_name} instruction fetches, jumps, and memory accesses may result in a fatal trap if the authorizing capability does grant the required permissions or the access is out of bounds.
-No other exception paths are added: in particular, capability manipulations do not trap, but may clear the tag on the result capability if the operation is not permitted.
+No other exception paths are added: in particular, capability manipulations do not trap, but may clear the validity tag on the result capability if the operation is not permitted.
 
 [#pcc,reftext="pcc"]
 ==== PCC - The Program Counter Capability
@@ -254,7 +254,7 @@ its tag and writes the result to a *c* register. The capability authorizing the
 memory access is provided in a *c* source register, so the effective address is
 obtained by incrementing that capability with the sign-extended 12-bit offset.
 
-A store capability instruction, <<SC>>, writes CLEN bits and the tag in a *c* register
+A store capability instruction, <<SC>>, writes CLEN bits and the validity tag in a *c* register
 to memory. The capability authorizing the memory access is provided in a *c*
 source register, so the effective address is obtained by incrementing that
 capability with the sign-extended 12-bit offset.
@@ -289,9 +289,9 @@ misaligned, even if the implementation supports Zicclsm. To transfer CLEN
 misaligned bits without a tag, use integer loads and stores.
 
 [#tags_cleared_by_permissions]
-For loads, the tag of the capability loaded from memory is cleared if the
+For loads, the validity tag of the capability loaded from memory is cleared if the
 authorizing capability does not grant permission to read capabilities (i.e.
-both <<r_perm>> and <<c_perm>> must be set in AP). For stores, the tag of the
+both <<r_perm>> and <<c_perm>> must be set in AP). For stores, the validity tag of the
 capability written to memory is cleared if the authorizing capability does not
 grant permission to write capabilities (i.e. both <<w_perm>> and <<c_perm>>
 must be set in AP).

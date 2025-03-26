@@ -21,7 +21,7 @@ least the same XLEN as lower privilege modes; these changes are present in the
 current draft and expected to be part of privileged architecture 1.13.
 
 {cheri_base_ext_name} defines capabilities of size CLEN corresponding to 2 *
-MXLEN without including the tag bit. The value of CLEN is always calculated
+MXLEN without including the validity tag bit. The value of CLEN is always calculated
 based on MXLEN regardless of the effective XLEN value.
 
 NOTE: We briefly note that the capability encoding described in this section
@@ -45,10 +45,10 @@ NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the
 in-memory format, and also increase precision for RV32.
 endif::[]
 
-The components of a capability, except the tag, are encoded as shown in
+The components of a capability, except the validity tag, are encoded as shown in
 xref:cap_encoding_xlen32[xrefstyle=short] for MXLEN=32 and
 xref:cap_encoding_xlen64[xrefstyle=short] for MXLEN=64. Each memory location
-or register able to hold a capability must also store the tag as out of band
+or register able to hold a capability must also store the validity tag as out of band
 information that software cannot directly set or clear. The capability metadata
 is held in the most significant bits and the address is held in the least
 significant bits.
@@ -77,16 +77,16 @@ Capabilities contain the software accessible fields described in this section.
 The tag is an additional hardware managed bit added to addressable memory and
 registers. It is stored separately and may be referred to as "out of band". It
 indicates whether a register or CLEN-aligned memory location contains a valid
-capability. If the tag is set, the capability is valid and can be dereferenced
+capability. If the validity tag is set, the capability is valid and can be dereferenced
 (contingent on checks such as permissions or bounds).
 
-The capability is invalid if the tag is clear. Using an invalid capability to
+The capability is invalid if the validity tag is clear. Using an invalid capability to
 dereference memory or authorize any operation gives rise to exceptions. All
 capabilities derived from invalid capabilities are themselves invalid i.e.
 their tags are 0.
 
 All locations in registers or memory able to hold a capability are CLEN+1 bits
-wide including the tag bit. Those locations are referred as being _CLEN-bit_ or
+wide including the validity tag bit. Those locations are referred as being _CLEN-bit_ or
 _capability_ wide in this specification.
 
 ==== Address
@@ -113,7 +113,7 @@ Additionally, this specification incorporates permissions that were present in M
 endif::[]
 
 This field encodes architecturally defined permissions of the capability.
-Permissions grant access subject to the tag being set, the capability being
+Permissions grant access subject to the validity tag being set, the capability being
 unsealed (see xref:section_cap_sealed[xrefstyle=short]), and bounds checks (see
 xref:section_cap_bounds[xrefstyle=short]). An operation is also contingent on
 requirements imposed by other RISC-V architectural features, such as virtual
@@ -128,7 +128,7 @@ read as zero when reading integer data.
 [#w_perm,reftext="W-permission"]
 Write Permission (W):: Allow writing integer data to memory. Tags are always
 written as zero when writing integer data. Every CLEN aligned word in memory
-has a tag, if any byte is overwritten with integer data then the tag for all
+has a tag, if any byte is overwritten with integer data then the validity tag for all
 CLEN-bits is cleared.
 
 [#c_perm,reftext="C-permission"]
@@ -309,7 +309,7 @@ endif::[]
 This bit indicates the type of the capability: it is a sealed capability if the bit is 1 or unsealed if it is 0.
 
 Sealed capabilities (`CT &#8800; 0` ) cannot be dereferenced to access memory and are immutable
-such that modifying any of its fields clears the tag of the output capability.
+such that modifying any of its fields clears the validity tag of the output capability.
 
 NOTE: Sealed capabilities might be useful to software as tokens that can be passed
 around. The only way of clearing the type bit of a capability is by rebuilding
@@ -397,7 +397,7 @@ xref:exp_bit_width[xrefstyle=short].
 |==============================================================================
 
 NOTE: The address and bounds must be representable in valid capabilities i.e.
-when the tag is set (see xref:section_cap_malformed[xrefstyle=short]).
+when the validity tag is set (see xref:section_cap_malformed[xrefstyle=short]).
 
 [#section_cap_bounds_decoding]
 ===== Decoding
@@ -597,7 +597,7 @@ a logic or memory fault (e.g., bit flipping).
 Capabilities with malformed bounds:
 
 . Return both base and top bounds as zero, which affects instructions like <<GCBASE>>.
-. Cause certain manipulation instructions like <<CADDI>> to always clear the tag of the result.
+. Cause certain manipulation instructions like <<CADDI>> to always clear the validity tag of the result.
 
 See specific instruction pages for full details of the effect of malformed capabilities.
 
