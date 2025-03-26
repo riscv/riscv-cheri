@@ -19,14 +19,16 @@ Encoding::
 include::wavedrom/sentry.adoc[]
 
 Description::
-Capability `cd` is written with the capability in `cs1` with its type bit set to 1.
+Capability `cd` is written with the capability in `cs1` with its type set to <<sentry_cap>>.
 Attempting to seal an already sealed capability will lead to the validity tag of `cd` being set to 0.
 
+ifdef::cheri_standalone_spec[]
+// Omit this note for ISA manual integration, CHERIoT-specific
 NOTE: The <<SENTRY>> instruction may give rise to an illegal instruction fault
 when the implementation does not support capability type 1 (unrestricted
-sentry; see xref:section_cap_sealed[xrefstyle=short]). This is not the case
-when the implementation supports the capability encoding described in
-xref:app_cap_description[xrefstyle=short].
+sentry; see xref:sec_cap_type[xrefstyle=short]).
+This is not the case when the implementation supports the capability encoding described in xref:app_cap_description[xrefstyle=short].
+endif::[]
 
 Operation::
 +

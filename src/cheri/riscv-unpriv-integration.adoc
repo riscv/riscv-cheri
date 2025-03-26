@@ -17,41 +17,8 @@ This mechanism is implemented by providing a new primitive, called a *capability
 {cheri_base_ext_name} introduces a new data type, the _capability_, generally used for architectural pointers.
 Capabilities are unforgeable and delegatable tokens of authority that grant software the ability to perform a specific set of operations.
 In CHERI, integer-based pointers are replaced by capabilities to provide memory access control.
-Capability registers extend existing XLEN-bit integer registers to `2*XLEN` (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
-In addition to widening to CLEN, each capability register also gains a one-bit validity tag.
 
-.CHERI Capability structure
-[#cap_structure]
-[bytefield]
-----
-(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 25}])
-(def row-height 80)
-(def row-header-fn nil)
-(def boxes-per-row 32)
-(draw-column-headers {:height 50 :font-size 18 :labels (reverse (concat ["0"] (repeat 28 "") ["XLEN-1" "" ""]))})
-
-(draw-box "V"    {:span 1})
-(draw-box "" {:span 1 :borders {}})
-(draw-box "Metadata (bounds, permissions, etc.)"    {:span 30})
-(draw-box "" {:span 2 :borders {}})
-(draw-box "Address"     {:span 30})
-(draw-box "" {:span 2 :borders {}})
-(draw-box "XLEN" {:span 30 :borders {}})
-----
-
-CHERI capabilities consist of:
-
-* An XLEN-bit address, describing where the capability currently points.
-* XLEN bits of metadata:
-** Bounds: a _base_ and a _top_ address, describing the range of addresses the capability can be used to access.
-** Permissions (read, write, execute, ...) describing the kinds of operations the capability can be used for.
-** Sealing information: a capability can be _sealed_, restricting it to only be used or modified in particular ways.
-* A one-bit integrity tag (the `V` field in <<cap_structure>>): this is maintained by hardware and cannot be directly modified by software.
-It indicates whether the capability is valid.
-On startup a more privileged execution environment will have configured the unprivileged registers with capabilities that grant access to the program code and data.
-Deriving from the initial startup state is the only way to obtain a valid capability: no software, even machine mode, can _forge_ a capability.
-
-The exact bitwise layout of capabilities as well as the precise encoding of each field for XLEN=32 and XLEN=64 is described in <<app_cap_description>>.
+==== CHERI protection model
 
 The CHERI model is motivated by the _principle of least privilege_, which
 argues that greater security can be obtained by minimizing the privileges
@@ -84,6 +51,157 @@ Developers can use CHERI to build fine-grained spatial and temporal memory
 protection into their system software and applications and significantly
 improve their security.
 
+[#sec_capability_field]
+==== CHERI capability registers
+
+Capability registers extend existing XLEN-bit integer registers to `2*XLEN` (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+In addition to widening to CLEN, each capability register also gains an out-of-band one-bit validity tag.
+The exact bitwise layout of capabilities as well as the precise encoding of each field for XLEN=32 and XLEN=64 is described in <<app_cap_description>>, but always contain the fields listed in the following paragraphs.
+
+NOTE: Future extensions to {cheri_base_ext_name} are permitted to choose a different capability encoding but must include these fields and .
+
+.CHERI Capability structure
+[#cap_structure]
+[bytefield]
+----
+(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 25}])
+(def row-height 80)
+(def row-header-fn nil)
+(def boxes-per-row 32)
+(draw-column-headers {:height 50 :font-size 18 :labels (reverse (concat ["0"] (repeat 28 "") ["XLEN-1" "" ""]))})
+
+(draw-box "V"    {:span 1})
+(draw-box "" {:span 1 :borders {}})
+(draw-box "Metadata (bounds, permissions, etc.)"    {:span 30})
+(draw-box "" {:span 2 :borders {}})
+(draw-box "Address"     {:span 30})
+(draw-box "" {:span 2 :borders {}})
+(draw-box "XLEN" {:span 30 :borders {}})
+----
+
+===== Address
+
+The lower XLEN bits of a capability encode the address of where the capability points.
+This is also referred to as the integer part of capabilities.
+For registers that are extended but (currently) only hold integer data, all other components are zero.
+
+[#cap_validity_tag,reftext="validity tag"]
+===== Validity Tag
+
+The validity tag is an additional hardware managed bit added to addressable memory and registers.
+It is stored separately and may be referred to as "out of band".
+It indicates whether a register or CLEN-aligned memory location contains a valid capability.
+If the validity tag is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or bounds).
+
+The capability is invalid if the validity tag is clear.
+Using an invalid capability to dereference memory or authorize any operation gives rise to exceptions.
+All capabilities derived from invalid capabilities are themselves invalid i.e. their validity tags are 0.
+
+All locations in registers or memory able to hold a capability are CLEN+1 bits wide including the validity tag bit.
+Those locations are referred as being _CLEN-bit_ or _capability_-wide in this specification.
+
+[#sec_cap_bounds]
+===== Bounds
+
+The bounds encode the _base_ and _top_ addresses that constrain accesses authorized by this capability.
+The capability can be used to access any memory location `A` in the range `base &#8804; A < top`.
+The bounds are decoded as described in xref:section_cap_bounds_decoding[xrefstyle=short].
+
+IMPORTANT: Bounds can only be reduced, and any attempt to increase them zeroes the validity tag.
+
+NOTE: As there is only XLEN bits of metadata to encode two XLEN bit bounds values, the bounds are encoded in a compressed format.
+  This means it may not be possible to precisely encode any arbitrary combination of base and top addresses.
+
+[#sec_cap_type]
+===== Capability Type (CT)
+
+This metadata field indicates the type of the capability.
+The type determines which operations the capability authorizes.
+The following capability types are defined in {cheri_base_ext_name}:
+
+.Capability types in {cheri_base_ext_name}
+[#tab_cap_types,%autowidth,options=header,align="center"]
+|===
+|Type |Hardware interpretation
+
+|0    | Unsealed capability
+|1    | Sentry capability
+|===
+
+[#unsealed_cap,reftext="unsealed capability]
+Unsealed capabilities::
+When `CT=0`, the capability authorizes access to a region of memory as defined by the permissions and bounds.
+
+[#sentry_cap,reftext="sentry capability"]
+Sentry capabilities::
+Capabilities with `CT=1` are immutable
+capabilities that describe function entry points, known as sealed entry (sentry) capabilities.
+They cannot be dereferenced to access memory and are immutable.
+Modifying any of its fields clears the validity tag of the output capability.
+The only permitted operation for sentry capabilities is jumping to a sentry capability to begin executing the instructions it references.
++
+NOTE: Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
+For example, the <<JALR_CHERI>>
+instruction with zero offset automatically unseals a sentry target capability and installs it in the
+<<pcc,program counter capability>>.
+The jump-and-link instructions also seal the return register, so the callee can return to the caller but cannot access the memory pointed at by the return register.
++
+NOTE: In addition to using them for secure entry points, sentry capabilities can also be useful to software as secure software tokens.
+They can be converted to an unsealed capability by rebuilding via a superset capability with the <<CBLD>> instruction.
+
+[#sec_cap_ap]
+===== Architectural Permissions (AP)
+
+This metadata field encodes architecturally defined permissions of the capability.
+Permissions grant access subject to the <<cap_validity_tag>> being set, the capability being unsealed, and bounds checks passing.
+Any operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP and PMAs, even if the capability grants sufficient permissions.
+The permissions currently defined in {cheri_base_ext_name} are listed below.
+
+IMPORTANT: Permissions can only be removed, and any attempt to add permissions zeroes the validity tag.
+
+[#r_perm,reftext="R-permission"]
+Read Permission \(R):: Allow reading integer data from memory. Tags are always
+read as zero when reading integer data.
+
+[#w_perm,reftext="W-permission"]
+Write Permission (W):: Allow writing integer data to memory. Validity tags are always
+written as zero when writing integer data. Every CLEN aligned word in memory
+has a tag, if any byte is overwritten with integer data then the validity tag for all
+CLEN-bits is cleared.
+
+[#c_perm,reftext="C-permission"]
+Capability Permission \(C):: Allow reading capability data from memory if the
+authorizing capability also grants <<r_perm>>. Allow writing capability data to
+memory if the authorizing capability also grants <<w_perm>>.
+
+[#x_perm,reftext="X-permission"]
+Execute Permission (X):: Allow instruction execution.
+
+[#lm_perm,reftext="LM-permission"]
+Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
+If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
+Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
+
+NOTE: The permission stripping behavior only applies to loaded capability that have their validity tag set and are not sealed; loaded capabilities that are sealed or invalid do not have their permissions changed.
+  This ensures that capability loads/stores of non-capability data do not modify the stored value.
+
+[#asr_perm,reftext="ASR-permission"]
+Access System Registers Permission (ASR):: Allow read and write access to all privileged CSRs as well as privileged instructions.
+Removing this permission constraining restricting privileged software to a sandbox that cannot be subverted by changing privileged state.
+
+// TODO: add levels permissions here
+// TODO: add CL here
+// NOTE: The <<section_cap_level>> field can be reduced even if the capability is sealed, see <<cap_level_load_summary>>.
+
+[#sec_cap_sdp]
+===== Software-Defined Permissions (SDP)
+The metadata also contains a encoding-dependent number of software-defined permission (SDP) bits.
+They can by inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.), but are not interpreted by the CPU otherwise.
+
+NOTE: While these bits are not interpreted by the hardware, modification follows the same rules as architectural permissions: SDP bits can only be cleared and never set.
+This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
+
+
 ==== Added State
 
 A CHERI core adds state to allow capabilities to be used from within registers, and to ensure they are not corrupted as they flow through the system.
@@ -114,7 +232,7 @@ Additionally, all CSRs that hold pointers are extended to CLEN bits, but since n
 (draw-gap "c2-c30 (extending x2-x30)")
 (draw-box "" [:box-first {:span 1}]) (draw-box "c31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
 (draw-box nil [:box-first {:span 1}]) (draw-box "pcc" [:box-related {:span 32}]) (draw-box "pc" [:box-last {:span 32 }])
-(draw-box "tag" {:span 1 :borders {}}) (draw-box "metadata" {:span 32 :borders {}}) (draw-box "address" {:span 32 :borders {}})
+(draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
 * Tags in registers, caches, and memory:

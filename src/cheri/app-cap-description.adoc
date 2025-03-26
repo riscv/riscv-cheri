@@ -3,7 +3,7 @@
 == Anatomy of Capabilities in {cheri_base_ext_name}
 
 ifdef::cheri_standalone_spec[]
-WARNING: This chapter needs to be refactored. It will appear as an appendix in the unpriv specification.
+WARNING: This chapter will appear as an appendix in the unpriv specification.
 endif::[]
 
 RISC-V defines variants of the base integer instruction set characterized by
@@ -67,96 +67,8 @@ NOTE: Reserved bits must be 0 in tagged capabilities.
 
 NOTE: The CL field is only present if {cheri_levels_ext_name} is implemented, otherwise it is reserved.
 
-=== Components of a Capability
-
-Capabilities contain the software accessible fields described in this section.
-
-[#section_tag]
-==== Tag
-
-The validity tag is an additional hardware managed bit added to addressable memory and
-registers. It is stored separately and may be referred to as "out of band". It
-indicates whether a register or CLEN-aligned memory location contains a valid
-capability. If the validity tag is set, the capability is valid and can be dereferenced
-(contingent on checks such as permissions or bounds).
-
-The capability is invalid if the validity tag is clear. Using an invalid capability to
-dereference memory or authorize any operation gives rise to exceptions. All
-capabilities derived from invalid capabilities are themselves invalid i.e.
-their tags are 0.
-
-All locations in registers or memory able to hold a capability are CLEN+1 bits
-wide including the validity tag bit. Those locations are referred as being _CLEN-bit_ or
-_capability_ wide in this specification.
-
-==== Address
-
-The byte-address of a memory location is encoded as MXLEN integer value.
-
-.Address widths depending on MXLEN
-[#address_bit_width,options=header,align="center",width="55%"]
-|==============================================================================
-^| MXLEN   ^| Address width
-^| 32      ^| {cap_rv32_addr_width}
-^| 64      ^| {cap_rv64_addr_width}
-|==============================================================================
-
-[#section_cap_perms]
-==== Architectural Permissions (AP)
-
-===== Description
-
-ifdef::cheri_v9_annotations[]
-WARNING: *CHERI v9 Note:* The permissions are encoded differently in this
-specification.
-Additionally, this specification incorporates permissions that were present in Morello and/or CHERIoT but not CHERI v9.
-endif::[]
-
-This field encodes architecturally defined permissions of the capability.
-Permissions grant access subject to the validity tag being set, the capability being
-unsealed (see xref:section_cap_sealed[xrefstyle=short]), and bounds checks (see
-xref:section_cap_bounds[xrefstyle=short]). An operation is also contingent on
-requirements imposed by other RISC-V architectural features, such as virtual
-memory, PMP and PMAs, even if the capability grants sufficient permissions. The
-permissions currently defined in {cheri_base_ext_name} are listed
-below.
-
-[#r_perm,reftext="R-permission"]
-Read Permission \(R):: Allow reading integer data from memory. Tags are always
-read as zero when reading integer data.
-
-[#w_perm,reftext="W-permission"]
-Write Permission (W):: Allow writing integer data to memory. Tags are always
-written as zero when writing integer data. Every CLEN aligned word in memory
-has a tag, if any byte is overwritten with integer data then the validity tag for all
-CLEN-bits is cleared.
-
-[#c_perm,reftext="C-permission"]
-Capability Permission \(C):: Allow reading capability data from memory if the
-authorizing capability also grants <<r_perm>>. Allow writing capability data to
-memory if the authorizing capability also grants <<w_perm>>.
-
-[#x_perm,reftext="X-permission"]
-Execute Permission (X):: Allow instruction execution.
-
-[#lm_perm,reftext="LM-permission"]
-Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
-If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed provided that the loaded capability has its tag set and is not sealed; loaded capabilities that are sealed or untagged do not have their permissions changed.
-The rules specified by <<ACPERM>> are followed when <<w_perm>> and <<lm_perm>> are removed, so additional permissions may also be removed.
-Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
-
-NOTE: Implementations are allowed to retain invalid capability permissions loaded from memory instead of following the <<ACPERM>> behavior of reducing them to _no permissions_.
-
-[#asr_perm,reftext="ASR-permission"]
-Access System Registers Permission (ASR):: Allow read and write access to all
-privileged (M-mode and S-mode) CSRs.
-If {tid_ext_name} is supported the <<utid>>, <<utidc>>, <<vstid>>, <<vstidc>>, <<stid>>,
-<<stidc>>, <<mtid>>, <<mtidc>> registers are all considered privileged for the purposes
-of writing and unprivileged for reading, and thus require ASR-permission for writes but
-not reads. In all cases a suitable privilege mode is required for access.
-
 [#cap_permissions_encoding]
-===== Permission Encoding
+==== Architectural Permissions (AP) Encoding
 
 The bit width of the permissions field depends on the value of MXLEN as shown
 in xref:perms_bit_width[xrefstyle=short]. A {cap_rv32_perms_width}-bit vector
@@ -266,6 +178,8 @@ implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
 
 ===== Permission Transitions
 
+// TODO: update this
+
 Executing <<ACPERM>> can result in sets of permissions which cannot be represented when MXLEN=32
 (see <<cap_perms_encoding32>>) or permission combinations which are not useful for MXLEN=64, such as
 <<asr_perm>> set without <<x_perm>>.
@@ -275,20 +189,15 @@ These cases are defined to return useful minimal sets of permissions, which may 
 
 NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
 
-[#sdp,reftext="SDP"]
-==== Software-Defined Permissions (SDP)
+[#cap_sdp_encoding]
+==== Software-Defined Permissions (SDP) Encoding
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* CHERI v9 had no software-defined permissions for RV32
 endif::[]
 
-A bit vector used by the kernel or application programs for software-defined
-permissions (SDP).
-
-NOTE: Software is completely free to define the usage of these bits. For
-example, a program may decide to use an SDP bit to indicate the "ownership" of
-objects. Therefore, a capability grants permission to free the memory it
-references if that SDP bit is set because it "owns" that object.
+The width of the SDP field depends on the underlying base architecture.
+The value of the SDP bits of the <<GCPERM>> result maps 1:1 to the SDP field in the capability.
 
 .SDP widths depending on MXLEN
 [#sdp_bit_width,options=header,align="center",width="55%"]
@@ -298,36 +207,20 @@ references if that SDP bit is set because it "owns" that object.
 ^| 64      ^| {cap_rv64_sdp_width}
 |==============================================================================
 
+NOTE: Software is completely free to define the usage of these bits.
+
 [#section_cap_sealed]
-==== Capability Type (CT) Bit
+==== Capability Type (CT) Encoding
 
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
 The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
 endif::[]
 
-This bit indicates the type of the capability: it is a sealed capability if the bit is 1 or unsealed if it is 0.
-
-Sealed capabilities (`CT &#8800; 0` ) cannot be dereferenced to access memory and are immutable
-such that modifying any of its fields clears the validity tag of the output capability.
-
-NOTE: Sealed capabilities might be useful to software as tokens that can be passed
-around. The only way of clearing the type bit of a capability is by rebuilding
-it via a superset capability with <<CBLD>>. {cheri_base_ext_name} does not offer
-an unseal instruction.
-
-NOTE: The <<section_cap_level>> field can be reduced even if the capability is sealed, see <<cap_level_load_summary>>.
-
-For code capabilities, the sealing bit is used to implement immutable
-capabilities that describe function entry points, known as sealed entry (sentry) capabilities. Such capabilities can be leveraged
-to establish a form of control-flow integrity between mutually distrusting code. A program may jump to a
-sentry capability to begin executing the instructions it references. A <<JALR_CHERI>>
-instruction with zero offset automatically unseals a sentry target capability and installs it in the
-<<pcc,program counter capability>>.
-The jump-and-link instructions also seal the return address capability which serves as an entry point the callee can return to but cannot use to authorize memory loads or stores.
+For {cheri_base_ext_name} the CT field is one bit wide and maps 1:1 to the capability types listed in <<tab_cap_types>>: it is a sentry capability if the bit is 1 or unsealed if it is 0.
 
 [#section_cap_bounds]
-==== Bounds (EF, T, TE, B, BE)
+==== Bounds (EF, T, TE, B, BE) Encoding
 
 ===== Concept
 
