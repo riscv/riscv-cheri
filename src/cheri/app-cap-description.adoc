@@ -176,16 +176,47 @@ implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
 . For MXLEN=64, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
 . For MXLEN=32, the <<m_bit>> is only encoded in quadrant 1 and does _not_ exist in the other quadrants.
 
+[#sec_permission_transitions]
 ===== Permission Transitions
-
-// TODO: update this
 
 Executing <<ACPERM>> can result in sets of permissions which cannot be represented when MXLEN=32
 (see <<cap_perms_encoding32>>) or permission combinations which are not useful for MXLEN=64, such as
 <<asr_perm>> set without <<x_perm>>.
+These cases are defined to return useful minimal sets of permissions.
 
-These cases are defined to return useful minimal sets of permissions, which may be no permissions. See
-<<ACPERM>> for these rules.
+When removing permissions with <<ACPERM>> the following rules are followed in order:
+
+[#acperm_rules]
+.ACPERM common rules
+[float="center",align="center",cols="2,2,4",options="header"]
+|===
+| Rule            | Permission   | Only valid if
+|  1  (RV32 only) | <<asr_perm>> | All other permissions are set.
+|  2              | <<c_perm>>   | <<r_perm>> or <<w_perm>>
+|  3  (RV32 only) | <<c_perm>>   | <<r_perm>>
+|  4  (RV32 only) | <<x_perm>>   | <<r_perm>>
+|  5  (RV32 only) | <<w_perm>>   | not(<<c_perm>>) or <<lm_perm>>
+|  6  (RV32 only) | <<x_perm>>   | <<w_perm>> or <<c_perm>>
+|  7              | <<el_perm>>  | <<c_perm>> and <<r_perm>>
+|  8  (RV32 only) | <<el_perm>>  | <<lm_perm>>
+|  9              | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
+| 10  (RV32 only) | <<lm_perm>>  | (<<w_perm>> or <<el_perm>>)
+| 11              | <<sl_perm>>  | <<c_perm>>
+| 12  (RV32 only) | <<sl_perm>>  | (<<lm_perm>> and (<<x_perm>> or <<w_perm>>))
+| 13  (RV32 only) | <<x_perm>>   | (<<c_perm>> and <<lm_perm>> and <<el_perm>> and (<<sl_perm>> == ∞)) or +
+(not(<<c_perm>> and not(<<lm_perm>>) and not(<<el_perm>>) and (<<sl_perm>>==0)))^1^
+| 14              | <<asr_perm>> | <<x_perm>>
+| 15^2^           | <<m_bit>>    | <<x_perm>> and {cheri_default_ext_name} is implemented
+|===
+
+^1^ All the listed permissions in the set are either minimum or maximum. +
+^2^ For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
+are only valid if {cheri_default_ext_name} is implemented. Otherwise those encodings represent invalid permissions.
+
+CAUTION: Depending on the supported extensions and <<cap_permissions_encoding,permissions encoding>> some referenced bits may have a hardwired value.
+In this case the rules are applied starting with this hardwired value, and proceed as if it had been modified but any change is discarded after following the final rule.
+For example, RV64 without {cheri_default_ext_name}, the <<m_bit>> is a _reserved_ bit, and so is not relevant to <<ACPERM>>.
+Similarly, if {cheri_levels_ext_name} is _not_ implemented then <<el_perm>> is initialized to 1, and <<sl_perm>> is initialized to the maximum value, but the resulting <<el_perm>> and <<sl_perm>> is discarded at the end.
 
 NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
 
