@@ -624,20 +624,16 @@ NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
 it is not possible to disable CHERI checks completely.
 endif::[]
 
+#FIXME: The CBZE, CBIE etc. bits are specified by Zicbo*, can this be defined by {cheri_priv_m_ext}/{cheri_priv_s_ext}+{cheri_default_ext_name} instead of adding a new priv extension?#
+
 When using a system with {cheri_default_ext_name}, it may be desirable to disabling CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
 {cheri_priv_m_reg_enable_ext} includes functions to disable explicit access to CHERI
 registers and instructions.
-The following occurs when executing code in a privilege mode that has CHERI register access disabled:
+The {cheri_priv_m_reg_enable_ext} extension makes the `CRE` bit of <<mseccfg>>, <<menvcfg>>, and <<senvcfg>> writable.
 
-* The CHERI instructions that access capability registers (implicitly or explicitly)
-cause illegal instruction exceptions
-+
-NOTE: The only instruction added by {cheri_base_ext_name} that does not access capability state is <<CRAM>>, all others are disabled.
-* Executing CSR instructions accessing any CSR added by any CHERI extension ({cheri_default_ext_name}, {cheri_priv_m_ext}, {cheri_priv_s_ext}, {cheri_priv_h_ext}) causes an illegal instruction exception
-* Executing CSR instructions accessing any CSR extended to CLEN only allows XLEN access.
-* All allowed instructions execute as if the CHERI execution mode is {cheri_int_mode_name}.
-// FIXME: there should be no way to observe the M bit, do we need to mentions this?
-// The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
+IMPORTANT: If {cheri_base_ext_name} is supported and {cheri_default_ext_name} is not supported, then {cheri_priv_m_reg_enable_ext} must also not be supported.
+  In this case all CRE bits are hardwired to 1 and access to CHERI registers is always permitted.
+  This allows implementing a hart that always runs in {cheri_cap_mode_name}.
 
 CHERI register access is disabled if
 
@@ -654,7 +650,18 @@ The effective CRE for the current privilege is:
 NOTE: The effective CRE is always 1 in debug mode.
 
 NOTE: On reset CHERI register access is disabled (<<mseccfg>>.CRE resets to zero).
-However, in case {cheri_base_ext_name} is the only supported base ISA and there is no option to switch to RV32I/RV64I (i.e. {cheri_default_ext_name} is not supported), then the CRE bits are hardwired to 1.
+
+The following occurs when executing code in a privilege mode that has CHERI register access disabled:
+
+* The CHERI instructions that access capability registers (implicitly or explicitly)
+cause illegal instruction exceptions
++
+NOTE: The only instruction added by {cheri_base_ext_name} that does not access capability state is <<CRAM>>, all others are disabled.
+* Executing CSR instructions accessing any CSR added by any CHERI extension ({cheri_default_ext_name}, {cheri_priv_m_ext}, {cheri_priv_s_ext}, {cheri_priv_h_ext}) causes an illegal instruction exception
+* Executing CSR instructions accessing any CSR extended to CLEN only allows XLEN access.
+* All allowed instructions execute as if the CHERI execution mode is {cheri_int_mode_name}.
+// FIXME: there should be no way to observe the M bit, do we need to mentions this?
+// The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
 
 Disabling CHERI register access has no effect on implicit accesses or security checks.
 The last capability installed in <<pcc>> and <<ddc>> before disabling CHERI register access will be used to authorize instruction execution and data memory accesses.
@@ -729,60 +736,3 @@ corresponding privilege mode is implemented.
 Setting the MBE, SBE, or UBE field to a value that is not the reset value of
 MBE disables most CHERI features and instructions, as described in
 xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
-
-[#mseccfg,reftext="mseccfg"]
-==== Machine Security Configuration Register (mseccfg)
-
-{cheri_default_ext_name} adds a new enable bit to <<mseccfg>> as shown in
-xref:mseccfgmodereg[xrefstyle=short].
-
-.Machine security configuration register (*mseccfg*)
-[#mseccfgmodereg]
-include::img/mseccfgreg.edn[]
-
-The CHERI Register Enable (CRE) bit controls whether M-mode and lower privilege
-levels have access to capability registers and instructions.
-When <<mseccfg>>.CRE=1, all CHERI instructions and registers can be accessed.
-When <<mseccfg>>.CRE=0, CHERI register and instruction access is prohibited for
-M-mode and lower privilege levels as described in xref:section_cheri_disable[xrefstyle=short].
-
-The reset value is 0.
-
-[#menvcfg,reftext="menvcfg"]
-==== Machine Environment Configuration Register (menvcfg)
-
-{cheri_default_ext_name} adds a new enable bit to <<menvcfg>> as shown in
-xref:menvcfgmodereg[xrefstyle=short].
-
-.Machine environment configuration register (*menvcfg*)
-[#menvcfgmodereg]
-include::img/menvcfgmodereg.edn[]
-
-The CHERI Register Enable (CRE) bit controls whether less privileged levels can
-perform explicit accesses to CHERI registers and execute CHERI instructions.
-When <<menvcfg>>.CRE=1 and <<mseccfg>>.CRE=1, CHERI registers can be read and
-written by less privileged levels. When <<menvcfg>>.CRE=0,
-CHERI registers are disabled in less privileged levels as described in
-xref:section_cheri_disable[xrefstyle=short].
-
-The reset value is 0.
-
-[#senvcfg,reftext="senvcfg"]
-==== Supervisor Environment Configuration Register (senvcfg)
-
-The *senvcfg* register operates as described in the RISC-V Privileged
-Specification. {cheri_default_ext_name} adds a new enable bit as shown in
-xref:senvcfgreg[xrefstyle=short].
-
-.Supervisor environment configuration register (*senvcfg*)
-[#senvcfgreg]
-include::img/senvcfgreg.edn[]
-
-The CHERI Register Enable (CRE) bit controls whether U-mode can perform
-explicit accesses to CHERI registers and execute CHERI instructions. When
-<<senvcfg>>.CRE=1 and <<menvcfg>>.CRE=1 and <<mseccfg>>.CRE=1 CHERI registers
-can be read and written by U-mode. When <<senvcfg>>.CRE=0,
-CHERI registers are disabled in U-mode as described in
-xref:section_cheri_disable[xrefstyle=short].
-
-The reset value is 0.

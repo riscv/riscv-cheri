@@ -725,8 +725,8 @@ instruction bits is implemented, `stval` must also be able to hold all
 values less than latexmath:[$2^N$], where latexmath:[$N$] is the smaller
 of SXLEN and ILEN.
 
-[[sec:senvcfg]]
-==== Supervisor Environment Configuration (`senvcfg`) Register
+[#senvcfg,reftext="senvcfg"]
+==== [[sec:senvcfg]] Supervisor Environment Configuration (`senvcfg`) Register
 
 The `senvcfg` CSR is an SXLEN-bit read/write register, formatted as
 shown in <<senvcfg>>, that controls certain
@@ -744,7 +744,9 @@ characteristics of the U-mode execution environment.
   {bits:  2, name: 'CBIE'},
   {bits:  1, name: 'CBCFE'},
   {bits:  1, name: 'CBZE'},
-  {bits: 24, name: 'WPRI'},
+  {bits: 20, name: 'WPRI'},
+  {bits:  1, name: 'CRE'},
+  {bits:  3, name: 'WPRI'},
   {bits:  2, name: 'PMM'},
   {bits: 30, name: 'WPRI'},
 ], config:{lanes: 4, hspace:1024}}
@@ -761,7 +763,9 @@ characteristics of the U-mode execution environment.
   {bits:  2, name: 'CBIE'},
   {bits:  1, name: 'CBCFE'},
   {bits:  1, name: 'CBZE'},
-  {bits: 24, name: 'WPRI'},
+  {bits: 20, name: 'WPRI'},
+  {bits:  1, name: 'CRE'},
+  {bits:  3, name: 'WPRI'},
 ], config:{lanes: 2, hspace:1024}}
 ....
 
@@ -834,6 +838,8 @@ The definition of the CBZE field is furnished by the Zicboz extension.
 
 The definitions of the CBCFE and CBIE fields are furnished by the Zicbom
 extension.
+
+The definition of the CRE field is furnished by the <<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>> extension.
 
 The definition of the PMM field is furnished by the Ssnpm extension.
 
