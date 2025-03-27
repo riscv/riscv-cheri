@@ -202,19 +202,6 @@ This property is required to ensure restricted programs cannot forge capabilitie
 
 === Added State
 
-A CHERI core adds state to allow capabilities to be used from within registers, and to ensure they are not corrupted as they flow through the system.
-This means the following state is added by {cheri_base_ext_name}:
-
-* Extended <<gprs,general purpose integer registers>>: These XLEN-wide registers (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a validity tag bit.
-When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
-The existing integer register names refer to the address part of the capability.
-For the ABI register names the a `c` prefix is added, i.e. `csp`, `ca0`.
-The zero register is extended with zero metadata and a cleared tag: this is called the <<null-cap>> capability.
-
-* Extended CSRs: registers that store addresses are extended to contain capabilities.
-In the base {cheri_base_ext_name}, the only such register is the program counter `pc` that is extended to the program counter capability (<<pcc>>). Extending `pc` ensures that the range of branches and jumps for currently executing code can be restricted.
-Additionally, all CSRs that hold pointers are extended to CLEN bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, these changes are described in the corresponding chapters.
-
 .CHERI Capability registers extending existing integer registers in {cheri_base_ext_name}
 [#base_cap_registers]
 [bytefield]
@@ -233,43 +220,24 @@ Additionally, all CSRs that hold pointers are extended to CLEN bits, but since n
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
-* Tags in registers, caches, and memory:
+A CHERI core adds state to allow capabilities to be used from within registers, and to ensure they are not corrupted as they flow through the system.
+This means the following state is added by {cheri_base_ext_name}:
 
-** Every register has a one-bit tag, indicating whether the capability in the register is valid to be dereferenced.
-This tag is cleared whenever an invalid capability operation is performed. Such invalid operations include e.g. writing only the integer portion of the register or attempting to increase bounds or permissions.
+==== Extended <<gprs,general purpose integer registers>>
+These XLEN-wide registers (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a validity tag bit.
+When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
+The existing integer register names refer to the address part of the capability.
+For the ABI register names the a `c` prefix is added, i.e. `csp`, `ca0`.
+The zero register is extended with zero metadata and a cleared tag: this is called the <<null-cap>> capability.
 
-** The validity tags are also tracked through the memory subsystem: every aligned CLEN-bits wide region has a non-addressable one-bit tag, which the hardware manages atomically with the data.
-The validity tag is cleared if the memory region is ever written using an operation other than a store of a full capability register.
-Any caches must preserve this abstraction.
+==== Extended CSRs
+Registers that store addresses are extended to contain capabilities.
+In the base {cheri_base_ext_name}, the only such register is the program counter `pc` that is extended to the program counter capability (<<pcc>>). Extending `pc` ensures that the range of branches and jumps for currently executing code can be restricted.
 
-[#sec_cheri_cap_mode_int_mode]
-=== {cheri_cap_mode_name} and {cheri_int_mode_name}
-Existing RV32I/RV64I instructions as well as instructions defined by unprivileged extensions are largely unmodified.
-The one difference is that a hart using {cheri_base_ext_name} instead of RV32I/RV64I as the base ISA uses capabilities for all memory accesses.
-This is called executing in {cheri_cap_mode_name}.
-In {cheri_cap_mode_name}, instructions that access memory, as well as branches and jumps are modified to check against the full capability from the base address register (e.g. `lw t0, 16(c3)`) instead of just the integer address (i.e. `lw t0, 16(x3)`).
-In some cases, they are also changed to return a full capability value, e.g. <<AUIPC_CHERI>> will return the full <<pcc>> including the metadata.
-For the full list of instructions that change behavior with {cheri_base_ext_name}, see <<app_cheri_instructions>>.
-
-The new CHERI state and instructions can also be made available to a hart using RV32I/RV64I as the base ISA with full binary compatibility.
-The mechanics for this mode are described by the <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> extension.
-When a hart supports CHERI but is using RV32I/RV64I as the base ISA, it is executing in {cheri_int_mode_name}.
-{cheri_int_mode_name} mode allows full compatibility with existing RV32I/RV32E binaries, but with additional capability checks for all data memory accesses and instruction fetches.
-
-=== Capability checks
-
-Every memory access performed by a CHERI core must be authorized by a capability.
-The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
-For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` register.
-
-Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends PC.
-This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
-
-With {cheri_base_ext_name}, instruction fetches, jumps, and memory accesses may result in a fatal trap if the authorizing capability does grant the required permissions or the access is out of bounds.
-No other exception paths are added: in particular, capability manipulations do not trap, but may clear the validity tag on the result capability if the operation is not permitted.
+NOTE: All CSRs that hold pointers are extended to CLEN bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, any such change is described in the corresponding chapters.
 
 [#pcc,reftext="pcc"]
-=== PCC - The Program Counter Capability
+===== PCC - The Program Counter Capability
 
 An authorizing capability with appropriate permissions is required to execute
 instructions in {cheri_base_ext_name}. Therefore, the unprivileged program
@@ -299,6 +267,41 @@ executing each instruction. However, this property has not yet been formally ver
 include::img/pccreg.edn[]
 
 <<pcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+
+==== Tags in registers, caches, and memory
+
+Every register has a one-bit tag, indicating whether the capability in the register is valid to be dereferenced.
+This tag is cleared whenever an invalid capability operation is performed. Such invalid operations include e.g. writing only the integer portion of the register or attempting to increase bounds or permissions.
+
+The validity tags are also tracked through the memory subsystem: every aligned CLEN-bits wide region has a non-addressable one-bit tag, which the hardware manages atomically with the data.
+The validity tag is cleared if the memory region is ever written using an operation other than a store of a full capability register.
+Any caches must preserve this abstraction.
+
+[#sec_cheri_cap_mode_int_mode]
+=== {cheri_cap_mode_name} and {cheri_int_mode_name}
+Existing RV32I/RV64I instructions as well as instructions defined by unprivileged extensions are largely unmodified.
+The one difference is that a hart using {cheri_base_ext_name} instead of RV32I/RV64I as the base ISA uses capabilities for all memory accesses.
+This is called executing in {cheri_cap_mode_name}.
+In {cheri_cap_mode_name}, instructions that access memory, as well as branches and jumps are modified to check against the full capability from the base address register (e.g. `lw t0, 16(c3)`) instead of just the integer address (i.e. `lw t0, 16(x3)`).
+In some cases, they are also changed to return a full capability value, e.g. <<AUIPC_CHERI>> will return the full <<pcc>> including the metadata.
+For the full list of instructions that change behavior with {cheri_base_ext_name}, see <<app_cheri_instructions>>.
+
+The new CHERI state and instructions can also be made available to a hart using RV32I/RV64I as the base ISA with full binary compatibility.
+The mechanics for this mode are described by the <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> extension.
+When a hart supports CHERI but is using RV32I/RV64I as the base ISA, it is executing in {cheri_int_mode_name}.
+{cheri_int_mode_name} mode allows full compatibility with existing RV32I/RV32E binaries, but with additional capability checks for all data memory accesses and instruction fetches.
+
+=== Capability checks
+
+Every memory access performed by a CHERI core must be authorized by a capability.
+The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
+For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` register.
+
+Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends PC.
+This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
+
+With {cheri_base_ext_name}, instruction fetches, jumps, and memory accesses may result in a fatal trap if the authorizing capability does grant the required permissions or the access is out of bounds.
+No other exception paths are added: in particular, capability manipulations do not trap, but may clear the validity tag on the result capability if the operation is not permitted.
 
 [#section_cap_instructions]
 === New and modified Instructions
