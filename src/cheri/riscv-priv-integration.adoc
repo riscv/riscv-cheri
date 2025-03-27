@@ -624,7 +624,7 @@ NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
 it is not possible to disable CHERI checks completely.
 endif::[]
 
-#FIXME: The CBZE, CBIE etc. bits are specified by Zicbo*, can this be defined by {cheri_priv_m_ext}/{cheri_priv_s_ext}+{cheri_default_ext_name} instead of adding a new priv extension?#
+#ARC-QUESTION: The CBZE, CBIE etc. bits are specified by Zicbo*, can this be defined by {cheri_priv_m_ext}/{cheri_priv_s_ext}+{cheri_default_ext_name} instead of adding a new priv extension?#
 
 When using a system with {cheri_default_ext_name}, it may be desirable to disabling CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
 {cheri_priv_m_reg_enable_ext} includes functions to disable explicit access to CHERI
@@ -699,40 +699,26 @@ instructions. +
 ^3^ The hart is fully compatible with standard RISC-V when CRE=0 provided that <<pcc>>, <<mtvecc>>, <<mepcc>>, <<stvecc>>, <<sepcc>>, <<vstvecc>>, <<vsepcc>> and <<ddc>> have not been changed from the default reset state (i.e. hold the <<infinite-cap>> capability).
 
 
-[#section_hybrid_priv]
-=== Changes to the privileged architecture for {cheri_default_ext_name}
+[#section_cheri_dyn_xlen]
+== "{cheri_priv_m_dyn_xlen_ext}" Extension, Version 1.0
 
-[#mstatus_hybrid]
-==== Machine Status Registers (mstatus and mstatush)
+{cheri_priv_m_dyn_xlen_ext} eliminates some restrictions for SXL and UXL imposed in {cheri_priv_m_ext} to allow implementations supporting multiple base ISAs.
+This extension allows the SXL, UXL, MBE, SBE, and UBE fields of <<mstatus>>/<<sstatus>> to be writable (which is prohibited by {cheri_priv_m_ext} otherwise).
 
-{cheri_default_ext_name} eliminates some restrictions for SXL and UXL imposed in
-{cheri_base_ext_name} to allow implementations supporting multiple base ISAs.
-Namely, the SXL and UXL fields may be writable.
+#ARC-QUESTION: Should this extension be folded into the {cheri_priv_m_reg_enable_ext} extension?#
 
-Setting the SXL or UXL field to a value that is not MXLEN disables most
-CHERI features and instructions, as described in
-xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
-
-NOTE: If CHERI register access must be disabled in a mode for security reasons,
-software should set CRE to 0 regardless of the SXL and UXL fields.
-
-Whenever XLEN in any mode is set to a value less than MXLEN, standard RISC-V
-rules from cite:[riscv-unpriv-spec] are followed. This means that all operations
-must ignore source operand register bits above the configured XLEN, and must
-sign-extend results to fill all MXLEN bits in the destination register.
-Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it
-is sign-extended to fill MXLEN. The integer writing rule from CHERI is
-followed, so that every register write also zeroes the metadata and tag of the
+Changing XLEN::
+Setting the SXL or UXL field to a value that is not MXLEN disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
++
+NOTE: If CHERI register access must be disabled in a mode for security reasons, software should set CRE to 0 regardless of the SXL and UXL fields.
++
+Whenever XLEN in any mode is set to a value less than MXLEN, standard RISC-V rules from cite:[riscv-unpriv-spec] are followed.
+This means that all operations must ignore source operand register bits above the configured XLEN, and must sign-extend results to fill all MXLEN bits in the destination register.
+Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it is sign-extended to fill MXLEN.
+The integer writing rule from CHERI is followed, so that every register write also zeroes the metadata and tag of the
 destination register.
++
+However, CHERI operations and security checks will continue using the entire hardware register (i.e. CLEN bits) to correctly decode capability bounds.
 
-However, CHERI operations and security checks will continue using the entire
-hardware register (i.e. CLEN bits) to correctly decode capability bounds.
-
-{cheri_default_ext_name} eliminates some restrictions for MBE, SBE, and UBE
-imposed in {cheri_base_ext_name} to allow implementations supporting multiple
-endiannesses.  Namely, the MBE, SBE, and UBE fields may be writable if the
-corresponding privilege mode is implemented.
-
-Setting the MBE, SBE, or UBE field to a value that is not the reset value of
-MBE disables most CHERI features and instructions, as described in
-xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
+Changing endianness::
+Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
