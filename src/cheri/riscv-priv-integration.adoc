@@ -147,10 +147,10 @@ Changing XLEN or endianness would change the interpretation of all in-memory cap
 NOTE: These restrictions are relaxed if a further privileged CHERI extension, {cheri_priv_m_dyn_xlen_ext}, optionally makes SXL,
 UXL, MBE, SBE, and UBE writeable, to support CHERI on implementations that support dynamic XLEN or endianness changes.
 
+[[cheri-mcause]]
 ==== Machine Cause Register (mcause)
 
-{cheri_base_ext_name} adds a new exception code for CHERI exceptions that
-<<mcause>> must be able to represent.
+{cheri_base_ext_name} adds a new exception code for CHERI exceptions that <<mcause>> must be able to represent.
 The new exception code and its priority are listed in xref:mcauses[xrefstyle=short] and xref:exception-priority[xrefstyle=short] respectively.
 The behavior and usage of <<mcause>> otherwise remains as described in xref:mcause[xrefstyle=short].
 
@@ -221,6 +221,7 @@ NOTE: The full details of the CHERI exceptions with cause value {cheri_excep_mca
 Bit {cheri_excep_mcause} of <<medeleg>> now refers to a valid exception and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
+[[mtval-cheri]]
 ==== Machine Trap Value Register (mtval)
 
 ifdef::cheri_v9_annotations[]
@@ -332,20 +333,10 @@ NOTE: Reporting both allows the software the choice about which action to take f
  permission, or to sweep the page.
 
 [#supervisor-level-csrs-section]
-=== Supervisor-Level CSRs added by {cheri_priv_s_ext}
+=== Supervisor-Level CSRs added or extended by {cheri_priv_s_ext}
 
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
 hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is typically required for access.
-
-[#stvec,reftext="stvec"]
-==== Supervisor Trap Vector Base Address Register (stvec)
-
-The <<stvec>> register is as defined in cite:[riscv-priv-spec]. It is an
-SXLEN-bit register used as the code pointer jumped to when taking traps
-into supervisor mode. It is extended into <<stvecc>>.
-
-.Supervisor trap-vector base-address register
-include::img/stvecreg.edn[]
 
 [#stvecc,reftext="stvecc"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvecc)
@@ -356,20 +347,7 @@ Its reset value is the <<infinite-cap>> capability.
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
 
-The handling of <<stvecc>> is otherwise identical to <<mtvecc>>, but in
-supervisor mode.
-
-[#sscratch, reftext="sscratch"]
-==== Supervisor Scratch Register (sscratch)
-
-The <<sscratch>> register is as defined in cite:[riscv-priv-spec]. It is an
-MXLEN-bit read/write register dedicated for use by supervisor mode. Typically,
-it is used to hold a pointer to a supervisor-mode hart-local context space and
-swapped with a user register upon entry to an S-mode trap handler. <<sscratch>>
-is extended into <<sscratchc>>.
-
-.Supervisor-mode scratch register
-include::img/sscratchreg.edn[]
+The handling of <<stvecc>> is otherwise identical to <<mtvecc>>, but in supervisor mode.
 
 [#sscratchc, reftext="sscratchc"]
 ==== Supervisor Scratch Capability Register (sscratchc)
@@ -383,15 +361,6 @@ It is not WARL, all capability fields must be implemented.
 .Supervisor scratch capability register
 include::img/sscratchcreg.edn[]
 
-[#sepc,reftext="sepc"]
-==== Supervisor Exception Program Counter (sepc)
-
-The <<sepc>> register is as defined in cite:[riscv-priv-spec]. It is extended
-into <<sepcc>>.
-
-.Supervisor exception program counter register
-include::img/sepcreg.edn[]
-
 [#sepcc,reftext="sepcc"]
 ==== Supervisor Exception Program Counter Capability (sepcc)
 
@@ -399,144 +368,17 @@ The <<sepcc>> register extends <<sepc>> to hold a capability.
 Its reset value is the <<infinite-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<sepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
-Additionally, the capability in <<sepcc>> is unsealed when it is installed in
-<<pcc>> on execution of an <<SRET>> instruction. The handling of <<sepcc>> is
-otherwise identical to <<mepcc>>, but in supervisor mode.
+Additionally, the capability in <<sepcc>> is unsealed when it is installed in <<pcc>> on execution of an <<SRET>> instruction.
+The handling of <<sepcc>> is otherwise identical to <<mepcc>>, but in supervisor mode.
 
 .Supervisor exception program counter capability register
 include::img/sepccreg.edn[]
-
-[#scause,reftext="scause"]
-==== Supervisor Cause Register (scause)
-
-{cheri_base_ext_name} adds a new exception code for CHERI exceptions that
-<<scause>> must be able to represent. The new exception code and its priority
-are listed in xref:scauses[xrefstyle=short] and
-xref:exception-priority[xrefstyle=short] respectively. The behavior and usage
-of <<scause>> otherwise remains as described in cite:[riscv-priv-spec].
-
-.Supervisor cause register
-include::img/scausereg.edn[]
-
-[[scauses]]
-.Supervisor cause register (scause) values after trap. Causes added in {cheri_base_ext_name} are in *bold*
-[%autowidth,float="center",align="center",cols=">,>,3",options="header"]
-|===
-|Interrupt |Exception Code |Description
-|1 +
-1 +
-1 +
-1 +
-1 +
-1 +
-1 +
-1
-|0 +
-1 +
-2-4 +
-5 +
-6-8 +
-9 +
-10-15 +
-&#8805;16
-|_Reserved_ +
-Supervisor software interrupt +
-_Reserved_ +
-Supervisor timer interrupt +
-_Reserved_ +
-Supervisor external interrupt +
-_Reserved_ +
-_Designated for platform use_
-
-|0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-*0* +
-0 +
-0 +
-0
-|0 +
-1 +
-2 +
-3 +
-4 +
-5 +
-6 +
-7 +
-8 +
-9 +
-10-11 +
-12 +
-13 +
-14 +
-15 +
-16-23 +
-24-27 +
-*28* +
-29-31 +
-32-47 +
-48-63 +
-&#8805;64
-|Instruction address misaligned +
-Instruction access fault +
-Illegal instruction +
-Breakpoint +
-Load address misaligned +
-Load access fault +
-Store/AMO address misaligned +
-Store/AMO access fault +
-Environment call from U-mode +
-Environment call from S-mode +
-_Reserved_ +
-Instruction page fault +
-Load page fault^1^ +
-_Reserved_ +
-Store/AMO page fault^2^
- +
-_Reserved_ +
-_Designated for custom use_ +
-*CHERI fault* +
-_Designated for custom use_ +
-_Reserved_ +
-_Designated for custom use_ +
-_Reserved_
-|===
-
-^1^ Includes <<cheri_pte_fault,CHERI PTE load page faults>> for RV64 harts with virtual memory if {cheri_pte_ext_name} is implemented. +
-^2^ Includes <<cheri_pte_fault,CHERI PTE store/AMO page faults>> for RV64 harts with virtual memory.
-
-[#stval,reftext="stval"]
-==== Supervisor Trap Value Register (stval)
-
-The <<stval>> register is an SXLEN-bit read-write register formatted as shown
-in xref:stval-format[xrefstyle=short].
-
-<<stval>> is updated following the same rules as <<mtval>> for CHERI exceptions
-and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
-
-.Supervisor trap value register
-[#stval-format]
-include::img/stvalreg.edn[]
 
 [#stval2,reftext="stval2"]
 ==== Supervisor Trap Value Register 2 (stval2)
 
 The <<stval2>> register is an SXLEN-bit read-write register, which is added as
-part of {cheri_base_ext_name} when the implementation supports S-mode. Its CSR
+part of {cheri_priv_s_ext} when the implementation supports S-mode. Its CSR
 address is 0x14b.
 
 <<stval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
@@ -544,17 +386,29 @@ and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or 
 It is written to zero for all other exceptions, except as listed otherwise by other
 future extensions.
 
-NOTE: <<stval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
+NOTE: Unlike <<mtval2>>, <<stval2>> is a new a CSR added by {cheri_priv_s_ext}.
+
+IMPORTANT: #The mechanism to report exception subcodes needs to be finalized: https://github.com/riscv/riscv-cheri/issues/536#
 
 .Supervisor trap value register 2
 [#stval2-format]
 include::img/stval2reg.edn[]
 
-=== Unprivileged CSRs
+=== Supervisor-Level CSRs modified by {cheri_priv_s_ext}
+==== Supervisor Cause Register (scause)
 
-In {cheri_base_ext_name}, the only register that requires <<asr_perm>> is <<utidc>>
-(for updates but not for reads), and all other unprivileged CSRs do not require
-<<pcc>> to grant <<asr_perm>> to access unprivileged CSRs.
+{cheri_base_ext_name} adds a new exception code for CHERI exceptions that <<scause>> must be able to represent.
+The new exception code is listed in xref:scauses[xrefstyle=short].
+The behavior and usage of <<scause>> otherwise remains as described in xref:scause[xrefstyle=short].
+
+See <<cheri-mcause>> for the new exceptions priorities when {cheri_base_ext_name} is implemented.
+
+[[stval-cheri]]
+==== Supervisor Trap Value Register (stval)
+
+<<stval>> is updated following the same rules as <<mtval-cheri>> for CHERI exceptions
+and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
+
 
 === CHERI Exception handling
 

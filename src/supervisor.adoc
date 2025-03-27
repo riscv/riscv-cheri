@@ -297,7 +297,8 @@ Additionally, the implementation of an SSE protocol can be considered as an
 optional measure to aid in the recovery from such critical errors.
 ====
 
-==== Supervisor Trap Vector Base Address (`stvec`)  Register
+[#stvec,reftext="stvec"]
+==== Supervisor Trap Vector Base Address (`stvec`) Register
 
 The `stvec` register is an SXLEN-bit read/write register that holds trap
 vector configuration, consisting of a vector base address (BASE) and a
@@ -485,6 +486,7 @@ access a counter if the corresponding bits in `scounteren` and
 `mcounteren` are both set.
 ====
 
+[#sscratch, reftext="sscratch"]
 ==== Supervisor Scratch (`sscratch`) Register
 
 The `sscratch` CSR is an SXLEN-bit read/write register, dedicated
@@ -498,6 +500,7 @@ initial working register.
 .Supervisor Scratch Register
 include::images/bytefield/sscratch.edn[]
 
+[#sepc,reftext="sepc"]
 ==== Supervisor Exception Program Counter (`sepc`) Register
 
 `sepc` is an SXLEN-bit read/write CSR formatted as shown in
@@ -524,7 +527,7 @@ though it may be explicitly written by software.
 .Supervisor exception program counter register.
 include::images/bytefield/epcreg.edn[]
 
-[[scause]]
+[#scause,reftext="scause"]
 ==== Supervisor Cause (`scause`) Register
 
 The `scause` CSR is an SXLEN-bit read-write register formatted as
@@ -546,7 +549,7 @@ guaranteed to hold supported exception codes.
 include::images/bytefield/scausereg.edn[]
 
 [[scauses]]
-.Supervisor cause (`scause`) register values after trap. Synchronous exception priorities are given by <<exception-priority>>.
+.Supervisor cause (`scause`) register values after trap. Synchronous exception priorities are given by <<exception-priority>>. #Causes added in {cheri_base_ext_name} are in *bold*#
 [%autowidth,float="center",align="center",cols=">,>,3",options="header"]
 |===
 |Interrupt |Exception Code |Description
@@ -620,7 +623,9 @@ _Designated for platform use_
 18 +
 19 +
 20-23 +
-24-31 +
+24-27 +
+#*{cheri_excep_mcause}*# +
+29-31 +
 32-47 +
 48-63 +
 &#8805;64
@@ -636,19 +641,26 @@ Environment call from U-mode +
 Environment call from S-mode +
 _Reserved_ +
 Instruction page fault +
-Load page fault +
+Load page fault^1^ +
 _Reserved_ +
-Store/AMO page fault +
+Store/AMO page fault^2^ +
 _Reserved_ +
 Software check +
 Hardware error +
 _Reserved_ +
+_Designated for custom use_ +
+#*CHERI fault*# +
 _Designated for custom use_ +
 _Reserved_ +
 _Designated for custom use_ +
 _Reserved_
 |===
 
+^1^ #Includes <<cheri_pte_fault,CHERI PTE load page faults>> for RV64 harts with virtual memory if {cheri_pte_ext_name} is implemented.# +
+^2^ #Includes <<cheri_pte_fault,CHERI PTE store/AMO page faults>> for RV64 harts with virtual memory.#
+
+
+[#stval,reftext="stval"]
 ==== Supervisor Trap Value (`stval`) Register
 
 The `stval` CSR is an SXLEN-bit read-write register formatted as
