@@ -1,30 +1,31 @@
-[#JALR_CHERI,reftext="JALR"]
-===== JALR
+<<<
+
+[#JALR_CHERI,reftext="JALR ({cheri_base_ext_name})"]
+===== JALR ({cheri_base_ext_name})
 
 Synopsis::
 Jump and link register
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `jalr cd, cs1, offset`
 
+ifdef::cheri_standalone_spec[]
 {cheri_int_mode_name} Mnemonic::
 `jalr rd, rs1, offset`
+endif::[]
 
 Encoding::
 include::wavedrom/ct-unconditional-2.adoc[]
 
-{cheri_cap_mode_name} Description::
-JALR allows unconditional, indirect jumps to a target capability. The
-target capability is unsealed if the `offset` is zero.
-The target address is obtained by adding the sign-extended 12-bit
-`offset` to `cs1.address`, then setting the
-least-significant bit of the result to zero.
-The target capability may have
-xref:section_invalid_addr_conv[xrefstyle=short]
-performed and is then installed in <<pcc>>. The <<pcc>>
-of the next instruction following the jump is sealed and written
-to `cd`.
+include::base_isa_extension.adoc[]
 
+Description::
+JALR allows unconditional, indirect jumps to a target capability in `cs1`.
+The target capability is unsealed if the `offset` is zero.
+The target address is obtained by adding the sign-extended 12-bit `offset` to `cs1.address`, then setting the least-significant bit of the result to zero.
+The <<pcc>> of the next instruction following the jump is sealed and written to `cd`.
+
+ifdef::cheri_standalone_spec[]
 {cheri_int_mode_name} Description::
 JALR allows unconditional, indirect jumps to a target address. The target
 address is obtained by adding the sign-extended 12-bit immediate to `rs1`, then
@@ -51,6 +52,13 @@ if `cs1` has <<section_cap_malformed,malformed>> bounds in {cheri_cap_mode_name}
 |==============================================================================
 
 include::pcrel_debug_warning.adoc[]
+else::[]
+
+Exceptions::
+A minimum sized instruction at the target address is not in `cs1` bounds. +
+`cs1` is not suitable for installation into <<pcc>>.
+
+endif::[]
 
 {cheri_cap_mode_name} Operation::
 +

@@ -1,30 +1,31 @@
 <<<
 
-[#AUIPC_CHERI,reftext="AUIPC"]
-===== AUIPC
+[#AUIPC_CHERI,reftext="AUIPC ({cheri_base_ext_name})"]
+===== AUIPC ({cheri_base_ext_name})
 
 Synopsis::
-Add upper immediate to *pc*/<<pcc>>
+Add upper immediate to <<pcc>>
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `auipc cd, imm`
 
 ifdef::cheri_standalone_spec[]
 {cheri_int_mode_name} Mnemonic::
 `auipc rd, imm`
-
-NOTE: CHERI extensions which use an alternative capability format may choose to redefine the handling of the immediate operand for this instruction in {cheri_cap_mode_name}.
 endif::[]
+
+NOTE: CHERI extensions which use a capability format other than <<app_cap_description,{cheri_default_cap}>> may choose to redefine the handling of the immediate operand for this instruction.
 
 Encoding::
 include::wavedrom/rv64_lui-auipc.adoc[]
 
-{cheri_cap_mode_name} Description::
-Form a 32-bit offset from the 20-bit immediate filling the lowest 12 bits with
-zeros. Increment the address of the AUIPC instruction's <<pcc>> by the
-32-bit offset, then write the output capability to `cd`. The validity tag bit of the
-output capability is 0 if the incremented address is outside the <<pcc>>'s
-<<section_cap_representable_check>>.
+include::base_isa_extension.adoc[]
+
+Description::
+Form a 32-bit offset from the 20-bit immediate filling the lowest 12 bits with zeros.
+Increment the address of the AUIPC instruction's <<pcc>> by the 32-bit offset, then write the output capability to `cd`.
++
+include::rep_range_check.adoc[]
 
 ifdef::cheri_standalone_spec[]
 {cheri_int_mode_name} Description::
@@ -35,6 +36,9 @@ the result in register `rd`.
 include::pcrel_debug_warning.adoc[]
 endif::[]
 
-Operation for AUIPC::
+Prerequisites::
+
+
+Operation for AUIPC assuming {cheri_default_cap}::
 +
 sail::execute[clause="AUIPC_capmode(_, _)",part=body,unindent]

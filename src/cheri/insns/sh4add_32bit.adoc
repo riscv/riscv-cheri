@@ -10,50 +10,50 @@ endif::[]
 Synopsis::
 Shift by 4 and add for address generation (SH4ADD)
 
-{cheri_cap_mode_name} Mnemonic (RV64)::
+Mnemonic (RV64)::
 `sh4add cd, rs1, cs2`
 
-{cheri_int_mode_name} Mnemonic (RV64)::
-`sh4add rd, rs1, rs2`
+//{cheri_int_mode_name} Mnemonic (RV64)::
+//`sh4add rd, rs1, rs2`
 
 Encoding::
 [wavedrom, , svg]
 ....
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
-    { bits:  5, name: 'cd/rd' },
+    { bits:  5, name: 'cd' },
     { bits:  3, name: 0x7, attr: ['rv64: SH4ADD'] },
     { bits:  5, name: 'rs1' },
-    { bits:  5, name: 'cs2/rs2' },
+    { bits:  5, name: 'cs2' },
     { bits:  7, name: 16, attr: ['rv64: SH4ADD'] },
 ]}
 ....
 
-{cheri_cap_mode_name} Description::
-Increment the address field of `cs2` by `rs1` shifted left by 4 bit positions
-and write the result to `cd`. The validity tag bit of the output capability is 0 if
-`cs2` did not have its tag set to 1, the incremented address is outside `cs2`
-'s <<section_cap_representable_check>> or `cs2` is sealed.
-
+Description::
+Increment the address field of `cs2` by `rs1` shifted left by 4 bit positions and write the result to `cd`.
++
+Set `cd.tag=0` if `cs2.tag=0` or `cs2` is sealed.
++
+include::rep_range_check.adoc[]
++
 include::malformed_shadd_clear_tag.adoc[]
 
-{cheri_int_mode_name} Description::
-Increment `rs2` by `rs1` shifted left by 4 bit positions and write the result
-to `rd`.
+//{cheri_int_mode_name} Description::
+//Increment `rs2` by `rs1` shifted left by 4 bit positions and write the result to `rd`.
 
 Exceptions::
 None
 
-Prerequisites for {cheri_cap_mode_name}::
-RV64, {sh4add_ext_name}
+Prerequisites::
+{cheri_base64_ext_name}
 
-Prerequisites for {cheri_int_mode_name}::
-RV64, {sh4add_ext_name}
+//Prerequisites for {cheri_int_mode_name}::
+//RV64, {sh4add_ext_name}
 
-{cheri_cap_mode_name} Operation::
+Operation for SH4ADD assuming {cheri_default_cap}::
 +
 sail::execute[clause="ZBA_SH4ADD_capmode(_, _, _)",part=body,unindent]
 
-{cheri_int_mode_name} Operation::
-+
-sail::execute[clause="ZBA_SH4ADD(_, _, _)",part=body,unindent]
+//{cheri_int_mode_name} Operation::
+//+
+//sail::execute[clause="ZBA_SH4ADD(_, _, _)",part=body,unindent]

@@ -19,13 +19,17 @@ Encoding::
 include::wavedrom/scaddr.adoc[]
 
 Description::
-Set the address field of capability `cs1` to `rs2` and write the output
-capability to `cd`. The validity tag bit of the output capability is 0 if `cs1` did not
-have its tag set to 1, `rs2` is outside the <<section_cap_representable_check>> of `cs1`
-or if `cs1` is sealed.
-
+Set the address field of capability `cs1` to `rs2` and write the output capability to `cd`.
++
+Set `cd.tag=0` if `cs1.tag=0` or `cs1`  is sealed.
++
+include::rep_range_check.adoc[]
++
 include::malformed_clear_tag.adoc[]
 
-Operation::
+Prerequisites for SCADDR::
+{cheri_base_ext_name}
+
+Operation for SCADDR assuming {cheri_default_cap}::
 +
 sail::execute[clause="SCADDR(_, _, _)",part=body,unindent]

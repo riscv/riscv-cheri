@@ -1,41 +1,45 @@
 
-[#JAL_CHERI,reftext="JAL"]
-===== JAL
+<<<
+
+[#JAL_CHERI,reftext="JAL ({cheri_base_ext_name})"]
+===== JAL ({cheri_base_ext_name})
 
 Synopsis::
 Jump and link
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `jal cd, offset`
 
-{cheri_int_mode_name} Mnemonic::
-`jal rd, offset`
+//{cheri_int_mode_name} Mnemonic::
+//`jal rd, offset`
 
 Encoding::
 include::wavedrom/ct-unconditional.adoc[]
 
-{cheri_cap_mode_name} Description::
+Description::
 JAL's immediate encodes a signed offset in multiple of 2 bytes. The <<pcc>> is
 incremented by the sign-extended offset to form the jump target capability. The
 target capability is written to <<pcc>>. The <<pcc>> of the next instruction
 following the jump is sealed and written to `cd`.
 
-{cheri_int_mode_name} Description::
-JAL's immediate encodes a signed offset in multiple of 2 bytes. The
-sign-extended offset is added to the <<pcc>>'s address to form the target
-address which is written to the <<pcc>>'s address field. The address of the
-instruction following the jump is written to `rd`.
+//{cheri_int_mode_name} Description::
+//JAL's immediate encodes a signed offset in multiple of 2 bytes. The
+//sign-extended offset is added to the <<pcc>>'s address to form the target
+//address which is written to the <<pcc>>'s address field. The address of the
+//instruction following the jump is written to `rd`.
 
 Exceptions::
-[%autowidth,options=header,align=center]
-|==============================================================================
-| CAUSE                      | Reason
-| Invalid address violation  | The target address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
-| Bounds violation           | Minimum length instruction is not within the target capability's bounds.
-|==============================================================================
+A minimum sized instruction at the target address is not in <<pcc>> bounds.
 
-include::pcrel_debug_warning.adoc[]
+//[%autowidth,options=header,align=center]
+//|==============================================================================
+//| CAUSE                      | Reason
+//| Invalid address violation  | The target address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
+//| Bounds violation           | Minimum length instruction is not within the target capability's bounds.
+//|==============================================================================
 
-{cheri_cap_mode_name} Operation::
+//include::pcrel_debug_warning.adoc[]
+
+Operation::
 +
 sail::execute[clause="JAL_capmode(_, _)",part=body,unindent]

@@ -1,5 +1,7 @@
-[#insns-conbr-32bit,reftext="Conditional branches (BEQ, BNE, BLT[U], BGE[U])"]
-===== BEQ, BNE, BLT[U], BGE[U]
+<<<
+
+[#insns-conbr-32bit_CHERI,reftext="Conditional branches"]
+===== BEQ, BNE, BLT[U], BGE[U] ({cheri_base_ext_name})
 
 Synopsis::
 Conditional branches (BEQ, BNE, BLT[U], BGE[U])
@@ -16,12 +18,10 @@ Encoding::
 include::wavedrom/ct-conditional.adoc[]
 
 Description::
-Compare two integer registers `rs1` and `rs2` according to the indicated opcode
-as described in cite:[riscv-unpriv-spec]. The 12-bit immediate encodes signed
-offsets in multiples of 2 bytes. The offset is sign-extended and added to the
-address of the branch instruction to give the target address. Then the target
-address is written into the address field of <<pcc>>.
+Execute as defined in the base ISA.
+The target address is written into the address field of <<pcc>>.
 
-include::condbr_common.adoc[]
+Exceptions::
+A minimum sized instruction at the target address is not in <<pcc>> bounds.
 
-include::pcrel_debug_warning.adoc[]
+//include::pcrel_debug_warning.adoc[]

@@ -28,32 +28,33 @@ Suggested assembly syntax::
 `add cd, cs1, rs2` +
 `add cd, cs1, imm`
 
-NOTE: the suggested assembly syntax distinguishes from integer `add` by operand type.
+NOTE: The suggested assembly syntax distinguishes from integer `add` by operand type.
 
 Encoding::
 include::wavedrom/cadd.adoc[]
 
 NOTE: <<CADD>> with `rs2=x0` is decoded as <<CMV>> instead, the key
-difference being that tagged capabilities cannot have their tag
+difference being that capabilities cannot have their validity tag
 cleared by <<CMV>>.
 
 Description::
-Increment the address field of the capability `cs1`  and write the result to
-`cd` . The validity tag bit of the output capability is 0 if `cs1`  did not have its tag
-set to 1, the incremented address is outside `cs1` 's <<section_cap_representable_check>> or
-`cs1`  is sealed. +
+Increment the address field of the capability `cs1`  and write the result to ``cd``.
+Set `cd.tag=0` if `cs1.tag=0` or `cs1`  is sealed.
 +
-For <<CADD>>, the address is incremented by the value in
-`rs2` . +
-For <<CADDI>>, the address is incremented by the immediate value
-`imm`.
-
+For <<CADD>>, the address is incremented by the value in `rs2` . +
+For <<CADDI>>, the address is incremented by the immediate value `imm`.
++
+include::rep_range_check.adoc[]
++
 include::malformed_clear_tag.adoc[]
 
-Operation (CADD)::
+Prerequisites for CADD, CADDI::
+{cheri_base_ext_name}
+
+Operation for CADD assuming {cheri_default_cap}::
 +
 sail::execute[clause="CADD(_, _, _)",part=body,unindent]
 
-Operation (CADDI)::
+Operation for CADDI assuming {cheri_default_cap}::
 +
 sail::execute[clause="CADDI(_, _, _)",part=body,unindent]
