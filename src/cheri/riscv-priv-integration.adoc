@@ -614,7 +614,7 @@ the hart will raise an access fault or page fault as is usual in RISC-V.
 . Otherwise all bytes in R are valid and the instruction behaves as normal.
 
 [#section_cheri_disable]
-=== Disabling CHERI Registers and Instructions
+== "{cheri_priv_m_reg_enable_ext}" Extension, Version 1.0
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
@@ -624,20 +624,20 @@ NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
 it is not possible to disable CHERI checks completely.
 endif::[]
 
-{cheri_default_ext_name} includes functions to disable explicit access to CHERI
-registers and instructions.  The following occurs when executing code in a privilege mode that
-has CHERI register access disabled:
+When using a system with {cheri_default_ext_name}, it may be desirable to disabling CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
+{cheri_priv_m_reg_enable_ext} includes functions to disable explicit access to CHERI
+registers and instructions.
+The following occurs when executing code in a privilege mode that has CHERI register access disabled:
 
-* The CHERI instructions in xref:section_cap_instructions[xrefstyle=short] and
-xref:instruction-modes[xrefstyle=short] that access capability registers (implicitly or explicitly)
+* The CHERI instructions that access capability registers (implicitly or explicitly)
 cause illegal instruction exceptions
-* Executing CSR instructions accessing any CSR added by {cheri_default_ext_name}
-(see <<default-csrnames-added>>) causes an illegal
-instruction exception
-* Executing CSR instructions accessing any extended CSR
-(see xref:csr-numbers-section[xrefstyle=short]) only allows XLEN access.
++
+NOTE: The only instruction added by {cheri_base_ext_name} that does not access capability state is <<CRAM>>, all others are disabled.
+* Executing CSR instructions accessing any CSR added by any CHERI extension ({cheri_default_ext_name}, {cheri_priv_m_ext}, {cheri_priv_s_ext}, {cheri_priv_h_ext}) causes an illegal instruction exception
+* Executing CSR instructions accessing any CSR extended to CLEN only allows XLEN access.
 * All allowed instructions execute as if the CHERI execution mode is {cheri_int_mode_name}.
-The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
+// FIXME: there should be no way to observe the M bit, do we need to mentions this?
+// The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
 
 CHERI register access is disabled if
 
@@ -654,11 +654,10 @@ The effective CRE for the current privilege is:
 NOTE: The effective CRE is always 1 in debug mode.
 
 NOTE: On reset CHERI register access is disabled (<<mseccfg>>.CRE resets to zero).
+However, in case {cheri_base_ext_name} is the only supported base ISA and there is no option to switch to RV32I/RV64I (i.e. {cheri_default_ext_name} is not supported), then the CRE bits are hardwired to 1.
 
-Disabling CHERI register access has no effect on implicit accesses or security
-checks.  The last capability installed in <<pcc>> and <<ddc>> before disabling
-CHERI register access will be used to authorize instruction execution and data
-memory accesses.
+Disabling CHERI register access has no effect on implicit accesses or security checks.
+The last capability installed in <<pcc>> and <<ddc>> before disabling CHERI register access will be used to authorize instruction execution and data memory accesses.
 
 [NOTE]
 ====
@@ -675,6 +674,77 @@ This is the default behavior on reset.
 NOTE: xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of
 a hart in connection with the <<section_cheri_disable,CRE>> and the
 <<m_bit,CHERI execution mode>>.
+
+xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart
+supporting both {cheri_base_ext_name} and {cheri_default_ext_name} in
+connection with the <<section_cheri_disable,CRE>> and the
+<<section-cheri-execution-mode>> while in a privilege
+other than debug mode.
+
+.Hart's behavior depending on the effective <<section_cheri_disable,CRE>> and <<section-cheri-execution-mode>>
+[#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="8,8,15,12,12,15,15,15"]
+|==============================================================================
+// Header
+| <<section_cheri_disable,CRE>>
+| <<pcc>>.<<m_bit,m>>
+| Authorizing capability^1^
+| <<zicsr-section-default,New CHERI CSRs>>^2^
+| <<zicsr-section-default,Extended CHERI CSRs>>^3^
+| CHERI instructions^4^
+| <<legacy_mnemonics,Compressed instructions remapped>>^5^
+| Note
+
+// Body
+| 0
+| X^6^
+| <<ddc>> or <<pcc>>
+| ✘
+| XLEN
+| ✘
+| No
+| **_Fully RISC-V compatible_**^7^
+
+| 1
+| {int_mode_value}
+| <<ddc>> or <<pcc>>
+| CLEN
+| XLEN
+| ✔
+| No
+| **{cheri_int_mode_name}**
+
+| 1
+| {cap_mode_value}
+| Instruction's capability operand
+| CLEN
+| CLEN
+| ✔
+| Yes
+| **{cheri_cap_mode_name}**
+|==============================================================================
+
+^1^ Authorizing capability for memory access instructions.
+
+^2^ Whether accesses to <<zicsr-section-default,new CHERI CSRs>> are permitted
+or raise illegal instruction exceptions. If permitted, then the bit width of
+the CSR read/write with <<CSRRW>> is indicated.
+i
+^3^ The bit width of accesses to <<zicsr-section-default,extended CHERI CSRs>>
+using <<CSRRW>>.
+
+^4^ Whether CHERI instructions are permitted or raise illegal instruction
+exceptions.
+
+^5^ See xref:legacy_mnemonics[xrefstyle=short] for a list of remapped
+instructions.
+
+^6^ <<pcc>>.<<m_bit,m>> is irrelevant when <<section_cheri_disable,CRE>>=0.
+
+^7^ The hart is fully compatible with standard RISC-V when
+<<section_cheri_disable,CRE>>=0 provided that <<pcc>>, <<mtvecc>>, <<mepcc>>,
+<<stvecc>>, <<sepcc>>, <<vstvecc>>, <<vsepcc>> and <<ddc>> have not been changed from the default reset state (i.e. hold the
+<<infinite-cap>> capability).
+
 
 [#section_hybrid_priv]
 === Changes to the privileged architecture for {cheri_default_ext_name}
