@@ -671,79 +671,25 @@ do not change the state of CHERI CSRs raise exceptions when CRE=0.
 This is the default behavior on reset.
 ====
 
-NOTE: xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of
-a hart in connection with the <<section_cheri_disable,CRE>> and the
-<<m_bit,CHERI execution mode>>.
-
 xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart
-supporting both {cheri_base_ext_name} and {cheri_default_ext_name} in
-connection with the <<section_cheri_disable,CRE>> and the
-<<section-cheri-execution-mode>> while in a privilege
-other than debug mode.
+in connection with the <<section_cheri_disable,CRE>> and the <<section-cheri-execution-mode>> while in a privilege other than debug mode.
 
 .Hart's behavior depending on the effective <<section_cheri_disable,CRE>> and <<section-cheri-execution-mode>>
-[#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="8,8,15,12,12,15,15,15"]
+[#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
 |==============================================================================
-// Header
-| <<section_cheri_disable,CRE>>
-| <<pcc>>.<<m_bit,m>>
-| Authorizing capability^1^
-| <<zicsr-section-default,New CHERI CSRs>>^2^
-| <<zicsr-section-default,Extended CHERI CSRs>>^3^
-| CHERI instructions^4^
-| <<legacy_mnemonics,Compressed instructions remapped>>^5^
-| Note
-
-// Body
-| 0
-| X^6^
-| <<ddc>> or <<pcc>>
-| ✘
-| XLEN
-| ✘
-| No
-| **_Fully RISC-V compatible_**^7^
-
-| 1
-| {int_mode_value}
-| <<ddc>> or <<pcc>>
-| CLEN
-| XLEN
-| ✔
-| No
-| **{cheri_int_mode_name}**
-
-| 1
-| {cap_mode_value}
-| Instruction's capability operand
-| CLEN
-| CLEN
-| ✔
-| Yes
-| **{cheri_cap_mode_name}**
+| | CRE=0, M-bit=X^1^ | CRE=1, M-bit={int_mode_value} | CRE=1, M-bit={cap_mode_value}
+| Authorizing capability for memory accesses | <<ddc>> or <<pcc>> | <<ddc>> or <<pcc>> | Instruction's capability operand
+| New CHERI CSR Access Width                | ✘                 | CLEN                  | CLEN
+| Extended CHERI CSR Access Width      | XLEN              | XLEN                  | CLEN
+| CHERI Instructions Allowed           | ✘                 | ✔                    | ✔
+| Compressed Instructions Remapped     | No                | No                    | Yes^2^
+| Summary                              | **_Fully RISC-V compatible_**^3^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
 |==============================================================================
 
-^1^ Authorizing capability for memory access instructions.
-
-^2^ Whether accesses to <<zicsr-section-default,new CHERI CSRs>> are permitted
-or raise illegal instruction exceptions. If permitted, then the bit width of
-the CSR read/write with <<CSRRW>> is indicated.
-i
-^3^ The bit width of accesses to <<zicsr-section-default,extended CHERI CSRs>>
-using <<CSRRW>>.
-
-^4^ Whether CHERI instructions are permitted or raise illegal instruction
-exceptions.
-
-^5^ See xref:legacy_mnemonics[xrefstyle=short] for a list of remapped
-instructions.
-
-^6^ <<pcc>>.<<m_bit,m>> is irrelevant when <<section_cheri_disable,CRE>>=0.
-
-^7^ The hart is fully compatible with standard RISC-V when
-<<section_cheri_disable,CRE>>=0 provided that <<pcc>>, <<mtvecc>>, <<mepcc>>,
-<<stvecc>>, <<sepcc>>, <<vstvecc>>, <<vsepcc>> and <<ddc>> have not been changed from the default reset state (i.e. hold the
-<<infinite-cap>> capability).
+^1^ M-bit is irrelevant when CRE=0. +
+^2^ See xref:legacy_mnemonics[xrefstyle=short] for a list of remapped
+instructions. +
+^3^ The hart is fully compatible with standard RISC-V when CRE=0 provided that <<pcc>>, <<mtvecc>>, <<mepcc>>, <<stvecc>>, <<sepcc>>, <<vstvecc>>, <<vsepcc>> and <<ddc>> have not been changed from the default reset state (i.e. hold the <<infinite-cap>> capability).
 
 
 [#section_hybrid_priv]
