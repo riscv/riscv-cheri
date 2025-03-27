@@ -369,6 +369,7 @@ For efficiency, system implementers should aim to reduce the magnitude
 of the largest hart ID used in a system.
 ====
 
+[#mstatus,reftext="mstatus"]
 ==== Machine Status (`mstatus` and `mstatush`) Registers
 
 The `mstatus` register is an MXLEN-bit read/write register formatted as
@@ -662,6 +663,7 @@ The MXR and SUM mechanisms only affect the interpretation of permissions
 encoded in page-table entries. In particular, they have no impact on
 whether access-fault exceptions are raised due to PMAs or PMP.
 
+[[endianness-control]]
 ===== Endianness Control in `mstatus` and `mstatush` Registers
 
 The MBE, SBE, and UBE bits in `mstatus` and `mstatush` are *WARL* fields that
@@ -1175,6 +1177,7 @@ The Zicfilp extension adds the `SPELP` and `MPELP` fields that hold the previous
 * 0 - `NO_LP_EXPECTED` - no landing pad instruction expected.
 * 1 - `LP_EXPECTED` - a landing pad instruction is expected.
 
+[#mtvec,reftext="mtvec"]
 ==== Machine Trap-Vector Base-Address (`mtvec`) Register
 
 The `mtvec` register is an MXLEN-bit *WARL* read/write register that holds
@@ -1310,6 +1313,7 @@ will not be taken when executing in M-mode. By contrast, if `mideleg`[5]
 is clear, STIs can be taken in any mode and regardless of current mode
 will transfer control to M-mode.
 
+[#medeleg,reftext="medeleg"]
 .Machine Exception Delegation (`medeleg`) register.
 include::images/bytefield/medeleg.edn[]
 
@@ -1323,6 +1327,7 @@ When XLEN=32, `medelegh` is a 32-bit read/write register
 that aliases bits 63:32 of `medeleg`.
 The `medelegh` register does not exist when XLEN=64.
 
+[#mideleg,reftext="mideleg"]
 .Machine Interrupt Delegation (`mideleg`) Register.
 include::images/bytefield/mideleg.edn[]
 
@@ -1349,9 +1354,11 @@ bits 16 and above are designated for platform use.
 NOTE: Interrupts designated for platform use may be designated for custom use
 at the platform's discretion.
 
+[#mip,reftext="mip"]
 .Machine Interrupt-Pending (`mip`) register.
 include::images/bytefield/mideleg.edn[]
 
+[#mie,reftext="mie"]
 .Machine Interrupt-Enable (`mie`) register
 include::images/bytefield/mideleg.edn[]
 
@@ -1641,6 +1648,7 @@ Because the `mtime` counter can be shared between multiple cores, it
 cannot be inhibited with the `mcountinhibit` mechanism.
 ====
 
+[#mscratch,reftext="mscratch"]
 ==== Machine Scratch (`mscratch`) Register
 
 The `mscratch` register is an MXLEN-bit read/write register dedicated
@@ -1668,6 +1676,7 @@ design, the OS can rely on holding a value in the `mscratch` register
 while the user context is running.
 ====
 
+[#mepc,reftext="mepc"]
 ==== Machine Exception Program Counter (`mepc`) Register
 
 `mepc` is an MXLEN-bit read/write register formatted as shown in
@@ -1704,7 +1713,7 @@ though it may be explicitly written by software.
 .Machine exception program counter register.
 include::images/bytefield/mepcreg.edn[]
 
-[[mcause]]
+[#mcause,reftext="mcause"]
 ==== Machine Cause (`mcause`) Register
 
 The `mcause` register is an MXLEN-bit read-write register formatted as
@@ -1752,7 +1761,7 @@ synchronous exceptions is implementation-defined.
 <<<
 
 [[mcauses]]
-.Machine cause (`mcause`) register values after trap.
+.Machine cause (`mcause`) register values after trap. #Entries added in {cheri_base_ext_name} are in *bold*#
 [%autowidth,float="center",align="center",cols=">,>,<",options="header",]
 |===
 |Interrupt |Exception Code |Description
@@ -1851,7 +1860,9 @@ _Designated for platform use_
 18 +
 19 +
 20-23 +
-24-31 +
+24-27 +
+#*{cheri_excep_mcause}*# +
+29-31 +
 32-47 +
 48-63 +
 &#8805;64
@@ -1868,19 +1879,24 @@ Environment call from S-mode +
 _Reserved_ +
 Environment call from M-mode +
 Instruction page fault +
-Load page fault +
+Load page fault^1^ +
 _Reserved_ +
-Store/AMO page fault +
+Store/AMO page fault^2^ +
 Double trap +
 _Reserved_ +
 Software check +
 Hardware error +
 _Reserved_ +
 _Designated for custom use_ +
+#*CHERI fault*# +
+_Designated for custom use_ +
 _Reserved_ +
 _Designated for custom use_ +
 _Reserved_
 |===
+
+^1^ #Includes <<cheri_pte_fault,CHERI PTE load page faults>> for RV64 harts with virtual memory if {cheri_pte_ext_name} is implemented.# +
+^2^ #Includes <<cheri_pte_fault,CHERI PTE store/AMO page faults>> for RV64 harts with virtual memory.#
 
 <<<
 
@@ -1973,6 +1989,7 @@ occurrence is generally expected to be recognized at the point in the overall
 priority order at which the hardware error is discovered.
 ====
 
+[#mtval,reftext="mtval"]
 ==== Machine Trap Value (`mtval`) Register
 
 The `mtval` register is an MXLEN-bit read-write register formatted as

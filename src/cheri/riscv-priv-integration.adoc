@@ -1,5 +1,5 @@
 [#section_priv_cheri]
-== "{cheri_priv_m_ext}/{cheri_priv_s_ext}" Extensions for CHERI, Version 1.0
+== "{cheri_priv_m_ext}/{cheri_priv_s_ext}" Extensions, Version 1.0
 
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the priv spec. Exact location TBD.
@@ -26,45 +26,10 @@ future extensions.
 | VS-mode          | <<vstval>>       | <<vstval2>>
 |==============================================================================
 
-=== Machine-Level CSRs added by {cheri_priv_m_ext}
+=== Machine-Level CSRs added or extended by {cheri_priv_m_ext}
 
 {cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
 otherwise add new functions. <<asr_perm>> in the <<pcc>> is typically required for access.
-
-[#mstatus,reftext="mstatus"]
-==== Machine Status Registers (mstatus and mstatush)
-
-The *mstatus* and *mstatush* registers operate as described in
-cite:[riscv-priv-spec] except for the SXL and UXL fields that control the
-value of XLEN for S-mode and U-mode, respectively, and the MBE, SBE, and UBE
-fields that control the memory system endianness for M-mode, S-mode,
-and U-mode, respectively.
-
-The encoding of the SXL and UXL fields is the same as the MXL field of *misa*.
-Only 1 and 2 are supported values for SXL and UXL and the fields must be
-read-only in implementations supporting {cheri_base_ext_name}. The effective
-XLEN in S-mode and U-mode are termed SXLEN and UXLEN, respectively.
-
-The MBE, SBE, and UBE fields determine the endianness of memory accesses other
-than instruction fetches performed from M-mode, S-mode, or U-mode,
-respectively. xBE=0 indicates little endian and xBE=1 is big endian. MBE must
-be read-only. SBE and UBE must be read only and equal to MBE, if S-mode or
-U-mode, respectively, is implemented, or read-only zero otherwise.
-
-NOTE: A further CHERI extension, {cheri_default_ext_name}, optionally makes SXL,
-UXL, MBE, SBE, and UBE writeable, so implementations that support multiple base
-ISAs must support both {cheri_base_ext_name} and {cheri_default_ext_name}.
-
-[#mtvec, reftext="mtvec"]
-==== Machine Trap Vector Base Address Register (mtvec)
-
-The <<mtvec>> register is as defined in cite:[riscv-priv-spec]. It is an
-MXLEN-bit register used as the code pointer jumped to when taking traps
-into machine mode. It is extended into <<mtvecc>>.
-
-
-.Machine-mode trap-vector base-address register
-include::img/mtvecreg.edn[]
 
 [#mtvecc,reftext="mtvecc"]
 ==== Machine Trap Vector Base Address Capability Register (mtvecc)
@@ -120,18 +85,6 @@ recommended.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<mtvecc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
-[#mscratch, reftext="mscratch"]
-==== Machine Scratch Register (mscratch)
-
-The <<mscratch>> register is as defined in cite:[riscv-priv-spec]. It is an
-MXLEN-bit read/write register dedicated for use by machine mode. Typically, it
-is used to hold a pointer to a machine-mode hart-local context space and
-swapped with a user register upon entry to an M-mode trap handler. <<mscratch>>
-is extended into <<mscratchc>>.
-
-.Machine-mode scratch register
-include::img/mscratchreg.edn[]
-
 [#mscratchc, reftext="mscratchc"]
 ==== Machine Scratch Capability Register (mscratchc)
 
@@ -143,15 +96,6 @@ It is not WARL, all capability fields must be implemented.
 
 .Machine-mode scratch capability register
 include::img/mscratchcreg.edn[]
-
-[#mepc,reftext="mepc"]
-==== Machine Exception Program Counter (mepc)
-
-The <<mepc>> register is as defined in cite:[riscv-priv-spec]. It is extended
-into <<mepcc>>.
-
-.Machine exception program counter register
-include::img/mepcreg.edn[]
 
 [#mepcc,reftext="mepcc"]
 ==== Machine Exception Program Counter Capability (mepcc)
@@ -183,140 +127,43 @@ As shown in xref:CSR_exevectors[xrefstyle=short], <<mepcc>> is a code capability
 Additionally, the capability in <<mepcc>> is unsealed when it is installed in
 <<pcc>> on execution of an <<MRET>> instruction.
 
-[#mcause,reftext="mcause"]
+=== Machine-Level CSRs modified by {cheri_priv_m_ext}
+
+==== Machine Status Registers (mstatus and mstatush)
+
+The *mstatus* and *mstatush* registers operate as described in
+<<mstatus>> with two restrictions:
+
+* The <<xlen-control, SXL and UXL>> fields that control the
+value of XLEN for S-mode and U-mode must be read-only in implementations supporting {cheri_base_ext_name}.
+  Only 1 and 2 are supported values for SXL and UXL
+
+* The <<endianness-control,MBE, SBE, and UBE>> fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in implementations supporting {cheri_base_ext_name}.
+   SBE and UBE must be read only and equal to MBE, if S-mode or
+U-mode, respectively, is implemented, or read-only zero otherwise.
+
+Changing XLEN or endianness would change the interpretation of all in-memory capabilities, so allowing these fields to change at runtime is prohibited.
+
+NOTE: These restrictions are relaxed if a further privileged CHERI extension, {cheri_priv_m_dyn_xlen_ext}, optionally makes SXL,
+UXL, MBE, SBE, and UBE writeable, to support CHERI on implementations that support dynamic XLEN or endianness changes.
+
 ==== Machine Cause Register (mcause)
 
 {cheri_base_ext_name} adds a new exception code for CHERI exceptions that
-<<mcause>> must be able to represent. The new exception code and its
-priority are listed in xref:mcauses[xrefstyle=short] and
-xref:exception-priority[xrefstyle=short] respectively. The behavior and usage
-of <<mcause>> otherwise remains as described in cite:[riscv-priv-spec].
+<<mcause>> must be able to represent.
+The new exception code and its priority are listed in xref:mcauses[xrefstyle=short] and xref:exception-priority[xrefstyle=short] respectively.
+The behavior and usage of <<mcause>> otherwise remains as described in xref:mcause[xrefstyle=short].
 
-.Machine cause register
-include::img/mcausereg.edn[]
+WARNING: The current specification uses the CHERI ISAv9 mcause value of {cheri_excep_mcause}, which is designated for custom extensions.
 
-[[mcauses]]
-.Machine cause register (mcause) values after trap. Entries added in {cheri_base_ext_name} are in *bold*
-[%autowidth,float="center",align="center",cols=">,>,<",options="header",]
-|===
-|Interrupt |Exception Code |Description
-|1 +
-1 +
-1 +
-1
-|0 +
-1 +
-2 +
-3
-|_Reserved_ +
-Supervisor software interrupt +
-_Reserved_ +
-Machine software interrupt
+IMPORTANT: #The exact code as well as the mechanism to report subcodes needs to be finalized: https://github.com/riscv/riscv-cheri/issues/536#
 
-|1 +
-1 +
-1 +
-1
-|4 +
-5 +
-6 +
-7
-|_Reserved_ +
-Supervisor timer interrupt +
-_Reserved_ +
-Machine timer interrupt
-|1 +
-1 +
-1 +
-1
-|8 +
-9 +
-10 +
-11
-|_Reserved_ +
-Supervisor external interrupt +
-_Reserved_ +
-Machine external interrupt
-|1 +
-1
-|12-15 +
-&#8805;16
-|_Reserved_ +
-_Designated for platform use_
-|0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-0 +
-*0* +
-0 +
-0 +
-0
-|0 +
-1 +
-2 +
-3 +
-4 +
-5 +
-6 +
-7 +
-8 +
-9 +
-10 +
-11 +
-12 +
-13 +
-14 +
-15 +
-16-23 +
-24-27 +
-*{cheri_excep_mcause}* +
-29-31 +
-32-47 +
-48-63 +
-&#8805;64
-|Instruction address misaligned +
-Instruction access fault +
-Illegal instruction +
-Breakpoint +
-Load address misaligned +
-Load access fault +
-Store/AMO address misaligned +
-Store/AMO access fault +
-Environment call from U-mode +
-Environment call from S-mode +
-_Reserved_ +
-Environment call from M-mode +
-Instruction page fault +
-Load page fault^1^ +
-_Reserved_ +
-Store/AMO page fault^2^ +
-_Reserved_ +
-_Designated for custom use_ +
-*CHERI fault* +
-_Designated for custom use_ +
-_Reserved_ +
-_Designated for custom use_ +
-_Reserved_
-|===
+If an instruction may raise multiple synchronous exceptions, the decreasing priority order of <<exception-priority-cheri>> indicates which exception is taken and reported in `mcause`.
+This table extends the existing priority order from <<exception-priority>> with new entries.
 
-^1^ Includes <<cheri_pte_fault,CHERI PTE load page faults>> for RV64 harts with virtual memory if {cheri_pte_ext_name} is implemented. +
-^2^ Includes <<cheri_pte_fault,CHERI PTE store/AMO page faults>> for RV64 harts with virtual memory.
+IMPORTANT: Once finalized this table should be merged with the main table.
 
-[[exception-priority]]
+[[exception-priority-cheri]]
 .Synchronous exception priority in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
 [float="center",align="center",cols="<1,>1,<8",options="header"]
 |===
@@ -353,8 +200,9 @@ First encountered *<<cheri_pte_ext,CHERI PTE page fault>>*^23^, page fault or ac
 | .>|5,7 .<|With physical address for an explicit memory access: +
 Load/store/AMO access fault
 | .>|4,6 .<|If not higher priority: +
-.>|_Lowest_ .>|13 .<|If not higher priority: +
-CHERI load PTE page fault^4^
+Load/store/AMO address misaligned
+.>|_Lowest_ .>|13 .<|*If not higher priority: +
+CHERI load PTE page fault^4^*
 |===
 
 ^1^ PCC bounds are intended to be checked against all the bytes of fetched instructions.
@@ -368,13 +216,11 @@ CHERI load PTE page fault^4^
 
 NOTE: The full details of the CHERI exceptions with cause value {cheri_excep_mcause} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
-[#medeleg,reftext="medeleg"]
 ==== Machine Trap Delegation Register (medeleg)
 
-Bit 28 of <<medeleg>> now refers to a valid exception and so can be used to
+Bit {cheri_excep_mcause} of <<medeleg>> now refers to a valid exception and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
-[#mtval,reftext="mtval"]
 ==== Machine Trap Value Register (mtval)
 
 ifdef::cheri_v9_annotations[]
@@ -386,11 +232,11 @@ The <<mtval>> register is an MXLEN-bit read-write register formatted as shown
 in xref:mtval-format[xrefstyle=short]. When a data memory access gives rise to
 a CHERI fault taken into M-mode, <<mtval>> is written with the
 MXLEN-bit effective address which caused the fault according to the existing
-rules for reporting load/store addresses from cite:[riscv-priv-spec]. In this case
+rules for reporting load/store addresses. In this case
 the TYPE field of <<mtval2>> shown in xref:mtval2-cheri-type[xrefstyle=short] is
 set to {cheri_excep_type_data}. For all other CHERI faults <<mtval>> is set to zero.
 
-The behavior of <<mtval>> is otherwise as described in cite:[riscv-priv-spec].
+The behavior of <<mtval>> is otherwise as described in xref:mtval[xrefstyle=short].
 
 If the hardware platform specifies that no exceptions set <<mtval>> to a
 non-zero value, then <<mtval>> is read-only zero for all CHERI exceptions.

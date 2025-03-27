@@ -59,13 +59,11 @@ else
 endif
 
 WORKDIR_SETUP = \
-    rm -rf $@.workdir && \
     mkdir -p $@.workdir && \
     ln -sfn ../../src ../../docs-resources $@.workdir/
 
 WORKDIR_TEARDOWN = \
-    mv $@.workdir/$@ $@ && \
-    rm -rf $@.workdir
+    cp -f $@.workdir/$@ $@
 
 SRC_DIR := src
 BUILD_DIR := build
@@ -84,7 +82,7 @@ endif
 ASCIIDOCTOR_PDF := $(ENV) asciidoctor-pdf
 ASCIIDOCTOR_HTML := $(ENV) asciidoctor
 ASCIIDOCTOR_EPUB := $(ENV) asciidoctor-epub3
-OPTIONS := --trace \
+OPTIONS := --trace --verbose \
            -a compress \
            -a mathematical-format=svg \
            -a pdf-fontsdir=docs-resources/fonts \
