@@ -31,7 +31,9 @@ be brute forced.
 
 This specification is based on publicly available documentation including
 cite:[cheri-v9-spec] and cite:[woodruff2019cheri]. It defines the following
-extensions to support CHERI alongside RISC-V:
+extensions to support CHERI alongside RISC-V
+
+==== Extensions to the unprivileged specification
 
 <<cheri_base_ext,{cheri_base_ext_name}>>:: Introduces key, minimal CHERI concepts and features to
 the RISC-V ISA. The resulting extended ISA is not
@@ -39,17 +41,27 @@ backwards-compatible with RISC-V.
 <<cheri_default_ext,{cheri_default_ext_name}>>:: Extends {cheri_base_ext_name} with features to ensure
 that the ISA extended with CHERI allows backwards binary compatibility with
 RISC-V.
-<<section_priv_cheri,{cheri_priv_m_ext}>>:: Machine-Level Privileged extension to support CHERI.
-<<section_priv_cheri,{cheri_priv_s_ext}>>:: Supervisor-Level Privileged extension to support CHERI.
-<<sh4add_ext,{sh4add_ext_name}>>::   Addition of <<SH4ADD>> and <<SH4ADD_UW>> for RV64 only, as CHERI capabilities are 16 bytes when XLEN=64
-<<lr_sc_bh_ext,{lr_sc_bh_ext_name}>>:: Addition of <<LR_B>>, <<LR_H>>, <<SC_B>>, <<SC_H>> for more accurate atomic locking as the memory ranges are restricted by using bounds, therefore precise locking is needed.
-<<cheri_pte_ext,{cheri_pte_ext_name}>>:: CHERI extension for RISC-V harts supporting page-based
-virtual-memory.
 <<tid_ext,{tid_ext_name}>>:: Extension for supporting thread identifiers. This extension
 improves software compartmentalization on CHERI systems.
 <<cheri_levels_ext,{cheri_levels_ext_name}>>:: Extension for supporting capability flow control.
 This extension allows limiting storing of capabilities to specific regions and can be used e.g. for safer data sharing between compartments.
+
+The following two extensions are useful independent of CHERI:
+
+<<sh4add_ext,{sh4add_ext_name}>>:: Addition of <<SH4ADD>> and <<SH4ADD_UW>> for RV64 only, as CHERI capabilities are 16 bytes when XLEN=64
+<<lr_sc_bh_ext,{lr_sc_bh_ext_name}>>:: Addition of <<LR_B>>, <<LR_H>>, <<SC_B>>, <<SC_H>> for more accurate atomic locking as the memory ranges are restricted by using bounds, therefore precise locking is needed.
+
+==== Extensions to the privileged specification
+The following extensions are added to the privleged specification
+
+<<section_priv_cheri,{cheri_priv_m_ext}>>:: Machine-Level Privileged extension to support CHERI.
+<<section_priv_cheri,{cheri_priv_s_ext}>>:: Supervisor-Level Privileged extension to support CHERI.
+<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>>:: Privileged extension for integrating CHERI with virtual memory.
 <<section_priv_cheri,{cheri_priv_h_ext}>>:: Privileged extension to integrate CHERI with the Hypervisor extensions.
+<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>>:: Privileged extension to disable explicit access to CHERI registers and instructions.
+<<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>>:: Privileged extension to allow dynamic XLEN and endianness changes.
+<<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>:: CHERI extension for RISC-V harts supporting page-based
+virtual-memory.
 
 CAUTION: The extension names are provisional and subject to change.
 
@@ -57,22 +69,25 @@ CAUTION: The extension names are provisional and subject to change.
 [#extension-status,reftext="Extension Status and Summary"]
 [options=header,align=center,width="90%",cols="25,23,52"]
 |==============================================================================
-| Extension               | Status    | Comment
-|<<cheri_base_ext,   {cheri_base_ext_name}>>    | Stable    | This extension is a candidate for freezing
-|<<cheri_default_ext,{cheri_default_ext_name}>> | Stable    | This extension is a candidate for freezing
-|<<section_priv_cheri,{cheri_priv_m_ext}>>      | Stable    | This extension is a candidate for freezing
-|<<section_priv_cheri,{cheri_priv_s_ext}>>      | Stable    | This extension is a candidate for freezing
-|<<sh4add_ext,       {sh4add_ext_name}>>        | Stable    | This extension is a candidate for freezing
-|<<lr_sc_bh_ext,     {lr_sc_bh_ext_name}>>      | Stable    | This extension is a candidate for freezing
-|<<section_priv_cheri,{cheri_priv_h_ext}>>      | Stabilizing | This extension is a candidate for freeze, software evaluation currently ongoing
-|<<cheri_pte_ext,    {cheri_pte_ext_name}>>     | Stabilizing | This extension is a candidate for freeze, software evaluation currently ongoing
-|<<tid_ext,          {tid_ext_name}>>           | Stabilizing | This extension is a candidate for freeze, software evaluation currently ongoing
-|<<cheri_levels_ext, {cheri_levels_ext_name}>> with `LVLBITS=1` | Stabilizing | This extension is a candidate for freeze, software evaluation currently ongoing
+| Extension                                        | Status        | Comment
+|<<cheri_base_ext,   {cheri_base_ext_name}>>        | Stable        | This extension is a candidate for freezing
+|<<cheri_default_ext,{cheri_default_ext_name}>>     | Stable        | This extension is a candidate for freezing
+|<<sh4add_ext,       {sh4add_ext_name}>>            | Stable        | This extension is a candidate for freezing
+|<<lr_sc_bh_ext,     {lr_sc_bh_ext_name}>>          | Stable        | This extension is a candidate for freezing
+|<<section_priv_cheri,{cheri_priv_m_ext}>>          | Stable        | This extension is a candidate for freezing
+|<<section_priv_cheri,{cheri_priv_s_ext}>>          | Stable        | This extension is a candidate for freezing
+|<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>> | Stable        | This extension is a candidate for freezing
+|<<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>> | Stable        | This extension is a candidate for freezing
+|<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>> | Stable        | This extension is a candidate for freezing
+|<<section_priv_cheri,{cheri_priv_h_ext}>>          | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
+|<<section_cheri_priv_crg_ext,    {cheri_priv_crg_ext}>>         | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
+|<<tid_ext,          {tid_ext_name}>>               | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
+|<<cheri_levels_ext, {cheri_levels_ext_name}>> with `LVLBITS=1` | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
 |==============================================================================
 
 {cheri_base_ext_name} is defined as the base extension which all CHERI RISC-V
 implementations must support. {cheri_default_ext_name}
-and {cheri_pte_ext_name} are optional extensions in addition to
+and {cheri_priv_crg_ext} are optional extensions in addition to
 {cheri_base_ext_name}.
 
 We refer to software as _purecap_ if it utilizes CHERI capabilities for all

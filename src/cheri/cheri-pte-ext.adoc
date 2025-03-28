@@ -1,6 +1,5 @@
-[#section_sv_cheri]
-[#cheri_pte_ext]
-== "{cheri_pte_ext_name}" Extension, Version 1.0
+[#section_cheri_priv_crg_ext]
+== "{cheri_priv_crg_ext}" Extension, Version 1.0
 
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the priv spec. Exact location TBD.
@@ -10,13 +9,13 @@ CAUTION: #This chapter needs additional updates before it is ready for ARC revie
 
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
-The {cheri_pte_ext_name} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG bit, and <<sstatusreg_pte,sstatus>>.UCRG as described below.
+The {cheri_priv_crg_ext} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG bit, and <<sstatusreg_pte,sstatus>>.UCRG as described below.
 
-NOTE: {cheri_pte_ext_name} depends on {cheri_priv_vmem_ext} also being supported.
+NOTE: {cheri_priv_crg_ext} depends on {cheri_priv_vmem_ext} also being supported.
 
-NOTE: {cheri_pte_ext_name} is strongly recommended but not mandatory as a future version of this specification may specify an improved method.
+NOTE: {cheri_priv_crg_ext} is strongly recommended but not mandatory as a future version of this specification may specify an improved method.
 
-NOTE: There is no explicit mechanism for enabling or disabling {cheri_pte_ext_name}.
+NOTE: There is no explicit mechanism for enabling or disabling {cheri_priv_crg_ext}.
 
 NOTE: If software ignores the new PTE bits then there is no change in functionality unless capabilities are accessed.
 
@@ -24,7 +23,7 @@ NOTE: A future version of this specification may include kernel revocation which
 
 The remainder of this chapter jointly specifies the behavior of PTE.CW, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG.
 
-NOTE: The description below assumes that {cheri_pte_ext_name} has been implemented.
+NOTE: The description below assumes that {cheri_priv_crg_ext} has been implemented.
  If that is _not_ the case then PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG should be taken as read-only-zero for purpose of the description in the remainder of this chapter only.
  PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG remain reserved in this case.
 
@@ -138,7 +137,7 @@ and the capability read from memory optionally has its tag set^1^.
 | 1     | 0   | X                                         | Normal operation^3^
 |===
 
-^1^ If {cheri_pte_ext_name} is _not_ implemented then PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG are always both zero, and so always match. Therefore <<cheri_pte_fault,CHERI load PTE page fault>> _are not_ possible.
+^1^ If {cheri_priv_crg_ext} is _not_ implemented then PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG are always both zero, and so always match. Therefore <<cheri_pte_fault,CHERI load PTE page fault>> _are not_ possible.
 
 ^2^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
  It is legal for the implementation to fault even if the validity tag is not set since this behavior is only an optimization for software.
@@ -158,7 +157,7 @@ and the capability read from memory optionally has its tag set^1^.
 | 1     | X     | Normal operation
 |===
 
-^1^ If {cheri_pte_ext_name} is _not_ implemented then PTE.CRG is zero.
+^1^ If {cheri_priv_crg_ext} is _not_ implemented then PTE.CRG is zero.
  Therefore <<cheri_pte_fault,CHERI store/AMO PTE page fault>> _are_ possible.
 
 
