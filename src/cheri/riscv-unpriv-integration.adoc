@@ -56,7 +56,7 @@ Capability registers extend existing XLEN-bit integer registers to `2*XLEN` (her
 In addition to widening to CLEN, each capability register also gains an out-of-band one-bit validity tag.
 The exact bitwise layout of capabilities as well as the precise encoding of each field for XLEN=32 and XLEN=64 is described in <<app_cap_description>>, but always contain the fields listed in the following paragraphs.
 
-NOTE: Future extensions to {cheri_base_ext_name} are permitted to choose a different capability encoding but must include these fields and .
+NOTE: Future extensions to {cheri_base_ext_name} are permitted to choose a different capability encoding but must include these fields and conform with this chapter.
 
 .CHERI Capability structure
 [#cap_structure]
@@ -80,8 +80,8 @@ NOTE: Future extensions to {cheri_base_ext_name} are permitted to choose a diffe
 ==== Address
 
 The lower XLEN bits of a capability encode the address of where the capability points.
-This is also referred to as the integer part of capabilities.
-For registers that are extended but (currently) only hold integer data, all other components are zero.
+This is also referred to as the integer part of the capability.
+For registers that are extended but (currently) only hold integer data, all other fields are zero.
 
 [#cap_validity_tag,reftext="validity tag"]
 ==== Validity Tag
@@ -280,18 +280,18 @@ This property is required to ensure restricted programs cannot forge capabilitie
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
-A CHERI core adds state to allow capabilities to be used from within registers, and to ensure they are not corrupted as they flow through the system.
+A CHERI core adds state to allow capabilities to be used from within integer (X) registers, and to ensure they are not corrupted as they flow through the system.
 This means the following state is added by {cheri_base_ext_name}:
 
 ==== Extended general purpose integer registers
-These <<gprs,XLEN-wide integer registers>> (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a validity tag bit.
+The <<gprs,XLEN-wide integer registers>> (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a validity tag bit.
 When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
 The existing integer register names refer to the address part of the capability.
-For the ABI register names the a `c` prefix is added, i.e. `csp`, `ca0`.
-The zero register is extended with zero metadata and a cleared tag: this is called the <<null-cap>> capability.
+For the ABI register names the `c` prefix is added, i.e. `csp`, `ca0`.
+The zero register is extended with zero metadata and a cleared validity tag: this is called the <<null-cap>> capability.
 
 ==== Extended CSRs
-Registers that store addresses are extended to contain capabilities.
+All registers that store addresses are extended to contain capabilities.
 In the base {cheri_base_ext_name}, the only such register is the program counter `pc` that is extended to the program counter capability (<<pcc>>). Extending `pc` ensures that the range of branches, jumps and linear execution for currently executing code can be restricted.
 
 NOTE: All CSRs that hold pointers are extended to CLEN bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, any such change is described in the corresponding chapters.
@@ -517,7 +517,7 @@ Under some circumstances <<LC>> will _modify_ metadata before returning the valu
 See <<LC>> for details.
 
 .Capability load/store instruction summary in {cheri_base_ext_name}
-[#tab_cap_misc_summary,%autowidth,options=header,align="center",cols="1,4"]
+[#tab_cap_ldst_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic   |Description
 |<<LC>>     |Load capability
