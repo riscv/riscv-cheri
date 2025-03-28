@@ -292,19 +292,18 @@ The zero register is extended with zero metadata and a cleared validity tag: thi
 
 ==== Extended CSRs
 All registers that store addresses are extended to contain capabilities.
-In the base {cheri_base_ext_name}, the only such register is the program counter `pc` that is extended to the program counter capability (<<pcc>>). Extending `pc` ensures that the range of branches, jumps and linear execution for currently executing code can be restricted.
+In the base {cheri_base_ext_name}, the only such register is the program counter `pc` that is extended to the Program Counter Capability (<<pcc>>).
 
 NOTE: All CSRs that hold pointers are extended to CLEN bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, any such change is described in the corresponding chapters.
 
 [#pcc,reftext="pcc"]
 ===== PCC - The Program Counter Capability
 
-An authorizing capability with appropriate permissions is required to execute
-instructions in {cheri_base_ext_name}. Therefore, the unprivileged program
-counter (*pc*) register is extended so that it is able to hold a capability.
-The extended register is called the program counter capability (<<pcc>>). The
-<<pcc>> address field is effectively the *pc* in the base RISC-V ISA so that the
-hardware automatically increments as instructions are executed. The <<pcc>>'s
+The `pc` is extended to be the Program Counter Capability.
+Extending the `pc` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
+
+The <<pcc>> address field is the `pc` in the base RISC-V ISA so that the
+hardware automatically updates it as instructions are executed. The <<pcc>>'s
 metadata and validity tag are reset to the <<infinite-cap>> capability values,
 and the address field is set to the core boot address.
 
@@ -317,10 +316,9 @@ failing check causes a CHERI exception.
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
 
-NOTE: Operations that update <<pcc>>, such as changing privilege or executing
-jump instructions, unseal capabilities prior to writing. Therefore,
-implementations do not need to check that that <<pcc>> is unsealed when
-executing each instruction. However, this property has not yet been formally verified and may not hold if additional CHERI extensions beyond {cheri_base_ext_name} are implemented.
+NOTE: Operations that update <<pcc>>, such as changing privilege or executing jump instructions, unseal capabilities prior to writing.
+Therefore, implementations do not need to check that that <<pcc>> is unsealed when executing each instruction.
+However, this property has not yet been formally verified and may not hold if additional CHERI extensions beyond {cheri_base_ext_name} are implemented.
 
 .Program Counter Capability
 [#pcc-format]
@@ -333,39 +331,23 @@ include::img/pccreg.edn[]
 ==== Tags in registers, caches, and memory
 
 Every register has a one-bit validity tag, indicating whether the capability in the register is valid to be dereferenced.
-This validity tag is cleared whenever an invalid capability operation is performed. Such invalid operations include e.g. writing only the integer portion of the register or attempting to increase bounds or permissions.
+This validity tag is cleared whenever an invalid capability operation is performed.
+Examples of such invalid operations include writing only the integer portion of the register or attempting to increase bounds or permissions.
 
 The validity tags are also tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit validity tag, which the hardware manages atomically with the data.
 The validity tag is cleared if the memory region is ever written using an operation other than a store of a full capability register with <<c_perm>> granted.
 Any caches and system memory which store capabilities must preserve this abstraction.
 
-[#sec_cheri_cap_mode_int_mode]
-=== {cheri_cap_mode_name} and {cheri_int_mode_name}
-
-//FIXME - need a forward reference to int mode here - I don't thin this section should be here at all though
-
-Existing RV32I/RV64I instructions as well as instructions defined by unprivileged extensions are largely unmodified.
-The one difference is that a hart using {cheri_base_ext_name} instead of RV32I/RV64I as the base ISA uses capabilities for all memory accesses.
-This is called executing in {cheri_cap_mode_name}.
-In {cheri_cap_mode_name}, instructions that access memory, as well as branches and jumps are modified to check against the full capability from the base address register (e.g. `lw t0, 16(c3)`) instead of just the integer address (i.e. `lw t0, 16(x3)`).
-In some cases, they are also changed to return a full capability value, e.g. <<AUIPC_CHERI>> will return the full <<pcc>> including the metadata.
-For the full list of instructions that change behavior with {cheri_base_ext_name}, see <<app_cheri_instructions>>.
-
-The new CHERI state and instructions can also be made available to a hart using RV32I/RV64I as the base ISA with full binary compatibility.
-The mechanics for this mode are described by the <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> extension.
-When a hart supports CHERI but is using RV32I/RV64I as the base ISA, it is executing in {cheri_int_mode_name}.
-{cheri_int_mode_name} mode allows full compatibility with existing RV32I/RV32E binaries, but with additional capability checks for all data memory accesses and instruction fetches.
-
 === Capability checks
 
 Every memory access performed by a CHERI core must be authorized by a capability.
 The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
-For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` register.
+For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
 
 Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends PC.
 This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
 
-With {cheri_base_ext_name}, instruction fetches, jumps, and memory accesses may result in a fatal trap if the authorizing capability does grant the required permissions or the access is out of bounds.
+With {cheri_base_ext_name}, instruction fetches, branches, jumps, and data memory accesses may result in a fatal trap if the authorizing capability does grant the required permissions or the access is out of bounds.
 No other exception paths are added: in particular, capability manipulations do not trap, but may clear the validity tag on the result capability if the operation is not permitted.
 
 [#section_cap_instructions]
@@ -379,14 +361,14 @@ These added instructions can be split into the following categories:
   Any attempt to manipulate capabilities without using the instructions clears the validity tag, rendering them unusable for accessing memory.
   They do not cause exceptions.
 
-* Pointer arithmetic (e.g. <<CADD>>, <<CADDI>>): if a pointer is updated then instead of using an integer ADD/ADDI then a capability version must be used which includes a check that the resulting pointer is valid for the current capability metadata. Invalid updated clear the validity tag.
+* Pointer arithmetic (e.g. <<CADD>>, <<CADDI>>): if a pointer is updated then instead of using an integer ADD/ADDI then a capability version must be used which includes a check that the result can be <<section_cap_representable_check,represented exactly>>, therefore is still valid for the current metadata. Invalid updates clear the validity tag.
 
 * Capability inspection (e.g. <<GCBASE>>, <<GCPERM>>): capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
 These instructions give convenient access to allow software to query them.
   They do not cause exceptions.
 
-* Memory access instructions (e.g. <<LC>>, <<SC>>): capabilities must be read from and written to memory atomically along with their tag.
-Instructions are added to perform these wider accesses, allowing capabilities to flow between the memory and the register file.
+* Memory access instructions (e.g. <<LC>>, <<SC>>): capabilities must be read from and written to memory atomically along with their validity tag.
+Instructions are added to perform these capability-width accesses, allowing capabilities to flow between the memory and the register file.
 
 * Miscellaneous instructions (e.g. <<SCSS>>): These instructions either compare capabilities or allow software to determine the alignment of bounds.
   They do not cause exceptions.
@@ -474,6 +456,8 @@ include::insns/gcbase_32bit.adoc[]
 include::insns/gclen_32bit.adoc[]
 include::insns/gchi_32bit.adoc[]
 
+<<<
+
 === Miscellaneous Capability Instructions
 
 .Miscellaneous capability instruction summary in {cheri_base_ext_name}
@@ -547,7 +531,7 @@ The rules for modifying the behavior of such instructions are:
 * Whenever the PC is handled, it is _always_ the <<pcc>>.
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
-* All jumps and branches check that a minimum sized instruction (2 or 4 bytes) is checked against the bounds the target PC.
+* All jumps and branches check that a minimum sized instruction (2 or 4 bytes) is in bounds the target PC.
 ** An exception is taken on failure.
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken (see <<pcc>> for the definition).
 
