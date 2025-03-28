@@ -1,18 +1,18 @@
 [#section_sv_cheri]
 [#cheri_pte_ext]
-== Extending Page-Based Virtual-Memory Systems for CHERI (RV64 only), including "{cheri_pte_ext_name}"
+== "{cheri_pte_ext_name}" Extension, Version 1.0
 
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the priv spec. Exact location TBD.
 endif::[]
 
+CAUTION: #This chapter needs additional updates before it is ready for ARC review#
+
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
-In CHERI harts the Page Table Entry (PTE) format is extended to control the flow of capabilities in memory (see <<limit_cap_prop>>).
-This is achieved by adding the PTE.CW bit described below and is a mandatory feature when any virtual memory translation scheme (_Sv39_, _Sv48_ or _Sv57_) is implemented on an RV64 system.
-By default PTE.CW=0 which will prevent legacy OSs from being able to load or store tagged capabilities without software modification.
+The {cheri_pte_ext_name} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG bit, and <<sstatusreg_pte,sstatus>>.UCRG as described below.
 
-Additionally the {cheri_pte_ext_name} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG bit, and <<sstatusreg_pte,sstatus>>.UCRG as described below.
+NOTE: {cheri_pte_ext_name} depends on {cheri_priv_vmem_ext} also being supported.
 
 NOTE: {cheri_pte_ext_name} is strongly recommended but not mandatory as a future version of this specification may specify an improved method.
 
@@ -31,50 +31,6 @@ NOTE: The description below assumes that {cheri_pte_ext_name} has been implement
 The minimum level of PTE support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. private anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
 
 NOTE: Hardware initiated memory accesses from the page-table walker are not checked by a capability.
-
-[#cheri_pte_fault]
-=== CHERI PTE page faults
-
-CHERI adds the concept of _CHERI PTE page faults_.
-These reuse the load page fault and store/AMO page fault exception causes, and write additional
-information to <<mtval2>>/<<stval2>>/<<vstval2>>.
-
-Page faults are considered to be _CHERI PTE page faults_ if the `Xtval2` register is written with a non-zero value.
-
-NOTE: It is possible for both a _normal_ page fault and a _CHERI PTE page fault_ to both trigger at once, as represented in the `Xtval2` value, as shown in <<mtval2-page-fault>>.
-
-NOTE: Where two stage translation is enabled, the _CHERI PTE page fault_ is only raised when
-the second stage translation has completed, and so is prioritized below guest page faults.
-
-All RV64 harts with virtual memory can raise _CHERI store/AMO PTE page faults_.
-Only harts which implement {cheri_pte_ext_name} can raise _CHERI load PTE page faults_.
-
-[#limit_cap_prop]
-=== Limiting Capability Propagation
-
-Page table enforcement can allow the operating system to limit the flow
-of capabilities between processes.
-It is highly desirable that a process should only possess capabilities that have
-been issued for that address space by the operating system.
-Unix processes may share memory for efficient communication,
-but capability pointers must not be shared across these channels
-into a foreign address space.
-An operating system might defend against this by only issuing a capability
-to the shared
-region that does not grant the load/store capability permission.
-However, there are circumstances where portions of general-purpose, mmapped^*^ memory become shared,
-and the operating system must prevent future capability communication
-through those pages.
-This is not possible without restructuring software, as the capability for
-the original allocation, which spans both shared memory and private memory, would need to
-be deleted and replaced with a list of distinct capabilities with appropriate
-permissions for each range.
-Such a change would not be transparent to the program.
-Such sharing through virtual memory is on the page granularity, so preventing
-capability writes with a PTE permission is
-a natural solution.
-
-^*^ _allocated using mmap_
 
 [#cap_revocation]
 === Capability Revocation
@@ -98,9 +54,8 @@ NOTE: *CHERI v9 Note:* The current proposal is provisional and only includes
 support for load-side revocation when compared to CHERI v9.
 endif::[]
 
-The page table entry format remains unchanged for Sv32. However, two new
-bits, Capability Write (CW) and Capability Read
-Generation (CRG), are added to leaf PTEs in Sv39, Sv48 and Sv57 as shown in
+The page table entry format remains unchanged for Sv32. However, one new
+bit, Capability Read Generation (CRG), is added to leaf PTEs in Sv39, Sv48 and Sv57 as shown in
 xref:sv39pte[xrefstyle=short], xref:sv48pte[xrefstyle=short] and
 xref:sv57pte[xrefstyle=short] respectively. For non-leaf PTEs these bits
 remain reserved and must be cleared by software for forward compatibility,
@@ -110,15 +65,15 @@ used in guest address translation.
 
 .Sv39 page table entry
 [#sv39pte]
-include::img/sv39pte.edn[]
+include::img/sv39pte_crg.edn[]
 
 .Sv48 page table entry
 [#sv48pte]
-include::img/sv48pte.edn[]
+include::img/sv48pte_crg.edn[]
 
 .Sv57 page table entry
 [#sv57pte]
-include::img/sv57pte.edn[]
+include::img/sv57pte_crg.edn[]
 
 NOTE: The behavior in this section isn't relevant if:
 

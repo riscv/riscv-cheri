@@ -598,22 +598,99 @@ Changing endianness::
 Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
 
 
-== {cheri_priv_vmem_ext} Extension, Version 1.0
-#FIXME: Integrate the capability write bit here (but not the full CRG)#
+== "{cheri_priv_vmem_ext}" Extension, Version 1.0
 
 RISC-V's page-based virtual-memory management is generally orthogonal to CHERI.
-In {cheri_base_ext_name}, capability addresses are interpreted with respect to
-the privilege level of the processor in line with RISC-V's handling of integer
-addresses. In machine mode, capability addresses are generally interpreted as
-physical addresses; if the <<mstatus>> MPRV flag is asserted, then data
-accesses (but not instruction accesses) will be interpreted as if performed by
-the privilege mode in mstatus's MPP. In supervisor and user modes, capability
-addresses are interpreted as dictated by the current *satp* configuration:
-addresses are virtual if paging is enabled and physical if not.
+In {cheri_base_ext_name}, capability addresses are interpreted with respect to the privilege level of the processor in line with RISC-V's handling of integer addresses.
+In machine mode, capability addresses are generally interpreted as physical addresses; if the <<mstatus>> MPRV flag is asserted, then data accesses (but not instruction accesses) will be interpreted as if performed by the privilege mode in mstatus's MPP.
+In supervisor and user modes, capability addresses are interpreted as dictated by the current *satp* configuration: addresses are virtual if paging is enabled and physical if not.
 
-{cheri_base_ext_name} requires that the <<pcc>> grants the <<asr_perm>> to
-change the page-table root *satp* and other virtual-memory parameters as
-described in xref:supervisor-level-csrs-section[xrefstyle=short].
+{cheri_priv_vmem_ext} requires that the <<pcc>> grants the <<asr_perm>> to change the page-table root *satp* and other virtual-memory parameters as described in xref:supervisor-level-csrs-section[xrefstyle=short].
+
+[#section_cw_bit]
+=== Capability Write (CW) Bit
+
+{cheri_priv_vmem_ext} defines the Capability Write (CW) bit in Page Table Entries (PTEs) for Sv39, Sv48, and Sv57 virtual memory systems on RV64 harts. The CW bit controls whether capabilities with their validity tag set can be written to a virtual page.
+
+NOTE: _Sv32_ does not have any spare PTE bits, and so this bit does not exist for RV32.
+
+[#limit_cap_prop]
+==== Limiting Capability Propagation
+
+CAUTION: #ARC-QUESTION: Is this too much rationale? Should it be trimmed down and just describe the mechanism?#
+
+Page table enforcement can allow the operating system to limit the flow of capabilities between processes.
+It is highly desirable that a process should only possess capabilities that have been issued for that address space by the operating system.
+Unix processes may share memory for efficient communication, but capability pointers must not be shared across these channels into a foreign address space.
+An operating system might defend against this by only issuing a capability to the shared region that does not grant the load/store capability permission.
+However, there are circumstances where portions of general-purpose, mmapped^*^ memory become shared, and the operating system must prevent future capability communication through those pages.
+This is not possible without restructuring software, as the capability for the original allocation, which spans both shared memory and private memory, would need to be deleted and replaced with a list of distinct capabilities with appropriate permissions for each range.
+Such a change would not be transparent to the program.
+Such sharing through virtual memory is on the page granularity, so preventing capability writes with a PTE permission is a natural solution.
+
+^*^ _allocated using mmap_
+
+[#cheri_pte_fault]
+=== CHERI PTE page faults
+
+CHERI adds the concept of _CHERI PTE page faults_.
+These reuse the load page fault and store/AMO page fault exception causes, and write additional information to <<mtval2>>/<<stval2>>/<<vstval2>>.
+
+Page faults are considered to be _CHERI PTE page faults_ if the `Xtval2` register is written with a non-zero value.
+
+NOTE: It is possible for both a _normal_ page fault and a _CHERI PTE page fault_ to both trigger at once, as represented in the `Xtval2` value, as shown in <<mtval2-page-fault>>.
+
+NOTE: Where two stage translation is enabled, the _CHERI PTE page fault_ is only raised when the second stage translation has completed, and so is prioritized below guest page faults.
+
+All RV64 harts with virtual memory can raise _CHERI store/AMO PTE page faults_.
+Only harts which implement {cheri_priv_vmem_ext} can raise _CHERI load PTE page faults_.
+
+==== Extending the Page Table Entry Format
+
+The page table entry format remains unchanged for Sv32.
+However, a new bit, Capability Write (CW), is added to leaf PTEs in Sv39, Sv48 and Sv57 as shown in xref:sv39pte_cw[xrefstyle=short], xref:sv48pte_cw[xrefstyle=short] and xref:sv57pte_cw[xrefstyle=short] respectively.
+For non-leaf PTEs this bit remains reserved and must be cleared by software for forward compatibility, or else a page-fault exception is raised.
+Additionally, if the hypervisor extension is enabled this bit remains reserved for leaf and non-leaf PTEs used in guest address translation.
+
+CAUTION: #ARC-QUESTION: The current bit 60 has been allocated by Svrsw60t59b, should we use bit 58?#
+
+.Sv39 page table entry
+[#sv39pte_cw]
+include::img/sv39pte_cw.edn[]
+
+.Sv48 page table entry
+[#sv48pte_cw]
+include::img/sv48pte_cw.edn[]
+
+.Sv57 page table entry
+[#sv57pte_cw]
+include::img/sv57pte_cw.edn[]
+
+The CW bit indicates whether reading or writing capabilities with the validity tag set to the virtual page is permitted.
+When the CW bit is set, capabilities are written as usual.
+
+If the CW bit is clear then:
+
+* When a capability load or AMO instruction is executed, the implementation clears the validity tag bit of the capability read from the virtual page.
+* A <<cheri_pte_fault,CHERI store/AMO PTE page fault>> exception is raised when a capability store or AMO instruction is executed and the validity tag bit of the capability being written is set.
+
+[[pte_cw_store_summary]]
+.Summary of Store CW behavior in the PTEs
+[%autowidth,float="center",align="center",cols="<,<",options="header"]
+|===
+|PTE.CW |Store/AMO
+| 0     | <<cheri_pte_fault,CHERI store/AMO PTE page fault>> if stored tag is set
+| 1     | Normal operation
+|===
+
+[NOTE]
+====
+The validity tag bit of the stored capability is checked _after_ it is potentially cleared due to missing permissions.
+Therefore, the behavior in this section isn't relevant if:
+
+* The authorizing capability doesn't have <<c_perm>>.
+* Insufficient <<sl_perm>> has cleared the validity tag of the to-be-stored capability.
+====
 
 [#section_invalid_addr_conv,reftext="Invalid address conversion"]
 === Invalid Address Handling
