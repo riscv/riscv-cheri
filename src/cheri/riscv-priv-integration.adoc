@@ -128,6 +128,8 @@ Changing XLEN or endianness would change the interpretation of all in-memory cap
 NOTE: These restrictions are relaxed if a further privileged CHERI extension, {cheri_priv_m_dyn_xlen_ext}, optionally makes SXL,
 UXL, MBE, SBE, and UBE writeable, to support CHERI on implementations that support dynamic XLEN or endianness changes.
 
+WARNING: #ARC-QUESTION: not sure if {cheri_priv_m_dyn_xlen_ext} needs to be a separate extension or just a "if xME,xXL bits are writable, then this behavior is followed" note in {cheri_priv_m_ext}#
+
 [[cheri-mcause]]
 ==== Machine Cause Register (mcause)
 
@@ -137,7 +139,7 @@ The behavior and usage of <<mcause>> otherwise remains as described in xref:mcau
 
 WARNING: The current specification uses the CHERI ISAv9 mcause value of {cheri_excep_mcause}, which is designated for custom extensions.
 
-IMPORTANT: #The exact code as well as the mechanism to report subcodes needs to be finalized: https://github.com/riscv/riscv-cheri/issues/536#
+IMPORTANT: #ARC-QUESTION: The exact code as well as the mechanism to report subcodes needs to be finalized: https://github.com/riscv/riscv-cheri/issues/536#
 
 If an instruction may raise multiple synchronous exceptions, the decreasing priority order of <<exception-priority-cheri>> indicates which exception is taken and reported in `mcause`.
 This table extends the existing priority order from <<exception-priority>> with new entries.
