@@ -65,7 +65,25 @@ Reserved bits are available for future extensions to {cheri_base_ext_name}.
 
 NOTE: Reserved bits must be 0 in tagged capabilities.
 
-NOTE: The CL field is only present if {cheri_levels_ext_name} is implemented, otherwise it is reserved.
+The encoding of capabilities depends on the extensions supported by the current environment.
+The following extensions affect the capability encoding:
+
+{cheri_default_ext_name}::
+When {cheri_default_ext_name} is supported, capabilities include a <<m_bit>>.
+If not supported this field becomes reserved and reads as zero.
+
+[#cheri_lvlbits,reftext="LVLBITS"]
+{cheri_0levels_ext_name}/{cheri_1levels_ext_name}::
+Implementations of {cheri_base_ext_name} may choose how many <<section_cap_level>> bits (`LVLBITS`) to support.
+The CL field is variable width and depends on which of the mutually exclusive extensions {cheri_0levels_ext_name} or {cheri_1levels_ext_name} is supported.
+
+* When {cheri_0levels_ext_name} is supported, then `LVLBITS=0` and capability levels are not dynamically adjustable.
+  Therefore, <<el_perm>>, <<sl_perm>> and the <<section_cap_level>> are hardwired to 1 and not encoded in the capability format.
+  In this case, all capability checks related to levels always pass.
+* When {cheri_1levels_ext_name} is supported, then `LVLBITS=1` and capability levels are dynamically adjustable.
+  All of <<el_perm>>, <<sl_perm>> and the <<section_cap_level>> are one bit wide and are encoded in the capability format memory.
+
+NOTE: Future extensions may increase the width of this field.
 
 [#cap_permissions_encoding]
 ==== Architectural Permissions (AP) Encoding
@@ -83,10 +101,10 @@ Therefore, it is only possible to encode a subset of all combinations.
 |==============================================================================
 ^| MXLEN | AP field width         | Comment
 ^| 32    | {cap_rv32_perms_width} | Encodes some combinations of {cap_rv64_perms_width} permission bits, including the <<m_bit>> if {cheri_default_ext_name} is supported.
-^| 64    | {cap_rv64_perms_width} | Separate bits for each architectural permission.
+^| 64    | {cap_rv64_perms_width}/{cap_rv64_perms_levels_width}^1^ | Separate bits for each architectural permission.
 |==============================================================================
 
-NOTE: if {cheri_levels_ext_name} is supported then there are {cap_rv64_perms_levels_width} architectural permission bits.
+^1^ If {cheri_0levels_ext_name} is supported this field is {cap_rv64_perms_width} bits wide, with {cheri_1levels_ext_name} it uses {cap_rv64_perms_levels_width} instead.
 
 For MXLEN=32, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
@@ -98,7 +116,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 
 <<<
 
-.Encoding of architectural permissions for MXLEN=32
+.Encoding of architectural permissions for MXLEN=32 when {cheri_0levels_ext_name} is implemented
 [#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
 | Encoding[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
@@ -147,28 +165,72 @@ non-zero value.
 NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It is
 orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 
-A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64 ({cap_rv64_perms_levels_width}-bit if {cheri_levels_ext_name} is supported).
-In this case, there is a bit per permission as shown in
-xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
-corresponding bit is set, otherwise the capability does not grant that
-permission.
+.Encoding of architectural permissions for MXLEN=32 when {cheri_1levels_ext_name} is implemented
+[#cap_perms_encoding_levels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
+|==============================================================================
+|Bits[4:3]| R | W | C | LM | EL | SL | X | ASR | Mode^1^ | Notes
+11+| *Quadrant 0: Non-capability data read/write*
+11+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
+11+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
+| 0   |   |   |   |   |   |   |   |   | N/A | No permissions
+| 1   | ✔ |   |   |   |   |   |   |   | N/A | Data RO
+| 2-3   10+| reserved
+| 4   |   | ✔ |   |   |   |   |   |   | N/A | Data WO
+| 5   | ✔ | ✔ |   |   |   |   |   |   | N/A | Data RW
+| 6-7   10+| reserved
+11+| *Quadrant 1: Executable capabilities*
+11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
+|Bits[4:3]| R | W | C | LM | EL | SL  | X | ASR | Mode^1^ |
+| 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
+| 2-3   | ✔ |   | ✔ | ✔  | ✔  | ∞^2^| ✔ |     | Mode^1^  | Execute + Data & Cap RO
+| 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |     | Mode^1^  | Execute + Data & Cap RW
+| 6-7   | ✔ | ✔ |   |    |    | 0^2^| ✔ |     | Mode^1^  | Execute + Data RW
+11+| *Quadrant 2: Restricted capability data read/write*
+11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted, LM dependent on W permission.
+|Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
+| 0-2   10+| reserved
+| 3       | ✔ |   | ✔ |    |    | 0^1^  |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
+| 4       | ✔ | ✔ | ✔ | ✔  |    | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 5       | ✔ | ✔ | ✔ | ✔  |    | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 6       | ✔ | ✔ | ✔ | ✔  |    | 1     |   |     | N/A | Data & Cap RW (with store _local_, no <<el_perm>>)
+| 7       | ✔ | ✔ | ✔ | ✔  |    | 0     |   |     | N/A | Data & Cap RW (no store _local_, no <<el_perm>>)
+11+| *Quadrant 3: Capability data read/write*
+11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted.
+11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+|Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
+| 0-2   10+| reserved
+| 3       | ✔ |   | ✔ | ✔  | ✔  | 0^2^  |   |     | N/A | Data & Cap R0
+| 4       | ✔ | ✔ | ✔ | ✔  | ✔  | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 5       | ✔ | ✔ | ✔ | ✔  | ✔  | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 6       | ✔ | ✔ | ✔ | ✔  | ✔  | 1     |   |     | N/A | Data & Cap RW (with store _local_)
+| 7       | ✔ | ✔ | ✔ | ✔  | ✔  | 0     |   |     | N/A | Data & Cap RW (no store _local_)
+|==============================================================================
+
+^1^ _Mode (<<m_bit>>) can only be set on a tagged capability when {cheri_default_ext_name}
+is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._ +
+^2^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>> +
+^3^ These entries are reserved when `LVLBITS=1` and in use when `LVLBITS=2`
+
+
+
+When MXLEN=64, there is a bit per permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
+A permission is granted if its corresponding bit is set, otherwise the capability does not grant that permission.
 
 <<<
 
 .Encoding of architectural permissions for MXLEN=64
-[#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="55%"]
+[#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="75%"]
 |==============================================================================
-| Bit | Name
+| Bit | Encoded permission
 | 0   | <<c_perm>>
 | 1   | <<w_perm>>
 | 2   | <<r_perm>>
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
 | 5   | <<lm_perm>>
-| 6   | <<el_perm>>^1^
-| 7   | <<sl_perm>>^1^
+| 6   | <<el_perm>> with {cheri_1levels_ext_name} / _reserved_ with {cheri_0levels_ext_name}
+| 7   | <<sl_perm>> with {cheri_1levels_ext_name} / _reserved_ with {cheri_0levels_ext_name}
 |==============================================================================
-^1^ This permission is only supported if the implementation supports <<cheri_levels_ext,{cheri_levels_ext_name}>>.
 
 The <<m_bit>> is only assigned meaning when the
 implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
@@ -216,7 +278,7 @@ are only valid if {cheri_default_ext_name} is implemented. Otherwise those encod
 CAUTION: Depending on the supported extensions and <<cap_permissions_encoding,permissions encoding>> some referenced bits may have a hardwired value.
 In this case the rules are applied starting with this hardwired value, and proceed as if it had been modified but any change is discarded after following the final rule.
 For example, RV64 without {cheri_default_ext_name}, the <<m_bit>> is a _reserved_ bit, and so is not relevant to <<ACPERM>>.
-Similarly, if {cheri_levels_ext_name} is _not_ implemented then <<el_perm>> is initialized to 1, and <<sl_perm>> is initialized to the maximum value, but the resulting <<el_perm>> and <<sl_perm>> is discarded at the end.
+Similarly, if {cheri_0levels_ext_name} is implemented then <<el_perm>> is initialized to 1, and <<sl_perm>> is initialized to the maximum value, but the resulting <<el_perm>> and <<sl_perm>> is discarded at the end.
 
 NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
 
@@ -561,7 +623,7 @@ expanded base is 0 and top is 2^MXLEN^.
 | Reserved | zeros  | All reserved fields
 |==============================================================================
 
-^1^ This field only exists if {cheri_levels_ext_name} is implemented.
+^1^ This field may be zero bits wide (i.e. omitted) if {cheri_0levels_ext_name} is implemented.
 
 [#section_infinite_cap]
 ==== Infinite Capability
@@ -602,7 +664,7 @@ or 'root' capability.
 * For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the AP field, giving the value 0x9
 * For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
 
-^2^ This field only exists if {cheri_levels_ext_name} is implemented.
+^2^ This field may be zero bits wide (i.e. omitted) if {cheri_0levels_ext_name} is implemented.
 
 === Memory space
 
@@ -745,3 +807,25 @@ xref:section_cap_encoding[xrefstyle=short].
 This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
 is _representable_.
+
+[#section_ext_cheri_multiple_levels]
+=== Extending {cheri_1levels_ext_name} to more than two levels
+When `<<cheri_lvlbits>> > 1`, the behavior of <<ACPERM>> can no longer use masking to adjust the <<section_cap_level>> or <<sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
+The <<section_cap_level,CL>> field of the resulting capability is set to `min(rs2[CL], cs1[CL])`  (equivalent to `rs2[CL] & cs1[CL]` for `<<cheri_lvlbits>>=1`).
+Similarly, <<sl_perm>> is set to `min(rs2[SL], cs1[SL])` (equivalent to `rs2[SL] & cs1[SL]` for `<<cheri_lvlbits>>=1`).
+
+When storing capabilities, the <<sl_perm>> checks need to perform a `<<cheri_lvlbits>>`-wide integer comparison instead of just testing a single bit.
+Considering for an example `<<cheri_lvlbits>>=2`:
+
+[options=header,grid=rows,cols="2,3,6"]
+|===
+|<<sl_perm>> | Permitted for levels| Resulting semantics
+|3 | As low as `~0b11=0` | Authorizes stores of capabilities with any level
+|2 | As low as `~0b10=1` | Strip tag for level 0 (most _local_), keep for 1,2,3
+|1 | As low as `~0b01=2` | Strip tag for level 0&1, keep for 2&3
+|0 | As low as `~0b00=3` | Strip tag for level 0,1,2, i.e. only the most _global_ can be stored
+|===
+
+NOTE: While this extra negation is non-intuitive, it is required such that <<ACPERM>> can use a monotonically decreasing operation for both <<section_cap_level,CL>> <<sl_perm>>.
+
+NOTE: The layout of the <<ACPERM>> input / <<GCPERM>> result is not yet defined, but existing bits will not be moved around so the <<sl_perm,SL>>/<<section_cap_level,CL>> fields will be non-contiguous.

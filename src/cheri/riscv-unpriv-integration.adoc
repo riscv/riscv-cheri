@@ -49,14 +49,14 @@ Developers can use CHERI to build fine-grained spatial and temporal memory
 protection into their system software and applications and significantly
 improve their security.
 
-[#sec_capability_field]
+[#sec_capability_registers]
 === CHERI capability registers
 
 Capability registers extend existing XLEN-bit integer registers to `2*XLEN` (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to CLEN, each capability register also gains an out-of-band one-bit validity tag.
 The exact bitwise layout of capabilities as well as the precise encoding of each field for XLEN=32 and XLEN=64 is described in <<app_cap_description>>, but always contain the fields listed in the following paragraphs.
 
-NOTE: Future extensions to {cheri_base_ext_name} are permitted to choose a different capability encoding but must include these fields and conform with this chapter.
+NOTE: Extensions to {cheri_base_ext_name} are permitted to use a modified capability encoding but must conform to all rules and include all fields listed in this chapter.
 
 .CHERI Capability structure
 [#cap_structure]
@@ -187,10 +187,8 @@ NOTE: The permission stripping behavior only applies to loaded capability that h
 Access System Registers Permission (ASR):: Allow read and write access to all privileged CSRs as well as privileged instructions.
 Removing this permission constraining restricting privileged software to a sandbox that cannot be subverted by changing privileged state.
 
-CAUTION: TODO: This section is missing any kind of rationale or usage for {cheri_levels_ext_name}, covering SL/EL/CL, or information about what happens if the extension is not implemented..
-
 [#sl_perm,reftext="SL-permission"]
-Store Level Permission (SL):: This is a `LVLBITS` wide field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> less than the inverse of the authorizing capability's <<sl_perm>> will be stored with the validity tag cleared.
+Store Level Permission (SL):: This is a variable width field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> less than the inverse of the authorizing capability's <<sl_perm>> will be stored with the validity tag cleared.
 With `LVLBITS=1` there is a single bit comparison, so it behaves as follows:
 - If this field (as well as <<c_perm>> and <<w_perm>>) is set to 1 then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
 - If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e. _local_), will be stored with the validity tag cleared.
@@ -202,39 +200,45 @@ Elevate Level Permission (EL):: Any unsealed capability with its tag set to 1 th
 If sealed, then only <<section_cap_level,CL>> is modified, <<el_perm>> is unchanged.
 This permission is similar to the existing <<lm_perm>>, but instead of applying to the <<w_perm>> on the loaded capability it restricts the <<section_cap_level,CL>> field.
 
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is similar to CHERIoT's _LoadGlobal_ permission, except that any _global_ capability implicitly grants _LoadGlobal_.
+endif::[]
+
 [#section_cap_level,reftext="Capability Level (CL)"]
 ==== Capability Level (CL)
 
-The Capability Level (CL) is a new field added to the capability encoding, as shown in xref:section_cap_encoding[xrefstyle=short].
+The _Capability Level_ (CL) is a variable width field that allows enforcing invariants on capability propagation.
+For example, the _Capability Level_ can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g. the callee's stack frame but not the heap).
+It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
 
-With `LVLBITS=1`, the _Capability Level_ can hold two values: when set to 1 the capability is _global_ (in general allowing it to be stored using any authorizing capability), and when set to 0 the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
-Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabilities -- causing the hardware to automatically set the level of loaded capabilities to _local_ instead.
+The width of this field depends on whether {cheri_0levels_ext_name} or {cheri_1levels_ext_name} extension is implemented:
 
-NOTE: The current specification only defines two levels, equivalent to _local_ and _global_ capabilities from CHERI v9, Morello and CHERIoT.
+{cheri_0levels_ext_name}::
+In this case the field is hardwired to 1 amd all checks based on the _Capability Level_ can be omitted (since they always pass).
+
+{cheri_1levels_ext_name}::
+The _Capability Level_ can hold two values: when set to 1 the capability is _global_ (in general allowing it to be stored using any authorizing capability), and when set to 0 the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
+  Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabilities -- causing the hardware to automatically set the level of loaded capabilities to _local_ instead.
 
 As with permissions, the capability level can only be decreased but never increased (without deriving from a capability with a higher level).
-Therefore, the capability level is adjusted using the <<ACPERM>> instruction (see <<section_cap_level_change>>) and are queried using <<GCPERM>>.
+// Therefore, the capability level is adjusted using the <<ACPERM>> instruction (see <<section_cap_level_change>>) and are queried using <<GCPERM>>.
+But unlike architectural permissions, CL can be reduced even if the capability is sealed.
 
-Unlike architectural permissions, CL can be reduced even if the capability is sealed.
+NOTE: A capability with <<section_cap_level,CL>>=1 is referred to as _global_ and with <<section_cap_level,CL>>=0 as _local_.
 
-[#section_cap_level_summary]
-===== Capability level summary table
-
-NOTE: A capability with <<section_cap_level,CL>>=1 is _global_ and with <<section_cap_level,CL>>=0 is _local_.
-
-.{cheri_levels_ext_name} `LVLBITS=1` summary table for stored capabilities
+.{cheri_1levels_ext_name} summary table for stored capabilities
 [#cap_level_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
 |==============================================================================
    3+|Auth cap field       | Data cap field |
     h|*W*    h|*C* h|*SL* h|*CL* h| Notes
 .3+.^|1  .3+.^| 1   | 1    | X    | Store data capability unmodified
-               .2+.^| 0    | 1    | Store data capability unmodified (CL ≥ ~SL)
-                           | 0    | Store data capability with tag cleared (CL < ~SL)
+               .2+.^| 0    | 1    | Store data capability unmodified (`CL ≥ ~SL`)
+                           | 0    | Store data capability with validity tag cleared (`CL < ~SL`)
 |==============================================================================
 
 NOTE: if W=0 or C=0 then SL is irrelevant
 
-.{cheri_levels_ext_name} additional rules for loading capabilities
+.{cheri_1levels_ext_name} additional rules for loading capabilities
 [#cap_level_load_summary,width="100%",options=header,align=center,cols="1,1,1,1,1,1,6"]
 |==============================================================================
    4+|Auth cap field                  2+| Data cap field |
@@ -244,12 +248,10 @@ NOTE: if W=0 or C=0 then SL is irrelevant
    6+| All other cases                                   |Load data capability with EL, CL unmodified
 |==============================================================================
 
-//FIXME: need to allow CL/EL/SL to have fixed values to remove levels extension
+NOTE: The current specification only defines up to two levels, equivalent to _local_ and _global_ capabilities from CHERI v9, Morello and CHERIoT.
+Future extensions are permitted to add more levels.
 
-[#section_cap_level_change]
-===== Changing capability levels and permissions
-While capability levels (<<section_cap_level,CL>>) are conceptually a label on the capability rather than a permission granted by the capability, they are adjusted using the <<ACPERM>> instruction.
-This avoids the need for a dedicated instruction and allows reducing the level and removing <<el_perm>> in a single instruction.
+NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
 
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
