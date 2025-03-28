@@ -128,7 +128,7 @@ Changing XLEN or endianness would change the interpretation of all in-memory cap
 NOTE: These restrictions are relaxed if a further privileged CHERI extension, {cheri_priv_m_dyn_xlen_ext}, optionally makes SXL,
 UXL, MBE, SBE, and UBE writeable, to support CHERI on implementations that support dynamic XLEN or endianness changes.
 
-WARNING: #ARC-QUESTION: not sure if {cheri_priv_m_dyn_xlen_ext} needs to be a separate extension or just a "if xME,xXL bits are writable, then this behavior is followed" note in {cheri_priv_m_ext}#
+CAUTION:: #ARC-QUESTION: Doesif {cheri_priv_m_dyn_xlen_ext} need to be a separate extension or just a "if xME,xXL bits are writable, then this behavior is followed" note in {cheri_priv_m_ext}#
 
 [[cheri-mcause]]
 ==== Machine Cause Register (mcause)
@@ -139,7 +139,7 @@ The behavior and usage of <<mcause>> otherwise remains as described in xref:mcau
 
 WARNING: The current specification uses the CHERI ISAv9 mcause value of {cheri_excep_mcause}, which is designated for custom extensions.
 
-IMPORTANT: #ARC-QUESTION: The exact code as well as the mechanism to report subcodes needs to be finalized: https://github.com/riscv/riscv-cheri/issues/536#
+CAUTION:: #ARC-QUESTION: The exact code as well as the mechanism to report subcodes needs to be finalized: https://github.com/riscv/riscv-cheri/issues/536#
 
 If an instruction may raise multiple synchronous exceptions, the decreasing priority order of <<exception-priority-cheri>> indicates which exception is taken and reported in `mcause`.
 This table extends the existing priority order from <<exception-priority>> with new entries.
@@ -395,7 +395,7 @@ and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or 
 [#sec_cheri_exception_handling]
 === CHERI Exception handling
 
-#ARC-QUESTION: Need feedback whether to add this info to xcause or xtval2: https://github.com/riscv/riscv-cheri/issues/536#
+CAUTION: #ARC-QUESTION: Need feedback whether to add this info to xcause or xtval2: https://github.com/riscv/riscv-cheri/issues/536#
 
 CHERI faults require additional information to be reported.
 The CSRs updated depend on the mode the trap is taken into, as shown in
@@ -500,7 +500,7 @@ NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
 it is not possible to disable CHERI checks completely.
 endif::[]
 
-#ARC-QUESTION: The CBZE, CBIE etc. bits are specified by Zicbo*, can this be defined by {cheri_priv_m_ext}/{cheri_priv_s_ext}+{cheri_default_ext_name} instead of adding a new priv extension?#
+CAUTION: #ARC-QUESTION: The CBZE, CBIE etc. bits are specified by Zicbo*, can this be defined by {cheri_priv_m_ext}/{cheri_priv_s_ext}+{cheri_default_ext_name} instead of adding a new priv extension?#
 
 When using a system with {cheri_default_ext_name}, it may be desirable to disabling CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
 {cheri_priv_m_reg_enable_ext} includes functions to disable explicit access to CHERI
@@ -581,7 +581,7 @@ instructions. +
 {cheri_priv_m_dyn_xlen_ext} eliminates some restrictions for SXL and UXL imposed in {cheri_priv_m_ext} to allow implementations supporting multiple base ISAs.
 This extension allows the SXL, UXL, MBE, SBE, and UBE fields of <<mstatus>>/<<sstatus>> to be writable (which is prohibited by {cheri_priv_m_ext} otherwise).
 
-#ARC-QUESTION: Should this extension be folded into the {cheri_priv_m_reg_enable_ext} extension?#
+CAUTION: #ARC-QUESTION: Should this extension be folded into the {cheri_priv_m_reg_enable_ext} extension?#
 
 Changing XLEN::
 Setting the SXL or UXL field to a value that is not MXLEN disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
