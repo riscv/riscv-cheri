@@ -110,6 +110,7 @@ Additionally, the capability in <<mepcc>> is unsealed when it is installed in
 
 === Machine-Level CSRs modified by {cheri_priv_m_ext}
 
+[#mstatus_cheri]
 ==== Machine Status Registers (mstatus and mstatush)
 
 The *mstatus* and *mstatush* registers operate as described in
@@ -430,7 +431,7 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 6+| *CSR/Xret additional exception check*
 | CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}          | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
 6+| *direct jumps additional exception check*
-| <<JAL_CHERI>>, <<insns-conbr-32bit,conditional branches>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds} | <<pcc>> bounds     | any byte of minimum length instruction at target out of <<pcc>> bounds
+| <<JAL_CHERI>>, <<insns-conbr-32bit_CHERI,conditional branches>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds} | <<pcc>> bounds     | any byte of minimum length instruction at target out of <<pcc>> bounds
 6+| *indirect jumps additional exception checks*
 | indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}      |`cs1` tag             | not(`cs1.tag`)
 | indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}     |`cs1` seal            | isCapSealed(`cs1`) and imm12 != 0
