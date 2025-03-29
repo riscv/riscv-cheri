@@ -261,6 +261,23 @@ They can by inspected by the kernel or application programs to enforce restricti
 NOTE: While these bits are not interpreted by the hardware, modification follows the same rules as architectural permissions: SDP bits can only be cleared and never set.
 This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
 
+[#section_special_caps]
+==== Special Capabilities
+
+[#infinite-cap,reftext="Infinite"]
+===== Infinite Capability
+
+The <<infinite-cap>> capability grants all permissions while its bounds also cover the whole address space.
+All capability checks pass when performed against an <<infinite-cap>> capability.
+The in-memory encoding of the <<infinite-cap>> capability is described in <<section_infinite_cap_encoding>>.
+
+NOTE: The <<infinite-cap>> capability is also known as 'default', 'almighty', or 'root' capability in other CHERI documentation.
+
+[#null-cap,reftext="NULL"]
+===== NULL Capability
+A capability with all-zeroes metadata, an unset validity tag, and an address of zero is referred to as the _NULL capability.
+This capability grants no permissions and any dereference results in a CHERI exception.
+The memory representation of the <<null-cap>> capability is all zeroes.
 
 === Added State
 

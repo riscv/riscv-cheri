@@ -587,11 +587,11 @@ Capabilities with malformed bounds:
 
 See specific instruction pages for full details of the effect of malformed capabilities.
 
-[#section_special_caps]
-=== Special Capabilities
+[#section_special_caps_encoding]
+=== Encoding of Special Capabilities
 
-[#section_null_cap]
-==== NULL Capability
+[#section_null_cap_encoding]
+==== NULL Capability Encoding
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
@@ -604,7 +604,7 @@ that it has no permissions and its exponent E is CAP_MAX_E (52 for MXLEN=64,
 expanded base is 0 and top is 2^MXLEN^.
 
 .Field values of the NULL capability
-[#null-cap,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
+[#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
 |==============================================================================
 | Field    | Value  | Comment
 | Tag      | zero   | Capability is not valid
@@ -625,8 +625,8 @@ expanded base is 0 and top is 2^MXLEN^.
 
 ^1^ This field may be zero bits wide (i.e. omitted) if {cheri_0levels_ext_name} is implemented.
 
-[#section_infinite_cap]
-==== Infinite Capability
+[#section_infinite_cap_encoding]
+==== Infinite Capability Encoding
 
 The <<infinite-cap>> capability grants all permissions while its bounds also
 cover the whole address space. It includes <<x_perm>> and so includes the
@@ -636,7 +636,7 @@ NOTE: The <<infinite-cap>> capability is also known as 'default', 'almighty',
 or 'root' capability.
 
 .Field values of the Infinite capability
-[#infinite-cap,reftext="Infinite"]
+[#infinite-cap-encoding,reftext="Infinite"]
 [options=header,align=center,width="90%",cols="25,23,52"]
 |==============================================================================
 | Field         | Value | Comment
