@@ -4,17 +4,17 @@ All misaligned load reservations cause a load address misaligned exception to al
 +
 endif::[]
 ifdef::has_cap_data[]
-Misaligned address fault exception when the effective address is not aligned
-to CLEN/8.
+Misaligned address fault exception when the effective address is not aligned to CLEN/8.
 +
 endif::[]
 CHERI fault exceptions occur when the authorizing capability fails one of the checks
-listed below; in this case, _CHERI data fault_ is reported.
+listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
+// ; in this case, _CHERI data fault_ is reported.
 
 +
 [%autowidth,options=header,align=center]
 |==============================================================================
-| CAUSE                 | Reason
+| Kind                  | Reason
 | Tag violation         | Authority capability tag set to 0, or has any reserved bits set
 | Seal violation        | Authority capability is sealed
 | Permission violation  | Authority capability does not grant <<r_perm>>, or the AP field could not have been produced by <<ACPERM>>
@@ -23,12 +23,11 @@ listed below; in this case, _CHERI data fault_ is reported.
 
 |==============================================================================
 +
-ifdef::cheri_standalone_spec[]
-If virtual memory is enabled on an RV64 hart, then the state of <<section_priv_cheri_vmem,PTE>>.CW,
-and, if {cheri_priv_crg_ext} is implemented, <<section_cheri_priv_crg_ext,PTE.CRG>>, <<section_cheri_priv_crg_ext,PTE>>.U and <<sstatusreg_pte,sstatus>>.UCRG,
-may cause a <<section_priv_cheri_vmem,CHERI PTE load page fault>> exception in addition to a normal RISC-V page fault exception.
-See <<mtval2-page-fault>> for the exception reporting in this case.
+// TODO: check that the priv spec defines all of this!
+// If virtual memory is enabled on an RV64 hart, then the state of <<section_priv_cheri_vmem,PTE>>.CW,
+// and, if {cheri_priv_crg_ext} is implemented, <<section_cheri_priv_crg_ext,PTE.CRG>>, <<section_cheri_priv_crg_ext,PTE>>.U and <<sstatusreg_pte,sstatus>>.UCRG,
+// may cause a <<section_priv_cheri_vmem,CHERI PTE load page fault>> exception in addition to a normal RISC-V page fault exception.
+// See <<mtval2-page-fault>> for the exception reporting in this case.
 +
-endif::[]
 :!load_res:
 :!has_cap_data:

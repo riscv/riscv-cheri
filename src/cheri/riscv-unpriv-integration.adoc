@@ -214,7 +214,7 @@ It can also be used to avoid sharing of compartment-local data (such as pointers
 The width of this field depends on whether {cheri_0levels_ext_name} or {cheri_1levels_ext_name} extension is implemented:
 
 {cheri_0levels_ext_name}::
-In this case the field is hardwired to 1 amd all checks based on the _Capability Level_ can be omitted (since they always pass).
+In this case the field is hardwired to 1 and all checks based on the _Capability Level_ can be omitted (since they always pass).
 
 {cheri_1levels_ext_name}::
 The _Capability Level_ can hold two values: when set to 1 the capability is _global_ (in general allowing it to be stored using any authorizing capability), and when set to 0 the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
@@ -628,27 +628,26 @@ include::insns/jalr_32bit.adoc[]
 
 include::insns/condbr_32bit.adoc[]
 
-//FIXME - this all needs to move to priv
-//[#section_int_load_store_insns]
-//==== Load and Store Instructions
-//
-//Load and store instructions behave as described in <<ldst>> with one difference:
-//For the base operand, the full capability register is used to check the resulting memory access.
-//All load and store instructions cause CHERI exceptions if any of these checks fails:
-//
-//* The validity tag must be set
-//* The capability must be unsealed
-//* All bytes of accessed memory must be inside the capability's bounds
-//* For loads, the <<r_perm,read permission>> must be present
-//* For stores, the <<w_perm,write permission>> must be present
-//
-//Non-capability load instructions always zero the validity tag and metadata of the result register.
-//
-//Non-capability stores write zero to the validity tag associated with the memory locations that are naturally aligned to CLEN.
-//Therefore, misaligned stores may clear up to two validity tag bits in memory.
-//
-//NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this //specification (including floating-point and vector loads/stores).
-//
-//include::insns/load_32bit.adoc[]
-//
-//include::insns/store_32bit.adoc[]
+[#section_int_load_store_insns]
+==== Load and Store Instructions
+
+Load and store instructions behave as described in <<ldst>> with one difference:
+For the base operand (`rs1`), the full capability register is used to check the resulting memory access.
+All load and store instructions cause CHERI exceptions if any of these checks fails:
+
+* The validity tag must be set
+* The capability must be unsealed
+* All bytes of accessed memory must be inside the capability's bounds
+* For loads, the <<r_perm,read permission>> must be present
+* For stores, the <<w_perm,write permission>> must be present
+
+Non-capability load instructions always zero the validity tag and metadata of the result register.
+
+Non-capability stores write zero to the validity tag associated with the memory locations that are naturally aligned to CLEN.
+Therefore, misaligned stores may clear up to two validity tag bits in memory.
+
+NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
+
+include::insns/load_32bit.adoc[]
+
+include::insns/store_32bit.adoc[]

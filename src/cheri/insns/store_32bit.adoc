@@ -1,3 +1,4 @@
+===== Integer Stores ({cheri_base_ext_name})
 [#SD,reftext="SD"]
 ===== SD
 [#SW,reftext="SW"]
@@ -19,23 +20,21 @@ Integer Stores (SD, SW, SH, SB)
 Encoding::
 include::wavedrom/store.adoc[]
 
-{cheri_cap_mode_name} Description::
-Store integer data of the indicated size (byte, halfword, word, double-word) to
-memory. The effective address of the store is obtained by adding the
-sign-extended 12-bit offset to the address of `cs1`. The authorizing capability
-for the operation is `cs1`. A copy of `rs2` is written to memory at the
-location indicated by the effective address and the validity tag bit of each block of
-memory naturally aligned to CLEN/8 is cleared.
+Description::
+Store integer data of the indicated size (byte, halfword, word, double-word) to memory.
+The effective address of the store is obtained by adding the sign-extended 12-bit offset to the address of `cs1`.
+The authorizing capability for the operation is `cs1`.
+A copy of `rs2` is written to memory at the location indicated by the effective address and the validity tag bit of each block of memory naturally aligned to CLEN/8 is cleared.
 +
 include::load_store_c0.adoc[]
 
-{cheri_int_mode_name} Description::
-Store integer data of the indicated size (byte, halfword, word, double-word) to
-memory. The effective address of the store is obtained by adding the
-sign-extended 12-bit offset to `rs1`. The authorizing capability for the
-operation is <<ddc>>. A copy of `rs2` is written to memory at the location
-indicated by the effective address and the validity tag bit of each block of memory
-naturally aligned to CLEN/8 is cleared.
+// {cheri_int_mode_name} Description::
+// Store integer data of the indicated size (byte, halfword, word, double-word) to
+// memory. The effective address of the store is obtained by adding the
+// sign-extended 12-bit offset to `rs1`. The authorizing capability for the
+// operation is <<ddc>>. A copy of `rs2` is written to memory at the location
+// indicated by the effective address and the validity tag bit of each block of memory
+// naturally aligned to CLEN/8 is cleared.
 
 include::store_exceptions.adoc[]
 
