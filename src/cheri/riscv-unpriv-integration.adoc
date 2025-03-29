@@ -318,6 +318,8 @@ failing check causes a CHERI exception.
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
 
+On startup <<ddc>> bounds and permissions must be set such that the program can run successfully (e.g. by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
+
 NOTE: Operations that update <<pcc>>, such as changing privilege or executing jump instructions, unseal capabilities prior to writing.
 Therefore, implementations do not need to check that that <<pcc>> is unsealed when executing each instruction.
 However, this property has not yet been formally verified and may not hold if additional CHERI extensions beyond {cheri_base_ext_name} are implemented.
@@ -477,6 +479,7 @@ include::insns/cram_32bit.adoc[]
 
 <<<
 
+[#sec_cap_load_store]
 === Capability Load, Store Instructions
 
 New loads and stores are introduced to handle capabilities.
@@ -538,6 +541,15 @@ The rules for modifying the behavior of such instructions are:
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken (see <<pcc>> for the definition).
 
 These rules affect the following base ISA instructions:
+
+// Old section from unpriv chapter:
+// Existing RV32I/RV64I instructions as well as instructions defined by unprivileged extensions are largely unmodified.
+// The one difference is that a hart using {cheri_base_ext_name} instead of RV32I/RV64I as the base ISA uses capabilities for all memory accesses.
+// This is called executing in {cheri_cap_mode_name}.
+// In {cheri_cap_mode_name}, instructions that access memory, as well as branches and jumps are modified to check against the full capability from the base address register (e.g. `lw t0, 16(c3)`) instead of just the integer address (i.e. `lw t0, 16(x3)`).
+// In some cases, they are also changed to return a full capability value, e.g. <<AUIPC_CHERI>> will return the full <<pcc>> including the metadata.
+// For the full list of instructions that change behavior with {cheri_base_ext_name}, see <<app_cheri_instructions>>.
+//
 
 //In general, any time an operand is used as a base pointer, {cheri_base_ext_name} changes this operand to a full capability (*c* register) instead of interpreting it as a XLEN-bit address (*x* register).
 //For memory accesses and control transfers, all CHERI checks are performed against this operand.
