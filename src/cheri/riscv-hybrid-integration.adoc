@@ -61,18 +61,18 @@ The current CHERI execution mode is given by the <<m_bit>> of the <<pcc>> and th
 
 [#sec_changing_cheri_execution_mode]
 ==== Changing CHERI Execution Mode
-The <<m_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cheri_hybrid_insn_summary>>:
+The <<m_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cheri_mode_sw_summary>>:
 
 .{cheri_default_ext_name} instructions that can perform mode changes
-[#tab_cheri_hybrid_insn_summary,%autowidth,options=header,align="center",cols="2,2,4"]
+[#tab_cheri_mode_sw_summary,%autowidth,options=header,align="center",cols="2,2,4"]
 |=======================
-|Mnemonic        | Valid mode          | Description
+|Mnemonic        | From mode          | Description
 | <<JALR_CHERI>> |{cheri_cap_mode_name}| Install `cs1` in the <<pcc>> and so update `pcc.M`
 | <<MODESW.INT>> |{cheri_cap_mode_name}| Switch to {cheri_int_mode_name}.
 | <<MODESW.CAP>> |{cheri_int_mode_name}| Switch to {cheri_cap_mode_name}.
-| <<SCMODE>>     |either               | Update the <<m_bit>> of the target capability `cd`.
-| <<GCMODE>>     |either               | Read the <<m_bit>> of the source capability `cs1`.
 |=======================
+
+NOTE: The mode can also be updated by setting the <<m_bit>> of a target capability using <<SCMODE>> followed by a <<JALR_CHERI>>.
 
 [#m_bit_observe,reftext="Observing the CHERI Execution Mode"]
 ===== Observing the CHERI Execution Mode
