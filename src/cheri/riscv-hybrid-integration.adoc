@@ -40,8 +40,7 @@ Some instructions in the RV32I/RV64I base ISA (plus any extensions) use capabili
 
 The execution mode is determined by a bit in the metadata of the <<pcc>> called the <<m_bit>>.
 {cheri_default_ext_name} adds a new CHERI execution Mode field (M) to
-the capability format, which is only valid for code capabilities, i.e.
-when the <<x_perm>> is set.
+the capability format. Although always present, it only takes effect in code capabilities, i.e. when the <<x_perm>> is set.
 The exact location of the M-bit in the capability format for XLEN=32 and XLEN=64 is described in <<app_cap_description>>.
 
 * Mode (M)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
@@ -126,13 +125,12 @@ In {cheri_int_mode_name} the `lw` has the same behavior and assembly syntax as t
 * `lw t0, 16(a0)`
 
 All memory accesses must still be checked, but now they are authorized by the capability in <<ddc>> instead.
-<<ddc>> is the Default Data Capability.
 
 === {cheri_default_ext_name} Branches
 
 The rules from xref:section_existing_riscv_insns[xrefstyle=short] are applied, so that all branch and jump targets are checked against <<pcc>>.
 
-NOTE: In {cheri_int_mode_name} JALR does _not_ copy the target capability register `rs1` into <<pcc>>, instead it updates the address of <<pcc>> with the target value.
+NOTE: In {cheri_int_mode_name} JALR does _not_ copy the target capability register `cs1` into <<pcc>>, instead it updates the address of <<pcc>> with the target value.
 The only difference to RV32I/RV64I without {cheri_default_ext_name}, is that the target address is checked against the bounds of <<pcc>>.
 
 
@@ -274,56 +272,73 @@ In {cheri_int_mode_name}, the capability authorizing the memory access is <<ddc>
 [#zicsr-section-default]
 === Changes to Zicsr Instructions
 
-{cheri_base_ext_name} requires that RISC-V CSRs intended to hold addresses, are now able to hold capabilities.
-Therefore, such registers are extended to CLEN+1 bits in {cheri_base_ext_name} and a `c` suffix is added when referring to the entire CSR instead of the address (e.g. the <<Zcmt>> `jvt` CSR is extended to `jvtc`).
-These are referred to as _extended CSRs_.
-Extended CSRs have only one address; the access width is determined by the execution mode.
-In {cheri_cap_mode_name} <<CSRRW>> reads/updates the full capability and in {cheri_int_mode_name} only the XLEN bit address is read/written.
+{cheri_base_ext_name} extends all RISC-V CSRs which hold addresses, to hold capabilities.
+Therefore, such registers are extended to CLEN bits in {cheri_base_ext_name} and a `c` suffix is added when referring to the entire CSR instead of the only the address field.
+For example, the `mtvec` CSR is extended to `mtvecc`, the `c` suffix indicating that it's a capability.
+It is referred to as `mtvec` if any accessing the address or `mtvecc` if accessing the whole capability.
 
-IMPORTANT: For new (rather than extended) capability-width CSRs, <<CSRRW>> always reads/writes the full capability width regardless of <<cheri_execution_mode>>.
+* In {cheri_cap_mode_name} <<CSRRW_CHERI>> _always_ read/writes the entire CLEN bits of all CLEN-width CSRs.
+* In {cheri_int_mode_name} <<CSRRW_CHERI>> _only_ accesses XLEN bits of extended CSRs (for compatibility) and all CLEN-bits of CSRs added by CHERI extensions.
+** <<CSRRW_CHERI>> in {cheri_int_mode_name} can only update the address field of `mtvec`, but it can write a full value into <<ddc>>.
+** {cheri_cap_mode_name} always accesses `mtvecc`, never `mtvec`.
+* when only writing XLEN bits to an extended CSR (e.g. `mtvec`), the CSR value is updated using <<SCADDR>> semantics.
 
-CAUTION: #ARC-QUESTION: In https://github.com/riscv/riscv-cheri/pull/354 we decided that access to newly added capability size CSRs always read CLEN bits instead of being mode-dependent. Is this acceptable, or should we use the simpler behavior of always reading writing XLEN in {cheri_int_mode_name}?#
+NOTE: this section is tricky to write as it needs an address CSR to refer to - maybe it needs to move to priv? Or to depend on Zcmt? TBD
+
+IMPORTANT: need to resolve how to cross-reference the privileged spec to have a list of the new and extended CSRs
+
+//IMPORTANT: For new (rather than extended) capability-width CSRs, <<CSRRW>> always reads/writes the full capability width regardless of <<cheri_execution_mode>>.
+
+//CAUTION: #ARC-QUESTION: In https://github.com/riscv/riscv-cheri/pull/354 we decided that access to newly added capability size CSRs always read CLEN bits instead of being mode-dependent. Is this acceptable, or should we use the simpler behavior of always reading writing XLEN in {cheri_int_mode_name}?#
 
 
-All CSR instructions atomically read-modify-write a single CSR.
-If the CSR accessed is of capability size then the capability's tag, metadata and address are all accessed atomically.
-Reading or writing any part of a capability CSR may cause side effects.
-For example, the CSR's tag bit may be cleared if a new address is outside the <<section_cap_representable_check>> of a CSR capability being written.
+//All CSR instructions atomically read-modify-write a single CSR.
+//If the CSR accessed is of capability size then the capability's tag, metadata and address are all accessed atomically.
+//Reading or writing any part of a capability CSR may cause side effects.
+//For example, the CSR's tag bit may be cleared if a new address is outside the <<section_cap_representable_check>> of a CSR capability being written.
+//
+//IMPORTANT: Unless specified otherwise, all CSR instructions cause CHERI exceptions if the <<pcc>> does not grant <<asr_perm>> and the CSR accessed is privileged.
+//See <<priv-csrs,the CSR listing in the privileged specification>> for a full list of CSRs that do not require <<asr_perm>>.
+//
+//When <<CSRRW>> is executed on an extended CSR in {cheri_int_mode_name}:
+//
+//* The register operand is an *x* register.
+//* Only XLEN bits from the *x* source are written to the capability address
+//field.
+//    ** The validity tag and metadata are updated as specified in <<extended_CSR_writing,the privileged specification>>.
+//* Only XLEN bits are read from the capability address field, which are extended
+//to MXLEN bits according to cite:[riscv-priv-spec] _(Base ISA Control in
+//mstatus Register)_ and are then written to the destination *x* register.
+//
+//When <<CSRRW>> is executed on an extended CSR in {cheri_cap_mode_name}, or
+//on a new capability CSR regardless of the CHERI execution mode:
+//
+//* The register operand is a *c* register.
+//* The full capability in the *c* register source is written to the CSR.
+//** The capability may require modification before the final written value is
+//determined (see <<extended_CSR_writing>>).
+//* The full capability is written to destination *c* register.
 
-IMPORTANT: Unless specified otherwise, all CSR instructions cause CHERI exceptions if the <<pcc>> does not grant <<asr_perm>> and the CSR accessed is privileged.
-See <<priv-csrs,the CSR listing in the privileged specification>> for a full list of CSRs that do not require <<asr_perm>>.
+When any CLEN-width CSR is accessed with another CSR instruction:
 
-When <<CSRRW>> is executed on an extended CSR in {cheri_int_mode_name}:
+* <<CSRRWI_CHERI>>
+* <<CSRRC_CHERI>>
+* <<CSRRCI_CHERI>>
+* <<CSRRS_CHERI>>
+* <<CSRRSI_CHERI>>
 
-* The register operand is an *x* register.
-* Only XLEN bits from the *x* source are written to the capability address
-field.
-    ** The validity tag and metadata are updated as specified in<<extended_CSR_writing,the privileged specification>>.
-* Only XLEN bits are read from the capability address field, which are extended
-to MXLEN bits according to cite:[riscv-priv-spec] _(Base ISA Control in
-mstatus Register)_ and are then written to the destination *x* register.
-
-When <<CSRRW>> is executed on an extended CSR in {cheri_cap_mode_name}, or
-on a new capability CSR regardless of the CHERI execution mode:
-
-* The register operand is a *c* register.
-* The full capability in the *c* register source is written to the CSR.
-** The capability may require modification before the final written value is
-determined (see <<extended_CSR_writing>>).
-* The full capability is written to destination *c* register.
-
-When an extended CSR or a new capability CSR is used with another CSR instruction (<<CSRRWI>>, <<CSRRC>>, <<CSRRCI>>, <<CSRRS>>, <<CSRRSI>>):
+The following rules apply:
 
 * The final address is calculated according to the standard RISC-V CSR rules (set bits, clear bits etc).
 * The final address is updated as specified in <<extended_CSR_writing,the privileged specification>> for an XLEN write.
-    ** Unless specified otherwise, this uses the semantics of a <<SCADDR>> instruction which clears the validity tag if the capability is sealed, or if the updated address is not representable.
+    ** Unless specified otherwise, the update uses <<SCADDR>> semantics
 * When accessing an extended CSR:
     ** In {cheri_int_mode_name}, XLEN bits are read from the capability address field and written to an output *x* register.
     ** In {cheri_cap_mode_name}, CLEN bits are read from the CSR and written to an output *c* register.
-* When accessing a new capability CSR:
+* When accessing a CSR added by a CHERI extension:
 ** CLEN bits are read from the CSR and written to an output *c* register.
 
-NOTE: For all non-capability CSRs (i.e. XLEN-width CSRs) XLEN bits are read/written regardless of <<cheri_execution_mode>>.
+//NOTE: For all non-capability CSRs (i.e. XLEN-width CSRs) XLEN bits are read/written regardless of <<cheri_execution_mode>>.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by <<CSRRW>>.
