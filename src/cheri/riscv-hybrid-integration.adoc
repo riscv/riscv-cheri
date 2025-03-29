@@ -34,18 +34,18 @@ IMPORTANT: All instructions from existing RISC-V extensions can be run in {cheri
 Executing with the {cheri_base_ext_name} base ISA.
 Some instructions in the RV32I/RV64I base ISA (plus any extensions) use capabilities instead of integers for memory references (see xref:section_existing_riscv_insns[xrefstyle=short]).
 
-The CHERI execution mode impacts the instruction set in the following way:
+The _<<cheri_execution_mode>>_ impacts the instruction set in the following way:
 
 * The authorizing capability used to execute memory access instructions depends on the mode.
 In {cheri_int_mode_name}, <<ddc>> is implicitly used. In {cheri_cap_mode_name}, the authorizing  capability is supplied as an explicit *c* operand register to the instruction.
 // XXX: This only affects the floating-point compressed isns, no need to mention here:
 // * The set of instructions that is available for execution. Some instructions are available in {cheri_int_mode_name} but not {cheri_cap_mode_name} and vice-versa (see xref:app_cheri_instructions[xrefstyle=short]).
 
-// NOTE: The CHERI execution mode is effectively an extension to some RISC-V instruction encodings.
+// NOTE: The _<<cheri_execution_mode>>_ is effectively an extension to some RISC-V instruction encodings.
 //   For example, the encoding of an instruction like <<LW>> remains unchanged, but the mode indicates whether the capability authorizing the load is the register operand `cs1` ({cheri_cap_mode_name}).
 // The mode is shown in the assembly syntax.
 
-The CHERI execution mode is key in providing backwards compatibility with the base RV32I/RV64I ISA.
+The _<<cheri_execution_mode>>_ is key in providing backwards compatibility with the base RV32I/RV64I ISA.
 RISC-V software is able to execute unchanged in implementations supporting both {cheri_base_ext_name} and {cheri_default_ext_name} provided that the privileged environment sets up <<ddc>> and <<pcc>> appropriately.
 
 NOTE: The CHERI execution mode is always {cheri_cap_mode_name} on implementations that support {cheri_base_ext_name}, but not {cheri_default_ext_name}.
@@ -53,9 +53,9 @@ NOTE: The CHERI execution mode is always {cheri_cap_mode_name} on implementation
 [#m_bit,reftext="M-bit"]
 ==== CHERI Execution Mode Encoding
 
-The execution mode is determined by a bit in the metadata of the <<pcc>> called the <<m_bit>>.
-{cheri_default_ext_name} adds a new CHERI execution Mode field (M) to
-the capability format. Although always present, it only takes effect in code capabilities, i.e. when the <<x_perm>> is set.
+The _<<cheri_execution_mode>>_ is determined by a bit in the metadata of the <<pcc>> called the <<m_bit>>.
+{cheri_default_ext_name} adds a new _<<cheri_execution_mode>>_ field (M) to the capability format.
+Although always present, it only takes effect in code capabilities, i.e. when the <<x_perm>> is set.
 The exact location of the M-bit in the capability format for XLEN=32 and XLEN=64 is described in <<app_cap_description>>.
 
 * Mode (M)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
@@ -66,7 +66,7 @@ IMPORTANT: While the <<m_bit>> only has a effect when installed in <<pcc>>, it n
 
 CAUTION: #ARC-QUESTION: This next paragraph has a reference to a section in the priv spec, does it need to move there or can we keep it here?#
 
-The current CHERI execution mode is given by the <<m_bit>> of the <<pcc>> and the <<section_cheri_disable,CHERI register and instruction access settings>> as follows:
+The current _<<cheri_execution_mode>>_ is given by the <<m_bit>> of the <<pcc>> and the <<section_cheri_disable,CHERI register and instruction access settings>> as follows:
 
 * The Mode is {cheri_cap_mode_name} when the <<m_bit>> of the <<pcc>> is {CAP_MODE_VALUE}, *and* <<section_cheri_disable,CHERI register and instruction access is enabled>> for the current privilege.
 * Otherwise the Mode is {cheri_int_mode_name}.
