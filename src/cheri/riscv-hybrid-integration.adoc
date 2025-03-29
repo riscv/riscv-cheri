@@ -221,7 +221,7 @@ It is referred to as `jvt` if only accessing the address or `jvtc` if accessing 
 
 IMPORTANT: need to resolve how to cross-reference the privileged spec to have a list of the new and extended CSRs
 
-//IMPORTANT: For new (rather than extended) capability-width CSRs, <<CSRRW>> always reads/writes the full capability width regardless of <<cheri_execution_mode>>.
+//IMPORTANT: For new (rather than extended) capability-width CSRs, <<CSRRW_CHERI>> always reads/writes the full capability width regardless of <<cheri_execution_mode>>.
 // See https://github.com/riscv/riscv-cheri/pull/354 for discussion on this.
 
 
@@ -233,7 +233,7 @@ IMPORTANT: need to resolve how to cross-reference the privileged spec to have a 
 //IMPORTANT: Unless specified otherwise, all CSR instructions cause CHERI exceptions if the <<pcc>> does not grant <<asr_perm>> and the CSR accessed is privileged.
 //See <<priv-csrs,the CSR listing in the privileged specification>> for a full list of CSRs that do not require <<asr_perm>>.
 //
-//When <<CSRRW>> is executed on an extended CSR in {cheri_int_mode_name}:
+//When <<CSRRW_CHERI>> is executed on an extended CSR in {cheri_int_mode_name}:
 //
 //* The register operand is an *x* register.
 //* Only XLEN bits from the *x* source are written to the capability address
@@ -243,7 +243,7 @@ IMPORTANT: need to resolve how to cross-reference the privileged spec to have a 
 //to MXLEN bits according to cite:[riscv-priv-spec] _(Base ISA Control in
 //mstatus Register)_ and are then written to the destination *x* register.
 //
-//When <<CSRRW>> is executed on an extended CSR in {cheri_cap_mode_name}, or
+//When <<CSRRW_CHERI>> is executed on an extended CSR in {cheri_cap_mode_name}, or
 //on a new capability CSR regardless of the CHERI execution mode:
 //
 //* The register operand is a *c* register.
@@ -274,7 +274,7 @@ The following rules apply:
 //NOTE: For all non-capability CSRs (i.e. XLEN-width CSRs) XLEN bits are read/written regardless of <<cheri_execution_mode>>.
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by <<CSRRW>>.
+NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by <<CSRRW_CHERI>>.
 endif::[]
 
 include::insns/csrr_32bit.adoc[]

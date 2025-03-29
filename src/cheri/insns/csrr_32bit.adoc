@@ -53,7 +53,7 @@ including extended CSRs with actions as shown in
 For capability CSRs, the full capability is read into `cd` in {cheri_cap_mode_name}.
 In {cheri_int_mode_name}, the address field is instead read into `rd`.
 +
-Unlike <<CSRRW>>, these instructions only update the address field and the validity tag
+Unlike <<CSRRW_CHERI>>, these instructions only update the address field and the validity tag
 as defined in xref:extended_CSR_writing[xrefstyle=short] when writing
 capability CSRs regardless of the execution mode. The final address to
 write to the capability CSR is determined as defined by RISC-V for these
@@ -62,20 +62,18 @@ instructions.
 See xref:aliased_CSRs[xrefstyle=short] for a list of capability CSRs and
 xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing an XLEN-wide value to each one.
 +
-If `cd` is `c0` (or `rd` is `x0`), then <<CSRRWI>> shall not read the CSR and
+If `cd` is `c0` (or `rd` is `x0`), then <<CSRRWI_CHERI,CSRRWI>> shall not read the CSR and
 and shall not cause any of the side effects that might occur on a CSR read. If
-`rs1` is `x0` for <<CSRRS>> and <<CSRRC>>, or `imm` is 0 for <<CSRRSI>> and
-<<CSRRCI>>, then the instruction will not write to the CSR at all, and so shall
+`rs1` is `x0` for <<CSRRS_CHERI,CSRRS>> and <<CSRRC_CHERI,CSRRC>>, or `imm` is 0 for <<CSRRSI_CHERI,CSRRSI>> and
+<<CSRRCI_CHERI,CSRRCI>>, then the instruction will not write to the CSR at all, and so shall
 not cause any of the side effects that might otherwise occur on a CSR write.
 +
-The assembler pseudoinstruction to read a capability CSR in Capability Mode,
+The assembler pseudoinstruction to read a capability CSR in {cheri_cap_mode_name},
 `csrr cd, csr`, is encoded as `csrrs cd, csr, x0`.
 +
 Access to XLEN-wide CSRs is as specified by RISC-V.
 
-NOTE: If the CSR accessed is a capability, and `rs1` is `x0` for <<CSRRS>> and
-<<CSRRC>>, or `imm` is 0 for <<CSRRSI>> and <<CSRRCI>>, then the CSR is not
-written so no representability check is needed in this case.
+NOTE: If the CSR accessed is a capability, and `rs1` is `x0` for <<CSRRS_CHERI,CSRRS>> and <<CSRRC_CHERI,CSRRC>>, or `imm` is 0 for <<CSRRSI_CHERI,CSRRSI>> and <<CSRRCI_CHERI,CSRRCI>>, then the CSR is not written so no representability check is needed in this case.
 
 Permissions::
 Accessing privileged CSRs may require <<asr_perm>>, including existing RISC-V
