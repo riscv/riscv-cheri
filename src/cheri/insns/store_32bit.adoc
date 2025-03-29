@@ -1,24 +1,15 @@
-<<<
-
+===== Integer Stores ({cheri_base_ext_name})
 [#SD,reftext="SD"]
-==== SD
-See <<SB>>
-
+===== SD
 [#SW,reftext="SW"]
-==== SW
-See <<SB>>
-
+===== SW
 [#SH,reftext="SH"]
-==== SH
-See <<SB>>
-
-<<<
-
+===== SH
 [#SB,reftext="SB"]
-==== SB
+===== SB
 
 Synopsis::
-Stores (SD, SW, SH, SB)
+Integer Stores (SD, SW, SH, SB)
 
 {cheri_cap_mode_name} Mnemonics::
 `sd rs2, offset(cs1)` +
@@ -26,49 +17,26 @@ Stores (SD, SW, SH, SB)
 `sh rs2, offset(cs1)` +
 `sb rs2, offset(cs1)`
 
-{cheri_int_mode_name} Mnemonics::
-`sd rs2, offset(rs1)` +
-`sw rs2, offset(rs1)` +
-`sh rs2, offset(rs1)` +
-`sb rs2, offset(rs1)`
-
 Encoding::
 include::wavedrom/store.adoc[]
 
-{cheri_cap_mode_name} Description::
-Store integer data of the indicated size (byte, halfword, word, double-word) to
-memory. The effective address of the store is obtained by adding the
-sign-extended 12-bit offset to the address of `cs1`. The authorizing capability
-for the operation is `cs1`. A copy of `rs2` is written to memory at the
-location indicated by the effective address and the tag bit of each block of
-memory naturally aligned to CLEN/8 is cleared.
+Description::
+Store integer data of the indicated size (byte, halfword, word, double-word) to memory.
+The effective address of the store is obtained by adding the sign-extended 12-bit offset to the address of `cs1`.
+The authorizing capability for the operation is `cs1`.
+A copy of `rs2` is written to memory at the location indicated by the effective address and the validity tag bit of each block of memory naturally aligned to CLEN/8 is cleared.
 +
 include::load_store_c0.adoc[]
 
-{cheri_int_mode_name} Description::
-Store integer data of the indicated size (byte, halfword, word, double-word) to
-memory. The effective address of the store is obtained by adding the
-sign-extended 12-bit offset to `rs1`. The authorizing capability for the
-operation is <<ddc>>. A copy of `rs2` is written to memory at the location
-indicated by the effective address and the tag bit of each block of memory
-naturally aligned to CLEN/8 is cleared.
+// {cheri_int_mode_name} Description::
+// Store integer data of the indicated size (byte, halfword, word, double-word) to
+// memory. The effective address of the store is obtained by adding the
+// sign-extended 12-bit offset to `rs1`. The authorizing capability for the
+// operation is <<ddc>>. A copy of `rs2` is written to memory at the location
+// indicated by the effective address and the validity tag bit of each block of memory
+// naturally aligned to CLEN/8 is cleared.
 
 include::store_exceptions.adoc[]
 
-Prerequisites for {cheri_cap_mode_name} SD::
-RV64 or RV32 with Zilsd, {cheri_base_ext_name}
-
-Prerequisites for {cheri_int_mode_name} SD::
-RV64 or RV32 with Zilsd, {cheri_default_ext_name}
-
-Prerequisites for {cheri_cap_mode_name} SW, SH, SB::
-{cheri_base_ext_name}
-
-Prerequisites for {cheri_int_mode_name} SW, SH, SB::
-{cheri_default_ext_name}
-
-Operation::
-[source,SAIL,subs="verbatim,quotes"]
---
-TBD
---
+Prerequisites for SD::
+RV64 or RV32 with Zilsd

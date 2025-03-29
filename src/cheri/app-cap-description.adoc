@@ -2,6 +2,10 @@
 [#app_cap_description]
 == Anatomy of Capabilities in {cheri_base_ext_name}
 
+ifdef::cheri_standalone_spec[]
+WARNING: This chapter will appear as an appendix in the unpriv specification.
+endif::[]
+
 RISC-V defines variants of the base integer instruction set characterized by
 the width of the integer registers and the corresponding size of the address
 space. There are two primary ISA variants, RV32I and RV64I, which provide
@@ -17,7 +21,7 @@ least the same XLEN as lower privilege modes; these changes are present in the
 current draft and expected to be part of privileged architecture 1.13.
 
 {cheri_base_ext_name} defines capabilities of size CLEN corresponding to 2 *
-MXLEN without including the tag bit. The value of CLEN is always calculated
+MXLEN without including the validity tag bit. The value of CLEN is always calculated
 based on MXLEN regardless of the effective XLEN value.
 
 NOTE: We briefly note that the capability encoding described in this section
@@ -41,10 +45,10 @@ NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the
 in-memory format, and also increase precision for RV32.
 endif::[]
 
-The components of a capability, except the tag, are encoded as shown in
+The components of a capability, except the validity tag, are encoded as shown in
 xref:cap_encoding_xlen32[xrefstyle=short] for MXLEN=32 and
 xref:cap_encoding_xlen64[xrefstyle=short] for MXLEN=64. Each memory location
-or register able to hold a capability must also store the tag as out of band
+or register able to hold a capability must also store the validity tag as out of band
 information that software cannot directly set or clear. The capability metadata
 is held in the most significant bits and the address is held in the least
 significant bits.
@@ -61,98 +65,28 @@ Reserved bits are available for future extensions to {cheri_base_ext_name}.
 
 NOTE: Reserved bits must be 0 in tagged capabilities.
 
-NOTE: The CL field is only present if {cheri_levels_ext_name} is implemented, otherwise it is reserved.
+The encoding of capabilities depends on the extensions supported by the current environment.
+The following extensions affect the capability encoding:
 
-=== Components of a Capability
+{cheri_default_ext_name}::
+When {cheri_default_ext_name} is supported, capabilities include a <<m_bit>>.
+If not supported this field becomes reserved and reads as zero.
 
-Capabilities contain the software accessible fields described in this section.
+[#cheri_lvlbits,reftext="LVLBITS"]
+{cheri_0levels_ext_name}/{cheri_1levels_ext_name}::
+Implementations of {cheri_base_ext_name} may choose how many <<section_cap_level>> bits (`LVLBITS`) to support.
+The CL field is variable width and depends on which of the mutually exclusive extensions {cheri_0levels_ext_name} or {cheri_1levels_ext_name} is supported.
 
-[#section_tag]
-==== Tag
+* When {cheri_0levels_ext_name} is supported, then `LVLBITS=0` and capability levels are not dynamically adjustable.
+  Therefore, <<el_perm>>, <<sl_perm>> and the <<section_cap_level>> are hardwired to 1 and not encoded in the capability format.
+  In this case, all capability checks related to levels always pass.
+* When {cheri_1levels_ext_name} is supported, then `LVLBITS=1` and capability levels are dynamically adjustable.
+  All of <<el_perm>>, <<sl_perm>> and the <<section_cap_level>> are one bit wide and are encoded in the capability format memory.
 
-The tag is an additional hardware managed bit added to addressable memory and
-registers. It is stored separately and may be referred to as "out of band". It
-indicates whether a register or CLEN-aligned memory location contains a valid
-capability. If the tag is set, the capability is valid and can be dereferenced
-(contingent on checks such as permissions or bounds).
-
-The capability is invalid if the tag is clear. Using an invalid capability to
-dereference memory or authorize any operation gives rise to exceptions. All
-capabilities derived from invalid capabilities are themselves invalid i.e.
-their tags are 0.
-
-All locations in registers or memory able to hold a capability are CLEN+1 bits
-wide including the tag bit. Those locations are referred as being _CLEN-bit_ or
-_capability_ wide in this specification.
-
-==== Address
-
-The byte-address of a memory location is encoded as MXLEN integer value.
-
-.Address widths depending on MXLEN
-[#address_bit_width,options=header,align="center",width="55%"]
-|==============================================================================
-^| MXLEN   ^| Address width
-^| 32      ^| {cap_rv32_addr_width}
-^| 64      ^| {cap_rv64_addr_width}
-|==============================================================================
-
-[#section_cap_perms]
-==== Architectural Permissions (AP)
-
-===== Description
-
-ifdef::cheri_v9_annotations[]
-WARNING: *CHERI v9 Note:* The permissions are encoded differently in this
-specification.
-Additionally, this specification incorporates permissions that were present in Morello and/or CHERIoT but not CHERI v9.
-endif::[]
-
-This field encodes architecturally defined permissions of the capability.
-Permissions grant access subject to the tag being set, the capability being
-unsealed (see xref:section_cap_sealed[xrefstyle=short]), and bounds checks (see
-xref:section_cap_bounds[xrefstyle=short]). An operation is also contingent on
-requirements imposed by other RISC-V architectural features, such as virtual
-memory, PMP and PMAs, even if the capability grants sufficient permissions. The
-permissions currently defined in {cheri_base_ext_name} are listed
-below.
-
-[#r_perm,reftext="R-permission"]
-Read Permission \(R):: Allow reading integer data from memory. Tags are always
-read as zero when reading integer data.
-
-[#w_perm,reftext="W-permission"]
-Write Permission (W):: Allow writing integer data to memory. Tags are always
-written as zero when writing integer data. Every CLEN aligned word in memory
-has a tag, if any byte is overwritten with integer data then the tag for all
-CLEN-bits is cleared.
-
-[#c_perm,reftext="C-permission"]
-Capability Permission \(C):: Allow reading capability data from memory if the
-authorizing capability also grants <<r_perm>>. Allow writing capability data to
-memory if the authorizing capability also grants <<w_perm>>.
-
-[#x_perm,reftext="X-permission"]
-Execute Permission (X):: Allow instruction execution.
-
-[#lm_perm,reftext="LM-permission"]
-Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
-If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed provided that the loaded capability has its tag set and is not sealed; loaded capabilities that are sealed or untagged do not have their permissions changed.
-The rules specified by <<ACPERM>> are followed when <<w_perm>> and <<lm_perm>> are removed, so additional permissions may also be removed.
-Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
-
-NOTE: Implementations are allowed to retain invalid capability permissions loaded from memory instead of following the <<ACPERM>> behavior of reducing them to _no permissions_.
-
-[#asr_perm,reftext="ASR-permission"]
-Access System Registers Permission (ASR):: Allow read and write access to all
-privileged (M-mode and S-mode) CSRs.
-If {tid_ext_name} is supported the <<utid>>, <<utidc>>, <<vstid>>, <<vstidc>>, <<stid>>,
-<<stidc>>, <<mtid>>, <<mtidc>> registers are all considered privileged for the purposes
-of writing and unprivileged for reading, and thus require ASR-permission for writes but
-not reads. In all cases a suitable privilege mode is required for access.
+NOTE: Future extensions may increase the width of this field.
 
 [#cap_permissions_encoding]
-===== Permission Encoding
+==== Architectural Permissions (AP) Encoding
 
 The bit width of the permissions field depends on the value of MXLEN as shown
 in xref:perms_bit_width[xrefstyle=short]. A {cap_rv32_perms_width}-bit vector
@@ -167,10 +101,10 @@ Therefore, it is only possible to encode a subset of all combinations.
 |==============================================================================
 ^| MXLEN | AP field width         | Comment
 ^| 32    | {cap_rv32_perms_width} | Encodes some combinations of {cap_rv64_perms_width} permission bits, including the <<m_bit>> if {cheri_default_ext_name} is supported.
-^| 64    | {cap_rv64_perms_width} | Separate bits for each architectural permission.
+^| 64    | {cap_rv64_perms_width}/{cap_rv64_perms_levels_width}^1^ | Separate bits for each architectural permission.
 |==============================================================================
 
-NOTE: if {cheri_levels_ext_name} is supported then there are {cap_rv64_perms_levels_width} architectural permission bits.
+^1^ If {cheri_0levels_ext_name} is supported this field is {cap_rv64_perms_width} bits wide, with {cheri_1levels_ext_name} it uses {cap_rv64_perms_levels_width} instead.
 
 For MXLEN=32, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
@@ -182,7 +116,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 
 <<<
 
-.Encoding of architectural permissions for MXLEN=32
+.Encoding of architectural permissions for MXLEN=32 when {cheri_0levels_ext_name} is implemented
 [#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
 | Encoding[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
@@ -231,28 +165,72 @@ non-zero value.
 NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It is
 orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 
-A {cap_rv64_perms_width}-bit vector encodes the permissions when MXLEN=64 ({cap_rv64_perms_levels_width}-bit if {cheri_levels_ext_name} is supported).
-In this case, there is a bit per permission as shown in
-xref:cap_perms_encoding64[xrefstyle=short]. A permission is granted if its
-corresponding bit is set, otherwise the capability does not grant that
-permission.
+.Encoding of architectural permissions for MXLEN=32 when {cheri_1levels_ext_name} is implemented
+[#cap_perms_encoding_levels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
+|==============================================================================
+|Bits[4:3]| R | W | C | LM | EL | SL | X | ASR | Mode^1^ | Notes
+11+| *Quadrant 0: Non-capability data read/write*
+11+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
+11+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
+| 0   |   |   |   |   |   |   |   |   | N/A | No permissions
+| 1   | ✔ |   |   |   |   |   |   |   | N/A | Data RO
+| 2-3   10+| reserved
+| 4   |   | ✔ |   |   |   |   |   |   | N/A | Data WO
+| 5   | ✔ | ✔ |   |   |   |   |   |   | N/A | Data RW
+| 6-7   10+| reserved
+11+| *Quadrant 1: Executable capabilities*
+11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
+|Bits[4:3]| R | W | C | LM | EL | SL  | X | ASR | Mode^1^ |
+| 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
+| 2-3   | ✔ |   | ✔ | ✔  | ✔  | ∞^2^| ✔ |     | Mode^1^  | Execute + Data & Cap RO
+| 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |     | Mode^1^  | Execute + Data & Cap RW
+| 6-7   | ✔ | ✔ |   |    |    | 0^2^| ✔ |     | Mode^1^  | Execute + Data RW
+11+| *Quadrant 2: Restricted capability data read/write*
+11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted, LM dependent on W permission.
+|Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
+| 0-2   10+| reserved
+| 3       | ✔ |   | ✔ |    |    | 0^1^  |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
+| 4       | ✔ | ✔ | ✔ | ✔  |    | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 5       | ✔ | ✔ | ✔ | ✔  |    | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 6       | ✔ | ✔ | ✔ | ✔  |    | 1     |   |     | N/A | Data & Cap RW (with store _local_, no <<el_perm>>)
+| 7       | ✔ | ✔ | ✔ | ✔  |    | 0     |   |     | N/A | Data & Cap RW (no store _local_, no <<el_perm>>)
+11+| *Quadrant 3: Capability data read/write*
+11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted.
+11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+|Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
+| 0-2   10+| reserved
+| 3       | ✔ |   | ✔ | ✔  | ✔  | 0^2^  |   |     | N/A | Data & Cap R0
+| 4       | ✔ | ✔ | ✔ | ✔  | ✔  | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 5       | ✔ | ✔ | ✔ | ✔  | ✔  | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 6       | ✔ | ✔ | ✔ | ✔  | ✔  | 1     |   |     | N/A | Data & Cap RW (with store _local_)
+| 7       | ✔ | ✔ | ✔ | ✔  | ✔  | 0     |   |     | N/A | Data & Cap RW (no store _local_)
+|==============================================================================
+
+^1^ _Mode (<<m_bit>>) can only be set on a tagged capability when {cheri_default_ext_name}
+is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._ +
+^2^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>> +
+^3^ These entries are reserved when `LVLBITS=1` and in use when `LVLBITS=2`
+
+
+
+When MXLEN=64, there is a bit per permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
+A permission is granted if its corresponding bit is set, otherwise the capability does not grant that permission.
 
 <<<
 
 .Encoding of architectural permissions for MXLEN=64
-[#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="55%"]
+[#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="75%"]
 |==============================================================================
-| Bit | Name
+| Bit | Encoded permission
 | 0   | <<c_perm>>
 | 1   | <<w_perm>>
 | 2   | <<r_perm>>
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
 | 5   | <<lm_perm>>
-| 6   | <<el_perm>>^1^
-| 7   | <<sl_perm>>^1^
+| 6   | <<el_perm>> with {cheri_1levels_ext_name} / _reserved_ with {cheri_0levels_ext_name}
+| 7   | <<sl_perm>> with {cheri_1levels_ext_name} / _reserved_ with {cheri_0levels_ext_name}
 |==============================================================================
-^1^ This permission is only supported if the implementation supports <<cheri_levels_ext,{cheri_levels_ext_name}>>.
 
 The <<m_bit>> is only assigned meaning when the
 implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
@@ -260,31 +238,59 @@ implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
 . For MXLEN=64, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
 . For MXLEN=32, the <<m_bit>> is only encoded in quadrant 1 and does _not_ exist in the other quadrants.
 
+[#sec_permission_transitions]
 ===== Permission Transitions
 
 Executing <<ACPERM>> can result in sets of permissions which cannot be represented when MXLEN=32
 (see <<cap_perms_encoding32>>) or permission combinations which are not useful for MXLEN=64, such as
 <<asr_perm>> set without <<x_perm>>.
+These cases are defined to return useful minimal sets of permissions.
 
-These cases are defined to return useful minimal sets of permissions, which may be no permissions. See
-<<ACPERM>> for these rules.
+When removing permissions with <<ACPERM>> the following rules are followed in order:
+
+[#acperm_rules]
+.ACPERM common rules
+[float="center",align="center",cols="2,2,4",options="header"]
+|===
+| Rule            | Permission   | Only valid if
+|  1  (RV32 only) | <<asr_perm>> | All other permissions are set.
+|  2              | <<c_perm>>   | <<r_perm>> or <<w_perm>>
+|  3  (RV32 only) | <<c_perm>>   | <<r_perm>>
+|  4  (RV32 only) | <<x_perm>>   | <<r_perm>>
+|  5  (RV32 only) | <<w_perm>>   | not(<<c_perm>>) or <<lm_perm>>
+|  6  (RV32 only) | <<x_perm>>   | <<w_perm>> or <<c_perm>>
+|  7              | <<el_perm>>  | <<c_perm>> and <<r_perm>>
+|  8  (RV32 only) | <<el_perm>>  | <<lm_perm>>
+|  9              | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
+| 10  (RV32 only) | <<lm_perm>>  | (<<w_perm>> or <<el_perm>>)
+| 11              | <<sl_perm>>  | <<c_perm>>
+| 12  (RV32 only) | <<sl_perm>>  | (<<lm_perm>> and (<<x_perm>> or <<w_perm>>))
+| 13  (RV32 only) | <<x_perm>>   | (<<c_perm>> and <<lm_perm>> and <<el_perm>> and (<<sl_perm>> == ∞)) or +
+(not(<<c_perm>> and not(<<lm_perm>>) and not(<<el_perm>>) and (<<sl_perm>>==0)))^1^
+| 14              | <<asr_perm>> | <<x_perm>>
+| 15^2^           | <<m_bit>>    | <<x_perm>> and {cheri_default_ext_name} is implemented
+|===
+
+^1^ All the listed permissions in the set are either minimum or maximum. +
+^2^ For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
+are only valid if {cheri_default_ext_name} is implemented. Otherwise those encodings represent invalid permissions.
+
+CAUTION: Depending on the supported extensions and <<cap_permissions_encoding,permissions encoding>> some referenced bits may have a hardwired value.
+In this case the rules are applied starting with this hardwired value, and proceed as if it had been modified but any change is discarded after following the final rule.
+For example, RV64 without {cheri_default_ext_name}, the <<m_bit>> is a _reserved_ bit, and so is not relevant to <<ACPERM>>.
+Similarly, if {cheri_0levels_ext_name} is implemented then <<el_perm>> is initialized to 1, and <<sl_perm>> is initialized to the maximum value, but the resulting <<el_perm>> and <<sl_perm>> is discarded at the end.
 
 NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
 
-[#sdp,reftext="SDP"]
-==== Software-Defined Permissions (SDP)
+[#cap_sdp_encoding]
+==== Software-Defined Permissions (SDP) Encoding
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* CHERI v9 had no software-defined permissions for RV32
 endif::[]
 
-A bit vector used by the kernel or application programs for software-defined
-permissions (SDP).
-
-NOTE: Software is completely free to define the usage of these bits. For
-example, a program may decide to use an SDP bit to indicate the "ownership" of
-objects. Therefore, a capability grants permission to free the memory it
-references if that SDP bit is set because it "owns" that object.
+The width of the SDP field depends on the underlying base architecture.
+The value of the SDP bits of the <<GCPERM>> result maps 1:1 to the SDP field in the capability.
 
 .SDP widths depending on MXLEN
 [#sdp_bit_width,options=header,align="center",width="55%"]
@@ -294,36 +300,20 @@ references if that SDP bit is set because it "owns" that object.
 ^| 64      ^| {cap_rv64_sdp_width}
 |==============================================================================
 
+NOTE: Software is completely free to define the usage of these bits.
+
 [#section_cap_sealed]
-==== Capability Type (CT) Bit
+==== Capability Type (CT) Encoding
 
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
 The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
 endif::[]
 
-This bit indicates the type of the capability: it is a sealed capability if the bit is 1 or unsealed if it is 0.
-
-Sealed capabilities (`CT &#8800; 0` ) cannot be dereferenced to access memory and are immutable
-such that modifying any of its fields clears the tag of the output capability.
-
-NOTE: Sealed capabilities might be useful to software as tokens that can be passed
-around. The only way of clearing the type bit of a capability is by rebuilding
-it via a superset capability with <<CBLD>>. {cheri_base_ext_name} does not offer
-an unseal instruction.
-
-NOTE: The <<section_cap_level>> field can be reduced even if the capability is sealed, see <<cap_level_load_summary>>.
-
-For code capabilities, the sealing bit is used to implement immutable
-capabilities that describe function entry points, known as sealed entry (sentry) capabilities. Such capabilities can be leveraged
-to establish a form of control-flow integrity between mutually distrusting code. A program may jump to a
-sentry capability to begin executing the instructions it references. A <<JALR>>
-instruction with zero offset automatically unseals a sentry target capability and installs it in the
-<<pcc,program counter capability>>.
-The jump-and-link instructions also seal the return address capability which serves as an entry point the callee can return to but cannot use to authorize memory loads or stores.
+For {cheri_base_ext_name} the CT field is one bit wide and maps 1:1 to the capability types listed in <<tab_cap_types>>: it is a sentry capability if the bit is 1 or unsealed if it is 0.
 
 [#section_cap_bounds]
-==== Bounds (EF, T, TE, B, BE)
+==== Bounds (EF, T, TE, B, BE) Encoding
 
 ===== Concept
 
@@ -393,7 +383,7 @@ xref:exp_bit_width[xrefstyle=short].
 |==============================================================================
 
 NOTE: The address and bounds must be representable in valid capabilities i.e.
-when the tag is set (see xref:section_cap_malformed[xrefstyle=short]).
+when the validity tag is set (see xref:section_cap_malformed[xrefstyle=short]).
 
 [#section_cap_bounds_decoding]
 ===== Decoding
@@ -458,6 +448,15 @@ include::img/top-bound-dec.edn[]
 [#base_bound_dec]
 include::img/base-bound-dec.edn[]
 
+xref:top_bound_dec[xrefstyle=short] and xref:base_bound_dec[xrefstyle=short]
+include ranges which may not be present when the bounds are decoded:
+
+* If E = 0 the lower section does not exist.
+* If E+MW=MXLEN then the top section is only the least signification bit of
+ c~t~ for the top bound, and top section doesn't exist for the bottom bound.
+* If E+MW>MXLEN then neither top section exists, and so the bounds are calculated
+ with no depending on the address field _a_.
+
 The corrections c~t~ and c~b~ are calculated as as shown below using the
 definitions in xref:cap_encoding_ct[xrefstyle=short] and
 xref:cap_encoding_cb[xrefstyle=short].
@@ -465,8 +464,11 @@ xref:cap_encoding_cb[xrefstyle=short].
 [subs="quotes"]
 ----
 A = a[E + MW - 1:E]
-R  = B - 2^MW-2^
+R = B - 2^MW-2^
 ----
+
+NOTE: The comparisons in xref:cap_encoding_ct[xrefstyle=short] and
+xref:cap_encoding_cb[xrefstyle=short] are _unsigned_.
 
 .Calculation of top address correction
 [#cap_encoding_ct,options=header,cols="^1,^1,^1",width="40%",align="center"]
@@ -525,6 +527,9 @@ while still allowing the bounds to be correctly decoded.
 .Memory address bounds encoded within a capability
 image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
+[#t_bound_msb_inversion]
+===== Top bound MSB correction
+
 A capability has _infinite_ bounds if its bounds cover the entire address space
 such that the base address _b_=0 and the top address _t_&#8805;2^MXLEN^,
 i.e. _t_ is an MXLEN + 1 bit value. However, _b_ is an
@@ -537,6 +542,8 @@ space:D
 if ( (E < (CAP_MAX_E - 1)) & (t[MXLEN: MXLEN - 1] - b[MXLEN - 1] > 1) )
     t[MXLEN] = !t[MXLEN]
 ```
+NOTE: The comparison is _unsigned_.
+
 That is, invert the most significant bit of _t_ if the decoded length of the
 capability is larger than E.
 
@@ -576,15 +583,15 @@ a logic or memory fault (e.g., bit flipping).
 Capabilities with malformed bounds:
 
 . Return both base and top bounds as zero, which affects instructions like <<GCBASE>>.
-. Cause certain manipulation instructions like <<CADDI>> to always clear the tag of the result.
+. Cause certain manipulation instructions like <<CADDI>> to always clear the validity tag of the result.
 
 See specific instruction pages for full details of the effect of malformed capabilities.
 
-[#section_special_caps]
-=== Special Capabilities
+[#section_special_caps_encoding]
+=== Encoding of Special Capabilities
 
-[#section_null_cap]
-==== NULL Capability
+[#section_null_cap_encoding]
+==== NULL Capability Encoding
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
@@ -597,7 +604,7 @@ that it has no permissions and its exponent E is CAP_MAX_E (52 for MXLEN=64,
 expanded base is 0 and top is 2^MXLEN^.
 
 .Field values of the NULL capability
-[#null-cap,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
+[#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
 |==============================================================================
 | Field    | Value  | Comment
 | Tag      | zero   | Capability is not valid
@@ -616,10 +623,10 @@ expanded base is 0 and top is 2^MXLEN^.
 | Reserved | zeros  | All reserved fields
 |==============================================================================
 
-^1^ This field only exists if {cheri_levels_ext_name} is implemented.
+^1^ This field may be zero bits wide (i.e. omitted) if {cheri_0levels_ext_name} is implemented.
 
-[#section_infinite_cap]
-==== Infinite Capability
+[#section_infinite_cap_encoding]
+==== Infinite Capability Encoding
 
 The <<infinite-cap>> capability grants all permissions while its bounds also
 cover the whole address space. It includes <<x_perm>> and so includes the
@@ -629,7 +636,7 @@ NOTE: The <<infinite-cap>> capability is also known as 'default', 'almighty',
 or 'root' capability.
 
 .Field values of the Infinite capability
-[#infinite-cap,reftext="Infinite"]
+[#infinite-cap-encoding,reftext="Infinite"]
 [options=header,align=center,width="90%",cols="25,23,52"]
 |==============================================================================
 | Field         | Value | Comment
@@ -657,7 +664,7 @@ or 'root' capability.
 * For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the AP field, giving the value 0x9
 * For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
 
-^2^ This field only exists if {cheri_levels_ext_name} is implemented.
+^2^ This field may be zero bits wide (i.e. omitted) if {cheri_0levels_ext_name} is implemented.
 
 === Memory space
 
@@ -704,6 +711,12 @@ unconditionally clears the capability's tag. Examples are:
 
 ==== Practical Information
 
+An artifact of the bounds encoding is that if an address is changed
+such that `t != t'`, then it is also the case that `b != b'`.
+The inverse is also true, if `b != b'` then `t != t'`.
+Therefore, for representable range checking, it is acceptable
+to either check `t == t'` or `b == b'`.
+
 In the bounds encoding in this specification, the top and bottom capability
 bounds are formed of two or three sections:
 
@@ -728,7 +741,61 @@ form in xref:comp_addr_bounds[xrefstyle=short] to aid this description.
 
 For the address to be valid for the current bounds encoding, the value
 in the _Upper Section_ of xref:comp_addr_bounds[xrefstyle=short] _must
-not change_ as this will change the meaning of the bounds.
+not change_ as this will change the meaning of the bounds.  This
+is because `T`, `B` and `E` will be unchanged for the source and
+destination capabilities.  Therefore, the Middle and Lower sections
+of the bounds calculation are also unchanged for source and
+destination capabilities.
+
+When E > CAP_MAX_E - 2, the calculation of the top bound is entirely derived
+from `T` and `E` which will be identical for both the source and destination
+capabilities, thus guaranteeing that `t == t'`.  Likewise, with such values of E, the
+base bound is entirely derived from `B` and `E` and therefore `b == b'`.
+
+The calculation of the MSB of the top bound maybe inverted as specified
+xref:t_bound_msb_inversion[xrefstyle=short].
+Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follows:
+
+.Top bound MSB inversion truth table
+[#t_bound_msb_inversion_truth_table]
+[options=header,align=center,width="100%"]
+|==============================================================================
+| input_t[MXLEN:MXLEN-1]  | b[MXLEN-1]  | output_t[MXLEN:MXLEN-1]
+|      00                 |      0      | 00
+|      01                 |      0      | 01
+|      10                 |      0      | 00
+|      11                 |      0      | 01
+|     *00*                |     *1*     | *10*
+|      01                 |      1      | 01
+|     *10*                |     *1*     | *10*
+|      11                 |      1      | 01
+|==============================================================================
+
+Inspection of xref:t_bound_msb_inversion_truth_table[xrefstyle=short] shows
+that `output_t[MXLEN]` does not depend on `input_t[MXLEN]` as:
+
+* `output_t[MXLEN] = {input_t[MXLEN-1], b[MXLEN-1]} == 2'b01`.
+
+This leads to the conclusions:
+
+* If `t[MXLEN-1] == t'[MXLEN-1]` and `b[MXLEN-1] == b'[MXLEN-1]`, then it is guaranteed `t[MXLEN] == t'[MXLEN]`.
+* If `t[MXLEN-1] != t'[MXLEN-1]` or `b[MXLEN-1] != b'[MXLEN-1]`, then the representable check will fail regardless of checking `t[MXLEN] == t'[MXLEN]`.
+
+Therefore, for the purposed of representable range checking, it is not
+required to check that `t[MXLEN]==t'[XLEN]`.
+
+Given that `t[MXLEN]` is not part of the representable range check:
+
+* when `E == CAP_MAX_E - 2`, `t[MXLEN-1:E] == T[MW-1:0]` and `b[MXLEN-1:E] == B[MW-1:0]`.
+
+Therefore, `T` and `B` are both derived from the capabilities metadata and are
+therefore constant.  Which means that in this case too, the representable
+range check always passes.
+
+As a result:
+
+* If E > CAP_MAX_E - 3, then the representability check always passes, _even
+though the bounds are only infinite if E = CAP_MAX_E_
 
 This gives a range of `s=2^E+MW^`, as shown in
 xref:cap_bounds_map[xrefstyle=short].
@@ -741,5 +808,24 @@ This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
 is _representable_.
 
-NOTE: If E > CAP_MAX_E - 3, then the representability check always passes, even
- though the bounds are only infinite if E = CAP_MAX_E.
+[#section_ext_cheri_multiple_levels]
+=== Extending {cheri_1levels_ext_name} to more than two levels
+When `<<cheri_lvlbits>> > 1`, the behavior of <<ACPERM>> can no longer use masking to adjust the <<section_cap_level>> or <<sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
+The <<section_cap_level,CL>> field of the resulting capability is set to `min(rs2[CL], cs1[CL])`  (equivalent to `rs2[CL] & cs1[CL]` for `<<cheri_lvlbits>>=1`).
+Similarly, <<sl_perm>> is set to `min(rs2[SL], cs1[SL])` (equivalent to `rs2[SL] & cs1[SL]` for `<<cheri_lvlbits>>=1`).
+
+When storing capabilities, the <<sl_perm>> checks need to perform a `<<cheri_lvlbits>>`-wide integer comparison instead of just testing a single bit.
+Considering for an example `<<cheri_lvlbits>>=2`:
+
+[options=header,grid=rows,cols="2,3,6"]
+|===
+|<<sl_perm>> | Permitted for levels| Resulting semantics
+|3 | As low as `~0b11=0` | Authorizes stores of capabilities with any level
+|2 | As low as `~0b10=1` | Strip tag for level 0 (most _local_), keep for 1,2,3
+|1 | As low as `~0b01=2` | Strip tag for level 0&1, keep for 2&3
+|0 | As low as `~0b00=3` | Strip tag for level 0,1,2, i.e. only the most _global_ can be stored
+|===
+
+NOTE: While this extra negation is non-intuitive, it is required such that <<ACPERM>> can use a monotonically decreasing operation for both <<section_cap_level,CL>> <<sl_perm>>.
+
+NOTE: The layout of the <<ACPERM>> input / <<GCPERM>> result is not yet defined, but existing bits will not be moved around so the <<sl_perm,SL>>/<<section_cap_level,CL>> fields will be non-contiguous.

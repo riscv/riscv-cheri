@@ -1,36 +1,21 @@
-<<<
-
+===== Integer Loads ({cheri_base_ext_name})
 [#LD,reftext="LD"]
-==== LD
-See <<LB>>.
-
+===== LD
 [#LWU,reftext="LWU"]
-==== LWU
-See <<LB>>.
-
+===== LWU
 [#LW,reftext="LW"]
-==== LW
-See <<LB>>.
-
+===== LW
 [#LHU,reftext="LHU"]
-==== LHU
-See <<LB>>.
-
+===== LHU
 [#LH,reftext="LH"]
-==== LH
-See <<LB>>.
-
+===== LH
 [#LBU,reftext="LBU"]
-==== LBU
-See <<LB>>.
-
-<<<
-
+===== LBU
 [#LB,reftext="LB"]
-==== LB
+===== LB
 
 Synopsis::
-Load (LD, LW[U], LH[U], LB[U])
+Integer Load (LD, LW[U], LH[U], LB[U])
 
 {cheri_cap_mode_name} Mnemonics::
 `ld    rd, offset(cs1)` +
@@ -38,16 +23,16 @@ Load (LD, LW[U], LH[U], LB[U])
 `lh[u] rd, offset(cs1)` +
 `lb[u] rd, offset(cs1)`
 
-{cheri_int_mode_name} Mnemonics::
-`ld    rd, offset(rs1)` +
-`lw[u] rd, offset(rs1)` +
-`lh[u] rd, offset(rs1)` +
-`lb[u] rd, offset(rs1)`
+// {cheri_int_mode_name} Mnemonics::
+// `ld    rd, offset(rs1)` +
+// `lw[u] rd, offset(rs1)` +
+// `lh[u] rd, offset(rs1)` +
+// `lb[u] rd, offset(rs1)`
 
 Encoding::
 include::wavedrom/load.adoc[]
 
-{cheri_cap_mode_name} Description::
+Description::
 Load integer data of the indicated size (byte, halfword, word, double-word)
 from memory. The effective address of the load is obtained by adding the
 sign-extended 12-bit offset to the address of `cs1`. The authorizing capability
@@ -63,24 +48,5 @@ operation is <<ddc>>. A copy of the loaded value is written to `rd`.
 
 include::load_exceptions.adoc[]
 
-Prerequisites for {cheri_cap_mode_name} LD::
-RV64 or RV32 with Zilsd, {cheri_base_ext_name}
-
-Prerequisites for {cheri_int_mode_name} LD::
-RV64 or RV32 with Zilsd, {cheri_default_ext_name}
-
-Prerequisites for {cheri_cap_mode_name} LW[U], LH[U], LB[U]::
-{cheri_base_ext_name}, OR +
-{cheri_default_ext_name}
-
-{cheri_cap_mode_name} Operation::
-+
---
-TBD
---
-
-{cheri_int_mode_name} Operation::
-+
---
-TODO
---
+Prerequisites for LD::
+RV64 or RV32 with Zilsd

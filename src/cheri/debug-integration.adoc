@@ -1,5 +1,9 @@
 [#section_debug_integration]
-=== Integrating {cheri_base_ext_name} with Sdext
+=== "{cheri_priv_debug_ext}", Integrating {cheri_base_ext_name} with Sdext
+
+ifdef::cheri_standalone_spec[]
+WARNING: This chapter will appear in the priv spec. Exact location TBD.
+endif::[]
 
 This section describes changes to integrate the Sdext ISA and
 {cheri_base_ext_name}. It must be implemented to make external debug compatible
@@ -36,7 +40,7 @@ csrw   0xBF0, x2
 csrrw  c2, dscratch0c, c2
 ebreak
 
-# Read the tag into data0
+# Read the validity tag into data0
 csrrw  c2, dscratch0c, c2
 gctag  x2, c1
 csrw   0xBF0, x2
@@ -50,7 +54,7 @@ schi   c1, c1, x2
 csrrw  c2, dscratch0c, c2
 ebreak
 
-# Write the tag (if nonzero)
+# Write the validity tag (if nonzero)
 csrrw   c2, dscratch0c, c2
 csrr    c2, dinfc
 cbld    c1, c2, c1
@@ -107,7 +111,7 @@ include::img/dpccreg.edn[]
 Upon entry to debug mode, cite:[riscv-debug-spec], does not specify how to
 update the PC, and says PC relative instructions may be illegal. This concept
 is extended to include any instruction which reads or updates <<pcc>>, which refers to
-all jumps, conditional branches and <<AUIPC>>. The exceptions are <<MODESW_CAP>> and <<MODESW_INT>>
+all jumps, conditional branches and <<AUIPC_CHERI>>. The exceptions are <<MODESW_CAP>> and <<MODESW_INT>>
 which _are_ supported if {cheri_default_ext_name} is implemented, see <<dinfc>>
 for details.
 

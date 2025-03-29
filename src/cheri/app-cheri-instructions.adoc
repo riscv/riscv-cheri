@@ -2,6 +2,10 @@
 [#app_cheri_instructions]
 == RISC-V Instructions with different behavior for {cheri_base_ext_name}
 
+ifdef::cheri_standalone_spec[]
+WARNING: This chapter needs to be refactored. It will appear as an appendix in the unpriv specification.
+endif::[]
+
 These instruction pages are for the new CHERI instructions, and some existing RISC-V
 instructions where the effect of CHERI needs specific details.
 
@@ -12,7 +16,7 @@ checked against <<ddc>>
 . In {cheri_int_mode_name}, a minimum length instruction at the target of all indirect
 jumps is bounds checked against <<pcc>>
 . In {cheri_cap_mode_name} a minimum length instruction at the target of all indirect
-jumps is bounds checked against `cs1` (e.g. <<JALR>>)
+jumps is bounds checked against `cs1` (e.g. <<JALR_CHERI>>)
 . A minimum length instruction at the taken target of all direct
 jumps and conditional branches is bounds checked against <<pcc>> regardless of
 CHERI execution mode
@@ -21,81 +25,13 @@ NOTE: Not all RISC-V extensions have been checked against CHERI. Compatible
 extensions will eventually be listed in a CHERI profile.
 
 <<<
-=== RV32I/E and RV64I/E Base Integer Instruction Sets
+=== RV32I/E and RV64I/E Privileged Instruction Sets
 
 There are a number of instructions that are already in RISC-V that have modified behavior when CHERI is included.
-
-include::insns/auipc_32bit.adoc[]
-
-include::insns/condbr_32bit.adoc[]
-
-include::insns/jalr_32bit.adoc[]
-
-include::insns/jal_32bit.adoc[]
-
-include::insns/load_32bit.adoc[]
-
-include::insns/store_32bit.adoc[]
 
 include::insns/mret_sret.adoc[]
 
 include::insns/dret.adoc[]
-
-<<<
-=== "Zicsr", Control and Status Register (CSR) Instructions
-
-{cheri_base_ext_name} requires that RISC-V CSRs intended to hold addresses, are now able to hold capabilities.
-Therefore, such registers are
-extended to CLEN+1 bits in {cheri_base_ext_name} and a `c` suffix is added (e.g. <<mtvec>> is extended to <<mtvecc>>).
-
-Reading or writing any part of a capability CSR may cause
-side effects. For example, the CSR's tag bit may be cleared if a new address
-is outside the <<section_cap_representable_check>> of a CSR capability being written.
-
-This section describes how the CSR instructions operate on these CSRs in
-{cheri_base_ext_name}.
-
-The capability CSRs are summarized in xref:clen_csr_summary[xrefstyle=short].
-
-[#zicsr-section-purecap]
-==== CSR Instructions
-
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by
-<<CSRRW>>.
-endif::[]
-
-All CSR instructions atomically read-modify-write a single CSR. If the CSR
-accessed is of capability size then the
-capability's tag, metadata and address are all accessed atomically.
-
-When the <<CSRRW>> instruction is accessing a capability width CSR, then the source
-and destination operands are *c* registers and it atomically swaps the values in the
-whole CSR with the CLEN width register operand.
-
-There are special rules for updating specific capability CSRs as shown in <<extended_CSR_writing>>.
-
-When <<CSRRS>> and <<CSRRC>> instructions are accessing a capability width CSR,
-such as <<mtvecc>>, then the destination operand is a *c* register and the
-source operand is an *x* register. Therefore, the instructions atomically read
-CLEN bits from the CSR, calculate the final address using standard RISC-V
-behavior (set bits, clear bits, etc.), and that final address is written to the
-CSR capability's address field. The update typically uses the semantics of a
-<<SCADDR>> instruction which clears the tag if the capability is sealed, or
-if the updated address is not representable. <<extended_CSR_writing>> shows the
-exact action taken for each capability width CSR.
-
-The <<CSRRWI>>, <<CSRRSI>> and <<CSRRCI>> variants are similar to <<CSRRW>>,
-<<CSRRS>>, and <<CSRRC>> respectively, when accessing a capability width CSR
-except that they update the capability's address only using an XLEN-bit value
-obtained by zero-extending a 5-bit unsigned immediate field.
-
-All CSR instructions cause CHERI exceptions if the <<pcc>> does not grant
-<<asr_perm>> and the CSR accessed is privileged.
-
-include::insns/csrrw_32bit.adoc[]
-
-include::insns/csrr_32bit.adoc[]
 
 <<<
 === "A" Standard Extension for Atomic Instructions
@@ -137,7 +73,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 ==== RV32
 
 .16-bit instruction remapping in {cheri_int_mode_name}
-[#16bit_insn_remapping_rv32_a]
+[#insn_remapping_16bit_rv32_a]
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
@@ -156,7 +92,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 ^1^ reserved for future standard Zcm extensions
 
 .16-bit instruction remapping in {cheri_cap_mode_name}
-[#16bit_insn_remapping_rv32_b]
+[#insn_remapping_16bit_rv32_b]
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
@@ -178,7 +114,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 ==== RV64
 
 .16-bit instruction remapping in {cheri_int_mode_name}
-[#16bit_insn_remapping_rv64_a]
+[#insn_remapping_16bit_rv64_a]
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
@@ -195,7 +131,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 |==============================================================================
 
 .16-bit instruction remapping in {cheri_cap_mode_name}
-[#16bit_insn_remapping_rv64_b]
+[#insn_remapping_16bit_rv64_b]
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
@@ -276,6 +212,9 @@ include::insns/adduw_32bit.adoc[]
 include::insns/sh123add_32bit.adoc[]
 
 include::insns/sh123adduw_32bit.adoc[]
+
+<<<
+=== "{sh4add_ext_name}" Extension
 
 include::insns/sh4add_32bit.adoc[]
 
@@ -368,8 +307,8 @@ See <<CM_JALT>>, <<CM_JT>>.
 
 If the access to the jump table succeeds, then the instructions execute as follows:
 
-** <<CM_JT>> executes as <<J>> or <<AUIPC>>+<<JR>>
-** <<CM_JALT>> executes as <<JAL>> or <<AUIPC>>+<<JALR>>
+** <<CM_JT>> executes as <<JAL_CHERI,J>> or <<AUIPC_CHERI>>+<<JALR_CHERI,JR>>
+** <<CM_JALT>> executes as <<JAL_CHERI>> or <<AUIPC_CHERI>>+<<JALR_CHERI>>
 
 As a result the capability metadata is retained in <<pcc>> during execution.
 

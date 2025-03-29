@@ -25,17 +25,17 @@ Encoding::
 ....
 {reg:[
     { bits:  7, name: 0x3b, attr: ['OP'] },
-    { bits:  5, name: 'cd/rd' },
+    { bits:  5, name: 'cd' },
     { bits:  3, name: 'func3', attr: ['rv64: SH1ADD.UW=010', 'rv64: SH2ADD.UW=100', 'rv64: SH3ADD.UW=110'] },
     { bits:  5, name: 'rs1' },
-    { bits:  5, name: 'cs2/rs2' },
+    { bits:  5, name: 'cs2' },
     { bits:  7, name: 0x10, attr: ['rv64: SH[1|2|3]ADD.UW'] },
 ]}
 ....
 
 {cheri_cap_mode_name} Description::
 Increment the address field of `cs2` by the unsigned word in `rs1` shifted left
-by _n_ bit positions and write the result to `cd`. The tag bit of the output
+by _n_ bit positions and write the result to `cd`. The validity tag bit of the output
 capability is 0 if `cs2` did not have its tag set to 1, the incremented address
 is outside `cs2` 's <<section_cap_representable_check>> or `cs2` is sealed.
 

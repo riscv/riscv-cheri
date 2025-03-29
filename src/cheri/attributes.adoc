@@ -7,16 +7,23 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 // Base CHERI extension (without the mode bit in capability format)
-:cheri_base_ext_name:      RV32CH/RV64CH
+:cheri_base64_ext_name:    RV64CH
+:cheri_base32_ext_name:    RV32CH
+:cheri_base_ext_name:      {cheri_base32_ext_name}/{cheri_base64_ext_name}
 // CHERI extension adding support for integer pointer mode (and mode bit)
 :cheri_default_ext_name:   Zcherihybrid
 :cheri_priv_m_ext: Smcheri
+:cheri_priv_m_reg_enable_ext: Smcherire
+:cheri_priv_m_dyn_xlen_ext: Smcherivarxlen
 :cheri_priv_s_ext: Sscheri
 :cheri_priv_h_ext: Shcheri
-// Extension for CHERI PTE bits
-:cheri_pte_ext_name:       Svucrg
+:cheri_priv_vmem_ext: Svcheri
+:cheri_priv_debug_ext: Sdcheri
+// Extension for CHERI CRG bits
+:cheri_priv_crg_ext:       Svucrg
 // Extension for capability levels (flow control)
-:cheri_levels_ext_name:             Zcherilevels
+:cheri_0levels_ext_name:             Zcheri0lvl
+:cheri_1levels_ext_name:             Zcheri1lvl
 // Extension for thread identification
 :tid_ext_name:             Zstid
 
@@ -33,8 +40,8 @@
 :non-csrrw-or:  <<CSRRWI>>, <<CSRRS>>, <<CSRRSI>>, <<CSRRC>> or <<CSRRCI>>
 :non-csrrw-and:  <<CSRRWI>>, <<CSRRS>>, <<CSRRSI>>, <<CSRRC>> and <<CSRRCI>>
 
-:TAG_RESET_CSR: The tag of the CSR must be reset to zero. The reset values of the metadata and address fields are UNSPECIFIED.
-:REQUIRE_CRE_CSR: Access to this CSR is illegal if <<section_cheri_disable,CHERI register and instruction access is disabled>> for the current privilege.
+:TAG_RESET_CSR: The validity tag of the CSR must be reset to zero. The reset values of the metadata and address fields are UNSPECIFIED.
+:REQUIRE_CRE_CSR: Explicit access to this CSR is illegal if <<section_cheri_disable,CHERI register and instruction access is disabled>> for the current privilege.
 :REQUIRE_HYBRID_CSR: This CSR is only implemented if {cheri_default_ext_name} is implemented.
 
 :CAP_MODE_VALUE: 0

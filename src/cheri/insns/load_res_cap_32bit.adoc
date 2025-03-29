@@ -4,26 +4,26 @@
 ==== LR.C
 
 Synopsis::
-Load Reserved Capability (LR.C), 32-bit encodings
+Load Reserved Capability (LR.C), 32-bit encoding
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `lr.c cd, 0(cs1)`
 
-{cheri_int_mode_name} Mnemonic::
-`lr.c cd, 0(rs1)`
+//{cheri_int_mode_name} Mnemonic::
+//`lr.c cd, 0(rs1)`
 
 Encoding::
 include::wavedrom/load_res_cap.adoc[]
 
-{cheri_cap_mode_name} Description::
+Description::
 Load reserved instructions, authorized by the capability in `cs1`.
  All misaligned load reservations cause a load address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
 +
 include::load_store_c0.adoc[]
 
-{cheri_int_mode_name} Description::
-Load reserved instructions, authorized by the capability in <<ddc>>.
- All misaligned load reservations cause a load address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
+//{cheri_int_mode_name} Description::
+//Load reserved instructions, authorized by the capability in <<ddc>>.
+// All misaligned load reservations cause a load address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
 
 include::load_tag_perms.adoc[]
 
@@ -31,13 +31,13 @@ include::load_tag_perms.adoc[]
 
 include::malformed_no_check.adoc[]
 
-include::load_exceptions.adoc[]
+//include::load_exceptions.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
-{cheri_base_ext_name}, and A
+Prerequisites::
+{cheri_base_ext_name}, and A or Zalrsc
 
-Prerequisites for {cheri_int_mode_name}::
-{cheri_default_ext_name}, and A
+//Prerequisites for {cheri_int_mode_name}::
+//{cheri_default_ext_name}, and A or Zalrsc
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]
