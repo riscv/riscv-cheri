@@ -548,6 +548,7 @@ The rules for modifying the behavior of such instructions are:
 * Whenever the PC is handled, it is _always_ the <<pcc>>.
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
+ In this case, for example, `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction (2 or 4 bytes) is in bounds the target PC.
 ** An exception is taken on failure.
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken (see <<pcc>> for the definition).
@@ -644,22 +645,26 @@ include::insns/condbr_32bit.adoc[]
 ==== Load and Store Instructions
 
 Load and store instructions behave as described in <<ldst>> with one difference:
-For the base operand (`rs1`), the full capability register is used to check the resulting memory access.
-All load and store instructions cause CHERI exceptions if any of these checks fails:
 
-* The validity tag must be set
-* The capability must be unsealed
-* All bytes of accessed memory must be inside the capability's bounds
-* For loads, the <<r_perm,read permission>> must be present
-* For stores, the <<w_perm,write permission>> must be present
+* For the base operand (`rs1`), the full capability register `cs1` is used to authorize the resulting memory access.
+
+All load and store instructions authorized by `cs1` cause CHERI exceptions if any of these checks fails:
+
+* The validity tag (`cs1.tag`) must be set
+* The `cs1` must be unsealed
+* All bytes of accessed memory must be inside `cs1's` bounds
+* For loads, the <<r_perm,read permission>> must be set in `cs1`
+* For stores, the <<w_perm,write permission>> must be set in `cs1`
 
 Non-capability load instructions always zero the validity tag and metadata of the result register.
 
 Non-capability stores write zero to the validity tag associated with the memory locations that are naturally aligned to CLEN.
 Therefore, misaligned stores may clear up to two validity tag bits in memory.
 
-NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
+NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores), they are _all_ authorized by `cs1`.
 
-include::insns/load_32bit.adoc[]
+NOTE: <<LC>> and <<SC>> are _reserved_ if `cs1=c0`. This principle is extended to _all_ loads and stores authorized by `cs1`.
 
-include::insns/store_32bit.adoc[]
+//include::insns/load_32bit.adoc[]
+
+//include::insns/store_32bit.adoc[]
