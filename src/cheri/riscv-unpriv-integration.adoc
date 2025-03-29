@@ -286,6 +286,9 @@ The memory representation of the <<null-cap>> capability is all zeroes.
 
 === Added State
 
+A CHERI core adds state to allow capabilities to be used from within integer (X) registers, and to ensure they are not corrupted as they flow through the system.
+This means the following state is added by {cheri_base_ext_name}:
+
 .CHERI Capability registers extending existing integer registers in {cheri_base_ext_name}
 [#base_cap_registers]
 [bytefield]
@@ -303,9 +306,6 @@ The memory representation of the <<null-cap>> capability is all zeroes.
 (draw-box nil [:box-first {:span 1}]) (draw-box "pcc" [:box-related {:span 32}]) (draw-box "pc" [:box-last {:span 32 }])
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
-
-A CHERI core adds state to allow capabilities to be used from within integer (X) registers, and to ensure they are not corrupted as they flow through the system.
-This means the following state is added by {cheri_base_ext_name}:
 
 ==== Extended general purpose integer registers
 The <<gprs,XLEN-wide integer registers>> (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a validity tag bit.
