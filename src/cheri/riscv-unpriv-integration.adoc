@@ -211,12 +211,14 @@ The _Capability Level_ (CL) is a variable width field that allows enforcing inva
 For example, the _Capability Level_ can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g. the callee's stack frame but not the heap).
 It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
 
-The width of this field depends on whether {cheri_0levels_ext_name} or {cheri_1levels_ext_name} extension is implemented:
+NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
 
-{cheri_0levels_ext_name}::
+The width of this field depends on whether the {cheri_0levels_ext_name} or {cheri_1levels_ext_name} extension is implemented:
+
+===== {cheri_0levels_ext_name}
 In this case the field is hardwired to 1 and all checks based on the _Capability Level_ can be omitted (since they always pass).
 
-{cheri_1levels_ext_name}::
+===== {cheri_1levels_ext_name}
 The _Capability Level_ can hold two values: when set to 1 the capability is _global_ (in general allowing it to be stored using any authorizing capability), and when set to 0 the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
   Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabilities -- causing the hardware to automatically set the level of loaded capabilities to _local_ instead.
 
@@ -251,8 +253,6 @@ NOTE: if W=0 or C=0 then SL is irrelevant
 NOTE: The current specification only defines up to two levels, equivalent to _local_ and _global_ capabilities from CHERI v9, Morello and CHERIoT.
 Future extensions are permitted to add more levels.
 
-NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
-
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains a encoding-dependent number of software-defined permission (SDP) bits.
@@ -267,15 +267,15 @@ This property is required to ensure restricted programs cannot forge capabilitie
 [#infinite-cap,reftext="Infinite"]
 ===== Infinite Capability
 
-The <<infinite-cap>> capability grants all permissions while its bounds also cover the whole address space.
+The _Infinite_ capability grants all permissions while its bounds also cover the whole address space.
 All capability checks pass when performed against an <<infinite-cap>> capability.
-The in-memory encoding of the <<infinite-cap>> capability is described in <<section_infinite_cap_encoding>>.
+The in-memory encoding of the _Infinite_ capability is described in <<section_infinite_cap_encoding>>.
 
-NOTE: The <<infinite-cap>> capability is also known as 'default', 'almighty', or 'root' capability in other CHERI documentation.
+NOTE: The _Infinite_ capability is also known as 'default', 'almighty', or 'root' capability in other CHERI documentation.
 
 [#null-cap,reftext="NULL"]
 ===== NULL Capability
-A capability with all-zeroes metadata, an unset validity tag, and an address of zero is referred to as the _NULL capability.
+A capability with all-zeroes metadata, an unset validity tag, and an address of zero is referred to as the _NULL_ capability.
 This capability grants no permissions and any dereference results in a CHERI exception.
 The memory representation of the <<null-cap>> capability is all zeroes.
 
@@ -309,6 +309,8 @@ The existing integer register names refer to the address part of the capability.
 For the ABI register names the `c` prefix is added, i.e. `csp`, `ca0`.
 The zero register is extended with zero metadata and a cleared validity tag: this is called the <<null-cap>> capability.
 
+NOTE: Instruction encodings refer to capability registers when they use `cs1`,`cd`, etc. instead of `rs1`,`rd` (which refers the the XLEN-bit subset of the register in the {cheri_base_ext_name} base ISA).
+
 ==== Extended CSRs
 All registers that store addresses are extended to contain capabilities.
 In the base {cheri_base_ext_name} ISA, the only such register is the program counter `pc` that is extended to the Program Counter Capability (<<pcc>>).
@@ -335,7 +337,7 @@ failing check causes a CHERI exception.
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
 
-On startup <<ddc>> bounds and permissions must be set such that the program can run successfully (e.g. by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
+On startup <<pcc>> bounds and permissions must be set such that the program can run successfully (e.g. by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
 
 NOTE: Operations that update <<pcc>>, such as changing privilege or executing jump instructions, unseal capabilities prior to writing.
 Therefore, implementations do not need to check that that <<pcc>> is unsealed when executing each instruction.
@@ -357,7 +359,7 @@ Examples of such invalid operations include writing only the integer portion of 
 
 The validity tags are also tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit validity tag, which the hardware manages atomically with the data.
 The validity tag is cleared if the memory region is ever written using an operation other than a store of a full capability register with <<c_perm>> granted.
-Any caches and system memory which store capabilities must preserve this abstraction.
+Any system memory and caches that store capabilities must preserve this abstraction.
 
 === Capability checks
 
@@ -377,22 +379,29 @@ No other exception paths are added: in particular, capability manipulations do n
 {cheri_base_ext_name} adds new instructions to interact with the extended registers.
 These added instructions can be split into the following categories:
 
-* Capability manipulations (e.g. <<SCBNDS>>, <<ACPERM>>): for security, capabilities can only be modified in restricted ways.
-  Special instructions are provided to copy capabilities or perform these allowed operations, for example _shrinking_ the bounds or _reducing_ the permissions.
-  Any attempt to manipulate capabilities without using the instructions clears the validity tag, rendering them unusable for accessing memory.
-  They do not cause exceptions.
+Capability manipulations (e.g. <<SCBNDS>>, <<ACPERM>>)::
+For security, capabilities can only be modified in restricted ways.
+Special instructions are provided to copy capabilities or perform these allowed operations, for example _shrinking_ the bounds or _reducing_ the permissions.
+Any attempt to manipulate capabilities without using the instructions clears the validity tag, rendering them unusable for accessing memory.
+They do not cause exceptions.
 
-* Pointer arithmetic (e.g. <<CADD>>, <<CADDI>>): if a pointer is updated then instead of using an integer ADD/ADDI then a capability version must be used which includes a check that the result can be <<section_cap_representable_check,represented exactly>>, therefore is still valid for the current metadata. Invalid updates clear the validity tag.
+Pointer arithmetic (e.g. <<CADD>>, <<CADDI>>)::
+To update where a capability points new capability instructions must be used instead of the an integer ADD/ADDI.
+These instructions include a check that the result can be <<section_cap_representable_check,represented exactly>>, therefore is still valid for the current metadata.
+Invalid (e.g. significantly out-of-bounds) updates clear the validity tag.
 
-* Capability inspection (e.g. <<GCBASE>>, <<GCPERM>>): capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
+Capability inspection (e.g. <<GCBASE>>, <<GCPERM>>)::
+Capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
 These instructions give convenient access to allow software to query them.
   They do not cause exceptions.
 
-* Memory access instructions (e.g. <<LC>>, <<SC>>): capabilities must be read from and written to memory atomically along with their validity tag.
+Memory access instructions (e.g. <<LC>>, <<SC>>)::
+Capabilities must be read from and written to memory atomically along with their validity tag.
 Instructions are added to perform these capability-width accesses, allowing capabilities to flow between the memory and the register file.
 
-* Miscellaneous instructions (e.g. <<SCSS>>): These instructions either compare capabilities or allow software to determine the alignment of bounds.
-  They do not cause exceptions.
+Miscellaneous instructions (e.g. <<SCSS>>)::
+These instructions either compare capabilities or allow software to determine the alignment of bounds.
+They do not cause exceptions.
 
 Additionally, all instructions which handle addresses have altered behavior when using {cheri_base_ext_name} as the base ISA.
 The lower XLEN-bits of the result is always the same, but {cheri_base_ext_name} adds checks which may result in exceptions and specifies handling of the metadata.
@@ -526,12 +535,7 @@ See <<LC>> for details.
 |=======================
 
 include::insns/load_32bit_cap.adoc[]
-//include::insns/load_16bit_cap_sprel.adoc[] // FIXME need to be C subsection
 include::insns/store_32bit_cap.adoc[]
-//include::insns/store_16bit_cap_sprel.adoc[] // FIXME need to be C subsection
-//include::insns/amoswap_32bit_cap.adoc[]     // FIXME need to be A subsection
-//include::insns/load_res_cap_32bit.adoc[]
-//include::insns/store_cond_cap_32bit.adoc[]
 
 <<<
 
@@ -541,7 +545,7 @@ include::insns/store_32bit_cap.adoc[]
 {cheri_base_ext_name} extend existing instructions which are used for handling addresses so that they manipulate a whole capability.
 The affected operands change type from *x* to *c* to represent this, and/or the PC is replaced by the <<pcc>>
 
-In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches.
+In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well as loads and stores.
 
 The rules for modifying the behavior of such instructions are:
 
@@ -554,15 +558,6 @@ The rules for modifying the behavior of such instructions are:
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken (see <<pcc>> for the definition).
 
 These rules affect the following base ISA instructions:
-
-// Old section from unpriv chapter:
-// Existing RV32I/RV64I instructions as well as instructions defined by unprivileged extensions are largely unmodified.
-// The one difference is that a hart using {cheri_base_ext_name} instead of RV32I/RV64I as the base ISA uses capabilities for all memory accesses.
-// This is called executing in {cheri_cap_mode_name}.
-// In {cheri_cap_mode_name}, instructions that access memory, as well as branches and jumps are modified to check against the full capability from the base address register (e.g. `lw t0, 16(c3)`) instead of just the integer address (i.e. `lw t0, 16(x3)`).
-// In some cases, they are also changed to return a full capability value, e.g. <<AUIPC_CHERI>> will return the full <<pcc>> including the metadata.
-// For the full list of instructions that change behavior with {cheri_base_ext_name}, see <<app_cheri_instructions>>.
-//
 
 //In general, any time an operand is used as a base pointer, {cheri_base_ext_name} changes this operand to a full capability (*c* register) instead of interpreting it as a XLEN-bit address (*x* register).
 //For memory accesses and control transfers, all CHERI checks are performed against this operand.
@@ -580,30 +575,20 @@ These rules affect the following base ISA instructions:
 //Instead of returning a XLEN bits address, <<AUIPC_CHERI>> returns a full capability registers with the metadata and tag obtained from <<pcc>>.
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
-[#tab_cap_base_summary,%autowidth,options=header,align="center",cols="1,4"]
+[#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
 |=======================
 |Mnemonic                   |Description
 |<<AUIPC_CHERI>>            |Add immediate to PCC address, return capability
 |<<JAL_CHERI>>              |Jump to PC+offset, bounds check minimum size target instruction, link to cd
 |<<JALR_CHERI>>             |Indirect jump and link, bounds check minimum size target instruction.
-|<<insns-conbr-32bit_CHERI>>|Conditional branches
+|<<insns-conbr-32bit_CHERI,BEQ, BNE, BLT[U], BGE[U]>>|Conditional branches (checked by <<pcc>>)
+|<<section_int_load_store_insns,LD, LW[U], LH[U], LB[U]>>|Integer loads (authorized by capability registers)
+|<<section_int_load_store_insns,SD, SW, SH, SB>>|Integer stores (authorized by capability registers)
 |=======================
 
 include::insns/auipc_32bit.adoc[]
 include::insns/jal_32bit.adoc[]
 include::insns/jalr_32bit.adoc[]
-
-//FIXME - move!
-//|<<ADD.UW>>   |add unsigned word to capability
-//|<<SH1ADD>>   |shift word and add to capability
-//|<<SH2ADD>>   |shift word and add to capability
-//|<<SH3ADD>>   |shift word and add to capability
-//|<<SH1ADD.UW>>|shift unsigned word and add to capability
-//|<<SH2ADD.UW>>|shift unsigned word and add to capability
-//|<<SH3ADD.UW>>|shift unsigned word and add to capability
-//include::insns/adduw_32bit.adoc[]
-//include::insns/sh123add_32bit.adoc[]
-//include::insns/sh123adduw_32bit.adoc[]
 
 //==== Unconditional Jumps
 //
@@ -641,8 +626,8 @@ include::insns/jalr_32bit.adoc[]
 
 include::insns/condbr_32bit.adoc[]
 
-[#section_int_load_store_insns]
-==== Load and Store Instructions
+[#section_int_load_store_insns,reftext="Loads and Stores"]
+==== Load and Store Instructions ({cheri_base_ext_name})
 
 Load and store instructions behave as described in <<ldst>> with one difference:
 
@@ -663,8 +648,5 @@ Therefore, misaligned stores may clear up to two validity tag bits in memory.
 
 NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores), they are _all_ authorized by `cs1`.
 
-NOTE: <<LC>> and <<SC>> are _reserved_ if `cs1=c0`. This principle is extended to _all_ loads and stores authorized by `cs1`.
-
-//include::insns/load_32bit.adoc[]
-
-//include::insns/store_32bit.adoc[]
+NOTE: <<LC>> and <<SC>> encodings are _reserved_ for future extensions if `cs1=c0` (since dereferencing <<null-cap>> always faults).
+  This principle is extended to _all_ loads and stores authorized by `cs1`.
