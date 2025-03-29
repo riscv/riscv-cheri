@@ -29,14 +29,14 @@ following the jump is sealed and written to `cd`.
 //instruction following the jump is written to `rd`.
 
 Exceptions::
-A minimum sized instruction at the target address is not in <<pcc>> bounds.
-
-//[%autowidth,options=header,align=center]
-//|==============================================================================
-//| CAUSE                      | Reason
-//| Invalid address violation  | The target address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
-//| Bounds violation           | Minimum length instruction is not within the target capability's bounds.
-//|==============================================================================
+CHERI fault exception when one of the checks below fail (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
++
+[%autowidth,options=header,align=center]
+|==============================================================================
+| Kind                      | Reason
+| Invalid address violation  | The target address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
+| Bounds violation           | Minimum length instruction is not within the <<pcc>>'s bounds.
+|==============================================================================
 
 //include::pcrel_debug_warning.adoc[]
 
