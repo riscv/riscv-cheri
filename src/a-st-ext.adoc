@@ -359,6 +359,15 @@ guarantee is sufficient to implement the C11 and C++11 languages, and is
 substantially easier to provide in some microarchitectural styles.
 ====
 
+=== "Zalrsc" for {cheri_base_ext_name}
+
+If the base architecture is {cheri_base_ext_name}, then additional LR/SC encodings are available
+to access capability types in memory.
+
+include::cheri/insns/load_res_cap_32bit.adoc[]
+
+include::cheri/insns/store_cond_cap_32bit.adoc[]
+
 [[sec:amo]]
 === "Zaamo" Extension for Atomic Memory Operations
 
@@ -483,3 +492,20 @@ load may impose ordering constraints that are unnecessary for this use case.
 Specific compilation conventions may require both the _aq_ and _rl_
 bits to be set in either or both the LR and AMOSWAP instructions.
 ====
+
+=== "Zaamo" for {cheri_base_ext_name}
+
+If the base architecture is {cheri_base_ext_name}, then additional an additional
+AMOSWAP encoding is available to access capability types in memory.
+
+All atomic operations follow the rules in xref:section_int_load_store_insns[xrefstyle=short],
+where the atomic operation is considered to be a load followed by a store for the
+capability rules.
+
+Therefore all atomic operations are _reserved_ if `cs1=c0`.
+
+NOTE: Other atomic operation types are not yet available as they require capability
+arithmetic to be performed.
+ For example, AMOADD would need <<CADD>> functionality.
+
+include::cheri/insns/amoswap_32bit_cap.adoc[]

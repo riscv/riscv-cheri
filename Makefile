@@ -75,7 +75,7 @@ DOCS_EPUB := $(addprefix $(BUILD_DIR)/, $(addsuffix .epub, $(DOCS)))
 ENV := LANG=C.utf8
 # Default to building only the CHERI changes
 ifdef CHERI_MINIMAL
-XTRA_ADOC_OPTS ?= -a minimal_cheri_chages_doc=1
+XTRA_ADOC_OPTS ?= -a minimal_cheri_changes_doc=1
 else
 XTRA_ADOC_OPTS ?=
 endif

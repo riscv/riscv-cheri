@@ -11,14 +11,10 @@ instructions where the effect of CHERI needs specific details.
 
 For existing RISC-V instructions, note that:
 
-. In {cheri_int_mode_name}, every byte of each memory access is bounds
-checked against <<ddc>>
-. In {cheri_int_mode_name}, a minimum length instruction at the target of all indirect
-jumps is bounds checked against <<pcc>>
-. In {cheri_cap_mode_name} a minimum length instruction at the target of all indirect
-jumps is bounds checked against `cs1` (e.g. <<JALR_CHERI>>)
-. A minimum length instruction at the taken target of all direct
-jumps and conditional branches is bounds checked against <<pcc>> regardless of
+. In {cheri_int_mode_name}, every byte of each memory access is bounds checked against <<ddc>>
+. In {cheri_int_mode_name}, a minimum length instruction at the target of all indirect jumps is bounds checked against <<pcc>>
+. In {cheri_cap_mode_name} a minimum length instruction at the target of all indirect jumps is bounds checked against `cs1` (e.g. <<JALR_CHERI>>)
+. A minimum length instruction at the taken target of all jumps and conditional branches is bounds checked against <<pcc>> regardless of
 CHERI execution mode
 
 NOTE: Not all RISC-V extensions have been checked against CHERI. Compatible
@@ -35,9 +31,9 @@ There are a number of instructions that are already in RISC-V that have modified
 // include::insns/jalr_32bit.adoc[]
 // include::insns/jal_32bit.adoc[]
 
-include::insns/load_32bit.adoc[]
+//include::insns/load_32bit.adoc[]
 
-include::insns/store_32bit.adoc[]
+//include::insns/store_32bit.adoc[]
 
 <<<
 === RV32I/E and RV64I/E Privileged Instruction Sets
@@ -48,202 +44,203 @@ include::insns/mret_sret.adoc[]
 
 include::insns/dret.adoc[]
 
+//<<<
+//=== "A" Standard Extension for Atomic Instructions
+//
+//Atomic instructions and their interactions with CHERI.
+//
+//include::insns/amo_32bit.adoc[]
+//
+//include::insns/amoswap_32bit_cap.adoc[]
+//
+//include::insns/load_res_32bit.adoc[]
+//
+//include::insns/load_res_cap_32bit.adoc[]
+//
+//include::insns/store_cond_32bit.adoc[]
+//
+//include::insns/store_cond_cap_32bit.adoc[]
+//
+//<<<
+//=== "Zfh", "Zfhmin", "F" and "D" Standard Extension for Floating-Point
+//
+//Floating point instructions and how CHERI affects them.
+//
+//include::insns/load_32bit_fp.adoc[]
+//
+//include::insns/store_32bit_fp.adoc[]
+
+//<<<
+//=== "C" Standard Extension for Compressed Instructions
+//
+//One group of 16-bit encodings are remapped to different instructions dependent
+//upon the CHERI execution mode, MXLEN and which extensions are supported.
+//
+//NOTE: Zcf and Zclsd are incompatible
+//
+//NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
+//
+//
+//==== RV32
+//
+//.16-bit instruction remapping in {cheri_int_mode_name}
+//[#insn_remapping_16bit_rv32_a]
+//[width="100%",options=header]
+//|==============================================================================
+//2+|Encoding    5+| Supported Extensions
+//|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
+//|111    |00      | N/A    | C.FSW   | N/A | N/A        |   C.SD
+//|011    |00      | N/A    | C.FLW   | N/A | N/A        |   C.LD
+//|111    |10      | N/A    | C.FSWSP | N/A | N/A        |   C.SDSP
+//|011    |10      | N/A    | C.FLWSP | N/A | N/A        |   C.LDSP
+//
+//|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
+//|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
+//|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
+//|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
+//|==============================================================================
+//
+//^1^ reserved for future standard Zcm extensions
+//
+//.16-bit instruction remapping in {cheri_cap_mode_name}
+//[#insn_remapping_16bit_rv32_b]
+//[width="100%",options=header]
+//|==============================================================================
+//2+|Encoding    5+| Supported Extensions
+//|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
+//|111    |00    5+| C.SC
+//|011    |00    5+| C.LC
+//|111    |10    5+| C.SCSP
+//|011    |10    5+| C.LCSP
+//
+//|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
+//|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
+//|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
+//|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
+//|==============================================================================
+//
+//^1^ reserved for future standard Zcm extensions
+//
+//<<<
+//==== RV64
+//
+//.16-bit instruction remapping in {cheri_int_mode_name}
+//[#insn_remapping_16bit_rv64_a]
+//[width="100%",options=header]
+//|==============================================================================
+//2+|Encoding    5+| Supported Extensions
+//|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
+//|111    |00      | C.SD   | N/A     | N/A | N/A        | N/A
+//|011    |00      | C.LD   | N/A     | N/A | N/A        | N/A
+//|111    |10      | C.SDSP | N/A     | N/A | N/A        | N/A
+//|011    |10      | C.LDSP | N/A     | N/A | N/A        | N/A
+//
+//|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
+//|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
+//|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
+//|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
+//|==============================================================================
+//
+//.16-bit instruction remapping in {cheri_cap_mode_name}
+//[#insn_remapping_16bit_rv64_b]
+//[width="100%",options=header]
+//|==============================================================================
+//2+|Encoding    5+| Supported Extensions
+//|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
+//|111    |00      | C.SD   | N/A     | N/A | N/A        | N/A
+//|011    |00      | C.LD   | N/A     | N/A | N/A        | N/A
+//|111    |10      | C.SDSP | N/A     | N/A | N/A        | N/A
+//|011    |10      | C.LDSP | N/A     | N/A | N/A        | N/A
+//
+//|101    |00    5+| C.SC
+//|001    |00    5+| C.LC
+//|101    |10    5+| C.SCSP
+//|001    |10    5+| C.LCSP
+//|==============================================================================
+
+//include::insns/condbr_16bit.adoc[]
+
+//include::insns/cmv_16bit.adoc[]
+
+//include::insns/addi16sp_16bit.adoc[]
+
+//include::insns/addi4spn_16bit.adoc[]
+
+//include::insns/jalr_16bit.adoc[]
+
+//include::insns/jr_16bit.adoc[]
+
+//include::insns/jal_16bit.adoc[]
+
+//include::insns/j_16bit.adoc[]
+
+//include::insns/load_16bit.adoc[]
+
+//include::insns/load_16bit_sprel.adoc[]
+
+//include::insns/load_16bit_fp_sp.adoc[]
+
+//include::insns/load_16bit_fp_dp.adoc[]
+
+//include::insns/load_16bit_cap_sprel.adoc[]
+
+//include::insns/store_16bit.adoc[]
+
+//include::insns/store_16bit_sprel.adoc[]
+
+//include::insns/store_16bit_fp_sp.adoc[]
+
+//include::insns/store_16bit_fp_dp.adoc[]
+
+//include::insns/store_16bit_cap_sprel.adoc[]
+
+//<<<
+//=== "Zicbom", "Zicbop", "Zicboz" Standard Extensions for Base Cache Management Operations
+//
+//Cache-related instructions and how CHERI affects them.
+//
+//include::insns/cbo.clean.adoc[]
+//
+//include::insns/cbo.flush.adoc[]
+//
+//include::insns/cbo.inval.adoc[]
+//
+//include::insns/cbo.zero.adoc[]
+//
+//include::insns/prefetch.i.adoc[]
+//
+//include::insns/prefetch.r.adoc[]
+//
+//include::insns/prefetch.w.adoc[]
+
+//<<<
+//=== "Zba" Extension for Bit Manipulation Instructions
+//
+//Bit manipulation instruction reference.
+//
+//include::insns/adduw_32bit.adoc[]
+//
+//include::insns/sh123add_32bit.adoc[]
+//
+//include::insns/sh123adduw_32bit.adoc[]
+
 <<<
-=== "A" Standard Extension for Atomic Instructions
-
-Atomic instructions and their interactions with CHERI.
-
-include::insns/amo_32bit.adoc[]
-
-include::insns/amoswap_32bit_cap.adoc[]
-
-include::insns/load_res_32bit.adoc[]
-
-include::insns/load_res_cap_32bit.adoc[]
-
-include::insns/store_cond_32bit.adoc[]
-
-include::insns/store_cond_cap_32bit.adoc[]
-
-<<<
-=== "Zfh", "Zfhmin", "F" and "D" Standard Extension for Floating-Point
-
-Floating point instructions and how CHERI affects them.
-
-include::insns/load_32bit_fp.adoc[]
-
-include::insns/store_32bit_fp.adoc[]
-
-<<<
-=== "C" Standard Extension for Compressed Instructions
-
-One group of 16-bit encodings are remapped to different instructions dependent
-upon the CHERI execution mode, MXLEN and which extensions are supported.
-
-NOTE: Zcf and Zclsd are incompatible
-
-NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
-
-
-==== RV32
-
-.16-bit instruction remapping in {cheri_int_mode_name}
-[#insn_remapping_16bit_rv32_a]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
-|111    |00      | N/A    | <<C.FSW>>   | N/A | N/A        | <<C.SD>>
-|011    |00      | N/A    | <<C.FLW>>   | N/A | N/A        | <<C.LD>>
-|111    |10      | N/A    | <<C.FSWSP>> | N/A | N/A        | <<C.SDSP>>
-|011    |10      | N/A    | <<C.FLWSP>> | N/A | N/A        | <<C.LDSP>>
-
-|101    |00      | N/A    | N/A     | <<C.FSD>>    | reserved^1^       | N/A
-|001    |00      | N/A    | N/A     | <<C.FLD>>    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | <<C.FSDSP>>  | <<Zcmp>>/<<Zcmt>> | N/A
-|001    |10      | N/A    | N/A     | <<C.FLDSP>>  | reserved^1^       | N/A
-|==============================================================================
-
-^1^ reserved for future standard Zcm extensions
-
-.16-bit instruction remapping in {cheri_cap_mode_name}
-[#insn_remapping_16bit_rv32_b]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
-|111    |00    5+| <<C.SC>>
-|011    |00    5+| <<C.LC>>
-|111    |10    5+| <<C.SCSP>>
-|011    |10    5+| <<C.LCSP>>
-
-|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
-|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
-|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
-|==============================================================================
-
-^1^ reserved for future standard Zcm extensions
-
-<<<
-==== RV64
-
-.16-bit instruction remapping in {cheri_int_mode_name}
-[#insn_remapping_16bit_rv64_a]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
-|111    |00      | <<C.SD>>   | N/A     | N/A | N/A        | N/A
-|011    |00      | <<C.LD>>   | N/A     | N/A | N/A        | N/A
-|111    |10      | <<C.SDSP>> | N/A     | N/A | N/A        | N/A
-|011    |10      | <<C.LDSP>> | N/A     | N/A | N/A        | N/A
-
-|101    |00      | N/A    | N/A     | <<C.FSD>>    | reserved^1^       | N/A
-|001    |00      | N/A    | N/A     | <<C.FLD>>    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | <<C.FSDSP>>  | <<Zcmp>>/<<Zcmt>> | N/A
-|001    |10      | N/A    | N/A     | <<C.FLDSP>>  | reserved^1^       | N/A
-|==============================================================================
-
-.16-bit instruction remapping in {cheri_cap_mode_name}
-[#insn_remapping_16bit_rv64_b]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
-|111    |00      | <<C.SD>>   | N/A     | N/A | N/A        | N/A
-|011    |00      | <<C.LD>>   | N/A     | N/A | N/A        | N/A
-|111    |10      | <<C.SDSP>> | N/A     | N/A | N/A        | N/A
-|011    |10      | <<C.LDSP>> | N/A     | N/A | N/A        | N/A
-
-|101    |00    5+| <<C.SC>>
-|001    |00    5+| <<C.LC>>
-|101    |10    5+| <<C.SCSP>>
-|001    |10    5+| <<C.LCSP>>
-|==============================================================================
-
-include::insns/condbr_16bit.adoc[]
-
-include::insns/cmv_16bit.adoc[]
-
-include::insns/addi16sp_16bit.adoc[]
-
-include::insns/addi4spn_16bit.adoc[]
-
-include::insns/jalr_16bit.adoc[]
-
-include::insns/jr_16bit.adoc[]
-
-include::insns/jal_16bit.adoc[]
-
-include::insns/j_16bit.adoc[]
-
-include::insns/load_16bit.adoc[]
-
-include::insns/load_16bit_sprel.adoc[]
-
-include::insns/load_16bit_fp_sp.adoc[]
-
-include::insns/load_16bit_fp_dp.adoc[]
-
-include::insns/load_16bit_cap_sprel.adoc[]
-
-include::insns/store_16bit.adoc[]
-
-include::insns/store_16bit_sprel.adoc[]
-
-include::insns/store_16bit_fp_sp.adoc[]
-
-include::insns/store_16bit_fp_dp.adoc[]
-
-include::insns/store_16bit_cap_sprel.adoc[]
-
-<<<
-=== "Zicbom", "Zicbop", "Zicboz" Standard Extensions for Base Cache Management Operations
-
-Cache-related instructions and how CHERI affects them.
-
-include::insns/cbo.clean.adoc[]
-
-include::insns/cbo.flush.adoc[]
-
-include::insns/cbo.inval.adoc[]
-
-include::insns/cbo.zero.adoc[]
-
-include::insns/prefetch.i.adoc[]
-
-include::insns/prefetch.r.adoc[]
-
-include::insns/prefetch.w.adoc[]
-
-<<<
-=== "Zba" Extension for Bit Manipulation Instructions
-
-Bit manipulation instruction reference.
-
-include::insns/adduw_32bit.adoc[]
-
-include::insns/sh123add_32bit.adoc[]
-
-include::insns/sh123adduw_32bit.adoc[]
-
-<<<
+[#sh4add_extension"]
 === "{sh4add_ext_name}" Extension
 
 include::insns/sh4add_32bit.adoc[]
 
 include::insns/sh4adduw_32bit.adoc[]
 
-<<<
-[#Zcb,reftext="Zcb"]
-=== "Zcb" Standard Extension For Code-Size Reduction
-
-Code-size reduction instructions and how they interact with CHERI.
-
-include::insns/load_16bit_Zcb.adoc[]
-
-include::insns/store_16bit_Zcb.adoc[]
+//<<<
+//[#Zcb,reftext="Zcb"]
+//=== "Zcb" Standard Extension For Code-Size Reduction
+//
+//Code-size reduction instructions and how they interact with CHERI.
+//
+//include::insns/load_16bit_Zcb.adoc[]
+//
+//include::insns/store_16bit_Zcb.adoc[]
 
 <<<
 [#Zcmp,reftext="Zcmp"]

@@ -1,16 +1,16 @@
 <<<
 
-[#CBO_ZERO,reftext="CBO.ZERO"]
-==== CBO.ZERO
+[#CBO_ZERO_CHERI,reftext="CBO.ZERO ({cheri_base_ext_name})"]
+==== CBO.ZERO ({cheri_base_ext_name})
 
 Synopsis::
 Store zeros to the full set of bytes corresponding to a cache block
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `cbo.zero 0(cs1)`
 
-{cheri_int_mode_name} Mnemonic::
-`cbo.zero 0(rs1)`
+//{cheri_int_mode_name} Mnemonic::
+//`cbo.zero 0(rs1)`
 
 Encoding::
 [wavedrom, , svg]
@@ -19,34 +19,34 @@ Encoding::
   {bits: 7,  name: 'opcode',    attr: ['7','MISC-MEM=0001111'],  type: 8},
   {bits: 5,  name: 'funct5',    attr: ['5','CBO=00000'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','CBO=010'],  type: 8},
-  {bits: 5,  name: 'cs1',       attr: ['5','base'],     type: 4},
+  {bits: 5,  name: 'cs1≠0',     attr: ['5','base'],     type: 4},
   {bits: 12, name: 'funct12',   attr: ['12','CBO.ZERO=00.0100'],   type: 3},
 ]}
 ....
 
-{cheri_cap_mode_name} Description::
+Description::
 A `cbo.zero` instruction performs stores of zeros to the full set of bytes
 corresponding to the cache block whose effective address is the base address
 specified in `cs1`. An implementation may or may not update the entire set of
 bytes atomically although each individual write must atomically clear the validity tag
 bit of the corresponding aligned CLEN-bit location. The authorizing capability
-for this operation is `cs1`.
+for this instruction is `cs1`.
 
-{cheri_int_mode_name} Description::
-A `cbo.zero` instruction performs stores of zeros to the full set of bytes
-corresponding to the cache block whose effective address is the base address
-specified in `cs1`. An implementation may or may not update the entire set of
-bytes atomically although each individual write must atomically clear the validity tag
-bit of the corresponding aligned CLEN-bit location. The authorizing capability
-for this operation is <<ddc>>.
+//{cheri_int_mode_name} Description::
+//A `cbo.zero` instruction performs stores of zeros to the full set of bytes
+//corresponding to the cache block whose effective address is the base address
+//specified in `cs1`. An implementation may or may not update the entire set of
+//bytes atomically although each individual write must atomically clear the validity tag
+//bit of the corresponding aligned CLEN-bit location. The authorizing capability
+//for this operation is <<ddc>>.
 
 include::store_exceptions.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 Zicboz, {cheri_base_ext_name}
 
-Prerequisites for {cheri_int_mode_name}::
-Zicboz, {cheri_default_ext_name}
+//Prerequisites for {cheri_int_mode_name}::
+//Zicboz, {cheri_default_ext_name}
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

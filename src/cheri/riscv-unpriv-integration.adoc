@@ -629,24 +629,27 @@ include::insns/condbr_32bit.adoc[]
 [#section_int_load_store_insns,reftext="Loads and Stores"]
 ==== Load and Store Instructions ({cheri_base_ext_name})
 
-Load and store instructions behave as described in <<ldst>> with one difference:
+All load and store instructions behave as described in <<ldst>> with one fundamental difference:
 
 * For the base operand (`rs1`), the full capability register `cs1` is used to authorize the resulting memory access.
 
 All load and store instructions authorized by `cs1` cause CHERI exceptions if any of these checks fails:
 
-* The validity tag (`cs1.tag`) must be set
-* The `cs1` must be unsealed
-* All bytes of accessed memory must be inside `cs1's` bounds
+* `cs1` must not be `c0`^1^
+* The validity tag (`cs1.tag`) must be set, and there must be no reserved bits set in `cs1`.
+* `cs1` must be unsealed
+* The virtual address in `cs1` must not be invalid if virtual memory is enabled.
+* All bytes of accessed memory must be inside `cs1's` bounds, and the bounds can't be <<section_cap_malformed,malformed>>.
 * For loads, the <<r_perm,read permission>> must be set in `cs1`
 * For stores, the <<w_perm,write permission>> must be set in `cs1`
+
+^1^ All load/store encodings are _reserved_ if `cs1=c0` (since dereferencing <<null-cap>> always faults).
+ This principle is extended to _all_ loads and stores authorized by `cs1`.
 
 Non-capability load instructions always zero the validity tag and metadata of the result register.
 
 Non-capability stores write zero to the validity tag associated with the memory locations that are naturally aligned to CLEN.
 Therefore, misaligned stores may clear up to two validity tag bits in memory.
 
-NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores), they are _all_ authorized by `cs1`.
-
-NOTE: <<LC>> and <<SC>> encodings are _reserved_ for future extensions if `cs1=c0` (since dereferencing <<null-cap>> always faults).
-  This principle is extended to _all_ loads and stores authorized by `cs1`.
+NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
+ Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.

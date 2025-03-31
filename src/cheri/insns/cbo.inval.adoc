@@ -1,16 +1,16 @@
 <<<
 
-[#CBO_INVAL,reftext="CBO.INVAL"]
-==== CBO.INVAL
+[#CBO_INVAL_CHERI,reftext="CBO.INVAL ({cheri_base_ext_name})"]
+==== CBO.INVAL ({cheri_base_ext_name})
 
 Synopsis::
 Perform an invalidate operation on a cache block
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `cbo.inval 0(cs1)`
 
-{cheri_int_mode_name} Mnemonic::
-`cbo.inval 0(rs1)`
+//{cheri_int_mode_name} Mnemonic::
+//`cbo.inval 0(rs1)`
 
 Encoding::
 [wavedrom, , svg]
@@ -19,29 +19,29 @@ Encoding::
   {bits: 7,  name: 'opcode',    attr: ['7','MISC-MEM=0001111'],  type: 8},
   {bits: 5,  name: 'funct5',    attr: ['5','CBO=00000'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','CBO=010'],  type: 8},
-  {bits: 5,  name: 'cs1',       attr: ['5','base'],     type: 4},
+  {bits: 5,  name: 'cs1≠0',     attr: ['5','base'],     type: 4},
   {bits: 12, name: 'funct12',   attr: ['12','CBO.INVAL=00.0000'],   type: 3},
 ]}
 ....
 
-{cheri_cap_mode_name} Description::
+Description::
 A CBO.INVAL instruction performs an invalidate operation on the cache block
 whose effective address is the base address specified in `cs1`. The authorizing
-capability for this operation is `cs1`.
+capability for this instruction is `cs1`.
 
-{cheri_int_mode_name} Description::
-A CBO.INVAL instruction performs an invalidate operation on the cache block
-whose effective address is the base address specified in `rs1`. The
-authorizing capability for this operation in <<ddc>>.
+//{cheri_int_mode_name} Description::
+//A CBO.INVAL instruction performs an invalidate operation on the cache block
+//whose effective address is the base address specified in `rs1`. The
+//authorizing capability for this operation in <<ddc>>.
 
 :cbo_inval:
 include::cbo_exceptions.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 Zicbom, {cheri_base_ext_name}
 
-Prerequisites for {cheri_int_mode_name}::
-Zicbom, {cheri_default_ext_name}
+//Prerequisites for {cheri_int_mode_name}::
+//Zicbom, {cheri_default_ext_name}
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

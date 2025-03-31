@@ -1,15 +1,15 @@
 <<<
 
-[#SH1ADD,reftext="SH1ADD"]
-==== SH1ADD
-See <<SH3ADD>>.
+[#SH1ADD_CHERI,reftext="SH1ADD ({cheri_base_ext_name})"]
+==== SH1ADD ({cheri_base_ext_name})
+See <<SH3ADD_CHERI>>.
 
-[#SH2ADD,reftext="SH2ADD"]
-==== SH2ADD
-See <<SH3ADD>>.
+[#SH2ADD_CHERI,reftext="SH2ADD ({cheri_base_ext_name})"]
+==== SH2ADD ({cheri_base_ext_name})
+See <<SH3ADD_CHERI>>.
 
-[#SH3ADD,reftext="SH3ADD"]
-==== SH3ADD
+[#SH3ADD_CHERI,reftext="SH3ADD ({cheri_base_ext_name})"]
+==== SH3ADD ({cheri_base_ext_name})
 
 Synopsis::
 Shift by _n_ and add for address generation (SH1ADD, SH2ADD, SH3ADD)
@@ -33,31 +33,32 @@ Encoding::
 ]}
 ....
 
-{cheri_cap_mode_name} Description::
-Increment the address field of `cs2` by `rs1` shifted left by _n_ bit positions
-and write the result to `cd`. The validity tag bit of the output capability is 0 if
-`cs2` did not have its tag set to 1, the incremented address is outside `cs2`
-'s <<section_cap_representable_check>> or `cs2` is sealed.
-
+Description::
+Increment the address field of the capability `cs2` by `rs1`
+shifted left by _n_ bit positions and write the result to ``cd``.
+Set `cd.tag=0` if `cs1.tag=0` or `cs1` is sealed.
++
+include::rep_range_check.adoc[]
++
 include::malformed_shadd_clear_tag.adoc[]
 
-{cheri_int_mode_name} Description::
-Increment `rs2` by `rs1` shifted left by _n_ bit positions and write the result
-to `rd`.
+//{cheri_int_mode_name} Description::
+//Increment `rs2` by `rs1` shifted left by _n_ bit positions and write the result
+//to `rd`.
 
 Exceptions::
 None
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {cheri_base_ext_name}, Zba
 
-Prerequisites for {cheri_int_mode_name}::
-{cheri_default_ext_name}, Zba
+//Prerequisites for {cheri_int_mode_name}::
+//{cheri_default_ext_name}, Zba
 
-{cheri_cap_mode_name} Operation::
+Operation::
 +
 sail::execute[clause="ZBA_RTYPE_capmode(_, _, _, _)",part=body,unindent]
 
-{cheri_int_mode_name} Operation::
-+
-sail::execute[clause="ZBA_RTYPE(_, _, _, _)",part=body,unindent]
+//{cheri_int_mode_name} Operation::
+//+
+//sail::execute[clause="ZBA_RTYPE(_, _, _, _)",part=body,unindent]
