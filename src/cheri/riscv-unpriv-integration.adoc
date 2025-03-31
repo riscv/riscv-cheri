@@ -112,7 +112,7 @@ The bounds are decoded as described in xref:section_cap_bounds_decoding[xrefstyl
 
 IMPORTANT: Bounds can only be reduced, and any attempt to increase them zeroes the validity tag.
 
-NOTE: As there is only XLEN bits of metadata to encode two XLEN bit bounds values, the bounds are encoded in a compressed format.
+NOTE: As the base and top addresses together cannot fit within XLEN bits of metadata, they are encoded in a compressed format.
   This means it may not be possible to precisely encode any arbitrary combination of base and top addresses.
 
 [#sec_cap_type]
@@ -185,7 +185,7 @@ Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities l
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
 Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
 
-NOTE: The permission stripping behavior only applies to loaded capability that have their validity tag set and are not sealed; loaded capabilities that are sealed or invalid do not have their permissions changed.
+NOTE: The permission stripping behavior only applies to loaded capabilities that have their validity tag set and are not sealed; loaded capabilities that are sealed or invalid do not have their permissions changed.
   This ensures that capability loads/stores of non-capability data do not modify the stored value.
 
 [#asr_perm,reftext="ASR-permission"]
@@ -260,8 +260,8 @@ Future extensions are permitted to add more levels.
 
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
-The metadata also contains a encoding-dependent number of software-defined permission (SDP) bits.
-They can by inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.), but are not interpreted by the CPU otherwise.
+The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
+They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.), but are not interpreted by the CPU otherwise.
 
 NOTE: While these bits are not interpreted by the hardware, modification follows the same rules as architectural permissions: SDP bits can only be cleared and never set.
 This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
@@ -394,9 +394,9 @@ Any attempt to manipulate capabilities without using the instructions clears the
 They do not cause exceptions.
 
 Pointer arithmetic (e.g. <<CADD>>, <<CADDI>>)::
-To update where a capability points new capability instructions must be used instead of the an integer ADD/ADDI.
+To update where a capability points new capability instructions must be used instead of an integer ADD/ADDI.
 These instructions include a check that the result can be <<section_cap_representable_check,represented exactly>>, therefore is still valid for the current metadata.
-Invalid (e.g. significantly out-of-bounds) updates clear the validity tag.
+Invalid (e.g., significantly out-of-bounds) updates clear the validity tag.
 
 Capability inspection (e.g. <<GCBASE>>, <<GCPERM>>)::
 Capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
