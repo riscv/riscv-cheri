@@ -25,14 +25,8 @@ Increment the address of the AUIPC instruction's <<pcc>> by the 32-bit offset, t
 +
 include::rep_range_check.adoc[]
 
-ifdef::cheri_standalone_spec[]
-{cheri_int_mode_name} Description::
-Form a 32-bit offset from the immediate, filling in the lowest 12 bits with
-zeros, adds this offset to the address of the AUIPC instruction, then places
-the result in register `rd`.
-
-include::pcrel_debug_warning.adoc[]
-endif::[]
+// CHERIoT uses an 11-bit shift due to a different capability format
+NOTE: Future CHERI extensions that use an alternative capability format may choose to redefine the handling of the immediate operand for this instruction in {cheri_cap_mode_name}.
 
 
 Operation::
