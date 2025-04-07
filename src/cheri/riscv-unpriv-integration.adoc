@@ -516,6 +516,10 @@ If <<c_perm>> is not granted then:
 * All capability loads will return CLEN-bits from memory, and a zero validity tag.
 * All capability stores will write CLEN-bits to memory, and write a zero validity tag.
 
+NOTE: Future extensions to {cheri_base_ext_name} may add mechanisms that cause
+stores of capabilities to raise exceptions when the authorizing capability does not grant both
+<<w_perm>> and <<c_perm>> and the stored capability has the validity tag set.
+
 All capability memory access instructions require CLEN aligned addresses, and will
 take the appropriate misaligned exception if this requirement is not met.
 
