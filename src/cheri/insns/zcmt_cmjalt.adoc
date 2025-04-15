@@ -39,13 +39,11 @@ include::zcm_common.adoc[]
 Requires <<jvtc>> to be tagged, not sealed, have <<x_perm>> and for the full XLEN-wide access to be in <<jvtc>> bounds.
 
 {cheri_cap_mode_name} Exceptions::
-When these instructions cause CHERI exceptions, _CHERI instruction fetch fault_
-is reported in the TYPE field and the following codes may be
-reported in the CAUSE field of <<mtval2>>, <<stval2>> or <<vstval2>>:
+_CHERI instruction fetch fault_ (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details) can be triggered with one the following errors:
 
 [width="50%",options=header,cols="2,^1",align=center]
 |==============================================================================
-| CAUSE                 |
+| Kind                  |
 | Tag violation         |  ✔
 | Seal violation        |  ✔
 | Permission violation  |  ✔

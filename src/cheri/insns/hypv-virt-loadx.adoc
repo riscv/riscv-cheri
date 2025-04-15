@@ -41,13 +41,12 @@ capability for the operation is <<ddc>>. A copy of the loaded value is written
 to `rd`.
 
 Exceptions::
-CHERI fault exceptions occur when the authorizing capability fails one of the checks
-listed below; in this case, _CHERI data fault_ is reported in the <<mtval2>>,
-<<stval2>> or <<vstval2>>> TYPE field and the corresponding code is written to CAUSE.
+_CHERI data fault_ exceptions occur when the authorizing capability fails one of the checks
+listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
 +
 [%autowidth,options=header,align=center]
 |==============================================================================
-| CAUSE                      | Reason
+| Kind                       | Reason
 | Tag violation              | Authoritizing capability validity tag set to 0, or has any reserved bits set
 | Seal violation             | Authoritizing capability is sealed
 | Permission violation       | Authoritizing capability does not grant <<r_perm>> or <<x_perm>>, or the AP field could not have been produced by <<ACPERM>>
