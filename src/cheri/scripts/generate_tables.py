@@ -5,6 +5,26 @@ import shutil
 import csv
 import argparse
 
+remapped_isns = {
+    'CBO.ZERO': 'CBO_ZERO_CHERI',
+    'CBO.INVAL': 'CBO_INVAL_CHERI',
+    'CBO.CLEAN': 'CBO_CLEAN_CHERI',
+    'CBO.FLUSH': 'CBO_FLUSH_CHERI',
+    'PREFETCH.R': 'PREFETCH_R_CHERI',
+    'PREFETCH.W': 'PREFETCH_W_CHERI',
+    'PREFETCH.I': 'PREFETCH_I_CHERI',
+    'SH1ADD': 'SH1ADD_CHERI',
+    'SH2ADD': 'SH2ADD_CHERI',
+    'SH3ADD': 'SH3ADD_CHERI',
+}
+
+def insn_xref(insn: str):
+    custom_xref = remapped_isns.get(insn)
+    if custom_xref is not None:
+        return f'<<{custom_xref},{insn}>>'
+    return f'<<{insn}>>'
+
+
 class table:
     """
     virtual class used to define each table
@@ -43,8 +63,7 @@ class Zabhlrsc_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -68,8 +87,7 @@ class Zish4add_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -93,8 +111,7 @@ class Zcheri_hybrid_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -121,7 +138,7 @@ class Zcheri_purecap_insns(table):
             for i in self.indices:
                 cell_value = row[i]
                 if i == 0:
-                    cell_value = '<<' + cell_value + '>>'  # make an xref
+                    cell_value = insn_xref(cell_value)
                 elif i == self.function_idx:
                     # Drop references to DDC authorization in the purecap table.
                     cell_value = cell_value.replace(" via int pointer", " via capability register")
@@ -148,8 +165,7 @@ class cap_mode_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -173,8 +189,7 @@ class legacy_mode_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -198,8 +213,7 @@ class both_mode_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -223,8 +237,7 @@ class xlen_dependent_encoding_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -248,8 +261,7 @@ class illegal_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -272,7 +284,7 @@ class legacy_mnemonic_insns(table):
         if self.check(row):
             outStr = ""
             for i in self.indices:
-                outStr += '|<<'+row[i]+'>>'
+                outStr += '|' + insn_xref(row[i]) + '>>'
             self.file.write(outStr+'\n')
 
     def check(self,row):
@@ -294,8 +306,7 @@ class csr_aliases(table):
             outStr = ""
             for i in self.indices:
                 if i<=2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -327,8 +338,7 @@ class csr_renamed_purecap_mode_d(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -352,8 +362,7 @@ class csr_added_legacy(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -377,8 +386,7 @@ class csr_added_purecap_mode_d(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -403,8 +411,7 @@ class csr_renamed_purecap_mode_m(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -428,8 +435,7 @@ class csr_added_purecap_mode_m(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -453,8 +459,7 @@ class csr_renamed_purecap_mode_s(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -478,8 +483,7 @@ class csr_renamed_purecap_mode_vs(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -503,8 +507,7 @@ class csr_added_purecap_mode_s(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -528,8 +531,7 @@ class csr_renamed_purecap_mode_u(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -553,8 +555,7 @@ class csr_alias_action(table):
             outStr = ""
             for i in self.indices:
                 if i<2:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -582,8 +583,7 @@ class csr_perms(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -607,8 +607,7 @@ class csr_exevectors(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    #make an xref
-                    outStr += '|<<'+row[i]+'>>'
+                    outStr += '|' + insn_xref(row[i]) + '>>'
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
