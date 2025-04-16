@@ -121,10 +121,10 @@ When CW is set, the CRG bit indicates the current generation of the virtual memo
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
 * A <<cheri_pte_fault,CHERI load PTE page fault>> exception is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG in user mode.
+with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG and PTE.U is set.
 * A <<cheri_pte_fault,CHERI load PTE page fault>> exception is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG in user mode.
-and the capability read from memory optionally has its tag set^1^.
+with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG and PTE.U is set
+and the capability read from memory has its tag set.
 
 [[pte_cw_crg_load_summary]]
 .Summary of Load CW and CRG behavior in the PTEs
