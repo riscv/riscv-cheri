@@ -5,36 +5,36 @@ ifdef::cheri_standalone_spec[]
 WARNING: Unclear if this chapter will appear in the priv spec. May just be in the standalone spec.
 endif::[]
 
-CHERI processors need memory systems which support the capability validity tags in memory.
+CHERI processors need memory systems which support the capability valid tags in memory.
 
 There are, or will soon be, a wide range of CHERI systems in existence from tiny IoT devices up to server chips.
 
 There are two types of bus connections used in SoCs which contain CHERI CPUs:
 
-. Tag-aware busses, where the bus protocol is extended to carry the validity tag along with the data.  This is typically done using user defined bits in the protocol.
+. Tag-aware busses, where the bus protocol is extended to carry the valid tag along with the data.  This is typically done using user defined bits in the protocol.
 .. These busses will read tags from memory (if tags are present in the target memory) and return them to the requestor.
-.. These busses will write the validity tag to memory as an extension of the data write.
+.. These busses will write the valid tag to memory as an extension of the data write.
 . Non-tag aware busses, i.e. current non-CHERI aware busses.
-.. Reads of tagged memory will not read the validity tag.
-.. Writes to tagged memory will clear the validity tag of any CLEN-aligned CLEN-wide memory location where any byte matches the memory write.
+.. Reads of tagged memory will not read the valid tag.
+.. Writes to tagged memory will clear the valid tag of any YLEN-aligned YLEN-wide memory location where any byte matches the memory write.
 
-The fundamental rule for any CHERI system is that the validity tag and data are always accessed atomically. For every naturally aligned CLEN-wide memory location, it must never be possible to:
+The fundamental rule for any CHERI system is that the valid tag and data are always accessed atomically. For every naturally aligned YLEN-wide memory location, it must never be possible to:
 
-. Update any data bytes without also writing the validity tag
-.. This implies clearing the validity tag if a non-CHERI aware bus master overwrites a capability in memory
+. Update any data bytes without also writing the valid tag
+.. This implies clearing the valid tag if a non-CHERI aware bus master overwrites a capability in memory
 . Read a tagged value with mismatched (stale or newer) data
-. Set the validity tag without also writing the data.
+. Set the valid tag without also writing the data.
 
 NOTE: Clearing tags in memory does not necessarily require updating the associated data.
 
 === Small CHERI system example
 
 [#small_cheri_system]
-.Example small CHERI system with local capability validity tag storage
+.Example small CHERI system with local capability valid tag storage
 image::../cheri/img/small_cheri_system.drawio.png[width=80%,align=center]
 
-This example shows a minimum sized system where only the local memory is extended to support capability validity tags.
-The validity tag-aware region is highlighted.
+This example shows a minimum sized system where only the local memory is extended to support capability valid tags.
+The valid tag-aware region is highlighted.
 All tags are created by the CHERI CPU, and only stored locally. The memory is shared with the system, probably via a secure DMA, which is not tag aware.
 
 Therefore the connection between CPU and memory is tag-aware, and the connection to the system is not tag aware.
@@ -48,26 +48,26 @@ All writes from the system port to the memory must clear any memory tags to foll
 image::../cheri/img/large_cheri_system.drawio.png[width=80%,align=center]
 
 In the case of a large CHERI SoC with caches, all the cached memory visible to the CHERI CPUs must support tags.
-All memory is backed up by DRAM, and standard DRAM does not offer CLEN+1 bit words and so a typical system will have a tag cache IP.
+All memory is backed up by DRAM, and standard DRAM does not offer the extra bit required for CHERI valid tag storage and so a typical system will have a tag cache IP.
 
-A region of DRAM is reserved for CHERI tag storage.
+A region of DRAM is typically reserved for CHERI valid tag storage.
 
-The validity tag cache sits on the boundary of the validity tag-aware and non-tag-aware memory domains, and it provides the bridge between the two.
+The valid tag cache sits on the boundary of the valid tag-aware and non-tag-aware memory domains, and it provides the bridge between the two.
 It stores tags locally in its cache, and if there is a miss, it will create an extra bus request to access the region of DRAM reserved for tag storage.
-Therefore in the case of a miss a single access is split into two - one to access the data and one to access the validity tag.
+Therefore in the case of a miss a single access is split into two - one to access the data and one to access the valid tag.
 
-The key property of the validity tag cache is to preserve the atomic access of data and tags in the memory system so that all CPUs have a consistent view of tags and data.
+The key property of the valid tag cache is to preserve the atomic access of data and tags in the memory system so that all CPUs have a consistent view of tags and data.
 
-The region of DRAM reserved for tag storage must be only accessible by the validity tag cache, therefore no bus initiators should be able to write to the DRAM without the transactions passing through the validity tag cache.
+The region of DRAM reserved for tag storage must be only accessible by the valid tag cache, therefore no bus initiators should be able to write to the DRAM without the transactions passing through the valid tag cache.
 
-Therefore the GPUs and peripherals cannot write to the validity tag storage in the DRAM, or the validity tagged memory data storage region.
+Therefore the GPUs and peripherals cannot write to the valid tag storage in the DRAM, or the valid tagged memory data storage region.
 These constraints will be part of the design of the network-on-chip.
-It _is_ possible for the GPU and peripherals to read the validity tagged memory data storage region of the DRAM, if required.
+It _is_ possible for the GPU and peripherals to read the valid tagged memory data storage region of the DRAM, if required.
 
-NOTE: It would be possible to allow a DMA to access the validity tagged memory region of the DRAM directly to allow swap to/from DRAM and external devices such as flash.
- This will require the highest level of security in the SoC, as the CHERI protection model relies on the integrity of the validity tags, and so the root-of-trust will need to authenticate and encrypt the transfer, with anti-rollback protection.
+NOTE: It would be possible to allow a DMA to access the valid tagged memory region of the DRAM directly to allow swap to/from DRAM and external devices such as flash.
+ This will require the highest level of security in the SoC, as the CHERI protection model relies on the integrity of the valid tags, and so the root-of-trust will need to authenticate and encrypt the transfer, with anti-rollback protection.
 
-For further information on the validity tag cache see cite:[tagged-memory].
+For further information on the valid tag cache see cite:[tagged-memory].
 
 <<<
 
@@ -77,9 +77,9 @@ For further information on the validity tag cache see cite:[tagged-memory].
 .Example large CHERI system with only tag-aware bus masters
 image::../cheri/img/large_cheri_purecap_system.drawio.png[width=80%,align=center]
 
-In this example every DRAM access passes through the validity tag cache, and so _all_ bus masters are tag-aware and can access the validity tagged memory if permitted by the network-on-chip.
+In this example every DRAM access passes through the valid tag cache, and so _all_ bus masters are tag-aware and can access the valid tagged memory if permitted by the network-on-chip.
 
 The system topology is simpler than in xref:large_cheri_system[xrefstyle=short].
 
 There is likely to be a performance difference between the two systems.
-The main motivation for xref:large_cheri_system[xrefstyle=short] is to avoid the GPU DRAM traffic needing to look-up every tag in the validity tag cache, potentially adding overhead to every transaction.
+The main motivation for xref:large_cheri_system[xrefstyle=short] is to avoid the GPU DRAM traffic needing to look-up every tag in the valid tag cache, potentially adding overhead to every transaction.

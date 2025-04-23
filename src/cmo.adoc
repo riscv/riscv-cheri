@@ -1159,15 +1159,15 @@ TODO
 
 === CMOs with {cheri_base_ext_name}
 
-When the base architecture is {cheri_base_ext_name}, all CBO and prefetch instructions are authorized by the capability in `cs1`.
+When the base architecture is {cheri_base_ext_name}, all CBO and prefetch instructions are authorized by the capability in `ys1`.
 
-In common with load, stores and prefetches, the encodings are _reserved_ if `cs1=c0`.
+In common with load, stores and prefetches, the encodings are _reserved_ if `ys1=c0`.
 
 For CBO instructions, the entire cache block must in bounds for the access to be authorized.
 
 For prefetches, at least one byte of the cache block must be in bounds for the prefetch to be actioned.
 
-When CBO.ZERO clears the cache block, it must also clear the associated validity tags.
+When CBO.ZERO clears the cache block, it must also clear the associated valid tags.
 
 include::cheri/insns/cbo.clean.adoc[]
 include::cheri/insns/cbo.flush.adoc[]

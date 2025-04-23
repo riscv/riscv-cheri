@@ -4,7 +4,7 @@
 ==== CBLD
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* CBLD does not use ddc if cs1==0
+NOTE: *CHERI v9 Note:* CBLD does not use ddc if ys1==0
 
 NOTE: *CHERI v9 Note:* this instruction was called CBUILDCAP.
 endif::[]
@@ -15,34 +15,34 @@ Synopsis::
 Capability build
 
 Mnemonic::
-`cbld cd, cs1, cs2`
+`cbld yd, ys1, ys2`
 
 Encoding::
 include::wavedrom/cbld.adoc[]
 
 Description::
-Copy `cs2` to `cd` and set `cd.tag` to 1 if
+Copy `ys2` to `yd` and set `yd.tag` to 1 if
 
-. `cs1.tag` is set, and
-. `cs1` 's bounds are not <<section_cap_malformed,malformed>>, and all reserved fields are zero, and
-. `cs1` 's permissions could have been legally produced by <<ACPERM>>, and
-. `cs1` is not sealed, and
-. `cs2` 's permissions and bounds are equal to or a subset of `cs1` 's, and
-. `cs2` 's <<section_cap_level>> is equal to or lower than `cs1` 's, and
+. `ys1.tag` is set, and
+. `ys1` 's bounds are not <<section_cap_malformed,malformed>>, and all reserved fields are zero, and
+. `ys1` 's permissions could have been legally produced by <<ACPERM>>, and
+. `ys1` is not sealed, and
+. `ys2` 's permissions and bounds are equal to or a subset of `ys1` 's, and
+. `ys2` 's <<section_cap_level>> is equal to or lower than `ys1` 's, and
 +
 NOTE: With {cheri_0levels_ext_name} this check always passes as the level is hardwired.
-. `cs2` 's bounds are not <<section_cap_malformed,malformed>>, and all reserved fields are zero, and
-. `cs2` 's permissions could have been legally produced by <<ACPERM>>, and
-. All reserved bits in `cs2` 's metadata are 0;
+. `ys2` 's bounds are not <<section_cap_malformed,malformed>>, and all reserved fields are zero, and
+. `ys2` 's permissions could have been legally produced by <<ACPERM>>, and
+. All reserved bits in `ys2` 's metadata are 0;
 
-Otherwise, copy `cs2` to `cd` and clear `cd` 's tag.
+Otherwise, copy `ys2` to `yd` and clear `yd` 's tag.
 
 <<CBLD>> is typically used alongside <<SCHI>> to build
 capabilities from integer values.
 
-NOTE: When `cs1` is `c0` this will copy `cs2` to `cd` and clear `cd.tag`.
+NOTE: When `ys1` is `c0` this will copy `ys2` to `yd` and clear `yd.tag`.
 However this may change in future extensions, and so software should not
-assume `cs1==0` to be a pseudoinstruction for tag clearing.
+assume `ys1==0` to be a pseudoinstruction for tag clearing.
 
 Operation::
 +

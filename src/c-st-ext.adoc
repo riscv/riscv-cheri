@@ -346,7 +346,7 @@ capability from memory into capability register
 register _cd_. It computes its effective address by adding the
 _zero_-extended offset, scaled by 8 (for {cheri_base32_ext_name}),
 or 16 (for {cheri_base64_ext_name}) to the capability stack pointer, `c2`. It
-expands to `lc cd, offset(c2)`.
+expands to `lc yd, offset(c2)`.
 
 include::images/wavedrom/c-sp-load-store-css.edn[]
 [[c-sp-load-store-css]]
@@ -385,7 +385,7 @@ capability in capability register _cs2_
 to memory. It computes an effective address by adding the
 _zero_-extended offset, scaled by 8 (for {cheri_base32_ext_name}),
 or 16 (for {cheri_base64_ext_name}), to the stack pointer, `c2`. It
-expands to `sc cs2, offset(c2)`.
+expands to `sc ys2, offset(c2)`.
 
 [NOTE]
 ====
@@ -642,18 +642,18 @@ include::images/wavedrom/c-cr-format-ls.edn[]
 These instructions use the CR format.
 
 C.JR (jump register) performs an unconditional control transfer to the
-address in register _rs1/cs1_. C.JR expands to `jalr x0, 0(rs1)`, or
-`jalr c0, 0(cs1)` for {cheri_base_arch_name}.
-C.JR is valid only when _rs1/cs1_≠`x0`; the code
-point with _rs1/cs1_=`x0` is reserved.
+address in register _rs1/ys1_. C.JR expands to `jalr x0, 0(rs1)`, or
+`jalr c0, 0(ys1)` for {cheri_base_arch_name}.
+C.JR is valid only when _rs1/ys1_≠`x0`; the code
+point with _rs1/ys1_=`x0` is reserved.
 
 C.JALR (jump and link register) performs the same operation as C.JR, but
 additionally writes the address of the instruction following the jump
 (`pc`+2) to the link register, `x1/c1`. C.JALR expands to
-`jalr x1, 0(rs1)`, or `jalr c1, 0(cs1)` for {cheri_base_arch_name}.
+`jalr x1, 0(rs1)`, or `jalr c1, 0(ys1)` for {cheri_base_arch_name}.
 C.JALR is valid only when
-_rs1/cs1_≠`x0`; the code point with
-_rs1/cs1_=`x0` corresponds to the C.EBREAK
+_rs1/ys1_≠`x0`; the code point with
+_rs1/ys1_=`x0` corresponds to the C.EBREAK
 instruction.
 
 [NOTE]
@@ -856,7 +856,7 @@ hardware cost._
 ====
 
 For {cheri_base_ext_name} C.MV moves a whole capability register.
-The expansion is `cmv cd, rs2`.
+The expansion is `cmv yd, rs2`.
 
 C.ADD adds the values in registers _rd_ and _rs2_ and writes the result
 to register _rd_. C.ADD expands into `add rd, rd, rs2`. C.ADD is only

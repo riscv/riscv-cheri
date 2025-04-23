@@ -7,7 +7,7 @@ Synopsis::
 Jump and link register
 
 Mnemonic::
-`jalr cd, cs1, offset`
+`jalr yd, ys1, offset`
 
 ifdef::cheri_standalone_spec[]
 {cheri_int_mode_name} Mnemonic::
@@ -20,10 +20,10 @@ include::wavedrom/ct-unconditional-2.adoc[]
 include::base_isa_extension.adoc[]
 
 Description::
-JALR allows unconditional, indirect jumps to a target capability in `cs1`.
+JALR allows unconditional, indirect jumps to a target capability in `ys1`.
 The target capability is unsealed if the `offset` is zero.
-The target address is obtained by adding the sign-extended 12-bit `offset` to `cs1.address`, then setting the least-significant bit of the result to zero.
-The <<pcc>> of the next instruction following the jump is sealed and written to `cd`.
+The target address is obtained by adding the sign-extended 12-bit `offset` to `ys1.address`, then setting the least-significant bit of the result to zero.
+The <<pcc>> of the next instruction following the jump is sealed and written to `yd`.
 
 // {cheri_int_mode_name} Description::
 // JALR allows unconditional, indirect jumps to a target address. The target
@@ -40,9 +40,9 @@ CHERI fault exception when one of the checks below fail (see <<sec_cheri_excepti
 [%autowidth,options=header,align=center]
 |==============================================================================
 | Kind                  | Reason
-| Tag violation         | `cs1` has tag set to 0, or has any reserved bits set
-| Seal violation        | `cs1` is sealed and the immediate is not 0
-| Permission violation  | `cs1` does not grant <<x_perm>>, or the AP field could not have been produced by <<ACPERM>>
+| Tag violation         | `ys1` has tag set to 0, or has any reserved bits set
+| Seal violation        | `ys1` is sealed and the immediate is not 0
+| Permission violation  | `ys1` does not grant <<x_perm>>, or the AP field could not have been produced by <<ACPERM>>
 | Invalid address violation | The target address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
 | Bounds violation      | Minimum length instruction is not within the target capability's bounds
 |==============================================================================

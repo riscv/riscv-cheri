@@ -15,7 +15,7 @@ Synopsis::
 Shift by _n_ and add for address generation (SH1ADD, SH2ADD, SH3ADD)
 
 {cheri_cap_mode_name} Mnemonics::
-`sh[1|2|3]add cd, rs1, cs2`
+`sh[1|2|3]add yd, rs1, ys2`
 
 {cheri_int_mode_name} Mnemonics::
 `sh[1|2|3]add rd, rs1, rs2`
@@ -25,18 +25,18 @@ Encoding::
 ....
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
-    { bits:  5, name: 'cd' },
+    { bits:  5, name: 'yd' },
     { bits:  3, name: 'func3', attr: ['SH1ADD=010', 'SH2ADD=100', 'SH3ADD=110'] },
     { bits:  5, name: 'rs1' },
-    { bits:  5, name: 'cs2' },
+    { bits:  5, name: 'ys2' },
     { bits:  7, name: 0x10, attr: ['SH[1|2|3]ADD'] },
 ]}
 ....
 
 Description::
-Increment the address field of the capability `cs2` by `rs1`
-shifted left by _n_ bit positions and write the result to ``cd``.
-Set `cd.tag=0` if `cs1.tag=0` or `cs1` is sealed.
+Increment the address field of the capability `ys2` by `rs1`
+shifted left by _n_ bit positions and write the result to ``yd``.
+Set `yd.tag=0` if `ys1.tag=0` or `ys1` is sealed.
 +
 include::rep_range_check.adoc[]
 +

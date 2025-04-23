@@ -11,7 +11,7 @@ Synopsis::
 Shift by 4 and add for address generation (SH4ADD)
 
 Mnemonic (RV64)::
-`sh4add cd, rs1, cs2`
+`sh4add yd, rs1, ys2`
 
 //{cheri_int_mode_name} Mnemonic (RV64)::
 //`sh4add rd, rs1, rs2`
@@ -21,18 +21,18 @@ Encoding::
 ....
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
-    { bits:  5, name: 'cd' },
+    { bits:  5, name: 'yd' },
     { bits:  3, name: 0x7, attr: ['rv64: SH4ADD'] },
     { bits:  5, name: 'rs1' },
-    { bits:  5, name: 'cs2' },
+    { bits:  5, name: 'ys2' },
     { bits:  7, name: 16, attr: ['rv64: SH4ADD'] },
 ]}
 ....
 
 Description::
-Increment the address field of `cs2` by `rs1` shifted left by 4 bit positions and write the result to `cd`.
+Increment the address field of `ys2` by `rs1` shifted left by 4 bit positions and write the result to `yd`.
 +
-Set `cd.tag=0` if `cs2.tag=0` or `cs2` is sealed.
+Set `yd.tag=0` if `ys2.tag=0` or `ys2` is sealed.
 +
 include::rep_range_check.adoc[]
 +

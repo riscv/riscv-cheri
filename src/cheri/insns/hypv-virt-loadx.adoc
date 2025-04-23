@@ -12,8 +12,8 @@ Synopsis::
 Hypervisor virtual machine load from executable memory
 
 {cheri_cap_mode_name} Mnemonics::
-`hlvx.hu rd, cs1` +
-`hlvx.wu rd, cs1`
+`hlvx.hu rd, ys1` +
+`hlvx.wu rd, ys1`
 
 {cheri_int_mode_name} Mnemonics::
 `hlvx.hu rd, rs1` +
@@ -26,8 +26,8 @@ include::wavedrom/hypv-virt-loadx.adoc[]
 Performs a load with the *execute* permission taking the place of *read*
 permission during address translation and as though V=1; i.e., with the address
 translation and protection, and endianness, that apply to memory access in
-either VS-mode or VU-mode. The effective address is the address of `cs1`. The
-authorizing capability for the operation is `cs1`. A copy of the loaded value
+either VS-mode or VU-mode. The effective address is the address of `ys1`. The
+authorizing capability for the operation is `ys1`. A copy of the loaded value
 is written to `rd`.
 +
 include::load_store_c0.adoc[]
@@ -47,11 +47,11 @@ listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in t
 [%autowidth,options=header,align=center]
 |==============================================================================
 | Kind                       | Reason
-| Tag violation              | Authoritizing capability validity tag set to 0, or has any reserved bits set
-| Seal violation             | Authoritizing capability is sealed
-| Permission violation       | Authoritizing capability does not grant <<r_perm>> or <<x_perm>>, or the AP field could not have been produced by <<ACPERM>>
+| Tag violation              | Authorizing capability valid tag set to 0, or has any reserved bits set
+| Seal violation             | Authorizing capability is sealed
+| Permission violation       | Authorizing capability does not grant <<r_perm>> or <<x_perm>>, or the AP field could not have been produced by <<ACPERM>>
 | Invalid address violation  | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
-| Bounds violation           | At least one byte accessed is outside the authoritizing capability bounds, or the capability has <<section_cap_malformed,malformed>> bounds
+| Bounds violation           | At least one byte accessed is outside the authorizing capability bounds, or the capability has <<section_cap_malformed,malformed>> bounds
 |==============================================================================
 
 Prerequisites for {cheri_cap_mode_name}::

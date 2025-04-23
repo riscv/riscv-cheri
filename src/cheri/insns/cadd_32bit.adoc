@@ -21,12 +21,12 @@ Synopsis::
 Capability pointer increment
 
 Mnemonic::
-`cadd cd, cs1, rs2` +
-`caddi cd, cs1, imm`
+`cadd yd, ys1, rs2` +
+`caddi yd, ys1, imm`
 
 Suggested assembly syntax::
-`add cd, cs1, rs2` +
-`add cd, cs1, imm`
+`add yd, ys1, rs2` +
+`add yd, ys1, imm`
 
 NOTE: The suggested assembly syntax distinguishes from integer `add` by operand type.
 
@@ -34,12 +34,12 @@ Encoding::
 include::wavedrom/cadd.adoc[]
 
 NOTE: <<CADD>> with `rs2=x0` is decoded as <<CMV>> instead, the key
-difference being that capabilities cannot have their validity tag
+difference being that capabilities cannot have their valid tag
 cleared by <<CMV>>.
 
 Description::
-Increment the address field of the capability `cs1`  and write the result to ``cd``.
-Set `cd.tag=0` if `cs1.tag=0` or `cs1` is sealed.
+Increment the address field of the capability `ys1`  and write the result to ``yd``.
+Set `yd.tag=0` if `ys1.tag=0` or `ys1` is sealed.
 +
 For <<CADD>>, the address is incremented by the value in `rs2` . +
 For <<CADDI>>, the address is incremented by the immediate value `imm`.

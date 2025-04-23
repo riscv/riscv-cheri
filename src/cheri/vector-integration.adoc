@@ -12,14 +12,14 @@ are _not_ extended to hold capabilities.
 NOTE: A future extension may allow tags to be stored in vector registers.
   Until that time, vector load and store instructions must not be used to implement generic
   memory copying in software, such as the `memcpy()` standard C library function,
-  because the vector registers do not hold capabilities, so the validity tags of any
+  because the vector registers do not hold capabilities, so the valid tags of any
   copied capabilities will be set to 0 in the destination memory.
 
 Vector loads and stores all follow the behavior as described in
 xref:section_int_load_store_insns[xrefstyle=short].
 
 The assembly syntax of all vector loads and stores are updated in
-{cheri_cap_mode_name}, so that the address operand becomes a *c* operand instead
+{cheri_cap_mode_name}, so that the address operand becomes a *y* operand instead
 of an *x* operand.
 
 According to the vector extension cite:[riscv-v-spec] only _active_ elements are
@@ -35,6 +35,6 @@ If another _active_ element causes a CHERI bounds violation then it is treated t
 All other CHERI fault types, such as tag violations, are only taken if element zero is _active_.
 
 NOTE: Indexed loads in {cheri_cap_mode_name} check the bounds of every access against
-the authoritizing capability in `cs1`. Therefore the approach of having a zero base
+the authorizing capability in `ys1`. Therefore the approach of having a zero base
 register and treating every element as an absolute address may not work well
 in this mode.

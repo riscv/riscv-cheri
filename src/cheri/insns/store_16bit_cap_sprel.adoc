@@ -14,26 +14,26 @@ Capability stores (C.SC, C.SCSP), 16-bit encodings
 include::xlen_variable_warning.adoc[]
 
 {cheri_cap_mode_name} Mnemonics::
-`c.sc cs2', offset(cs1')` +
-`c.sc cs2', offset(csp)`
+`c.sc ys2', offset(ys1')` +
+`c.sc ys2', offset(ysp)`
 
 {cheri_cap_mode_name} Expansions::
-`sc cs2', offset(cs1')` +
-`sc cs2', offset(csp)`
+`sc ys2', offset(ys1')` +
+`sc ys2', offset(ysp)`
 
 Encoding::
 include::wavedrom/c-sp-store-cap.adoc[]
 
 {cheri_cap_mode_name} Description::
-Store the CLEN+1 bit value in `cs2'` to memory. The capability in `cs1/csp`
+Store the YLEN-bit value in `ys2'` to memory. The capability in `ys1/ysp`
 authorizes the operation. The effective address of the memory access is
-obtained by adding the address of `cs1/csp` to the zero-extended offset.
+obtained by adding the address of `ys1/ysp` to the zero-extended offset.
 
 NOTE: These mnemonics do not exist in {cheri_int_mode_name}.
 
 Tag of the written capability value::
 
-The capability written to memory has the validity tag set to 0 if the validity tag of `cs2'` is 0 or if the authorizing capability (`cs1/csp`) does not grant <<c_perm>>.
+The capability written to memory has the valid tag set to 0 if the valid tag of `ys2'` is 0 or if the authorizing capability (`ys1/ysp`) does not grant <<c_perm>>.
 +
 The stored tag is also set to zero if the authorizing capability does not have <<sl_perm>> set but the stored data has a <<section_cap_level>> of 0 (_local_).
 

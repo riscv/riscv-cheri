@@ -4,7 +4,7 @@ All misaligned load reservations cause a load address misaligned exception to al
 +
 endif::[]
 ifdef::has_cap_data[]
-Misaligned address fault exception when the effective address is not aligned to CLEN/8.
+Misaligned address fault exception when the effective address is not aligned to YLEN/8.
 +
 endif::[]
 CHERI fault exception when one of the checks below fail (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
@@ -12,7 +12,7 @@ CHERI fault exception when one of the checks below fail (see <<sec_cheri_excepti
 [%autowidth,options=header,align=center]
 |==============================================================================
 | Kind                  | Reason
-| Tag violation         | Authorizing capability validity tag set to 0, or has any reserved bits set
+| Tag violation         | Authorizing capability valid tag set to 0, or has any reserved bits set
 | Seal violation        | Authorizing capability is sealed
 | Permission violation  | Authorizing capability does not grant <<r_perm>>, or the AP field could not have been produced by <<ACPERM>>
 | Invalid address violation  | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]

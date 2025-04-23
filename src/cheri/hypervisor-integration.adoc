@@ -10,8 +10,8 @@ architecture to support the efficient hosting of guest operating systems atop a
 type-1 or type-2 hypervisor cite:[riscv-priv-spec]. The hypervisor extension is
 generally orthogonal to CHERI; the main requirements, when integrating with
 {cheri_base_ext_name} and {cheri_default_ext_name}, is that address CSRs added
-for hypervisors are extended to CLEN size so that they are able to hold
-capabilities. The remainder of this chapter describes these changes in detail.
+for hypervisors are extended to YLEN size.
+The remainder of this chapter describes these changes in detail.
 
 [#hstatus,reftext="hstatus"]
 === Hypervisor Status Register (hstatus)
@@ -198,10 +198,10 @@ The exception cases remain as described in
 xref:section_existing_riscv_insns[xrefstyle=short] regardless of the CHERI
 execution mode.
 
-=== Hypervisor Load and Store Capability Instructions
+=== Hypervisor Load and Store Instructions For Capability Data
 
-Hypervisor virtual-machine load (<<HLV.C>>) and store (<<HSV.C>>) capability
-instructions read or write CLEN bits from memory as though V=1. These
+Hypervisor virtual-machine load (<<HLV.C>>) and store (<<HSV.C>>)
+instructions read or write YLEN bits from memory as though V=1. These
 instructions change behavior depending on the CHERI execution mode although
 the instruction's encoding remains unchanged.
 

@@ -37,12 +37,12 @@ Some instructions in the RV32I/RV64I base ISA (plus any extensions) use capabili
 The _<<cheri_execution_mode>>_ impacts the instruction set in the following way:
 
 * The authorizing capability used to execute memory access instructions depends on the mode.
-In {cheri_int_mode_name}, <<ddc>> is implicitly used. In {cheri_cap_mode_name}, the authorizing  capability is supplied as an explicit *c* operand register to the instruction.
+In {cheri_int_mode_name}, <<ddc>> is implicitly used. In {cheri_cap_mode_name}, the authorizing  capability is supplied as an explicit *y* operand register to the instruction.
 // XXX: This only affects the floating-point compressed isns, no need to mention here:
 // * The set of instructions that is available for execution. Some instructions are available in {cheri_int_mode_name} but not {cheri_cap_mode_name} and vice-versa (see xref:app_cheri_instructions[xrefstyle=short]).
 
 // NOTE: The _<<cheri_execution_mode>>_ is effectively an extension to some RISC-V instruction encodings.
-//   For example, the encoding of an instruction like <<LW>> remains unchanged, but the mode indicates whether the capability authorizing the load is the register operand `cs1` ({cheri_cap_mode_name}).
+//   For example, the encoding of an instruction like <<LW>> remains unchanged, but the mode indicates whether the capability authorizing the load is the register operand `ys1` ({cheri_cap_mode_name}).
 // The mode is shown in the assembly syntax.
 
 The _<<cheri_execution_mode>>_ is key in providing backwards compatibility with the base RV32I/RV64I ISA.
@@ -81,7 +81,7 @@ The <<m_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cher
 [#tab_cheri_mode_sw_summary,%autowidth,options=header,align="center",cols="2,2,4"]
 |=======================
 |Mnemonic        | From mode          | Description
-| <<JALR_CHERI>> |{cheri_cap_mode_name}| Install `cs1` in the <<pcc>> and so update `pcc.M`
+| <<JALR_CHERI>> |{cheri_cap_mode_name}| Install `ys1` in the <<pcc>> and so update `pcc.M`
 | <<MODESW.INT>> |{cheri_cap_mode_name}| Switch to {cheri_int_mode_name}.
 | <<MODESW.CAP>> |{cheri_int_mode_name}| Switch to {cheri_cap_mode_name}.
 |=======================
@@ -110,7 +110,7 @@ xref:default-csrnames-added[xrefstyle=short].
 .Unprivileged capability CSRs added in {cheri_default_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|CLEN CSR|Address|Permissions|Description
+|YLEN CSR|Address|Permissions|Description
 |<<ddc>>|0x416|RW|User Default Data Capability
 |===
 
@@ -131,7 +131,7 @@ NOTE: <<ddc>> is a data pointer, so it does not need to be able to hold all poss
 
 === {cheri_default_ext_name} Memory Accesses
 
-In {cheri_cap_mode_name} all memory accesses behave as defined by <<rv32ch,{cheri_base_ext_name}>> and are authorised by the base register (`cs1`), from which the bounds and permissions are taken. For example:
+In {cheri_cap_mode_name} all memory accesses behave as defined by <<rv32y,{cheri_base_ext_name}>> and are authorised by the base register (`ys1`), from which the bounds and permissions are taken. For example:
 
 * `lw t0, 16(ca0)`
 
@@ -160,7 +160,7 @@ All memory accesses must still be checked, but now they are authorized by the ca
 
 The rules from xref:section_existing_riscv_insns[xrefstyle=short] are applied, so that all branch and jump targets are checked against <<pcc>>.
 
-NOTE: In {cheri_int_mode_name} JALR does _not_ copy the target capability register `cs1` into <<pcc>>, instead it updates the address of <<pcc>> with the target value.
+NOTE: In {cheri_int_mode_name} JALR does _not_ copy the target capability register `ys1` into <<pcc>>, instead it updates the address of <<pcc>> with the target value.
 The only difference to RV32I/RV64I without {cheri_default_ext_name}, is that the target address is checked against the bounds of <<pcc>>.
 
 [#section_hybrid_ext_instructions]
@@ -174,7 +174,7 @@ Additionally, {cheri_default_ext_name} makes all instructions defined by {cheri_
 |=======================
 |Mnemonic     |Description
 |<<SCMODE>>    |Set capability CHERI execution mode (<<m_bit>>)
-// The output is written to an unprivileged *c* register, not <<pcc>>.
+// The output is written to an unprivileged *y* register, not <<pcc>>.
 |<<GCMODE>>    |Get capability CHERI execution mode (<<m_bit>>)
 |<<MODESW_CAP>>|Set current CHERI execution mode to {cheri_cap_mode_name}
 |<<MODESW_INT>>|Set current CHERI execution mode to {cheri_int_mode_name}
@@ -206,15 +206,15 @@ In {cheri_int_mode_name}, the capability authorizing the memory access is <<ddc>
 === Changes to Zicsr Instructions
 
 {cheri_base_ext_name} extends all RISC-V CSRs which hold addresses, to hold capabilities.
-Therefore, such registers are extended to CLEN bits in {cheri_base_ext_name} and a `c` suffix is added when referring to the entire CSR instead of the only the address field.
+Therefore, such registers are extended to YLEN bits in {cheri_base_ext_name} and a `c` suffix is added when referring to the entire CSR instead of the only the address field.
 
 WARNING: This assumes that the Zcmt CSR is extended to be a capability when the base architecture is {cheri_base_ext_name}.
 
 For example, the `jvt` CSR is extended to `jvtc`, the `c` suffix indicating that it's a capability.
 It is referred to as `jvt` if only accessing the address or `jvtc` if accessing the whole capability.
 
-* In {cheri_cap_mode_name} <<CSRRW_CHERI>> _always_ read/writes the entire CLEN bits of all CLEN-width CSRs, i.e. it accesses `jvtc`.
-* In {cheri_int_mode_name} <<CSRRW_CHERI>> _only_ accesses XLEN bits of extended CSRs (e.g. `jvt`, for compatibility) and all CLEN-bits of CSRs added by CHERI extensions (e.g. <<ddc>>).
+* In {cheri_cap_mode_name} <<CSRRW_CHERI>> _always_ read/writes the entire YLEN bits of all YLEN-width CSRs, i.e. it accesses `jvtc`.
+* In {cheri_int_mode_name} <<CSRRW_CHERI>> _only_ accesses XLEN bits of extended CSRs (e.g. `jvt`, for compatibility) and all YLEN-bits of CSRs added by CHERI extensions (e.g. <<ddc>>).
 ** <<CSRRW_CHERI>> in {cheri_int_mode_name} can only update the address field of `jvt`, but it can write a full value into <<ddc>>.
 ** {cheri_cap_mode_name} always accesses `jvtc`, never `jvt`.
 * when only writing XLEN bits to an extended CSR (e.g. `jvt`), the CSR value is updated using <<SCADDR>> semantics.
@@ -238,7 +238,7 @@ IMPORTANT: need to resolve how to cross-reference the privileged spec to have a 
 //* The register operand is an *x* register.
 //* Only XLEN bits from the *x* source are written to the capability address
 //field.
-//    ** The validity tag and metadata are updated as specified in <<extended_CSR_writing,the privileged specification>>.
+//    ** The valid tag and metadata are updated as specified in <<extended_CSR_writing,the privileged specification>>.
 //* Only XLEN bits are read from the capability address field, which are extended
 //to MXLEN bits according to cite:[riscv-priv-spec] _(Base ISA Control in
 //mstatus Register)_ and are then written to the destination *x* register.
@@ -246,13 +246,13 @@ IMPORTANT: need to resolve how to cross-reference the privileged spec to have a 
 //When <<CSRRW_CHERI>> is executed on an extended CSR in {cheri_cap_mode_name}, or
 //on a new capability CSR regardless of the CHERI execution mode:
 //
-//* The register operand is a *c* register.
-//* The full capability in the *c* register source is written to the CSR.
+//* The register operand is a *y* register.
+//* The full capability in the *y* register source is written to the CSR.
 //** The capability may require modification before the final written value is
 //determined (see <<extended_CSR_writing>>).
-//* The full capability is written to destination *c* register.
+//* The full capability is written to destination *y* register.
 
-When any CLEN-width CSR is accessed with another CSR instruction:
+When any YLEN-width CSR is accessed with another CSR instruction:
 
 * <<CSRRWI_CHERI>>
 * <<CSRRC_CHERI>>
@@ -267,9 +267,9 @@ The following rules apply:
     ** Unless specified otherwise, the update uses <<SCADDR>> semantics
 * When accessing an extended CSR:
     ** In {cheri_int_mode_name}, XLEN bits are read from the capability address field and written to an output *x* register.
-    ** In {cheri_cap_mode_name}, CLEN bits are read from the CSR and written to an output *c* register.
+    ** In {cheri_cap_mode_name}, YLEN bits are read from the CSR and written to an output *y* register.
 * When accessing a CSR added by a CHERI extension:
-** CLEN bits are read from the CSR and written to an output *c* register.
+** YLEN bits are read from the CSR and written to an output *y* register.
 
 //NOTE: For all non-capability CSRs (i.e. XLEN-width CSRs) XLEN bits are read/written regardless of <<cheri_execution_mode>>.
 

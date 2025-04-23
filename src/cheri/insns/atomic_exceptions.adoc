@@ -4,12 +4,12 @@ Requires the authorizing capability to be tagged and not sealed.
 +
 Requires <<r_perm>> and <<w_perm>> in the authorizing capability.
 +
-If <<c_perm>> is not granted then store the memory tag as zero, and load `cd.tag` as zero.
+If <<c_perm>> is not granted then store the memory tag as zero, and load `yd.tag` as zero.
 +
-If the authorizing capability does not grant <<lm_perm>>, and the validity tag of `cd` is 1 and `cd` is not sealed, then an implicit <<ACPERM>> clearing <<w_perm>> and <<lm_perm>> is performed to obtain the intermediate permissions on `cd` (see <<LC>>).
+If the authorizing capability does not grant <<lm_perm>>, and the valid tag of `yd` is 1 and `yd` is not sealed, then an implicit <<ACPERM>> clearing <<w_perm>> and <<lm_perm>> is performed to obtain the intermediate permissions on `yd` (see <<LC>>).
 +
-If the authorizing capability does not grant <<el_perm>>, and the validity tag of `cd` is 1, then an implicit <<ACPERM>> restricting the <<section_cap_level>> to the level of the authorizing capability is performed.
-If `cd` is not sealed, this implicit <<ACPERM>> also clears <<el_perm>> to obtain the final permissions on `cd` (see <<cap_level_load_summary>> and <<LC>>).
+If the authorizing capability does not grant <<el_perm>>, and the valid tag of `yd` is 1, then an implicit <<ACPERM>> restricting the <<section_cap_level>> to the level of the authorizing capability is performed.
+If `yd` is not sealed, this implicit <<ACPERM>> also clears <<el_perm>> to obtain the final permissions on `yd` (see <<cap_level_load_summary>> and <<LC>>).
 +
 The stored tag is also set to zero if the authorizing capability does not have <<sl_perm>> set but the stored data has a <<section_cap_level>> of 0 (see <<SC>>).
 endif::[]
@@ -28,7 +28,7 @@ listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in t
 [%autowidth,options=header,align=center]
 |==============================================================================
 | Kind                  | Reason
-| Tag violation         | Authorizing capability validity tag set to 0, or has any reserved bits set
+| Tag violation         | Authorizing capability valid tag set to 0, or has any reserved bits set
 | Seal violation        | Authorizing capability is sealed
 | Permission violation  | Authorizing capability does not grant <<r_perm>> or <<w_perm>>, or the AP field could not have been produced by <<ACPERM>>
 | Invalid address violation  | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
