@@ -434,8 +434,11 @@ The authorizing capability is either named explicitly (the base register of a lo
 For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not except, but may clear the valid tag on the result capability if the operation is not permitted.
 =======
+=======
+>>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
 No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not trap, but may clear the valid tag on the result capability if the operation is not permitted.
 
 [#section_cap_instructions]
@@ -472,7 +475,13 @@ Additionally, all instructions that handle addresses have altered behavior when 
 The lower XLEN-bits of the result is always the same, but {cheri_base_ext_name} adds checks that may result in exceptions and specifies handling of the metadata.
 
 The new and modified instructions are listed in the following sections of this chapter.
+<<<<<<< HEAD
 >>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
+=======
+=======
+No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not except, but may clear the valid tag on the result capability if the operation is not permitted.
+>>>>>>> 90adac13 (clean up cap instruction page section, and some other improvements)
+>>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
 
 <<<
 
@@ -589,7 +598,11 @@ include::insns/cram_32bit.adoc[]
 === Instructions Which Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LC>> and <<SC>>.
+<<<<<<< HEAD
 They atomically access CLEN-bits of data and the associated valid tag.
+=======
+They access CLEN-bits of data and also access the valid tag.
+>>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
 
 All capability memory accesses check for <<c_perm>> in the authorizing capability in `cs1`.
 
@@ -654,7 +667,9 @@ The rules for modifying the behavior of such instructions are:
 =======
 * Any instruction that has a base address register (generally `rs1`) reads the full capability register instead.
 ** This capability register is used to <<sec_cap_checks,check whether the access should be permitted>>.
+<<<<<<< HEAD
 * Any instruction writes back an address (e.g., <<AUIPC_CHERI>>), writes a full capability register instead.
+<<<<<<< HEAD
 >>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
@@ -662,6 +677,17 @@ The rules for modifying the behavior of such instructions are:
 * All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
 ** An exception is taken by the branch or jump on failure.
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition of suitability).
+=======
+=======
+* Any instruction that writes back an address (e.g. <<AUIPC_CHERI>>), writes a full capability register instead.
+>>>>>>> 90adac13 (clean up cap instruction page section, and some other improvements)
+* Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
+** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
+ In this case, for example, `new_pcc = SCADDR(old_pcc, offset)`
+* All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
+** An exception is taken by the branch or jump on failure.
+* <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition).
+>>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>.
 
@@ -673,8 +699,13 @@ NOTE: Exceptions are taken on the branch or jump which cause an exception, not a
 =======
 IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
 
+<<<<<<< HEAD
 //TODO: <<app_cheri_instructions>> has listings for all unprivileged instructions that change behavior when {cheri_base_ext_name} is used as the base ISA.
 >>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
+=======
+NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
+ Therefore it is _not_ possible to speculatively jump somewhere without having _already_ completed the checks.
+>>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
