@@ -84,26 +84,79 @@ For registers that are extended but (currently) only hold integer data, all othe
 The valid tag is an additional hardware managed bit added to addressable memory and all *c* registers.
 It is stored separately and may be referred to as _out of band_ or _hidden_.
 It indicates whether a *c* register or CLEN-aligned memory location contains a valid capability.
-If the valid tag is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or bounds).
+If the valid tag is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds,bounds>>).
 
 The capability is invalid if the valid tag is clear.
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
 All capabilities derived from invalid capabilities are themselves invalid, i.e., their valid tags are 0.
 
 All locations in registers or memory able to hold a capability are CLEN-bits wide including the valid tag bit.
-Those locations are referred as being _YLEN-bit_ or _capability_-wide in this specification.
+Those locations are referred as being _CLEN-bit_ in this specification.
 
 [#sec_cap_bounds]
-==== Bounds
+==== Bounds and Representability
 
-The bounds encode the _base_ and _top_ addresses that constrain accesses authorized by this capability.
-The capability can be used to access any memory location `A` in the range `base &#8804; A < top`.
-The bounds are decoded as described in xref:section_cap_bounds_decoding[xrefstyle=short].
+Capabilities encode memory bounds, i.e. the lowest and highest byte in memory that it is permitted to access when dereferenced for data memory access, or for instruction execution.
 
-IMPORTANT: Bounds can only be reduced, and any attempt to increase them zeroes the valid tag.
+Checking is on a byte-by-byte basis, so that it is possible for a memory access to be fully in-bounds, partially out-of-bounds or fully out-of-bounds.
 
-NOTE: As the base and top addresses together cannot fit within XLEN bits of metadata, they are encoded in a compressed format.
-  This means it may not be possible to precisely encode any arbitrary combination of base and top addresses.
+All partially or fully out-of-bounds accesses cause an exception.
+
+Every capability has two bounds - _base_ and _top_.
+The _base_ is returned by the <<GCBASE>> instruction.
+There is no equivalent instruction for the _top_, but there is for the _length_ which is defined to be `length = top - base`, and is returned by <<GCLEN>>.
+
+* The _base_ is XLEN bits and is _inclusive_.
+* The _top_ is XLEN+1 bits and is _exclusive_.
+** The extra bit is required to allow the bounds to include the top byte of memory.
+
+NOTE: Inclusive top, with XLEN-bits, was considered but rejected in favor of the exclusive top.
+
+Therefore a memory location `A` in the range `base &#8804; A < top` is within bounds, and so valid to access.
+
+A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
+Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
+
+The ISA only allows the bounds of a capability to be reduced.
+Therefore instructions cannot output any capability with the valid tag set which include bounds (or permissions) which are greater than any input capability which also has its valid tag set.
+On system initialization the <<infinite-cap>> is available which has bounds which cover all of memory, amd maximum permissions set.
+All smaller capabilities are derived from this.
+
+Bounds can be reduced using the <<SCBNDS>>/<<SCBNDSI>> instructions, which require the final bounds to be accurately encoded, clearing the valid tag if that is not possible due to the granularity constraints.
+The requested bounds can be rounded up to the nearest encodable value above the requested bounds using <<SCBNDSR>>
+ and <<CRAM>> can be used to determine the granularity which is possible to encode.
+
+IMPORTANT: Bounds can only be reduced with <<SCBNDS>>/<<SCBNDSI>>/<<SCBNDSR>>.
+ If <<SCBNDSR>> rounds up the requested bounds, they must still be no larger than the initial bounds.
+
+The bounds are encoded relative to the address field, sharing some upper bits of the address.
+ The number of shared bits depend on the exponent, see xref:section_cap_bounds[xrefstyle=short].
+
+NOTE: Early versions of CHERI encoded the top and bottom bounds as full width addresses.
+ This proved to be impractical for real systems, and so the CHERI-concentrate compressed system was developed to reduce the overhead.
+
+Because the upper bits of the address are shared with the bounds, the address of a capability cannot be arbitrary modified without risking changing the meaning of the bounds.
+Therefore whenever a capability address is updated, the semantics of the <<SCADDR>> instruction are required to check that the decoding of the bounds hasn't changed.
+If they _have_ changed, then the valid tag (if set) is cleared, so that the capability can no longer be used for dereferencing memory.
+
+Capabilities allow the address pointer to be outside of the bounds by a small amount.
+
+NOTE: Behavior was observed in software which allows pointers to legitimately move outside of arrays, and then only come back into the valid range on dereference.
+
+The maximum range of address values that the pointer can take is defined by the <<section_cap_representable_check, representable region>>, which is checked on every update by <<SCADDR>>.
+
+The bounds and representable region (or space) are illustrated in <<cap_bounds_map>>.
+E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
+
+[#cap_bounds_map]
+.Memory address bounds encoded within a capability
+image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
+
+In the presence of memory corruption, fault injection, or hardware bugs, bounds can theoretically become <<section_cap_malformed,malformed>>.
+Instructions which decode bounds will typically clear the valid tag of the output if the input is found to be malformed.
+
+NOTE: CHERI requires that the capability is correctly formed if the valid tag is set.
+ Including handling of malformed bounds, and invalid settings of reserved bits, in the architecture allows the behavior to be clearly specified for all possible input values.
 
 [#sec_cap_type]
 ==== Capability Type (CT)
@@ -544,12 +597,11 @@ In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well 
 The rules for modifying the behavior of such instructions are:
 
 * Whenever the PC is handled, it is _always_ the <<pcc>>.
-* Any instruction that has a base address register (generally `rs1`) reads the full capability register instead.
-** This capability register is used to <<sec_cap_checks,check whether the access should be permitted>>.
+* Any memory access instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead which is used to <<sec_cap_checks,check whether the access is permitted>>, taking an exception if it is not.
 * Any instruction that writes back an address (e.g. <<AUIPC_CHERI>>), writes a full capability register instead.
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
- In this case, for example, `new_pcc = SCADDR(old_pcc, offset)`
+ In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
 ** An exception is taken by the branch or jump on failure.
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition).
@@ -559,7 +611,7 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
 
 NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
- Therefore it is _not_ possible to speculatively jump somewhere without having _already_ completed the checks.
+ Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution is permitted.
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
