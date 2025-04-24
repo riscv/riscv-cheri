@@ -55,7 +55,7 @@ NOTE: The CHERI execution mode is always {cheri_cap_mode_name} on implementation
 
 The _<<cheri_execution_mode>>_ is determined by a bit in the metadata of the <<pcc>> called the <<m_bit>>.
 {cheri_default_ext_name} adds a new _<<cheri_execution_mode>>_ field (M) to the capability format.
-Although always present, it only takes effect in code capabilities, i.e. when the <<x_perm>> is set.
+Although always present, it only takes effect in code capabilities, i.e., when the <<x_perm>> is set.
 The exact location of the M-bit in the capability format for XLEN=32 and XLEN=64 is described in <<app_cap_description>>.
 
 * Mode (M)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
@@ -213,7 +213,7 @@ WARNING: This assumes that the Zcmt CSR is extended to be a capability when the 
 For example, the `jvt` CSR is extended to `jvtc`, the `c` suffix indicating that it's a capability.
 It is referred to as `jvt` if only accessing the address or `jvtc` if accessing the whole capability.
 
-* In {cheri_cap_mode_name} <<CSRRW_CHERI>> _always_ read/writes the entire CLEN bits of all CLEN-width CSRs, i.e. it accesses `jvtc`.
+* In {cheri_cap_mode_name} <<CSRRW_CHERI>> _always_ read/writes the entire CLEN bits of all CLEN-width CSRs, i.e., it accesses `jvtc`.
 * In {cheri_int_mode_name} <<CSRRW_CHERI>> _only_ accesses XLEN bits of extended CSRs (e.g., `jvt`, for compatibility) and all CLEN-bits of CSRs added by CHERI extensions (e.g., <<ddc>>).
 ** <<CSRRW_CHERI>> in {cheri_int_mode_name} can only update the address field of `jvt`, but it can write a full value into <<ddc>>.
 ** {cheri_cap_mode_name} always accesses `jvtc`, never `jvt`.
@@ -271,7 +271,7 @@ The following rules apply:
 * When accessing a CSR added by a CHERI extension:
 ** CLEN bits are read from the CSR and written to an output *c* register.
 
-//NOTE: For all non-capability CSRs (i.e. XLEN-width CSRs) XLEN bits are read/written regardless of <<cheri_execution_mode>>.
+//NOTE: For all non-capability CSRs (i.e., XLEN-width CSRs) XLEN bits are read/written regardless of <<cheri_execution_mode>>.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by <<CSRRW_CHERI>>.

@@ -320,7 +320,7 @@ For {cheri_base_ext_name} the CT field is one bit wide and maps 1:1 to the capab
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The bounds mantissa width is different in MXLEN=32.
 Also, the old IE bit is renamed to Exponent Format (EF); the function of IE
-is the inverse of EF i.e. IE=0 has the same effect as EF=1.
+is the inverse of EF, i.e., IE=0 has the same effect as EF=1.
 
 NOTE: *CHERI v9 Note:* The mantissa width for RV32 was increased to 10.
 
@@ -532,7 +532,7 @@ image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
 A capability has _infinite_ bounds if its bounds cover the entire address space
 such that the base address _b_=0 and the top address _t_&#8805;2^MXLEN^,
-i.e. _t_ is an MXLEN + 1 bit value. However, _b_ is an
+i.e., _t_ is an MXLEN + 1 bit value. However, _b_ is an
 MXLEN bit value and the size mismatch introduces additional complications
 when decoding, so the following condition is required to correct _t_ for
 capabilities whose <<section_cap_representable_check>> wraps the edge of the address
@@ -623,7 +623,7 @@ expanded base is 0 and top is 2^MXLEN^.
 | Reserved | zeros  | All reserved fields
 |==============================================================================
 
-^1^ This field may be zero bits wide (i.e. omitted) if {cheri_0levels_ext_name} is implemented.
+^1^ This field may be zero bits wide (i.e., omitted) if {cheri_0levels_ext_name} is implemented.
 
 [#section_infinite_cap_encoding]
 ==== Infinite Capability Encoding
@@ -663,7 +663,7 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
 * For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the AP field, giving the value 0x9
 * For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
 
-^2^ This field may be zero bits wide (i.e. omitted) if {cheri_0levels_ext_name} is implemented.
+^2^ This field may be zero bits wide (i.e., omitted) if {cheri_0levels_ext_name} is implemented.
 
 === Memory space
 
@@ -728,9 +728,9 @@ bounds are formed of two or three sections:
 .Composition of the decoded top address bound
 [#comp_addr_bounds,options=header,align="center",cols="2,4,2,2"]
 |==============================================================================
-| Configuration  | Upper Section (if E + MW < MXLEN) | Middle Section | Lower Section
-| EF=0           | address[MXLEN-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
-| EF=1, i.e. E=0 | address[MXLEN-1:MW] + ct   2+| T[MW - 1:0]
+| Configuration   | Upper Section (if E + MW < MXLEN) | Middle Section | Lower Section
+| EF=0            | address[MXLEN-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
+| EF=1, i.e., E=0 | address[MXLEN-1:MW] + ct   2+| T[MW - 1:0]
 |==============================================================================
 
 The _representable range_ defines the range of addresses which do not corrupt
@@ -822,7 +822,7 @@ Considering for an example `<<cheri_lvlbits>>=2`:
 |3 | As low as `~0b11=0` | Authorizes stores of capabilities with any level
 |2 | As low as `~0b10=1` | Strip tag for level 0 (most _local_), keep for 1,2,3
 |1 | As low as `~0b01=2` | Strip tag for level 0&1, keep for 2&3
-|0 | As low as `~0b00=3` | Strip tag for level 0,1,2, i.e. only the most _global_ can be stored
+|0 | As low as `~0b00=3` | Strip tag for level 0,1,2, i.e., only the most _global_ can be stored
 |===
 
 NOTE: While this extra negation is non-intuitive, it is required such that <<ACPERM>> can use a monotonically decreasing operation for both <<section_cap_level,CL>> <<sl_perm>>.
