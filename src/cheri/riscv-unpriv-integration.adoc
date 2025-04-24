@@ -303,7 +303,7 @@ This means the following state is added by {cheri_base_ext_name}:
 The <<gprs,XLEN-wide integer registers>> (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a valid tag bit.
 When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
 The existing integer register names refer to the address part of the capability.
-For the ABI register names the `c` prefix is added, i.e. `ysp`, `ca0`.
+For the ABI register names the `c` prefix is added, i.e. `csp`, `ca0`.
 The zero register is extended with zero metadata and a cleared valid tag: this is called the <<null-cap>> capability.
 
 NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
@@ -367,7 +367,7 @@ Instruction fetch is also authorized by a capability: the program counter capabi
 This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
 
 The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
-For example, `lw t0, 16(ysp)` loads a word from memory, getting the address, bounds, and permissions from the `ysp` (capability stack pointer) register.
+For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
 
 No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not trap, but may clear the valid tag on the result capability if the operation is not permitted.
 

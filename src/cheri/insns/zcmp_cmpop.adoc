@@ -7,7 +7,7 @@ Synopsis::
 Destroy stack frame (CM.POP): load the return address register and 0 to 12 saved registers from the stack frame, deallocate the stack frame. 16-bit encodings.
 
 {cheri_cap_mode_name} Mnemonic (RV32)::
-`cm.pop \{yreg_list\}, -stack_adj`
+`cm.pop \{creg_list\}, -stack_adj`
 
 {cheri_int_mode_name} Mnemonic::
 `cm.pop \{xreg_list\}, -stack_adj`
@@ -29,7 +29,7 @@ Encoding::
 _rlist_ values 0 to 3 are reserved for a future EABI variant
 
 {cheri_cap_mode_name} Description::
-Load *c* registers as specified in _yreg_list_. Deallocate stack frame. All accesses are checked against `ysp`.
+Load *c* registers as specified in _creg_list_. Deallocate stack frame. All accesses are checked against `csp`.
 
 {cheri_int_mode_name} Description::
 Load integer registers as specified in _xreg_list_. Deallocate stack frame. All accesses are checked against <<ddc>>.
