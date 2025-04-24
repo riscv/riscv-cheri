@@ -323,10 +323,8 @@ Future extensions are permitted to add more levels.
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
-<<<<<<< HEAD
 They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.).
 They can be cleared by <<ACPERM>> but are not interpreted by the CPU otherwise.
-
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set.
 
 NOTE: This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
@@ -400,10 +398,14 @@ executed in addition to the checks already required by the base RISC-V ISA. A
 failing check causes a CHERI exception.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 CAUTION: #ARC suggest that this become a software check exception, which would need a CHERI specific value in Xtval2#
 =======
 CAUTION: #ARC suggest that this become a software error#
 >>>>>>> c5f06a00 (fix more feedback)
+=======
+CAUTION: #ARC suggest that this become a software check exception, which would need a CHERI specific value in Xtval2#
+>>>>>>> a49ab924 (more feedback fixes)
 
 * The valid tag must be set
 * The capability must grant execute permission
@@ -612,10 +614,14 @@ include::insns/cram_32bit.adoc[]
 
 New loads and stores are introduced to handle capability data, <<LC>> and <<SC>>.
 <<<<<<< HEAD
+<<<<<<< HEAD
 They atomically access CLEN-bits of data and the associated valid tag.
 =======
 They access CLEN-bits of data and also access the valid tag.
 >>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
+=======
+They atomically access CLEN-bits of data and the associated valid tag.
+>>>>>>> a49ab924 (more feedback fixes)
 
 All capability memory accesses check for <<c_perm>> in the authorizing capability in `cs1`.
 
@@ -705,38 +711,17 @@ The rules for modifying the behavior of such instructions are:
  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
 ** An exception is taken by the branch or jump on failure.
-<<<<<<< HEAD
-* <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition).
->>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
-=======
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition of suitability).
->>>>>>> c5f06a00 (fix more feedback)
 
-These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>.
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions (e.g. floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
+
+NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
+ Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is permitted.
 
 IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
 
-<<<<<<< HEAD
 NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
  Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is permitted.
-=======
-IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
-
-<<<<<<< HEAD
-//TODO: <<app_cheri_instructions>> has listings for all unprivileged instructions that change behavior when {cheri_base_ext_name} is used as the base ISA.
->>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
-=======
-NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
-<<<<<<< HEAD
-<<<<<<< HEAD
- Therefore it is _not_ possible to speculatively jump somewhere without having _already_ completed the checks.
->>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
-=======
- Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution is permitted.
->>>>>>> 520fd0eb (add bounds and representability section to the intro, and move the bounds diagram there as requested)
-=======
- Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is permitted.
->>>>>>> c5f06a00 (fix more feedback)
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
@@ -813,11 +798,16 @@ All load and store instructions authorized by `cs1` cause CHERI exceptions if an
 Load instructions except for <<LC>> always zero the valid tag and metadata of the result register.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 Stores instructions except for <<SC>> !mak
 write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
 =======
 Non-capability stores write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
 >>>>>>> c5f06a00 (fix more feedback)
+=======
+Stores instructions except for <<SC>> !mak
+write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
+>>>>>>> a49ab924 (more feedback fixes)
 Therefore, misaligned stores may clear up to two associated valid tag bits.
 
 The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
