@@ -114,9 +114,12 @@ NOTE: Inclusive top, with XLEN-bits, was considered but rejected in favor of the
 
 Therefore a memory location `A` in the range `base &#8804; A < top` is within bounds, and so valid to access.
 
+<<<<<<< HEAD
 NOTE: Checking every byte of every executed instruction and byte of every data memory access is fundamental to the memory safety which CHERI provides.
  In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
 
+=======
+>>>>>>> 520fd0eb (add bounds and representability section to the intro, and move the bounds diagram there as requested)
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 
@@ -662,9 +665,12 @@ The rules for modifying the behavior of such instructions are:
 
 * Whenever the PC is handled, it is _always_ the <<pcc>>.
 <<<<<<< HEAD
+<<<<<<< HEAD
 * Any memory access instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead which is used to <<sec_cap_checks,check whether the access is permitted>>, taking an exception if it is not.
 * Any instruction that writes back an address (e.g. <<AUIPC_CHERI>>), writes a full capability register instead.
 =======
+=======
+>>>>>>> 520fd0eb (add bounds and representability section to the intro, and move the bounds diagram there as requested)
 * Any instruction that has a base address register (generally `rs1`) reads the full capability register instead.
 ** This capability register is used to <<sec_cap_checks,check whether the access should be permitted>>.
 <<<<<<< HEAD
@@ -679,11 +685,14 @@ The rules for modifying the behavior of such instructions are:
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition of suitability).
 =======
 =======
+=======
+* Any memory access instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead which is used to <<sec_cap_checks,check whether the access is permitted>>, taking an exception if it is not.
+>>>>>>> 946b180c (add bounds and representability section to the intro, and move the bounds diagram there as requested)
 * Any instruction that writes back an address (e.g. <<AUIPC_CHERI>>), writes a full capability register instead.
 >>>>>>> 90adac13 (clean up cap instruction page section, and some other improvements)
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
- In this case, for example, `new_pcc = SCADDR(old_pcc, offset)`
+ In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
 ** An exception is taken by the branch or jump on failure.
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition).
@@ -704,8 +713,12 @@ IMPORTANT: These rules also apply to instructions added by other extensions (e.g
 >>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
 =======
 NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
+<<<<<<< HEAD
  Therefore it is _not_ possible to speculatively jump somewhere without having _already_ completed the checks.
 >>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
+=======
+ Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution is permitted.
+>>>>>>> 520fd0eb (add bounds and representability section to the intro, and move the bounds diagram there as requested)
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
