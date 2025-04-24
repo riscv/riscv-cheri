@@ -114,6 +114,9 @@ NOTE: Inclusive top, with XLEN-bits, was considered but rejected in favor of the
 
 Therefore a memory location `A` in the range `base &#8804; A < top` is within bounds, and so valid to access.
 
+NOTE: Checking every byte of every executed instruction and byte of every data memory access is fundamental to the memory safety which CHERI provides.
+ In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
+
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 
@@ -180,10 +183,9 @@ When `CT=0`, the capability authorizes access to a region of memory as defined b
 
 [#sentry_cap,reftext="sentry capability"]
 Sentry capabilities::
-Capabilities with `CT=1` are immutable
-capabilities that describe function entry points, known as sealed entry (sentry) capabilities.
-They cannot be dereferenced to access memory and are immutable.
-Modifying any of its fields clears the valid tag of the output capability.
+Capabilities with `CT=1` describe function entry points, known as sealed entry (sentry) capabilities.
+They cannot be dereferenced to access memory and are only allow very limited changes to the fields in the capability, which is restricted to reducing the <<section_cap_level, CL>> field using <<ACPERM>>.
+Modifying any other fields with <<ACPERM>>, or any other instruction, clears the valid tag of the output capability.
 The only permitted operation for sentry capabilities is jumping to a sentry capability to begin executing the instructions it references.
 +
 NOTE: Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
@@ -206,13 +208,13 @@ The permissions currently defined in {cheri_base_ext_name} are listed below.
 IMPORTANT: Permissions can only be removed, and any attempt to add permissions zeroes the valid tag.
 
 [#r_perm,reftext="R-permission"]
-Read Permission \(R):: Allow reading integer data from memory. Tags are always
-read as zero when reading integer data.
+Read Permission \(R):: Allow reading data from memory. Tags are always
+read as zero when reading non-capability data.
 
 [#w_perm,reftext="W-permission"]
-Write Permission (W):: Allow writing integer data to memory. Valid tags are always
-written as zero when writing integer data. Every CLEN aligned word in memory
-has a tag, if any byte is overwritten with integer data then the valid tag for all
+Write Permission (W):: Allow writing data to memory. Valid tags are always
+written as zero when writing non-capability data. Every CLEN aligned word in memory
+has a valid tag, if any byte is overwritten with non-capability data then the valid tag for all
 CLEN-bits is cleared.
 
 [#c_perm,reftext="C-permission"]
@@ -243,10 +245,12 @@ With `LVLBITS=1` there is a single bit comparison, so it behaves as follows:
 - If this field (as well as <<c_perm>> and <<w_perm>>) is set to 1 then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
 - If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e., _local_), will be stored with the valid tag cleared.
 
+ifdef::cheri_v9_annotations[]
 NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9, Morello and CHERIoT.
+endif::[]
 
 [#el_perm,reftext="EL-permission"]
-Elevate Level Permission (EL):: Any unsealed capability with its tag set to 1 that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
+Elevate Level Permission (EL):: Any unsealed capability with its valid tag set to 1 that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
 If sealed, then only <<section_cap_level,CL>> is modified, <<el_perm>> is unchanged.
 This permission is similar to the existing <<lm_perm>>, but instead of applying to the <<w_perm>> on the loaded capability it restricts the <<section_cap_level,CL>> field.
 
@@ -300,7 +304,9 @@ NOTE: if W=0 or C=0 then SL is irrelevant
    6+| All other cases                                   |Load data capability with EL, CL unmodified
 |==============================================================================
 
+ifdef::cheri_v9_annotations[]
 NOTE: The current specification only defines up to two levels, equivalent to _local_ and _global_ capabilities from CHERI v9, Morello and CHERIoT.
+endif::[]
 Future extensions are permitted to add more levels.
 
 [#sec_cap_sdp]
@@ -368,7 +374,7 @@ In the base {cheri_base_ext_name} ISA, only the program counter (`pc`) register 
 NOTE: All CSRs that hold pointers are extended to CLEN bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, any such change is described in the corresponding chapters.
 
 [#pcc,reftext="pcc"]
-===== The Program Counter Capability (`pcc`)
+==== The Program Counter Capability (`pcc`)
 
 The `pc` is extended to be the Program Counter Capability.
 Extending the `pc` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
@@ -379,34 +385,35 @@ The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA. A
 failing check causes a CHERI exception.
 
+CAUTION: #ARC suggest that this become a software error#
+
 * The valid tag must be set
-* The capability must not be sealed
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
 
 On startup <<pcc>> bounds and permissions must be set such that the program can run successfully (e.g., by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
 
-NOTE: Operations that update <<pcc>>, such as changing privilege or executing jump instructions, unseal capabilities prior to writing.
-Therefore, implementations do not need to check that that <<pcc>> is unsealed when executing each instruction.
-However, this property has not yet been formally verified and may not hold if additional CHERI extensions beyond {cheri_base_ext_name} are implemented.
-
 .Program Counter Capability
 [#pcc-format]
 include::img/pccreg.edn[]
 
-<<pcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses.
+//move to priv section
+//<<pcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses.
 //FIXME! ref to priv here, need associated text there instead?
 // (see <<section_invalid_addr_conv>>).
 
-==== Tags in registers, caches, and memory
+==== Valid tags in registers
 
 Every register has a one-bit valid tag, indicating whether the capability in the register is valid to be dereferenced.
 This valid tag is cleared whenever an invalid capability operation is performed.
-Examples of such invalid operations include writing only the integer portion of the register or attempting to increase bounds or permissions.
+Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
 
-The valid tags are also tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit valid tag, which the hardware manages atomically with the data.
-The valid tag is cleared if the memory region is ever written using an operation other than a store of a full capability register with <<c_perm>> granted.
-Any system memory and caches that store capabilities must preserve this abstraction.
+==== Valid tags in memory
+
+The valid tags are tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit valid tag, which the hardware manages atomically with the data.
+The valid tag is cleared if any byte in the CLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand with <<c_perm>> granted.
+
+NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the valid tags atomically with the data.
 
 [#sec_cap_checks]
 === Capability checks
@@ -416,7 +423,7 @@ Instruction fetches, branches, jumps, and data memory accesses may result in a f
 For example, loads instruction requires <<r_perm>>, stores require <<w_perm>> and jumps require <<x_perm>>.
 See <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details on the exception reporting mechanism.
 Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends PC.
-This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with integer data.
+This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
 
 The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
 For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
@@ -592,7 +599,7 @@ include::insns/store_32bit_cap.adoc[]
 {cheri_base_ext_name} extend existing instructions which are used for handling addresses so that they manipulate a whole capability.
 The affected operands change type from *x* to *c* to represent this, and/or the PC is replaced by the <<pcc>>
 
-In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well as loads and stores.
+In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well as all loads and stores.
 
 The rules for modifying the behavior of such instructions are:
 
@@ -604,14 +611,14 @@ The rules for modifying the behavior of such instructions are:
  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
 ** An exception is taken by the branch or jump on failure.
-* <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition).
+* <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition of suitability).
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>.
 
 IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
 
 NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
- Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution is permitted.
+ Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is permitted.
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
@@ -670,7 +677,7 @@ include::insns/condbr_32bit.adoc[]
 
 All load and store instructions behave as described in <<ldst>> with one fundamental difference:
 
-* For the base operand (`rs1`), the full capability register `cs1` is used to authorize the resulting memory access.
+* For the base operand (`rs1`), the capability source operand `cs1` is used to authorize the resulting memory access.
 
 All load and store instructions authorized by `cs1` cause CHERI exceptions if any of these checks fails:
 
@@ -688,7 +695,7 @@ All load and store instructions authorized by `cs1` cause CHERI exceptions if an
 Non-capability load instructions always zero the valid tag and metadata of the result register.
 
 Non-capability stores write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
-Therefore, misaligned stores may clear up to two valid tag bits in memory.
+Therefore, misaligned stores may clear up to two associated valid tag bits.
 
 NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
  Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.
