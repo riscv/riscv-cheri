@@ -49,8 +49,8 @@ improve their security.
 [#sec_capability_registers]
 === General purpose registers
 
-{cheri_base_ext_name} extends the general purpose registers to `2*XLEN-bit` (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
-In addition to widening to YLEN, each register also gains an out-of-band (hidden / hardware managed) one-bit valid tag.
+{cheri_base_ext_name} extends the general purpose registers to `2*XLEN-bit` (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+In addition to widening to CLEN, each register also gains an out-of-band (hidden / hardware managed) one-bit valid tag.
 The exact bitwise layout of capabilities as well as the precise encoding of each field for XLEN=32 and XLEN=64 is described in <<app_cap_description>>, but always contain the fields listed in the following paragraphs.
 
 .CHERI Capability structure
@@ -81,16 +81,16 @@ For registers that are extended but (currently) only hold integer data, all othe
 [#cap_validity_tag,reftext="valid tag"]
 ==== Valid Tag
 
-The valid tag is an additional hardware managed bit added to addressable memory and all *y* registers.
+The valid tag is an additional hardware managed bit added to addressable memory and all *c* registers.
 It is stored separately and may be referred to as _out of band_ or _hidden_.
-It indicates whether a *y* register or YLEN-aligned memory location contains a valid capability.
+It indicates whether a *c* register or CLEN-aligned memory location contains a valid capability.
 If the valid tag is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or bounds).
 
 The capability is invalid if the valid tag is clear.
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
 All capabilities derived from invalid capabilities are themselves invalid i.e. their valid tags are 0.
 
-All locations in registers or memory able to hold a capability are YLEN-bits wide including the valid tag bit.
+All locations in registers or memory able to hold a capability are CLEN-bits wide including the valid tag bit.
 Those locations are referred as being _YLEN-bit_ or _capability_-wide in this specification.
 
 [#sec_cap_bounds]
@@ -158,9 +158,9 @@ read as zero when reading integer data.
 
 [#w_perm,reftext="W-permission"]
 Write Permission (W):: Allow writing integer data to memory. Valid tags are always
-written as zero when writing integer data. Every YLEN aligned word in memory
+written as zero when writing integer data. Every CLEN aligned word in memory
 has a tag, if any byte is overwritten with integer data then the valid tag for all
-YLEN-bits is cleared.
+CLEN-bits is cleared.
 
 [#c_perm,reftext="C-permission"]
 Capability Permission \(C):: Allow reading capability data from memory if the
@@ -281,7 +281,7 @@ The memory representation of the <<null-cap>> capability is all zeroes.
 A CHERI core adds state to allow capabilities to be used from within integer (X) registers, and to ensure they are not corrupted as they flow through the system.
 This means the following state is added by {cheri_base_ext_name}:
 
-.CHERI *y* registers extending existing *x* registers in {cheri_base_ext_name}
+.CHERI *c* registers extending existing *x* registers in {cheri_base_ext_name}
 [#base_cap_registers]
 [bytefield]
 ----
@@ -289,7 +289,7 @@ This means the following state is added by {cheri_base_ext_name}:
 (def row-height 100)
 (def row-header-fn nil)
 (def boxes-per-row 65)
-(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (YLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
+(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
 
 (draw-box "" [:box-first {:span 1}]) (draw-box "c0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
 (draw-box "" [:box-first {:span 1}]) (draw-box "c1" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
@@ -306,14 +306,14 @@ The existing integer register names refer to the address part of the capability.
 For the ABI register names the `c` prefix is added, i.e. `ysp`, `ca0`.
 The zero register is extended with zero metadata and a cleared valid tag: this is called the <<null-cap>> capability.
 
-NOTE: Instruction encodings refer to *y* registers when they use `ys1`, `yd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
+NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
 
 ==== Extended CSRs
 All registers that store addresses are extended to contain capabilities.
 In the base {cheri_base_ext_name} ISA, only the program counter (`pc`) register is extended to become the Program Counter Capability (<<pcc>>).
 ``
 
-NOTE: All CSRs that hold pointers are extended to YLEN bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, any such change is described in the corresponding chapters.
+NOTE: All CSRs that hold pointers are extended to CLEN bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, any such change is described in the corresponding chapters.
 
 [#pcc,reftext="pcc"]
 ===== The Program Counter Capability (`pcc`)
@@ -352,7 +352,7 @@ Every register has a one-bit valid tag, indicating whether the capability in the
 This valid tag is cleared whenever an invalid capability operation is performed.
 Examples of such invalid operations include writing only the integer portion of the register or attempting to increase bounds or permissions.
 
-The valid tags are also tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit valid tag, which the hardware manages atomically with the data.
+The valid tags are also tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit valid tag, which the hardware manages atomically with the data.
 The valid tag is cleared if the memory region is ever written using an operation other than a store of a full capability register with <<c_perm>> granted.
 Any system memory and caches that store capabilities must preserve this abstraction.
 
@@ -424,7 +424,7 @@ The new and modified instructions are listed in the following sections of this c
 |<<SCBNDS>>   |Set register bounds on capability with rounding, clear tag if rounding is required
 |<<SCBNDSR>>  |Set bounds on capability with rounding up as required
 |<<SENTRY>>   |Seal capability
-|<<CBLD>>     |Set yd to ys2 with its tag set after checking that ys2 is a subset of ys1
+|<<CBLD>>     |Set cd to cs2 with its tag set after checking that cs2 is a subset of cs1
 |=======================
 
 include::insns/acperm_32bit.adoc[]
@@ -469,7 +469,7 @@ include::insns/gchi_32bit.adoc[]
 |=======================
 |Mnemonic   |Description
 |<<SCEQ>>   |Full capability bitwise compare, set result true if both are fully equal
-|<<SCSS>>   |Set result true if ys1 and ys1 tags match and ys2 bounds and permissions are a subset of ys1
+|<<SCSS>>   |Set result true if cs1 and cs1 tags match and cs2 bounds and permissions are a subset of cs1
 |<<CRAM>>   |Representable Alignment Mask: Return mask to apply to address to get the requested bounds
 |=======================
 
@@ -483,28 +483,28 @@ include::insns/cram_32bit.adoc[]
 === Capability Load, Store Instructions
 
 New loads and stores are introduced to handle capabilities.
-They all operate in the same manner as the base ISA but access YLEN bits and also the valid tag.
+They all operate in the same manner as the base ISA but access CLEN bits and also the valid tag.
 
 All capability memory accesses requires <<c_perm>> in the authorizing capability.
 If <<c_perm>> is not granted then:
 
-* All capability loads will return YLEN-bits from memory, and a zero valid tag.
-* All capability stores will write YLEN-bits to memory, and write a zero valid tag.
+* All capability loads will return CLEN-bits from memory, and a zero valid tag.
+* All capability stores will write CLEN-bits to memory, and write a zero valid tag.
 
 NOTE: Future extensions to {cheri_base_ext_name} may add mechanisms that cause
 stores of capabilities to raise exceptions when the authorizing capability does not grant both
 <<w_perm>> and <<c_perm>> and the stored capability has the valid tag set.
 
-All capability memory access instructions require YLEN aligned addresses, and will
+All capability memory access instructions require CLEN aligned addresses, and will
 take the appropriate misaligned exception if this requirement is not met.
 
-All capability memory accesses require permission from the authorizing capability in *ys1*.
+All capability memory accesses require permission from the authorizing capability in *cs1*.
 
 * All capability loads require <<r_perm>>, otherwise they will take an exception
 * All capability stores require <<w_perm>>, otherwise they will take an exception
 
 NOTE: Misaligned capability memory accesses cannot be emulated.
-  To transfer YLEN misaligned bits without a valid tag, use integer loads and stores.
+  To transfer CLEN misaligned bits without a valid tag, use integer loads and stores.
 
 Under some circumstances <<LC>> will _modify_ metadata before returning the value.
 See <<LC>> for details.
@@ -526,7 +526,7 @@ include::insns/store_32bit_cap.adoc[]
 === Changes to Existing RISC-V Base ISA Instructions
 
 {cheri_base_ext_name} extend existing instructions which are used for handling addresses so that they manipulate a whole capability.
-The affected operands change type from *x* to *y* to represent this, and/or the PC is replaced by the <<pcc>>
+The affected operands change type from *x* to *c* to represent this, and/or the PC is replaced by the <<pcc>>
 
 In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well as loads and stores.
 
@@ -541,7 +541,7 @@ The rules for modifying the behavior of such instructions are:
  In this case, for example, `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction (2 or 4 bytes) is in bounds the target PC.
 ** An exception is taken on failure.
-* <<JALR_CHERI>> copies _all_ of `ys1` into the <<pcc>>. If `ys1` is not suitable for execution then an exception is taken (see <<pcc>> for the definition).
+* <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken (see <<pcc>> for the definition).
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>.
 
@@ -554,11 +554,11 @@ IMPORTANT: These rules also apply to instructions added by other extensions (e.g
 |=======================
 |Mnemonic                   |Description
 |<<AUIPC_CHERI>>            |Add immediate to PCC address, return capability
-|<<JAL_CHERI>>              |Jump to PC+offset, bounds check minimum size target instruction, link to yd
+|<<JAL_CHERI>>              |Jump to PC+offset, bounds check minimum size target instruction, link to cd
 |<<JALR_CHERI>>             |Indirect jump and link, bounds check minimum size target instruction.
 |<<insns-conbr-32bit_CHERI,BEQ, BNE, BLT[U], BGE[U]>>|Conditional branches (checked by <<pcc>>)
-|<<section_int_load_store_insns,LD, LW[U], LH[U], LB[U]>>|Integer loads (authorized by the capability in `ys1`)
-|<<section_int_load_store_insns,SD, SW, SH, SB>>|Integer stores (authorized by the capability in `ys1`)
+|<<section_int_load_store_insns,LD, LW[U], LH[U], LB[U]>>|Integer loads (authorized by the capability in `cs1`)
+|<<section_int_load_store_insns,SD, SW, SH, SB>>|Integer stores (authorized by the capability in `cs1`)
 |=======================
 
 include::insns/auipc_32bit.adoc[]
@@ -574,7 +574,7 @@ include::insns/jalr_32bit.adoc[]
 //The resulting jump address is checked against <<pcc>> as described below.
 //Additionally, the link register is sealed (as if executing an implicit <<SENTRY>>) to ensure that the callee cannot modify the return //address and (maliciously) return to an incorrect instruction.
 //
-//For indirect jumps, the authorizing capability is not <<pcc>> but the base capability register in *ys1*.
+//For indirect jumps, the authorizing capability is not <<pcc>> but the base capability register in *cs1*.
 //
 //The target capability is unsealed if it is a sentry and the instructions has a zero immediate offset.
 //
@@ -606,25 +606,25 @@ include::insns/condbr_32bit.adoc[]
 
 All load and store instructions behave as described in <<ldst>> with one fundamental difference:
 
-* For the base operand (`rs1`), the full capability register `ys1` is used to authorize the resulting memory access.
+* For the base operand (`rs1`), the full capability register `cs1` is used to authorize the resulting memory access.
 
-All load and store instructions authorized by `ys1` cause CHERI exceptions if any of these checks fails:
+All load and store instructions authorized by `cs1` cause CHERI exceptions if any of these checks fails:
 
-* `ys1` must not be `c0`^1^
-* The valid tag (`ys1.tag`) must be set, and there must be no reserved bits set in `ys1`.
-* `ys1` must be unsealed
-* The virtual address in `ys1` must not be invalid if virtual memory is enabled.
-* All bytes of accessed memory must be inside `ys1's` bounds, and the bounds can't be <<section_cap_malformed,malformed>>.
-* For loads, the <<r_perm,read permission>> must be set in `ys1`
-* For stores, the <<w_perm,write permission>> must be set in `ys1`
+* `cs1` must not be `c0`^1^
+* The valid tag (`cs1.tag`) must be set, and there must be no reserved bits set in `cs1`.
+* `cs1` must be unsealed
+* The virtual address in `cs1` must not be invalid if virtual memory is enabled.
+* All bytes of accessed memory must be inside `cs1's` bounds, and the bounds can't be <<section_cap_malformed,malformed>>.
+* For loads, the <<r_perm,read permission>> must be set in `cs1`
+* For stores, the <<w_perm,write permission>> must be set in `cs1`
 
-^1^ All load/store encodings are _reserved_ if `ys1=c0` (since dereferencing <<null-cap>> always faults).
- This principle is extended to _all_ loads and stores authorized by `ys1`.
+^1^ All load/store encodings are _reserved_ if `cs1=c0` (since dereferencing <<null-cap>> always faults).
+ This principle is extended to _all_ loads and stores authorized by `cs1`.
 
 Non-capability load instructions always zero the valid tag and metadata of the result register.
 
-Non-capability stores write zero to the valid tag associated with the memory locations that are naturally aligned to YLEN.
+Non-capability stores write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
 Therefore, misaligned stores may clear up to two valid tag bits in memory.
 
 NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
- Under {cheri_base_ext_name} _all_ loads and stores are authorized by `ys1`.
+ Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.

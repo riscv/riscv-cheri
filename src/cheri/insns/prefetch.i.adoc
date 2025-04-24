@@ -8,7 +8,7 @@ Provide a HINT to hardware that a cache block is likely to be accessed by an
 instruction fetch in the near future
 
 {cheri_cap_mode_name} Mnemonic::
-`prefetch.i offset(ys1)`
+`prefetch.i offset(cs1)`
 
 {cheri_int_mode_name} Mnemonic::
 `prefetch.i offset(rs1)`
@@ -28,13 +28,13 @@ Encoding::
 
 {cheri_cap_mode_name} Description::
 A PREFETCH.I instruction indicates to hardware that the cache block whose
-effective address is the sum of the base address specified in `ys1` and the
+effective address is the sum of the base address specified in `cs1` and the
 sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
 likely to be accessed by an instruction fetch in the near future. The encoding
 is only valid if imm[4:0]=0. The authorizing capability for this operation is
-`ys1`. This instruction does not throw any exceptions. However, following
+`cs1`. This instruction does not throw any exceptions. However, following
 xref:CHERI_SPEC[xrefstyle=short], this instruction does not perform a prefetch
-if it is not authorized by `ys1`.
+if it is not authorized by `cs1`.
 
 {cheri_int_mode_name} Description::
 A PREFETCH.I instruction indicates to hardware that the cache block whose

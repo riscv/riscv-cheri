@@ -6,7 +6,7 @@
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* this instruction was called CTESTSUBSET.
 
-NOTE: *CHERI v9 Note:* this instruction does not use ddc if ys1==0
+NOTE: *CHERI v9 Note:* this instruction does not use ddc if cs1==0
 
 
 endif::[]
@@ -17,21 +17,21 @@ Synopsis::
 Set Capability Subset
 
 Mnemonic::
-`scss rd, ys1, ys2`
+`scss rd, cs1, cs2`
 
 Encoding::
 include::wavedrom/scss.adoc[]
 
 Description::
 `rd` is set to 1 if:
-. the valid tag of capabilities `ys1` and `ys2` are equal, and
-. the bounds and permissions of `ys2` are a subset of those of `ys1`, and
-. `ys2` 's <<section_cap_level>> is equal to or lower than `ys1` 's
+. the valid tag of capabilities `cs1` and `cs2` are equal, and
+. the bounds and permissions of `cs2` are a subset of those of `cs1`, and
+. `cs2` 's <<section_cap_level>> is equal to or lower than `cs1` 's
 +
 NOTE: With {cheri_0levels_ext_name} this check always passes as the level is hardwired.
-. neither `ys1` or `ys2` have bounds which are <<section_cap_malformed,malformed>>, and
-. neither `ys1` or `ys2` have any bits set in reserved fields, and
-. neither `ys1` or `ys2` have permissions that could not have been legally produced by <<ACPERM>>
+. neither `cs1` or `cs2` have bounds which are <<section_cap_malformed,malformed>>, and
+. neither `cs1` or `cs2` have any bits set in reserved fields, and
+. neither `cs1` or `cs2` have permissions that could not have been legally produced by <<ACPERM>>
 
 Otherwise set `rd` to 0.
 

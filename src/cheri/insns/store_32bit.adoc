@@ -12,19 +12,19 @@ Synopsis::
 Integer Stores (SD, SW, SH, SB)
 
 {cheri_cap_mode_name} Mnemonics::
-`sd rs2, offset(ys1)` +
-`sw rs2, offset(ys1)` +
-`sh rs2, offset(ys1)` +
-`sb rs2, offset(ys1)`
+`sd rs2, offset(cs1)` +
+`sw rs2, offset(cs1)` +
+`sh rs2, offset(cs1)` +
+`sb rs2, offset(cs1)`
 
 Encoding::
 include::wavedrom/store.adoc[]
 
 Description::
 Store integer data of the indicated size (byte, halfword, word, double-word) to memory.
-The effective address of the store is obtained by adding the sign-extended 12-bit offset to the address of `ys1`.
-The authorizing capability for the operation is `ys1`.
-A copy of `rs2` is written to memory at the location indicated by the effective address and the valid tag bit of each block of memory naturally aligned to YLEN/8 is cleared.
+The effective address of the store is obtained by adding the sign-extended 12-bit offset to the address of `cs1`.
+The authorizing capability for the operation is `cs1`.
+A copy of `rs2` is written to memory at the location indicated by the effective address and the valid tag bit of each block of memory naturally aligned to CLEN/8 is cleared.
 +
 include::load_store_c0.adoc[]
 
@@ -34,7 +34,7 @@ include::load_store_c0.adoc[]
 // sign-extended 12-bit offset to `rs1`. The authorizing capability for the
 // operation is <<ddc>>. A copy of `rs2` is written to memory at the location
 // indicated by the effective address and the valid tag bit of each block of memory
-// naturally aligned to YLEN/8 is cleared.
+// naturally aligned to CLEN/8 is cleared.
 
 include::store_exceptions.adoc[]
 

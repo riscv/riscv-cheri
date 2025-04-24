@@ -15,7 +15,7 @@ Synopsis::
 Shift by _n_ and add unsigned word for address generation (SH1ADD.UW, SH2ADD.UW, SH3ADD.UW)
 
 {cheri_cap_mode_name} Mnemonics (RV64)::
-`sh[1|2|3]add.uw yd, rs1, ys2`
+`sh[1|2|3]add.uw cd, rs1, cs2`
 
 {cheri_int_mode_name} Mnemonics (RV64)::
 `sh[1|2|3]add.uw rd, rs1, rs2`
@@ -25,19 +25,19 @@ Encoding::
 ....
 {reg:[
     { bits:  7, name: 0x3b, attr: ['OP'] },
-    { bits:  5, name: 'yd' },
+    { bits:  5, name: 'cd' },
     { bits:  3, name: 'func3', attr: ['rv64: SH1ADD.UW=010', 'rv64: SH2ADD.UW=100', 'rv64: SH3ADD.UW=110'] },
     { bits:  5, name: 'rs1' },
-    { bits:  5, name: 'ys2' },
+    { bits:  5, name: 'cs2' },
     { bits:  7, name: 0x10, attr: ['rv64: SH[1|2|3]ADD.UW'] },
 ]}
 ....
 
 {cheri_cap_mode_name} Description::
-Increment the address field of `ys2` by the unsigned word in `rs1` shifted left
-by _n_ bit positions and write the result to `yd`. The valid tag bit of the output
-capability is 0 if `ys2` did not have its tag set to 1, the incremented address
-is outside `ys2` 's <<section_cap_representable_check>> or `ys2` is sealed.
+Increment the address field of `cs2` by the unsigned word in `rs1` shifted left
+by _n_ bit positions and write the result to `cd`. The valid tag bit of the output
+capability is 0 if `cs2` did not have its tag set to 1, the incremented address
+is outside `cs2` 's <<section_cap_representable_check>> or `cs2` is sealed.
 
 include::malformed_shadd_clear_tag.adoc[]
 

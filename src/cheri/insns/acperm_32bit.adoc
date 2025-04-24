@@ -17,7 +17,7 @@ Synopsis::
 Mask capability permissions
 
 Mnemonics::
-`acperm yd, ys1, rs2`
+`acperm cd, cs1, rs2`
 
 Encoding::
 include::wavedrom/acperm.adoc[]
@@ -25,7 +25,7 @@ include::wavedrom/acperm.adoc[]
 Description::
 ACPERM performs the following operations:
 
-. Convert the AP and SDP fields of capability `ys1` into a bit field with the
+. Convert the AP and SDP fields of capability `cs1` into a bit field with the
 format shown in xref:acperm_bit_field[xrefstyle=short].
 . Calculate the bitwise AND of the bit field with the mask `rs2`.
 +
@@ -35,10 +35,10 @@ NOTE: Some permission bits may be hardwired, in which case they are not included
 IMPORTANT: Depending on the base ISA and supported extensions, some combinations of permissions cannot be encoded or are not useful.
 In case the requested permissions combination falls into this category, <<ACPERM>> will return useful minimal sets of permissions, which may be no permissions.
 Therefore, it is possible that requesting to clear a permission also clears others, but <<ACPERM>> will never _add_ new permissions.
-. Copy `ys1` to `yd`, and update the AP and SDP fields with the newly calculated versions.
-. Set `yd.tag=0` if `ys1` is sealed.
+. Copy `cs1` to `cd`, and update the AP and SDP fields with the newly calculated versions.
+. Set `cd.tag=0` if `cs1` is sealed.
 // TODO: reserved fields can only be set through a memory error, should all of this go into an appendix?
-// or if any reserved fields of `ys1` are set.
+// or if any reserved fields of `cs1` are set.
 
 IMPORTANT: The <<el_perm,EL>>, <<sl_perm,SL>> and <<section_cap_level,CL>> fields are only modifiable if the implementation supports {cheri_1levels_ext_name}, for {cheri_0levels_ext_name} they are hardwired to 1.
 

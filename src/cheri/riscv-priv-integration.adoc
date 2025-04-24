@@ -415,7 +415,7 @@ future extensions.
 | VS-mode          | <<vstval>>       | <<vstval2>>
 |==============================================================================
 
-NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `ys1` for {cheri_cap_mode_name}
+NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_mode_name}
 
 .Valid CHERI exception combination description
 [#cheri_exception_combs_descriptions]
@@ -433,11 +433,11 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `ys1` for {cheri_cap_m
 6+| *direct jumps additional exception check*
 | <<JAL_CHERI>>, <<insns-conbr-32bit_CHERI,conditional branches>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds} | <<pcc>> bounds     | any byte of minimum length instruction at target out of <<pcc>> bounds
 6+| *indirect jumps additional exception checks*
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}      |`ys1` tag             | not(`ys1.tag`)
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}     |`ys1` seal            | isCapSealed(`ys1`) and imm12 != 0
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}     |`ys1` permission      | not(`ys1`.<<x_perm>>)
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_inv_addr} |`ys1` invalid address | target address is an invalid address
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds}   |`ys1` bounds          | any byte of minimum length instruction at target out of `ys1` bounds
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}      |`cs1` tag             | not(`cs1.tag`)
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}     |`cs1` seal            | isCapSealed(`cs1`) and imm12 != 0
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}     |`cs1` permission      | not(`cs1`.<<x_perm>>)
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_inv_addr} |`cs1` invalid address | target address is an invalid address
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds}   |`cs1` bounds          | any byte of minimum length instruction at target out of `cs1` bounds
 6+| *Load additional exception checks*
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}      | `auth_cap` tag             | not(`auth_cap.tag`)
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}     | `auth_cap` seal            | isCapSealed(`auth_cap`)
@@ -528,12 +528,12 @@ NOTE: On reset CHERI register access is disabled (<<mseccfg>>.CRE resets to zero
 
 The following occurs when executing code in a privilege mode that has CHERI register access disabled:
 
-* Instructions that access *y* registers (implicitly or explicitly)
+* Instructions that access *c* registers (implicitly or explicitly)
 cause illegal instruction exceptions
 +
 NOTE: The only instruction added by {cheri_base_ext_name} that does not access capability state is <<CRAM>>, all others are disabled.
 * Executing CSR instructions accessing any CSR added by any CHERI extension ({cheri_default_ext_name}, {cheri_priv_m_ext}, {cheri_priv_s_ext}, {cheri_priv_h_ext}) causes an illegal instruction exception
-* Executing CSR instructions accessing any CSR extended to YLEN only allows XLEN access.
+* Executing CSR instructions accessing any CSR extended to CLEN only allows XLEN access.
 * All allowed instructions execute as if the CHERI execution mode is {cheri_int_mode_name}.
 // FIXME: there should be no way to observe the M bit, do we need to mentions this?
 // The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
@@ -561,8 +561,8 @@ in connection with the <<section_cheri_disable,CRE>> and the <<cheri_execution_m
 |==============================================================================
 | | CRE=0, M-bit=X^1^ | CRE=1, M-bit={int_mode_value} | CRE=1, M-bit={cap_mode_value}
 | Authorizing capability for memory accesses | <<ddc>> or <<pcc>> | <<ddc>> or <<pcc>> | Instruction's capability operand
-| New CHERI CSR Access Width                | ✘                 | YLEN                  | YLEN
-| Extended CHERI CSR Access Width      | XLEN              | XLEN                  | YLEN
+| New CHERI CSR Access Width                | ✘                 | CLEN                  | CLEN
+| Extended CHERI CSR Access Width      | XLEN              | XLEN                  | CLEN
 | CHERI Instructions Allowed           | ✘                 | ✔                    | ✔
 | Compressed Instructions Remapped     | No                | No                    | Yes^2^
 | Summary                              | **_Fully RISC-V compatible_**^3^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
@@ -593,7 +593,7 @@ Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it is
 The integer writing rule from CHERI is followed, so that every register write also zeroes the metadata and tag of the
 destination register.
 +
-However, CHERI operations and security checks will continue using the entire hardware register (i.e. YLEN bits) to correctly decode capability bounds.
+However, CHERI operations and security checks will continue using the entire hardware register (i.e. CLEN bits) to correctly decode capability bounds.
 
 Changing endianness::
 Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
@@ -763,7 +763,7 @@ Control transfer instructions jump or branch to a capability A which can be:
 
 * <<pcc>> for branches, direct jumps and any branch when in
 {cheri_int_mode_name} (see xref:section_cheri_hybrid_ext[xrefstyle=short]).
-* The capability in the *y* input register of a jump when in
+* The capability in the *c* input register of a jump when in
 {cheri_cap_mode_name} (see xref:section_cheri_hybrid_ext[xrefstyle=short]).
 
 The following procedure must be used when jumping or branching to the target

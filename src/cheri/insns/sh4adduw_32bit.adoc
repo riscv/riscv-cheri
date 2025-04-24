@@ -7,7 +7,7 @@ Synopsis::
 Shift by 4 and add unsigned words for address generation (SH4ADD.UW)
 
 {cheri_cap_mode_name} Mnemonic (RV64)::
-`sh4add.uw yd, rs1, ys2`
+`sh4add.uw cd, rs1, cs2`
 
 {cheri_int_mode_name} Mnemonic (RV64)::
 `sh4add.uw rd, rs1, rs2`
@@ -17,18 +17,18 @@ Encoding::
 ....
 {reg:[
     { bits:  7, name: 0x3b, attr: ['OP-32'] },
-    { bits:  5, name: 'yd' },
+    { bits:  5, name: 'cd' },
     { bits:  3, name: 0x7, attr: ['rv64: SH4ADD.UW'] },
     { bits:  5, name: 'rs1' },
-    { bits:  5, name: 'ys2' },
+    { bits:  5, name: 'cs2' },
     { bits:  7, name: 16, attr: ['rv64: SH4ADD.UW'] },
 ]}
 ....
 
 Description::
-Increment the address field of `ys2` by the unsigned word in `rs1` shifted left by 4 bit positions and write the result to `yd`.
+Increment the address field of `cs2` by the unsigned word in `rs1` shifted left by 4 bit positions and write the result to `cd`.
 +
-Set `yd.tag=0` if `ys2.tag=0` or `ys2` is sealed.
+Set `cd.tag=0` if `cs2.tag=0` or `cs2` is sealed.
 +
 include::rep_range_check.adoc[]
 +

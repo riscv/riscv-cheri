@@ -24,19 +24,19 @@ Synopsis::
 Capability set bounds
 
 Mnemonics::
-`scbnds yd, ys1, rs2` +
-`scbndsi yd, ys1, uimm`
+`scbnds cd, cs1, rs2` +
+`scbndsi cd, cs1, uimm`
 
 Encoding::
 include::wavedrom/scbnds_32bit.adoc[]
 
 Description::
-Capability register `yd`  is set to capability register `ys1`  with the base
-address of its bounds replaced with the value of `ys1.address` and
+Capability register `cd`  is set to capability register `cs1`  with the base
+address of its bounds replaced with the value of `cs1.address` and
 the length of its bounds set to `rs2`  (or `imm`). If the resulting capability
-cannot be <<section_cap_representable_check,represented exactly>> then set `yd.tag` to 0.
-In all cases, `yd.tag` is set to 0 if its bounds exceed `ys1` 's bounds, `ys1` 's
-tag is 0  or `ys1` is sealed.
+cannot be <<section_cap_representable_check,represented exactly>> then set `cd.tag` to 0.
+In all cases, `cd.tag` is set to 0 if its bounds exceed `cs1` 's bounds, `cs1` 's
+tag is 0  or `cs1` is sealed.
 +
 <<SCBNDSI>> uses the `s` bit to scale the immediate by 4 places
 +

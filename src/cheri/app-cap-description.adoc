@@ -20,8 +20,8 @@ which defines MXLEN as constant and requires higher privilege modes to have at
 least the same XLEN as lower privilege modes; these changes are present in the
 current draft and expected to be part of privileged architecture 1.13.
 
-{cheri_base_ext_name} defines capabilities of size YLEN corresponding to 2 *
-MXLEN without including the valid tag bit. The value of YLEN is always calculated
+{cheri_base_ext_name} defines capabilities of size CLEN corresponding to 2 *
+MXLEN without including the valid tag bit. The value of CLEN is always calculated
 based on MXLEN regardless of the effective XLEN value.
 
 NOTE: We briefly note that the capability encoding described in this section
@@ -669,7 +669,7 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
 
 A hart supporting {cheri_base_ext_name} has a single byte-addressable address
 space of 2^XLEN^ bytes for all memory accesses. Each memory region capable of
-holding a capability also stores a tag bit for each naturally aligned YLEN bits
+holding a capability also stores a tag bit for each naturally aligned CLEN bits
 (e.g. 16 bytes in RV64), so that capabilities with their tag set can only be
 stored in naturally aligned addresses. Tags must be atomically bound to the
 data they protect.
@@ -810,8 +810,8 @@ is _representable_.
 [#section_ext_cheri_multiple_levels]
 === Extending {cheri_1levels_ext_name} to more than two levels
 When `<<cheri_lvlbits>> > 1`, the behavior of <<ACPERM>> can no longer use masking to adjust the <<section_cap_level>> or <<sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
-The <<section_cap_level,CL>> field of the resulting capability is set to `min(rs2[CL], ys1[CL])`  (equivalent to `rs2[CL] & ys1[CL]` for `<<cheri_lvlbits>>=1`).
-Similarly, <<sl_perm>> is set to `min(rs2[SL], ys1[SL])` (equivalent to `rs2[SL] & ys1[SL]` for `<<cheri_lvlbits>>=1`).
+The <<section_cap_level,CL>> field of the resulting capability is set to `min(rs2[CL], cs1[CL])`  (equivalent to `rs2[CL] & cs1[CL]` for `<<cheri_lvlbits>>=1`).
+Similarly, <<sl_perm>> is set to `min(rs2[SL], cs1[SL])` (equivalent to `rs2[SL] & cs1[SL]` for `<<cheri_lvlbits>>=1`).
 
 When storing capabilities, the <<sl_perm>> checks need to perform a `<<cheri_lvlbits>>`-wide integer comparison instead of just testing a single bit.
 Considering for an example `<<cheri_lvlbits>>=2`:
