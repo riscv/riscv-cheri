@@ -40,7 +40,7 @@ will not match the value read by software from the CSR.
 
 When updating the CSR _all possible_ values of the address visible either by CSR read,
 or which are used as the <<pcc>> on exception launch, must be in the
-<<section_cap_representable_check>>, and the validity tag cleared if _any_ are not.
+<<section_cap_representable_check>>, and the valid tag cleared if _any_ are not.
 
 The capability is always written using <<SCADDR>> semantics to update the address field,
 even when writing the full capability, and so sealed capabilities will always have
@@ -60,8 +60,8 @@ actually occur in the system.
 
 NOTE: When MODE=Vectored, if either the capability address _or_ the capability
 address + `4 * HICAUSE` are invalid then the <<section_invalid_addr_conv>> rules
-are followed which may require the validity tag to be cleared. In particular, if any part
-of the range is in the invalid address space then clearing the validity tag is strongly
+are followed which may require the valid tag to be cleared. In particular, if any part
+of the range is in the invalid address space then clearing the valid tag is strongly
 recommended.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<mtvecc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
@@ -214,7 +214,7 @@ simplified.
 endif::[]
 
 The <<mtval>> register is an MXLEN-bit read-write register formatted as shown
-in xref:mtval-format[xrefstyle=short]. When a data memory access gives rise to
+in xref:mtval-format[xrefstyle=short]. When a data memory access causes
 a CHERI fault taken into M-mode, <<mtval>> is written with the
 MXLEN-bit effective address which caused the fault according to the existing
 rules for reporting load/store addresses. In this case
@@ -478,11 +478,11 @@ When implementing any of the extensions proposed here, microarchitects need to c
 [#section_pma]
 === Physical Memory Attributes (PMA)
 
-Typically, only parts of the entire memory space need to support CHERI validity tags.
-Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a _CHERI taggable_ attribute indicating whether a memory region allows storing CHERI validity tags.
+Typically, only parts of the entire memory space need to support CHERI valid tags.
+Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a _CHERI taggable_ attribute indicating whether a memory region allows storing CHERI valid tags.
 
-Data loaded from memory regions that are not _CHERI taggable_ will always have the validity tag cleared.
-When the hart attempts to store data with the validity tag set to memory regions that are not taggable, the implementation may:
+Data loaded from memory regions that are not _CHERI taggable_ will always have the valid tag cleared.
+When the hart attempts to store data with the valid tag set to memory regions that are not taggable, the implementation may:
 
 * Cause an access fault exception
 * Implicitly set the stored tag to 0
@@ -528,7 +528,7 @@ NOTE: On reset CHERI register access is disabled (<<mseccfg>>.CRE resets to zero
 
 The following occurs when executing code in a privilege mode that has CHERI register access disabled:
 
-* The CHERI instructions that access capability registers (implicitly or explicitly)
+* Instructions that access *c* registers (implicitly or explicitly)
 cause illegal instruction exceptions
 +
 NOTE: The only instruction added by {cheri_base_ext_name} that does not access capability state is <<CRAM>>, all others are disabled.
@@ -612,7 +612,7 @@ In supervisor and user modes, capability addresses are interpreted as dictated b
 [#section_cw_bit]
 === Capability Write (CW) Bit
 
-{cheri_priv_vmem_ext} defines the Capability Write (CW) bit in Page Table Entries (PTEs) for Sv39, Sv48, and Sv57 virtual memory systems on RV64 harts. The CW bit controls whether capabilities with their validity tag set can be written to a virtual page.
+{cheri_priv_vmem_ext} defines the Capability Write (CW) bit in Page Table Entries (PTEs) for Sv39, Sv48, and Sv57 virtual memory systems on RV64 harts. The CW bit controls whether capabilities with their valid tag set can be written to a virtual page.
 
 NOTE: _Sv32_ does not have any spare PTE bits, and so this bit does not exist for RV32.
 
@@ -670,13 +670,13 @@ include::img/sv48pte_cw.edn[]
 [#sv57pte_cw]
 include::img/sv57pte_cw.edn[]
 
-The CW bit indicates whether reading or writing capabilities with the validity tag set to the virtual page is permitted.
+The CW bit indicates whether reading or writing capabilities with the valid tag set to the virtual page is permitted.
 When the CW bit is set, capabilities are written as usual.
 
 If the CW bit is clear then:
 
-* When a capability load or AMO instruction is executed, the implementation clears the validity tag bit of the capability read from the virtual page.
-* A <<cheri_pte_fault,CHERI store/AMO PTE page fault>> exception is raised when a capability store or AMO instruction is executed and the validity tag bit of the capability being written is set.
+* When a capability load or AMO instruction is executed, the implementation clears the valid tag bit of the capability read from the virtual page.
+* A <<cheri_pte_fault,CHERI store/AMO PTE page fault>> exception is raised when a capability store or AMO instruction is executed and the valid tag bit of the capability being written is set.
 
 [[pte_cw_store_summary]]
 .Summary of Store CW behavior in the PTEs
@@ -689,11 +689,11 @@ If the CW bit is clear then:
 
 [NOTE]
 ====
-The validity tag bit of the stored capability is checked _after_ it is potentially cleared due to missing permissions.
+The valid tag bit of the stored capability is checked _after_ it is potentially cleared due to missing permissions.
 Therefore, the behavior in this section isn't relevant if:
 
 * The authorizing capability doesn't have <<c_perm>>.
-* Insufficient <<sl_perm>> has cleared the validity tag of the to-be-stored capability.
+* Insufficient <<sl_perm>> has cleared the valid tag of the to-be-stored capability.
 ====
 
 [#section_invalid_addr_conv,reftext="Invalid address conversion"]
@@ -772,14 +772,14 @@ capability A if the <<pcc>> cannot hold all invalid addresses:
 . Calculate the effective target address T of the jump or branch as required by
 the instruction's behavior.
 . If T is invalid and A does not have infinite bounds (see
-xref:section_cap_encoding[xrefstyle=short]), then the instruction gives rise to
+xref:section_cap_encoding[xrefstyle=short]), then the instruction causes
 a CHERI fault; the _CHERI jump or branch_ fault is reported in the TYPE field
 and invalid address violation is reported in the CAUSE field of <<mtval2>>,
 <<stval2>> or <<vstval2>>.
 . If T is invalid and A has infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then A's tag is unchanged and T is
 written into A's address field. Attempting to execute the instruction at
-address T gives rise to an instruction access fault or page fault as is usual in RISC-V.
+address T causes an instruction access fault or page fault as is usual in RISC-V.
 . Otherwise T is valid and the instruction behaves as normal.
 
 NOTE: RISC-V harts that do not support {cheri_base_ext_name} normally raise an
@@ -797,7 +797,7 @@ capability A when the implementation supports invalid address optimizations:
 . Calculate the effective address range R of the memory access as required by the
 instruction's behavior.
 . If any byte in R is invalid and A does not have infinite bounds (see
-xref:section_cap_encoding[xrefstyle=short]), then the instruction gives rise to
+xref:section_cap_encoding[xrefstyle=short]), then the instruction causes
 a CHERI fault; the _CHERI data_ fault is reported in the TYPE field and invalid
 address violation is reported in the CAUSE field of <<mtval2>>, <<stval2>> or <<vstval2>>.
 . If any byte in R is invalid and A has infinite bounds (see xref:section_cap_encoding[xrefstyle=short]),

@@ -79,25 +79,25 @@ NOTE: The behavior in this section isn't relevant if:
 . The authorizing capability doesn't have <<c_perm>>, for loads, stores and AMOs.
 . <<section_cap_level>> checks have cleared the stored tag, for stores and AMOs.
 
-The CW bit indicates whether reading or writing capabilities with the validity tag set to
+The CW bit indicates whether reading or writing capabilities with the valid tag set to
 the virtual page is permitted. When the CW bit is set, capabilities are written
 as usual, and capability reads are controlled by the CRG bit.
 
-NOTE: The validity tag bit of the stored capability is checked _after_ it is potentially
+NOTE: The valid tag bit of the stored capability is checked _after_ it is potentially
 cleared due to lack of <<c_perm>>.
 
 If the CW bit is clear then:
 
 * When a capability load or AMO instruction is executed, the implementation
- clears the validity tag bit of the capability read from the virtual page.
+ clears the valid tag bit of the capability read from the virtual page.
 * When CRG is clear, the "no capability state", a <<cheri_pte_fault,CHERI store/AMO PTE page fault>> exception
- is raised when a capability store or AMO instruction is executed and the validity tag bit
+ is raised when a capability store or AMO instruction is executed and the valid tag bit
  of the capability being written is set.
 * When CRG is set, the "pre-CW state", two schemes are permitted (also see <<section_hardware_pte_updates>>):
 ** The same behavior as when CRG is clear, allowing software interpretation
 of this state.
 ** When a capability store or AMO instruction is executed
-and the validity tag bit of the capability being written is set, the
+and the valid tag bit of the capability being written is set, the
 implementation sets the CW bit and assigns the CRG bit equal to <<sstatusreg_pte,sstatus>>.UCRG.
 +
 The PTE update must be
@@ -140,9 +140,9 @@ and the capability read from memory has its tag set.
 ^1^ If {cheri_priv_crg_ext} is _not_ implemented then PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG are always both zero, and so always match. Therefore <<cheri_pte_fault,CHERI load PTE page fault>> _are not_ possible.
 
 ^2^ The choice here is whether to take data dependent exceptions on loads or atomic operations.
- It is legal for the implementation to fault even if the validity tag is not set since this behavior is only an optimization for software.
- This means it is also legal to only check the validity tag under certain conditions and conservatively fault otherwise.
- Taking a trap when the validity tag is not set will introduce additional traps during revocation sweeps.
+ It is legal for the implementation to fault even if the valid tag is not set since this behavior is only an optimization for software.
+ This means it is also legal to only check the valid tag under certain conditions and conservatively fault otherwise.
+ Taking a trap when the valid tag is not set will introduce additional traps during revocation sweeps.
  Checking the loaded tag affects the exception priority, see <<exception-priority>>.
 
 ^3^ A future version of this specification may check an SCRG bit in <<sstatusreg_pte,sstatus>> for kernel revocation.
@@ -164,7 +164,7 @@ and the capability read from memory has its tag set.
 [#section_hardware_pte_updates]
 === Enabling Software or Hardware PTE updates
 
-The decision about whether to take exceptions on capability stores with the validity tag set to a page with PTE.CW=0 and PTE.CRG=1 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
+The decision about whether to take exceptions on capability stores with the valid tag set to a page with PTE.CW=0 and PTE.CRG=1 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
 These cause PTE Accessed and Dirty updates to be done in software, via the exception handler, or by a hardware mechanism respectively.
 
 * If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a <<cheri_pte_fault,CHERI store/AMO PTE page fault>>.
