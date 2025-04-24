@@ -115,11 +115,17 @@ NOTE: Inclusive top, with XLEN-bits, was considered but rejected in favor of the
 Therefore a memory location `A` in the range `base &#8804; A < top` is within bounds, and so valid to access.
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 NOTE: Checking every byte of every executed instruction and byte of every data memory access is fundamental to the memory safety which CHERI provides.
  In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
 
 =======
 >>>>>>> 520fd0eb (add bounds and representability section to the intro, and move the bounds diagram there as requested)
+=======
+NOTE: Checking every byte of every executed instruction and byte of every data memory access is fundamental to the memory safety which CHERI provides.
+ In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
+
+>>>>>>> c5f06a00 (fix more feedback)
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 
@@ -393,7 +399,11 @@ The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA. A
 failing check causes a CHERI exception.
 
+<<<<<<< HEAD
 CAUTION: #ARC suggest that this become a software check exception, which would need a CHERI specific value in Xtval2#
+=======
+CAUTION: #ARC suggest that this become a software error#
+>>>>>>> c5f06a00 (fix more feedback)
 
 * The valid tag must be set
 * The capability must grant execute permission
@@ -695,8 +705,12 @@ The rules for modifying the behavior of such instructions are:
  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
 ** An exception is taken by the branch or jump on failure.
+<<<<<<< HEAD
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition).
 >>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
+=======
+* <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition of suitability).
+>>>>>>> c5f06a00 (fix more feedback)
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>.
 
@@ -714,11 +728,15 @@ IMPORTANT: These rules also apply to instructions added by other extensions (e.g
 =======
 NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
 <<<<<<< HEAD
+<<<<<<< HEAD
  Therefore it is _not_ possible to speculatively jump somewhere without having _already_ completed the checks.
 >>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
 =======
  Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution is permitted.
 >>>>>>> 520fd0eb (add bounds and representability section to the intro, and move the bounds diagram there as requested)
+=======
+ Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is permitted.
+>>>>>>> c5f06a00 (fix more feedback)
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
@@ -794,8 +812,12 @@ All load and store instructions authorized by `cs1` cause CHERI exceptions if an
 
 Load instructions except for <<LC>> always zero the valid tag and metadata of the result register.
 
+<<<<<<< HEAD
 Stores instructions except for <<SC>> !mak
 write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
+=======
+Non-capability stores write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
+>>>>>>> c5f06a00 (fix more feedback)
 Therefore, misaligned stores may clear up to two associated valid tag bits.
 
 The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
