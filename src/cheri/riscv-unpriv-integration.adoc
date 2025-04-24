@@ -228,10 +228,12 @@ Execute Permission (X):: Allow instruction execution.
 [#lm_perm,reftext="LM-permission"]
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
-Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
+Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
 
-NOTE: The permission stripping behavior only applies to loaded capabilities that have their valid tag set and are not sealed; loaded capabilities that are sealed or invalid do not have their permissions changed.
+The permission stripping behavior only applies to loaded capabilities that have their valid tag set and are not sealed; loaded capabilities that are sealed or invalid do not have their permissions changed.
   This ensures that capability loads/stores of non-capability data do not modify the stored value.
+
+NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
 
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow read and write access to all privileged CSRs as well as some privileged instructions such as <<mret_cheri>>.
@@ -312,10 +314,12 @@ Future extensions are permitted to add more levels.
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
-They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.), but are not interpreted by the CPU otherwise.
+They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.).
+They can be cleared by <<ACPERM>> but are not interpreted by the CPU otherwise.
 
-NOTE: While these bits are not interpreted by the hardware, modification follows the same rules as architectural permissions: SDP bits can only be cleared and never set.
-This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
+While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set.
+
+NOTE: This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
 
 [#section_special_caps]
 ==== Special Capabilities
@@ -385,7 +389,7 @@ The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA. A
 failing check causes a CHERI exception.
 
-CAUTION: #ARC suggest that this become a software error#
+CAUTION: #ARC suggest that this become a software check exception, which would need a CHERI specific value in Xtval2#
 
 * The valid tag must be set
 * The capability must grant execute permission
@@ -545,7 +549,7 @@ include::insns/cram_32bit.adoc[]
 === Instructions Which Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LC>> and <<SC>>.
-They access CLEN-bits of data and also access the valid tag.
+They atomically access CLEN-bits of data and the associated valid tag.
 
 All capability memory accesses check for <<c_perm>> in the authorizing capability in `cs1`.
 
@@ -692,10 +696,12 @@ All load and store instructions authorized by `cs1` cause CHERI exceptions if an
 ^1^ All load/store encodings are _reserved_ if `cs1=c0` (since dereferencing <<null-cap>> always faults).
  This principle is extended to _all_ loads and stores authorized by `cs1`.
 
-Non-capability load instructions always zero the valid tag and metadata of the result register.
+Load instructions except for <<LC>> always zero the valid tag and metadata of the result register.
 
-Non-capability stores write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
+Stores instructions except for <<SC>> !mak
+write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
 Therefore, misaligned stores may clear up to two associated valid tag bits.
 
-NOTE: The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
- Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.
+The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
+
+Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.
