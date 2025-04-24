@@ -120,7 +120,7 @@ xref:default-csrnames-added[xrefstyle=short].
 <<ddc>> is a read-write, user mode accessible capability CSR.
 It does not require <<asr_perm>> in <<pcc>> for writes or reads.
 Similarly to <<pcc>> authorizing all control flow and instruction fetches, this capability register is implicitly checked to authorize all data memory accesses  when the current CHERI mode is {cheri_int_mode_name}.
-On startup <<ddc>> bounds and permissions must be set such that the program can run successfully (e.g. by setting it to <<infinite-cap>> to ensure _all_ data references are in bounds).
+On startup <<ddc>> bounds and permissions must be set such that the program can run successfully (e.g., by setting it to <<infinite-cap>> to ensure _all_ data references are in bounds).
 
 .Unprivileged default data capability register
 include::img/ddcreg.edn[]
@@ -214,10 +214,10 @@ For example, the `jvt` CSR is extended to `jvtc`, the `c` suffix indicating that
 It is referred to as `jvt` if only accessing the address or `jvtc` if accessing the whole capability.
 
 * In {cheri_cap_mode_name} <<CSRRW_CHERI>> _always_ read/writes the entire CLEN bits of all CLEN-width CSRs, i.e. it accesses `jvtc`.
-* In {cheri_int_mode_name} <<CSRRW_CHERI>> _only_ accesses XLEN bits of extended CSRs (e.g. `jvt`, for compatibility) and all CLEN-bits of CSRs added by CHERI extensions (e.g. <<ddc>>).
+* In {cheri_int_mode_name} <<CSRRW_CHERI>> _only_ accesses XLEN bits of extended CSRs (e.g., `jvt`, for compatibility) and all CLEN-bits of CSRs added by CHERI extensions (e.g., <<ddc>>).
 ** <<CSRRW_CHERI>> in {cheri_int_mode_name} can only update the address field of `jvt`, but it can write a full value into <<ddc>>.
 ** {cheri_cap_mode_name} always accesses `jvtc`, never `jvt`.
-* when only writing XLEN bits to an extended CSR (e.g. `jvt`), the CSR value is updated using <<SCADDR>> semantics.
+* when only writing XLEN bits to an extended CSR (e.g., `jvt`), the CSR value is updated using <<SCADDR>> semantics.
 
 IMPORTANT: need to resolve how to cross-reference the privileged spec to have a list of the new and extended CSRs
 

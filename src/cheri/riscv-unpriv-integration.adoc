@@ -173,7 +173,7 @@ Execute Permission (X):: Allow instruction execution.
 [#lm_perm,reftext="LM-permission"]
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
-Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
+Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
 
 NOTE: The permission stripping behavior only applies to loaded capabilities that have their valid tag set and are not sealed; loaded capabilities that are sealed or invalid do not have their permissions changed.
   This ensures that capability loads/stores of non-capability data do not modify the stored value.
@@ -205,7 +205,7 @@ endif::[]
 ==== Capability Level (CL)
 
 The _Capability Level_ (CL) is a variable width field that allows enforcing invariants on capability propagation.
-For example, the _Capability Level_ can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g. the callee's stack frame but not the heap).
+For example, the _Capability Level_ can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g., the callee's stack frame but not the heap).
 It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
 
 NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
@@ -253,7 +253,7 @@ Future extensions are permitted to add more levels.
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
-They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.), but are not interpreted by the CPU otherwise.
+They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.), but are not interpreted by the CPU otherwise.
 
 NOTE: While these bits are not interpreted by the hardware, modification follows the same rules as architectural permissions: SDP bits can only be cleared and never set.
 This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
@@ -300,7 +300,7 @@ This means the following state is added by {cheri_base_ext_name}:
 ----
 
 ==== Extended general purpose integer registers
-The <<gprs,XLEN-wide integer registers>> (e.g. `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a valid tag bit.
+The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a valid tag bit.
 When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
 The existing integer register names refer to the address part of the capability.
 For the ABI register names the `c` prefix is added, i.e. `csp`, `ca0`.
@@ -332,7 +332,7 @@ failing check causes a CHERI exception.
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
 
-On startup <<pcc>> bounds and permissions must be set such that the program can run successfully (e.g. by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
+On startup <<pcc>> bounds and permissions must be set such that the program can run successfully (e.g., by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
 
 NOTE: Operations that update <<pcc>>, such as changing privilege or executing jump instructions, unseal capabilities prior to writing.
 Therefore, implementations do not need to check that that <<pcc>> is unsealed when executing each instruction.
@@ -377,27 +377,27 @@ No other exception paths are added by {cheri_base_ext_name}: in particular, capa
 {cheri_base_ext_name} adds new instructions to interact with the extended registers.
 These added instructions can be split into the following categories:
 
-Capability manipulations (e.g. <<SCBNDS>>, <<ACPERM>>)::
+Capability manipulations (e.g., <<SCBNDS>>, <<ACPERM>>)::
 For security, capabilities can only be modified in restricted ways.
 Special instructions are provided to copy capabilities or perform these allowed operations, for example _shrinking_ the bounds or _reducing_ the permissions.
 Any attempt to manipulate capabilities without using the instructions clears the valid tag, rendering them unusable for accessing memory.
 They do not cause exceptions.
 
-Pointer arithmetic (e.g. <<CADD>>, <<CADDI>>)::
+Pointer arithmetic (e.g., <<CADD>>, <<CADDI>>)::
 To update where a capability points new capability instructions must be used instead of an integer ADD/ADDI.
 These instructions include a check that the result can be <<section_cap_representable_check,represented exactly>>, therefore is still valid for the current metadata.
 Invalid (e.g., significantly out-of-bounds) updates clear the valid tag.
 
-Capability inspection (e.g. <<GCBASE>>, <<GCPERM>>)::
+Capability inspection (e.g., <<GCBASE>>, <<GCPERM>>)::
 Capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
 These instructions give convenient access to allow software to query them.
   They do not cause exceptions.
 
-Memory access instructions (e.g. <<LC>>, <<SC>>)::
+Memory access instructions (e.g., <<LC>>, <<SC>>)::
 Capabilities must be read from and written to memory atomically along with their valid tag.
 Instructions are added to perform these capability-width accesses, allowing capabilities to flow between the memory and the register file.
 
-Miscellaneous instructions (e.g. <<SCSS>>)::
+Miscellaneous instructions (e.g., <<SCSS>>)::
 These instructions either compare capabilities or allow software to determine the alignment of bounds.
 They do not cause exceptions.
 
@@ -535,7 +535,7 @@ The rules for modifying the behavior of such instructions are:
 * Whenever the PC is handled, it is _always_ the <<pcc>>.
 * Any instruction that has a base address register (generally `rs1`) reads the full capability register instead.
 ** This capability register is used to <<sec_cap_checks,check whether the access should be permitted>>.
-* Any instruction writes back an address (e.g. <<AUIPC_CHERI>>), writes a full capability register instead.
+* Any instruction writes back an address (e.g., <<AUIPC_CHERI>>), writes a full capability register instead.
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
  In this case, for example, `new_pcc = SCADDR(old_pcc, offset)`
@@ -545,7 +545,7 @@ The rules for modifying the behavior of such instructions are:
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>.
 
-IMPORTANT: These rules also apply to instructions added by other extensions (e.g. floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
+IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
 
 //TODO: <<app_cheri_instructions>> has listings for all unprivileged instructions that change behavior when {cheri_base_ext_name} is used as the base ISA.
 
