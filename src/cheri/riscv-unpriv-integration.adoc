@@ -228,7 +228,7 @@ Execute Permission (X):: Allow instruction execution.
 [#lm_perm,reftext="LM-permission"]
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
-Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
+NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
 
 The permission stripping behavior only applies to loaded capabilities that have their valid tag set and are not sealed; loaded capabilities that are sealed or invalid do not have their permissions changed.
   This ensures that capability loads/stores of non-capability data do not modify the stored value.
@@ -314,7 +314,8 @@ Future extensions are permitted to add more levels.
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
-They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.).
+<<<<<<< HEAD
+They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.).
 They can be cleared by <<ACPERM>> but are not interpreted by the CPU otherwise.
 
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set.
@@ -432,7 +433,46 @@ This allows code fetch to be bounded, preventing a wide range of attacks that su
 The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
 For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
 
+<<<<<<< HEAD
 No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not except, but may clear the valid tag on the result capability if the operation is not permitted.
+=======
+No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not trap, but may clear the valid tag on the result capability if the operation is not permitted.
+
+[#section_cap_instructions]
+=== New and modified Instructions
+
+{cheri_base_ext_name} adds new instructions to interact with the extended registers.
+These added instructions can be split into the following categories:
+
+Capability manipulations (e.g., <<SCBNDS>>, <<ACPERM>>)::
+For security, capabilities can only be modified in restricted ways.
+Special instructions are provided to copy capabilities or perform these allowed operations, for example _shrinking_ the bounds or _reducing_ the permissions.
+Any attempt to manipulate capabilities without using the instructions clears the valid tag, rendering them unusable for accessing memory.
+They do not cause exceptions.
+
+Pointer arithmetic (e.g., <<CADD>>, <<CADDI>>)::
+To update where a capability points new capability instructions must be used instead of an integer ADD/ADDI.
+These instructions include a check that the result can be <<section_cap_representable_check,represented exactly>>, therefore is still valid for the current metadata.
+Invalid (e.g., significantly out-of-bounds) updates clear the valid tag.
+
+Capability inspection (e.g., <<GCBASE>>, <<GCPERM>>)::
+Capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
+These instructions give convenient access to allow software to query them.
+  They do not cause exceptions.
+
+Memory access instructions (e.g., <<LC>>, <<SC>>)::
+Capabilities must be read from and written to memory atomically along with their valid tag.
+Instructions are added to perform these capability-width accesses, allowing capabilities to flow between the memory and the register file.
+
+Miscellaneous instructions (e.g., <<SCSS>>)::
+These instructions either compare capabilities or allow software to determine the alignment of bounds.
+They do not cause exceptions.
+
+Additionally, all instructions that handle addresses have altered behavior when using {cheri_base_ext_name} as the base ISA.
+The lower XLEN-bits of the result is always the same, but {cheri_base_ext_name} adds checks that may result in exceptions and specifies handling of the metadata.
+
+The new and modified instructions are listed in the following sections of this chapter.
+>>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
 
 <<<
 
@@ -608,8 +648,14 @@ In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well 
 The rules for modifying the behavior of such instructions are:
 
 * Whenever the PC is handled, it is _always_ the <<pcc>>.
+<<<<<<< HEAD
 * Any memory access instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead which is used to <<sec_cap_checks,check whether the access is permitted>>, taking an exception if it is not.
 * Any instruction that writes back an address (e.g. <<AUIPC_CHERI>>), writes a full capability register instead.
+=======
+* Any instruction that has a base address register (generally `rs1`) reads the full capability register instead.
+** This capability register is used to <<sec_cap_checks,check whether the access should be permitted>>.
+* Any instruction writes back an address (e.g., <<AUIPC_CHERI>>), writes a full capability register instead.
+>>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
@@ -621,8 +667,14 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 
 IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
 
+<<<<<<< HEAD
 NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
  Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is permitted.
+=======
+IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
+
+//TODO: <<app_cheri_instructions>> has listings for all unprivileged instructions that change behavior when {cheri_base_ext_name} is used as the base ISA.
+>>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
