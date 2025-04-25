@@ -308,6 +308,17 @@ The zero register is extended with zero metadata and a cleared valid tag: this i
 
 NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
 
+==== Added CSRs
+
+[#utidc,reftext="utidc"]
+==== User Thread Identifier Capability (utidc)
+
+The <<utidc>> register is used to identify the current software thread in user mode.
+On reset the valid tag of <<utidc>> will be set to 0 and the remainder of the data is UNSPECIFIED.
+
+.User thread identifier capability register
+include::img/utidcreg.edn[]
+
 ==== Extended CSRs
 All registers that store addresses are extended to contain capabilities.
 In the base {cheri_base_ext_name} ISA, only the program counter (`pc`) register is extended to become the Program Counter Capability (<<pcc>>).
