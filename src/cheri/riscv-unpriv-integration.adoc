@@ -310,14 +310,46 @@ NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, et
 
 ==== Added CSRs
 
+{cheri_base32_ext_name} and {cheri_base64_ext_name} add the capability CSR shown in
+xref:utidc-csrnames-added[xrefstyle=short].
+
+[[utidc-csrnames-added]]
+.Unprivileged capability CSRs added in {cheri_base32_ext_name} and {cheri_base64_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
+|===
+|CLEN CSR|Address|Permissions|Description
+|<<utidc>>|0x480|RW, <<asr_perm>> required for writes, not reads|User Default Data Capability
+|===
+
 [#utidc,reftext="utidc"]
-==== User Thread Identifier Capability (utidc)
+===== User Thread Identifier Capability (utidc)
 
 The <<utidc>> register is used to identify the current software thread in user mode.
 On reset the valid tag of <<utidc>> will be set to 0 and the remainder of the data is UNSPECIFIED.
 
 .User thread identifier capability register
 include::img/utidcreg.edn[]
+
+[#CHERI_COMP,reftext="CHERI Compartmentalization]
+===== CHERI Compartmentalization
+
+This section describes how this specification enables support for
+compartmentalization for CHERI systems. Compartmentalization seeks
+to separate the privileges between different protection units, e.g.,
+two or more libraries. Code can be separated by sentries, which allow
+for giving out code capabilities to untrusted code where the untrusted
+code can only call the code capability, but not modify it. Sentries can
+be called from different software threads and thus there needs to be a way of
+identifying the current software thread. While identifying the current software thread
+can be done by privileged code, e.g., the kernel, the implied performance
+overhead of this is not bearable for CHERI systems with many compartments.
+
+The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
+usable for the purpose of reliably identifying the current software thread because
+the tp register is a general purpose register and can be changed arbitrarily
+by untrusted code. Therefore, this specification offers an additional CSR
+that facilitates a trusted source for the thread ID. The register is readable
+from U mode and writeable with <<asr_perm>>.
 
 ==== Extended CSRs
 All registers that store addresses are extended to contain capabilities.
