@@ -387,11 +387,12 @@ Pointer arithmetic (e.g., <<CADD>>, <<CADDI>>)::
 To update where a capability points new capability instructions must be used instead of an integer ADD/ADDI.
 These instructions include a check that the result can be <<section_cap_representable_check,represented exactly>>, therefore is still valid for the current metadata.
 Invalid (e.g., significantly out-of-bounds) updates clear the valid tag.
+They do not cause exceptions.
 
 Capability inspection (e.g., <<GCBASE>>, <<GCPERM>>)::
 Capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
 These instructions give convenient access to allow software to query them.
-  They do not cause exceptions.
+They do not cause exceptions.
 
 Memory access instructions (e.g., <<LC>>, <<SC>>)::
 Capabilities must be read from and written to memory atomically along with their valid tag.
