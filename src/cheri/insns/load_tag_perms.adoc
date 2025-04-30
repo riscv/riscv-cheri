@@ -6,13 +6,13 @@ If the authorizing capability does not grant <<lm_perm>>, and the valid tag of `
 +
 If the authorizing capability does not grant <<el_perm>>, and the valid tag of `cd` is 1, then an implicit <<ACPERM>> restricting the <<section_cap_level>> to the level of the authorizing capability is performed.
 If `cd` is not sealed, this implicit <<ACPERM>> also clears <<el_perm>> to obtain the final permissions on `cd` (see <<cap_level_load_summary>>).
-
++
 NOTE: Missing <<lm_perm>> does not affect untagged values since this could result in surprising bit patterns when copying non-capability data.
 Similarly, sealed capabilities are not modified as they are not directly dereferenceable.
-
++
 NOTE: Missing <<el_perm>> also affects the level of sealed capabilities since notionally the <<section_cap_level>> of a capability is not a permission but rather a data flow label attached to the loaded value.
 However, untagged values are not affected by <<el_perm>>.
-
++
 NOTE: While the implicit <<ACPERM>> introduces a dependency on the loaded data, implementations can avoid this by deferring the actual masking of permissions until the loaded capability is dereferenced or the metadata bits are inspected using <<GCPERM>> or <<GCHI>>.
-
++
 NOTE: When sending load data to a trace interface implementations can choose whether to trace the value before or after <<ACPERM>> has modified the data. The recommendation is to trace the value after <<ACPERM>>.
