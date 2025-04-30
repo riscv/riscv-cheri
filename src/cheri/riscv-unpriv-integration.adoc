@@ -122,7 +122,7 @@ Therefore small exponents can allow byte granularity on the bounds, but larger e
 
 The ISA only allows the bounds of a capability to be reduced.
 Therefore instructions cannot output any capability with the valid tag set which include bounds (or permissions) which are greater than any input capability which also has its valid tag set.
-On system initialization the <<infinite-cap>> is available which has bounds which cover all of memory, amd maximum permissions set.
+On system initialization the <<infinite-cap>> is available which has bounds which cover all of memory, and maximum permissions set.
 All smaller capabilities are derived from this.
 
 Bounds can be reduced using the <<SCBNDS>>/<<SCBNDSI>> instructions, which require the final bounds to be accurately encoded, clearing the valid tag if that is not possible due to the granularity constraints.
@@ -148,6 +148,9 @@ NOTE: Behavior was observed in software which allows pointers to legitimately mo
 
 The maximum range of address values that the pointer can take is defined by the <<section_cap_representable_check, representable region>>, which is checked on every update by <<SCADDR>>.
 
+NOTE: CHERI versions which use a different encoding scheme to the default may specify an alternative to the representable region check.
+ Therefore the rest of the specification uses the phrase *represented exactly*
+
 The bounds and representable region (or space) are illustrated in <<cap_bounds_map>>.
 E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
 
@@ -159,7 +162,7 @@ In the presence of memory corruption, fault injection, or hardware bugs, bounds 
 Instructions which decode bounds will typically clear the valid tag of the output if the input is found to be malformed.
 
 NOTE: CHERI requires that the capability is correctly formed if the valid tag is set.
- Including handling of malformed bounds, and invalid settings of reserved bits, in the architecture allows the behavior to be clearly specified for all possible input values.
+ Including handling of malformed bounds, and invalid settings of reserved bits, in the architecture allows the behavior to be clearly specified for all 2^(CLEN+1)^ input values.
 
 [#sec_cap_type]
 ==== Capability Type (CT)
@@ -315,10 +318,14 @@ Future extensions are permitted to add more levels.
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
 <<<<<<< HEAD
+<<<<<<< HEAD
 They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.).
 They can be cleared by <<ACPERM>> but are not interpreted by the CPU otherwise.
 =======
 They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.), but are not interpreted by the CPU otherwise.
+=======
+They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.), but are not interpreted by the CPU otherwise.!
+>>>>>>> a5f614d2 (finish cleaning up unpriv intro)
 
 >>>>>>> 107bfa2b (final merge issues resolved)
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set.
@@ -427,69 +434,38 @@ NOTE: All system memory and caches that store capabilities must preserve this ab
 === Capability checks
 
 With {cheri_base_ext_name}, every memory access performed by a CHERI core must be authorized by a capability.
-Instruction fetches, branches, jumps, and data memory accesses may result in a fatal exception if the authorizing capability is missing the required <<sec_cap_ap,permissions>> or the access is out of <<sec_cap_bounds,bounds>>.
-For example, loads instruction requires <<r_perm>>, stores require <<w_perm>> and jumps require <<x_perm>>.
+
+Instruction fetches, branches, jumps, and data memory accesses may result in a fatal exception if the access is out of <<sec_cap_bounds,bounds>>, or if the authorizing capability is missing the required <<sec_cap_ap,permissions>>. I.e.:
+
+* all load instructions requires <<r_perm>>
+* all store instructions require <<w_perm>>
+* all indirect jumps require <<x_perm>> on the target capability
+
 See <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details on the exception reporting mechanism.
-Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends PC.
+
+Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends the PC.
 This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
 
 The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
-For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
+
+E.g., `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
 
 No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not except, but may clear the valid tag on the result capability if the operation is not permitted.
 
-[#section_cap_instructions]
-=== New and modified Instructions
+NOTE: Branches and jumps may raise exceptions, reusing the Instruction Address Misaligned exception path.
 
-{cheri_base_ext_name} adds new instructions to interact with the extended registers.
-These added instructions can be split into the following categories:
-
-Capability manipulations (e.g., <<SCBNDS>>, <<ACPERM>>)::
-For security, capabilities can only be modified in restricted ways.
-Special instructions are provided to copy capabilities or perform these allowed operations, for example _shrinking_ the bounds or _reducing_ the permissions.
-Any attempt to manipulate capabilities without using the instructions clears the valid tag, rendering them unusable for accessing memory.
-They do not cause exceptions.
-
-Pointer arithmetic (e.g., <<CADD>>, <<CADDI>>)::
-To update where a capability points new capability instructions must be used instead of an integer ADD/ADDI.
-These instructions include a check that the result can be <<section_cap_representable_check,represented exactly>>, therefore is still valid for the current metadata.
-Invalid (e.g., significantly out-of-bounds) updates clear the valid tag.
-
-Capability inspection (e.g., <<GCBASE>>, <<GCPERM>>)::
-Capability fields (for example the _bounds_ describing what addresses the capability gives access to) are stored compressed in registers and memory.
-These instructions give convenient access to allow software to query them.
-  They do not cause exceptions.
-
-Memory access instructions (e.g., <<LC>>, <<SC>>)::
-Capabilities must be read from and written to memory atomically along with their valid tag.
-Instructions are added to perform these capability-width accesses, allowing capabilities to flow between the memory and the register file.
-
-Miscellaneous instructions (e.g., <<SCSS>>)::
-These instructions either compare capabilities or allow software to determine the alignment of bounds.
-They do not cause exceptions.
-
-Additionally, all instructions that handle addresses have altered behavior when using {cheri_base_ext_name} as the base ISA.
-The lower XLEN-bits of the result is always the same, but {cheri_base_ext_name} adds checks that may result in exceptions and specifies handling of the metadata.
-
-The new and modified instructions are listed in the following sections of this chapter.
-
-No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulation instructions do not except, but may clear the valid tag on the result capability if the operation is not permitted.
-
-=== Instructions Which Manipulate Capability Data
-
-==== Instructions Which Update The Pointer
+=== Instructions Which Update The Capability Pointer
 
 To update the value of the pointer (i.e., the address field) of a capability requires specific instructions instead of integer ADD/ADDI.
-They include a check that the result can be <<section_cap_representable_check,represented exactly>>, therefore is still valid for the current metadata.
-Invalid (e.g., significantly out-of-bounds) updates clear the valid tag.
+They all include a check that the result can be <<section_cap_representable_check,represented exactly>>.
 
 .Instructions which update the address field summary in {cheri_base_ext_name}
 [#tab_cap_ptr_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic     |Description
-|<<CADDI>>    |Increment capability address by immediate, representability check
-|<<CADD>>     |Increment capability address by register, representability check
-|<<SCADDR>>   |Replace capability address, representability check
+|<<CADDI>>    |Increment capability address by immediate, <<section_cap_representable_check,represented exactly>> check
+|<<CADD>>     |Increment capability address by register, <<section_cap_representable_check,represented exactly>> check
+|<<SCADDR>>   |Replace capability address, <<section_cap_representable_check,represented exactly>> check
 |=======================
 
 include::insns/cadd_32bit.adoc[]
@@ -497,10 +473,10 @@ include::insns/scaddr_32bit.adoc[]
 
 <<<
 
-==== Other Instructions Which Manipulate Capability Data
+=== Instructions Which Manipulate Capability Data
 
 For security, capabilities can only be modified in restricted ways.
-Special instructions are provided to copy capabilities or perform these allowed operations, for example _shrinking_ the bounds or _reducing_ the permissions.
+Special instructions are provided to copy capabilities or perform manipulations such as _shrinking_ the bounds (<<SCBNDS>>), _reducing_ the permissions (<<ACPERM>>) or _authorizing_ a capability with another one which has a superset (or identical) bounds and permissions (<<CBLD>>).
 
 .Other instructions which manipulate capability data summary in {cheri_base_ext_name}
 [#tab_cap_manip_summary,%autowidth,options=header,align="center",cols="1,4"]
