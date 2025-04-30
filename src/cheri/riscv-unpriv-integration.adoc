@@ -114,18 +114,9 @@ NOTE: Inclusive top, with XLEN-bits, was considered but rejected in favor of the
 
 Therefore a memory location `A` in the range `base &#8804; A < top` is within bounds, and so valid to access.
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 NOTE: Checking every byte of every executed instruction and byte of every data memory access is fundamental to the memory safety which CHERI provides.
  In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
 
-=======
->>>>>>> 520fd0eb (add bounds and representability section to the intro, and move the bounds diagram there as requested)
-=======
-NOTE: Checking every byte of every executed instruction and byte of every data memory access is fundamental to the memory safety which CHERI provides.
- In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
-
->>>>>>> c5f06a00 (fix more feedback)
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 
@@ -397,15 +388,7 @@ The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA. A
 failing check causes a CHERI exception.
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 CAUTION: #ARC suggest that this become a software check exception, which would need a CHERI specific value in Xtval2#
-=======
-CAUTION: #ARC suggest that this become a software error#
->>>>>>> c5f06a00 (fix more feedback)
-=======
-CAUTION: #ARC suggest that this become a software check exception, which would need a CHERI specific value in Xtval2#
->>>>>>> a49ab924 (more feedback fixes)
 
 * The valid tag must be set
 * The capability must grant execute permission
@@ -448,13 +431,7 @@ This allows code fetch to be bounded, preventing a wide range of attacks that su
 The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
 For example, `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not except, but may clear the valid tag on the result capability if the operation is not permitted.
-=======
-=======
->>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
-No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not trap, but may clear the valid tag on the result capability if the operation is not permitted.
 
 [#section_cap_instructions]
 === New and modified Instructions
@@ -490,15 +467,8 @@ Additionally, all instructions that handle addresses have altered behavior when 
 The lower XLEN-bits of the result is always the same, but {cheri_base_ext_name} adds checks that may result in exceptions and specifies handling of the metadata.
 
 The new and modified instructions are listed in the following sections of this chapter.
-<<<<<<< HEAD
->>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
-=======
-=======
-No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not except, but may clear the valid tag on the result capability if the operation is not permitted.
->>>>>>> 90adac13 (clean up cap instruction page section, and some other improvements)
->>>>>>> 3791fdc7 (clean up cap instruction page section, and some other improvements)
 
-<<<
+No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulation instructions do not except, but may clear the valid tag on the result capability if the operation is not permitted.
 
 === Instructions Which Manipulate Capability Data
 
@@ -672,28 +642,15 @@ In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well 
 The rules for modifying the behavior of such instructions are:
 
 * Whenever the PC is handled, it is _always_ the <<pcc>>.
-<<<<<<< HEAD
-<<<<<<< HEAD
-* Any memory access instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead which is used to <<sec_cap_checks,check whether the access is permitted>>, taking an exception if it is not.
-* Any instruction that writes back an address (e.g. <<AUIPC_CHERI>>), writes a full capability register instead.
-=======
-=======
->>>>>>> 520fd0eb (add bounds and representability section to the intro, and move the bounds diagram there as requested)
-* Any instruction that has a base address register (generally `rs1`) reads the full capability register instead.
-** This capability register is used to <<sec_cap_checks,check whether the access should be permitted>>.
-<<<<<<< HEAD
+* Any instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead.
+** This capability register is used to <<sec_cap_checks,authorize the access>>.
 * Any instruction writes back an address (e.g., <<AUIPC_CHERI>>), writes a full capability register instead.
-<<<<<<< HEAD
->>>>>>> 05958894 (Attempt to create consistency regarding commas around e.g. and i.e. (#585))
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
 ** An exception is taken by the branch or jump on failure.
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition of suitability).
-=======
-=======
-=======
 * Any memory access instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead which is used to <<sec_cap_checks,check whether the access is permitted>>, taking an exception if it is not.
 >>>>>>> 946b180c (add bounds and representability section to the intro, and move the bounds diagram there as requested)
 * Any instruction that writes back an address (e.g. <<AUIPC_CHERI>>), writes a full capability register instead.
@@ -789,17 +746,8 @@ All load and store instructions authorized by `cs1` cause CHERI exceptions if an
 
 Load instructions except for <<LC>> always zero the valid tag and metadata of the result register.
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-Stores instructions except for <<SC>> !mak
-write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
-=======
-Non-capability stores write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
->>>>>>> c5f06a00 (fix more feedback)
-=======
-Stores instructions except for <<SC>> !mak
-write zero to the valid tag associated with the memory locations that are naturally aligned to CLEN.
->>>>>>> a49ab924 (more feedback fixes)
+Stores instructions except for <<SC>> always write zero to the valid tag or tags associated with the memory locations that are written to.
+
 Therefore, misaligned stores may clear up to two associated valid tag bits.
 
 The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
