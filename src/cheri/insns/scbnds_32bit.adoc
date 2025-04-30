@@ -33,10 +33,13 @@ include::wavedrom/scbnds_32bit.adoc[]
 Description::
 Capability register `cd`  is set to capability register `cs1`  with the base
 address of its bounds replaced with the value of `cs1.address` and
-the length of its bounds set to `rs2`  (or `imm`). If the resulting capability
-cannot be <<section_cap_representable_check,represented exactly>> then set `cd.tag` to 0.
-In all cases, `cd.tag` is set to 0 if its bounds exceed `cs1` 's bounds, `cs1` 's
-tag is 0  or `cs1` is sealed.
+the length of its bounds set to `rs2` for <<SCBNDS>>, or `imm` for <<SCBNDSI>>.
++
+Set `cd.tag=0` if `cs1.tag=0`, `cs1` is sealed or if `cd` 's bounds exceed `cs1` 's bounds.
++
+include::rep_range_check.adoc[]
++
+include::malformed_clear_tag.adoc[]
 +
 <<SCBNDSI>> uses the `s` bit to scale the immediate by 4 places
 +
@@ -44,7 +47,6 @@ tag is 0  or `cs1` is sealed.
 
 NOTE: The <<SCBNDSI>> encoding with `s=1` and `uimm ≤ 1` is RESERVED since these immediates can also be encoded with `s=0`.
 
-include::malformed_clear_tag.adoc[]
 
 Operation for SCBNDS::
 +
