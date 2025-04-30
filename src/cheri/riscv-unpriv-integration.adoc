@@ -314,8 +314,13 @@ Future extensions are permitted to add more levels.
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
+<<<<<<< HEAD
 They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.).
 They can be cleared by <<ACPERM>> but are not interpreted by the CPU otherwise.
+=======
+They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.), but are not interpreted by the CPU otherwise.
+
+>>>>>>> 107bfa2b (final merge issues resolved)
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set.
 
 NOTE: This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
@@ -665,7 +670,10 @@ The rules for modifying the behavior of such instructions are:
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions (e.g. floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
 
 NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
- Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is permitted.
+ Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is authorized.
+
+IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
+
 
 IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
 
