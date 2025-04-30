@@ -242,7 +242,9 @@ NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-o
 Access System Registers Permission (ASR):: Allow read and write access to all privileged CSRs as well as some privileged instructions such as <<mret_cheri>>.
 Removing this permission constraining restricting privileged software to a sandbox that cannot be subverted by changing privileged state.
 
-NOTE: extensions may add non-privileged CSRs which require <<ASR-permission>>
+NOTE: Extensions may add non-privileged CSRs which require <<ASR-permission>>
+
+NOTE: This permission affects access to the <<utidc>> register.
 
 [#sl_perm,reftext="SL-permission"]
 Store Level Permission (SL):: This is a variable width field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> less than the inverse of the authorizing capability's <<sl_perm>> will be stored with the valid tag cleared.
@@ -373,6 +375,46 @@ For the ABI register names the `c` prefix is added, i.e., `csp`, `ca0`.
 The zero register is extended with zero metadata and a cleared valid tag: this is called the <<null-cap>> capability.
 
 NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
+
+==== Added CSRs
+
+{cheri_base32_ext_name} and {cheri_base64_ext_name} add the capability CSR shown in
+xref:utidc-csrnames-added[xrefstyle=short].
+
+[[utidc-csrnames-added]]
+.Unprivileged capability CSRs added in {cheri_base32_ext_name} and {cheri_base64_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
+|===
+|CLEN CSR|Address|Permissions|Description
+|<<utidc>>|0x480|RW, <<asr_perm>> required for writes, not reads|User Default Data Capability
+|===
+
+[#utidc,reftext="utidc"]
+===== User Thread Identifier Capability (utidc)
+
+The <<utidc>> register is used to identify the current software thread in user mode.
+On reset the valid tag of <<utidc>> will be set to 0 and the remainder of the data is UNSPECIFIED.
+
+.User thread identifier capability register
+include::img/utidcreg.edn[]
+
+NOTE: This section describes how this specification enables support for
+compartmentalization for CHERI systems. Compartmentalization seeks
+to separate the privileges between different protection units, e.g.,
+two or more libraries. Code can be separated by sentries, which allow
+for giving out code capabilities to untrusted code where the untrusted
+code can only call the code capability, but not modify it. Sentries can
+be called from different software threads and thus there needs to be a way of
+identifying the current software thread. While identifying the current software thread
+can be done by privileged code, e.g., the kernel, the implied performance
+overhead of this is not bearable for CHERI systems with many compartments.
+
+NOTE: The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
+usable for the purpose of reliably identifying the current software thread because
+the tp register is a general purpose register and can be changed arbitrarily
+by untrusted code. Therefore, this specification offers an additional CSR
+that facilitates a trusted source for the thread ID. The register is readable
+from U mode and writeable with <<asr_perm>>.
 
 ==== Extended CSRs
 All registers that store addresses are extended to contain capabilities.
