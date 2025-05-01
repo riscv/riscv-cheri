@@ -189,7 +189,7 @@ Sentry capabilities::
 Capabilities with `CT=1` describe function entry points, known as sealed entry (sentry) capabilities.
 They cannot be dereferenced to access memory and are only allow very limited changes to the fields in the capability, which is restricted to reducing the <<section_cap_level, CL>> field using <<ACPERM>>.
 Modifying any other fields with <<ACPERM>>, or any other instruction, clears the valid tag of the output capability.
-The only permitted operation for sentry capabilities is jumping to a sentry capability to begin executing the instructions it references.
+However, control-flow instruction can be used to jump to a sentry capability to begin executing the instructions it references.
 +
 NOTE: Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
 For example, the <<JALR_CHERI>>
@@ -231,18 +231,16 @@ Execute Permission (X):: Allow instruction execution.
 [#lm_perm,reftext="LM-permission"]
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
-NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
-
 The permission stripping behavior only applies to loaded capabilities that have their valid tag set and are not sealed; loaded capabilities that are sealed or invalid do not have their permissions changed.
   This ensures that capability loads/stores of non-capability data do not modify the stored value.
 
-NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g. a tree or linked list) without making a copy.
+NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
 
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow read and write access to all privileged CSRs as well as some privileged instructions such as <<mret_cheri>>.
 Removing this permission constraining restricting privileged software to a sandbox that cannot be subverted by changing privileged state.
 
-NOTE: extensions may add non-privileged CSRs which require <<ASR-permission>>
+NOTE: Extensions may add non-privileged CSRs which require <<ASR-permission>>
 
 [#sl_perm,reftext="SL-permission"]
 Store Level Permission (SL):: This is a variable width field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> less than the inverse of the authorizing capability's <<sl_perm>> will be stored with the valid tag cleared.
@@ -395,6 +393,7 @@ failing check causes a CHERI exception.
 CAUTION: #ARC suggest that this become a software check exception, which would need a CHERI specific value in Xtval2#
 
 * The valid tag must be set
+* The capability must not be sealed
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
 
@@ -448,7 +447,7 @@ NOTE: Branches and jumps may raise exceptions, reusing the Instruction Address M
 
 === Instructions Which Update The Capability Pointer
 
-To update the value of the pointer (i.e., the address field) of a capability requires specific instructions instead of integer ADD/ADDI.
+Updating the value of the pointer (i.e., the address field) of a capability requires specific instructions instead of integer ADD/ADDI.
 They all include a check that the result can be <<section_cap_representable_check,represented exactly>>.
 
 .Instructions which update the address field summary in {cheri_base_ext_name}
@@ -567,7 +566,7 @@ If <<c_perm>> is granted then:
 
 If <<c_perm>> is not granted then:
 
-* <<LC>> reads CLEN-bits from memory, but does not return the associated valid tag, zero is returned.
+* <<LC>> reads CLEN-bits from memory, but does not return the associated valid tag, instead zero is returned.
 * <<SC>> writes CLEN-bits to memory, and writes zero to the associated valid tag.
 
 //NOTE: Future extensions to {cheri_base_ext_name} may add mechanisms that cause
@@ -576,14 +575,14 @@ If <<c_perm>> is not granted then:
 
 All capability data memory access instructions require CLEN-aligned addresses, and will
 take a misaligned exception if this requirement is not met.
-There they cannot be emulated.
+They cannot be emulated.
 
 CAUTION: #ARC request that this become an access fault#
 
 All memory accesses, of any type, require permission from the authorizing capability in `cs1`.
 
-* All loads require <<r_perm>>, otherwise they will take an exception
-* All stores require <<w_perm>>, otherwise they will take an exception
+* All loads require <<r_perm>>, otherwise they raise an exception
+* All stores require <<w_perm>>, otherwise they raise an exception
 
 //NOTE: Misaligned capability memory accesses cannot be emulated.
 //  To transfer CLEN misaligned bits without a valid tag, use integer loads and stores.
@@ -625,9 +624,6 @@ The rules for modifying the behavior of such instructions are:
 ** An exception is taken by the branch or jump on failure.
 * <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition of suitability).
 * Any memory access instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead which is used to <<sec_cap_checks,check whether the access is permitted>>, taking an exception if it is not.
->>>>>>> 946b180c (add bounds and representability section to the intro, and move the bounds diagram there as requested)
-* Any instruction that writes back an address (e.g. <<AUIPC_CHERI>>), writes a full capability register instead.
->>>>>>> 90adac13 (clean up cap instruction page section, and some other improvements)
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
@@ -637,16 +633,11 @@ The rules for modifying the behavior of such instructions are:
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions (e.g. floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
 
+IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
+
 NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
  Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is authorized.
 
-IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
-
-
-IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
-
-NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
- Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is permitted.
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
@@ -722,7 +713,7 @@ All load and store instructions authorized by `cs1` cause CHERI exceptions if an
 
 Load instructions except for <<LC>> always zero the valid tag and metadata of the result register.
 
-Stores instructions except for <<SC>> always write zero to the valid tag or tags associated with the memory locations that are written to.
+Store instructions except for <<SC>> always write zero to the valid tag or tags associated with the memory locations that are written to.
 
 Therefore, misaligned stores may clear up to two associated valid tag bits.
 
