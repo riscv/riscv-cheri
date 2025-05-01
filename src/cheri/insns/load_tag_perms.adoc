@@ -1,18 +1,18 @@
-Resulting value of `cd`::
-The valid tag value written to `cd` is 0 if the valid tag of the memory location loaded is
-0 or the authorizing capability (`cs1`) does not grant <<c_perm>>.
+Determining the final value of `cd`::
+If the valid tag of the memory location loaded is 0, or the authorizing capability (`cs1`) does not grant <<c_perm>> then set `cd.tag=0`. In this case the steps below do not apply.
 +
-If the authorizing capability does not grant <<lm_perm>>, and the valid tag of `cd` is 1 and `cd` is not sealed, then an implicit <<ACPERM>> clearing <<w_perm>> and <<lm_perm>> is performed to obtain the intermediate permissions on `cd`.
+If `cd.tag=1`, `cd` is not sealed and `cs1` does not grant <<lm_perm>>, then an implicit <<ACPERM>> is performed to clear <<w_perm>> and <<lm_perm>> from `cd`.
 +
-If the authorizing capability does not grant <<el_perm>>, and the valid tag of `cd` is 1, then an implicit <<ACPERM>> restricting the <<section_cap_level>> to the level of the authorizing capability is performed.
-If `cd` is not sealed, this implicit <<ACPERM>> also clears <<el_perm>> to obtain the final permissions on `cd` (see <<cap_level_load_summary>>).
+If `cd.tag=1`, `cd` is not sealed and `cs1` does not grant <<el_perm>>, then an implicit <<ACPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1` and to remove <<el_perm>>.
 +
-NOTE: Missing <<lm_perm>> does not affect untagged values since this could result in surprising bit patterns when copying non-capability data.
-Similarly, sealed capabilities are not modified as they are not directly dereferenceable.
+If `cd.tag=1`, `cd` is sealed and `cs1` does not grant <<el_perm>>, then an implicit <<ACPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1`
++
+If {cheri_1levels_ext_name} is implemented, then also see <<cap_level_load_summary>>.
 +
 NOTE: Missing <<el_perm>> also affects the level of sealed capabilities since notionally the <<section_cap_level>> of a capability is not a permission but rather a data flow label attached to the loaded value.
-However, untagged values are not affected by <<el_perm>>.
 +
-NOTE: While the implicit <<ACPERM>> introduces a dependency on the loaded data, implementations can avoid this by deferring the actual masking of permissions until the loaded capability is dereferenced or the metadata bits are inspected using <<GCPERM>> or <<GCHI>>.
+NOTE: While the implicit <<ACPERM>> introduces a dependency on the loaded data, implementations can avoid this by deferring the actual masking of permissions until the loaded capability is dereferenced or the metadata bits are inspected using <<GCPERM>> or <<GCHI>>. Additionally, metadata modifications  are on naturally aligned data, and so on the read path from a data cache, the modification typically happens in parallel with data alignment multiplexers.
 +
-NOTE: When sending load data to a trace interface implementations can choose whether to trace the value before or after <<ACPERM>> has modified the data. The recommendation is to trace the value after <<ACPERM>>.
+#ARC feedback: this is change relative to 0.9.5 so that the choice is removed. Choosing the other option would need to be a future extension#
++
+When sending load data to a trace interface, implementations trace the final value written to `cd` which may not match the value in memory.

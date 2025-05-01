@@ -213,7 +213,7 @@ class both_mode_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')

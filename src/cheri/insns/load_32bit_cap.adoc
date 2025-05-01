@@ -14,31 +14,19 @@ include::wavedrom/loadcap.adoc[]
 
 include::load_store_c0.adoc[]
 
+
 Description::
 Calculate the effective address of the memory access by adding the address of `cs1` to the sign-extended 12-bit offset.
 +
 Authorize the memory access with the capability in `cs1`.
 +
-Load a CLEN-bit value from memory, conditionally update it as specified below, and write the final version to `cd`.
+Load a naturally aligned CLEN-bit data value and the associated valid tag from memory.
++
+Write the CLEN-bit data and the valid tag to `cd` and conditionally update it as specified below.
 +
 include::malformed_no_check.adoc[]
 
-Determining the final value of `cd`::
-If the valid tag of the memory location loaded is 0, or the authorizing capability (`cs1`) does not grant <<c_perm>> then set `cd.tag=0`. In this case the CLEN-bit memory data is written directly to `cd` and the steps below do not apply.
-+
-If `cd.tag=1`, `cd` is not sealed and `cs1` does not grant <<lm_perm>>, then an implicit <<ACPERM>> is performed to clear <<w_perm>> and <<lm_perm>> from `cd`.
-+
-If `cd.tag=1`, `cd` is not sealed and `cs1` does not grant <<el_perm>>, then an implicit <<ACPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1` and to remove <<el_perm>>.
-+
-If `cd.tag=1`, `cd` is sealed and `cs1` does not grant <<el_perm>>, then an implicit <<ACPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1`
-+
-If {cheri_1levels_ext_name} is implemented, then also see <<cap_level_load_summary>>.
-+
-NOTE: Missing <<el_perm>> also affects the level of sealed capabilities since notionally the <<section_cap_level>> of a capability is not a permission but rather a data flow label attached to the loaded value.
-+
-NOTE: While the implicit <<ACPERM>> introduces a dependency on the loaded data, implementations can avoid this by deferring the actual masking of permissions until the loaded capability is dereferenced or the metadata bits are inspected using <<GCPERM>> or <<GCHI>>. Additionally, metadata modifications are only possible if the access is naturally aligned, and so on the read path from a data cache, the modification typically happens in parallel with data alignment multiplexers.
-+
-When sending load data to a trace interface, implementations trace the final value written to `cd` which may not match the value in memory. #This is change relative to 0.9.5 which gives the choice#
+include::load_tag_perms.adoc[]
 +
 :has_cap_data:
 include::load_exceptions.adoc[]
