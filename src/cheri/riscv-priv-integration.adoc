@@ -106,7 +106,7 @@ implementation, though it may be explicitly written by software.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<mepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 Additionally, the capability in <<mepcc>> is unsealed when it is installed in
-<<pcc>> on execution of an <<MRET>> instruction.
+<<pcc>> on execution of an <<MRET_CHERI>> instruction.
 
 === Machine-Level CSRs modified by {cheri_priv_m_ext}
 
@@ -352,7 +352,7 @@ The <<sepcc>> register extends <<sepc>> to hold a capability.
 Its reset value is the <<infinite-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<sepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
-Additionally, the capability in <<sepcc>> is unsealed when it is installed in <<pcc>> on execution of an <<SRET>> instruction.
+Additionally, the capability in <<sepcc>> is unsealed when it is installed in <<pcc>> on execution of an <<SRET_CHERI>> instruction.
 The handling of <<sepcc>> is otherwise identical to <<mepcc>>, but in supervisor mode.
 
 .Supervisor exception program counter capability register
@@ -429,7 +429,7 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_inv_addr} | <<pcc>> invalid address | <<pcc>> holds an invalid address
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_bounds}   | <<pcc>> bounds          | Any byte of current instruction out of <<pcc>> bounds
 6+| *CSR/Xret additional exception check*
-| CSR*, <<MRET>>, <<SRET>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}          | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET>>/<<SRET>>
+| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}          | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
 6+| *direct jumps additional exception check*
 | <<JAL_CHERI>>, <<insns-conbr-32bit_CHERI,conditional branches>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds} | <<pcc>> bounds     | any byte of minimum length instruction at target out of <<pcc>> bounds
 6+| *indirect jumps additional exception checks*

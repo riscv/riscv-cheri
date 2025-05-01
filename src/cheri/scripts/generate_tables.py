@@ -16,6 +16,8 @@ remapped_isns = {
     'SH1ADD': 'SH1ADD_CHERI',
     'SH2ADD': 'SH2ADD_CHERI',
     'SH3ADD': 'SH3ADD_CHERI',
+    'MRET': 'MRET_CHERI',
+    'SRET': 'SRET_CHERI',
 }
 
 def insn_xref(insn: str):
