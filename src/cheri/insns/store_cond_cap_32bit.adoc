@@ -6,32 +6,37 @@
 Synopsis::
 Store Conditional (SC.C), 32-bit encoding
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `sc.c rd, cs2, 0(cs1)`
 
-{cheri_int_mode_name} Mnemonic::
-`sc.c rd, cs2, 0(rs1)`
+//{cheri_int_mode_name} Mnemonic::
+//`sc.c rd, cs2, 0(rs1)`
 
 Encoding::
 include::wavedrom/store_cond_cap.adoc[]
 
-{cheri_cap_mode_name} Description::
-Store conditional instructions, authorized by the capability in `cs1`.
- All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
+Description::
+Calculate the effective address of the memory access by adding the address of `cs1` to the sign-extended 12-bit offset.
++
+Authorize the memory access with the capability in `cs1`.
++
+Conditionally store, following the same rules as SC.W, a naturally aligned CLEN-bit data value in `cs2` to memory and the associated valid tag in `cs2`.
++
+Set rd to 1 for success or 0 for failure.
 +
 include::load_store_c0.adoc[]
 
-{cheri_int_mode_name} Description::
-Store conditional instructions, authorized by the capability in <<ddc>>.
- All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
-
-:store_cond:
+//{cheri_int_mode_name} Description::
+//Store conditional instructions, authorized by the capability in <<ddc>>.
+// All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
 
 include::store_tag_perms.adoc[]
 
 include::malformed_no_check.adoc[]
 
-//include::store_exceptions.adoc[]
+:store_cond:
+:has_cap_data:
+include::store_exceptions.adoc[]
 
 Prerequisites::
 {cheri_base_ext_name}, and A or Zalrsc
