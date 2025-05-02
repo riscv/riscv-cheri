@@ -36,8 +36,8 @@ IMPORTANT: Depending on the base ISA and supported extensions, some combinations
 In case the requested permissions combination falls into this category, <<ACPERM>> will return useful minimal sets of permissions, which may be no permissions.
 Therefore, it is possible that requesting to clear a permission also clears others, but <<ACPERM>> will never _add_ new permissions.
 . Copy `cs1` to `cd`, and update the AP and SDP fields with the newly calculated versions.
-. Set `cd.tag=0` if `cs1` is sealed only if <<ACPERM>> has been issued as an instruction.
-.. Do not do the sealed check if <<ACPERM>> is _implicitly_ used to process data from <<LC>> or for any other reason.
+. Set `cd.tag=0` if `cs1` is sealed and any permission bits were affected by <<ACPERM>>.
+.. Do not invalidate the tag on sealed capability if only the <<section_cap_level,capability levels (CL)>> changed.
 // TODO: reserved fields can only be set through a memory error, should all of this go into an appendix?
 // or if any reserved fields of `cs1` are set.
 
