@@ -21,8 +21,10 @@ Encoding::
 include::wavedrom/cbld.adoc[]
 
 Description::
-Copy `cs2` to `cd` and set `cd.tag` to 1 if
-
+Copy `cs2` to `cd`.
++
+Set `cd.tag=1` if:
++
 . `cs1.tag` is set, and
 . `cs1` 's bounds are not <<section_cap_malformed,malformed>>, and all reserved fields are zero, and
 . `cs1` 's permissions could have been legally produced by <<ACPERM>>, and
@@ -34,15 +36,15 @@ NOTE: With {cheri_0levels_ext_name} this check always passes as the level is har
 . `cs2` 's bounds are not <<section_cap_malformed,malformed>>, and all reserved fields are zero, and
 . `cs2` 's permissions could have been legally produced by <<ACPERM>>, and
 . All reserved bits in `cs2` 's metadata are 0;
++
+Otherwise, set `cd.tag=0`
 
-Otherwise, copy `cs2` to `cd` and clear `cd` 's tag.
-
-<<CBLD>> is typically used alongside <<SCHI>> to build
+NOTE: <<CBLD>> is typically used alongside <<SCHI>> to build
 capabilities from integer values.
 
 NOTE: When `cs1` is `c0` this will copy `cs2` to `cd` and clear `cd.tag`.
 However this may change in future extensions, and so software should not
-assume `cs1==0` to be a pseudoinstruction for tag clearing.
+assume `cs1==0` to be a pseudo-instruction for tag clearing.
 
 Operation::
 +
