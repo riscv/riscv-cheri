@@ -12,21 +12,18 @@ Mnemonic::
 Encoding::
 include::wavedrom/gcmode.adoc[]
 
-*Description*
-
+Description::
 Decode the CHERI execution mode from the capability in `cs1` and write the
 result to `rd`.
-
-Set `rd` to 0 if:
-
-. `cs1` does not grant <<x_perm>>, or,
-. the AP field in `cs1` cannot be produced by <<ACPERM>>,
-
++
+Set `rd` to 0 if `cs1` does not grant <<x_perm>>, or, the AP field in `cs1` cannot be produced by <<ACPERM>>.
++
 Otherwise set `rd` according to `cs1` 's CHERI execution mode (<<m_bit>>):
-
-. Set `rd` to {CAP_MODE_VALUE} for {cheri_cap_mode_name}, or
-. Set `rd` to {INT_MODE_VALUE} for {cheri_int_mode_name}.
-
++
+1. Set `rd` to {CAP_MODE_VALUE} for {cheri_cap_mode_name}, or,
++
+2. Set `rd` to {INT_MODE_VALUE} for {cheri_int_mode_name}.
++
 include::no_tag_affect.adoc[]
 
 Operation::

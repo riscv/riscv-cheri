@@ -19,19 +19,20 @@ Mnemonic::
 Encoding::
 include::wavedrom/scmode.adoc[]
 
-*Description*
-
+Description::
 Copy `cs1` to `cd`.
-
++
 Clear `cd.tag` if `cs1` is sealed.
-
-If `cs1` grants <<x_perm>> and `cs1` 's permissions can be produced by <<ACPERM>>, then update the <<m_bit>> of `cd` to:
-
-. {cheri_cap_mode_name} if the least significant bit of `rs2` is {CAP_MODE_VALUE}, or
-. {cheri_int_mode_name} if the least significant bit of `rs2` is {INT_MODE_VALUE}
-
++
+If `cs1` grants <<x_perm>> and `cs1` 's permissions can be produced by <<ACPERM>>,
+then update the <<m_bit>> of `cd` to:
++
+1. {cheri_cap_mode_name} if the least significant bit of `rs2` is {CAP_MODE_VALUE}, or,
++
+2. {cheri_int_mode_name} if the least significant bit of `rs2` is {INT_MODE_VALUE}
++
 Otherwise do not update the <<m_bit>>.
-
++
 include::no_tag_affect.adoc[]
 
 Operation ::
