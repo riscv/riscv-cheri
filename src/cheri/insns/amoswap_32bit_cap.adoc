@@ -15,8 +15,14 @@ Mnemonic::
 Encoding::
 include::wavedrom/amoswap_cap.adoc[]
 
-//{cheri_cap_mode_name} Description::
+Description::
 Atomic swap of capability type, authorized by the capability in `cs1`.
++
+The operation is equivalent to an atomically executed sequence of:
++
+`lc cd, 0(cs1)`
++
+`sc cs2, 0(cs1)`
 
 include::load_store_c0.adoc[]
 
