@@ -1,15 +1,15 @@
 Exceptions::
-ifdef::load_res[]
-#ARC feedback: this needs to be an access fault#
-+
-All misaligned load reservations cause a load address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a load access fault exception.
-+
-endif::[]
 ifdef::has_cap_data[]
 #ARC feedback: needs to be an access fault as it can't be emulated#
 +
 Misaligned address fault exception when the effective address is not aligned to CLEN/8.
 +
+endif::[]
+ifndef::has_cap_data[]
+ ifdef::load_res[]
+All misaligned load reservations cause a load address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a load access fault exception.
++
+ endif::[]
 endif::[]
 #ARC suggestion: consider software check fault#
 +

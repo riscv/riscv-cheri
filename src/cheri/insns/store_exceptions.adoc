@@ -1,13 +1,15 @@
 Exceptions::
-//ifdef::store_cond[]
-//All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a store/AMO access fault exception.
-//+
-//endif::[]
 ifdef::has_cap_data[]
 #ARC feedback: needs to be an access fault as it can't be emulated#
 +
 Misaligned address fault exception when the effective address is not aligned to CLEN/8 if Zam is supported, otherwise store access fault exception.
 +
+endif::[]
+ifndef::has_cap_data[]
+ ifdef::store_cond[]
+All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a store/AMO access fault exception.
++
+ endif::[]
 endif::[]
 #ARC suggestion: consider software check fault#
 +
