@@ -1,4 +1,6 @@
 Exceptions::
+#ARC suggestion: consider software check fault#
++
 _CHERI data fault_ exceptions occur when the authorizing capability fails one of the checks
 listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
 +
@@ -15,7 +17,8 @@ endif::cbo_clean_flush[]
 ifdef::cbo_inval[]
 | Permission violation  | Authorizing capability does not grant <<w_perm>>, <<r_perm>> or <<asr_perm>>, or the AP field could not have been produced by <<ACPERM>>
 endif::[]
-| Invalid address violation  | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
+//move to priv spec
+//| Invalid address violation  | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
 | Bounds violation      | None of the bytes accessed are within the bounds, or the capability has <<section_cap_malformed,malformed>> bounds
 
 |==============================================================================

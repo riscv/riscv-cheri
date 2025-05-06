@@ -1,16 +1,17 @@
 <<<
 
-[#CM_MVSA01,reftext="CM.MVSA01"]
-==== CM.MVSA01
+[#CM_MVSA01_CHERI,reftext="CM.MVSA01 ({cheri_base_ext_name})"]
+==== CM.MVSA01 ({cheri_base_ext_name})
 
 Synopsis::
-CM.MVSA01: Move argument registers 0 and 1 into two saved registers.
+CM.MVSA01: Move argument registers 0 and 1 into two saved registers. 16-bit encoding.
 
-{cheri_cap_mode_name} Mnemonic (RV32)::
+
+Mnemonic (RV32)::
 `cm.mvsa01 c1s', c2s'`
 
-{cheri_int_mode_name} Mnemonic::
-`cm.mvsa01 r1s', r2s'`
+//{cheri_int_mode_name} Mnemonic::
+//`cm.mvsa01 r1s', r2s'`
 
 Encoding::
 [wavedrom, , svg]
@@ -27,19 +28,21 @@ Encoding::
 
 NOTE: The encoding uses sreg number specifiers instead of xreg number specifiers to save encoding space. The saved register encoding is shown in xref:saved_register_mapping[xrefstyle=short].
 
-{cheri_cap_mode_name} Description::
+include::cheri_mode_dependent.adoc[]
+
+Description::
 Atomically move two saved capability registers `cs0-cs7` into `ca0` and `ca1`.
 
-{cheri_int_mode_name} Description::
-Atomically move two saved integer registers `s0-s7` into `a0` and `a1`.
+//{cheri_int_mode_name} Description::
+//Atomically move two saved integer registers `s0-s7` into `a0` and `a1`.
 
 include::zcm_common.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {c_cheri_base_ext_names}, Zcmp
 
-Prerequisites for {cheri_int_mode_name}::
-{c_cheri_default_ext_names}, Zcmp
+//Prerequisites for {cheri_int_mode_name}::
+//{c_cheri_default_ext_names}, Zcmp
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

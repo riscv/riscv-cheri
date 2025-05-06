@@ -25,6 +25,8 @@ Encoding::
 ]}
 ....
 
+include::cheri_mode_dependent.adoc[]
+
 Description::
 Copy the capability in `cs2` to `cd`.
 +
@@ -36,23 +38,23 @@ include::rep_range_check.adoc[]
 +
 include::malformed_shadd_clear_tag.adoc[]
 
-//{cheri_int_mode_name} Description::
-//Increment `rs2` by the unsigned word in `rs1` shifted left by 4 bit positions
-//and write the result to `rd`.
+{cheri_int_mode_name} Description::
+Increment `rs2` by the unsigned word in `rs1` shifted left by 4 bit positions
+and write the result to `rd`.
 
-Exceptions::
-None
+//Exceptions::
+//None
 
-Prerequisites::
-{cheri_base64_ext_name}
+Prerequisites for {cheri_cap_mode_name}::
+{cheri_base64_ext_name}, {sh4add_ext_name}
 
-//Prerequisites for {cheri_int_mode_name}::
-//RV64, {sh4add_ext_name}
+Prerequisites for {cheri_int_mode_name}::
+RV64, {sh4add_ext_name}
 
-Operation::
+{cheri_cap_mode_name}} Operation::
 +
 sail::execute[clause="ZBA_SH4ADDUW_capmode(_, _, _)",part=body,unindent]
 
-//{cheri_int_mode_name} Operation::
-//+
-//sail::execute[clause="ZBA_SH4ADDUW(_, _, _)",part=body,unindent]
+{cheri_int_mode_name} Operation::
++
+sail::execute[clause="ZBA_SH4ADDUW(_, _, _)",part=body,unindent]
