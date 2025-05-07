@@ -28,7 +28,7 @@ endif::[]
 Synopsis::
 CSR access (CSRRWI, CSRRS, CSRRSI, CSRRC, CSRRCI) 32-bit encodings for {cheri_base_ext_name}
 
-Mnemonics for accessing CLEN-wide CSRs ({cheri_base_ext_name})::
+Mnemonics for accessing CLEN-wide CSRs in {cheri_cap_mode_name}::
 `csrrs  cd, csr, rs1` +
 `csrrc  cd, csr, rs1` +
 `csrrwi cd, csr, imm` +
@@ -46,44 +46,24 @@ Encoding::
 include::wavedrom/csr-instr.adoc[]
 
 Description::
-These are standard RISC-V CSR instructions with extended functionality for
-accessing CLEN-wide CSRs (see xref:all_capability_CSRs[xrefstyle=short]),
-including extended CSRs with actions as shown in
+These are standard RISC-V CSR instructions with extended functionality for accessing CLEN-wide CSRs.
 +
 For CLEN-wide CSRs, the full capability is read into `cd` in {cheri_cap_mode_name}.
 In {cheri_int_mode_name}, the address field is instead read into `rd`.
 +
-Unlike <<CSRRW_CHERI>>, these instructions only update the address field and the valid tag
-as defined in xref:extended_CSR_writing[xrefstyle=short] when writing
-CLEN-wide CSRs regardless of the execution mode. The final address to
-write to the capability CSR is determined as defined by RISC-V for these
-instructions.
+Unlike <<CSRRW_CHERI>>, these instructions only update the address field and the valid tag as defined in xref:extended_CSR_writing[xrefstyle=short] when writing CLEN-wide CSRs regardless of the execution mode.
+The CSR update is made using <<SCADDR>> semantics.
 +
-See xref:aliased_CSRs[xrefstyle=short] for a list of CLEN-wide CSRs and
-xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing an XLEN-wide value to each one.
-+
-If `cd` is `c0` (or `rd` is `x0`), then <<CSRRWI_CHERI,CSRRWI>> shall not read the CSR and
-and shall not cause any of the side effects that might occur on a CSR read. If
-`rs1` is `x0` for <<CSRRS_CHERI,CSRRS>> and <<CSRRC_CHERI,CSRRC>>, or `imm` is 0 for <<CSRRSI_CHERI,CSRRSI>> and
-<<CSRRCI_CHERI,CSRRCI>>, then the instruction will not write to the CSR at all, and so shall
-not cause any of the side effects that might otherwise occur on a CSR write.
-+
-The assembler pseudoinstruction to read a capability CSR in {cheri_cap_mode_name},
-`csrr cd, csr`, is encoded as `csrrs cd, csr, x0`.
-+
-Access to XLEN-wide CSRs is as specified by RISC-V.
-
 NOTE: If the CSR accessed is a capability, and `rs1` is `x0` for <<CSRRS_CHERI,CSRRS>> and <<CSRRC_CHERI,CSRRC>>, or `imm` is 0 for <<CSRRSI_CHERI,CSRRSI>> and <<CSRRCI_CHERI,CSRRCI>>, then the CSR is not written so no representability check is needed in this case.
 
 Permissions::
-Accessing privileged CSRs may require <<asr_perm>>, including existing RISC-V
-CSRs, as described in cite:[riscv-priv-spec].
+Accessing CSRs may require <<asr_perm>>.
 
 Prerequisites for {cheri_cap_mode_name}::
-{cheri_base_ext_name}
+{cheri_base_ext_name}, Zicsr
 
 Prerequisites for {cheri_int_mode_name}::
-{cheri_default_ext_name}
+{cheri_default_ext_name}, Zicsr
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]
