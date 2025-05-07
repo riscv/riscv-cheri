@@ -236,7 +236,7 @@ The rules for the reordering of CSR accesses in the global memory order
 should probably be moved to <<memorymodel>> concerning the RVWMO memory consistency model.
 ====
 
-==== CSR accesses for {cheri_base_ext_name}
+==== CSR accesses for ({cheri_base_ext_name})
 
 {cheri_base_ext_name} has three classes of CSR:
 
@@ -283,3 +283,13 @@ The assembler pseudoinstruction to read a capability CSR `csrr cd, csr`, is enco
 Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN-bits for compatibility.
 
 Therefore _all_ CSR writes write XLEN-bit data and use <<SCADDR>> semantics to update the full CLEN-bit CSR value
+. Access to CLEN-bit CSRs using CSRRW always accesses the full CLEN-bits
+.. this includes all CSRs extended to CLEN-bits
+.. some CSRs may have special writing rules
+.. when writing CLEN-bit data, the valid tag is cleared if the bounds are <<section_cap_malformed,malformed>>, any reserved bits are set,
+or the permission could not have been produced by <<ACPERM>>
+. Access to CLEN-bit CSRs using other encodings will:
+.. Update the address field (XLEN-bits) using the standard semantics (e.g., set bits for CSRRSI) and then use <<SCADDR>> semantics to update the full CSR on writing
+.. Read CLEN-bits
+
+The assembler pseudoinstruction to read a capability CSR `csrr cd, csr`, is encoded as `csrrs cd, csr, c0`.
