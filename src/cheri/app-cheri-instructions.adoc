@@ -75,13 +75,15 @@ include::insns/load_32bit_fp.adoc[]
 include::insns/store_32bit_fp.adoc[]
 endif::[]
 
+//this has all been integrated into the relevant chapter
+ifdef::cheri_standalone_spec[]
 <<<
 === "C" Standard Extension for Compressed Instructions
 
 One group of 16-bit encodings are remapped to different instructions dependent
 upon the CHERI execution mode, MXLEN and which extensions are supported.
 
-Teh following tables summarize the mappings.
+The following tables summarize the mappings.
 
 NOTE: Zcf and Zclsd are incompatible
 
@@ -165,10 +167,7 @@ NOTE: Zcd and <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>> incompatible
 |001    |10    5+| C.LCSP
 |==============================================================================
 
-//follows standard rules
-ifdef::cheri_standalone_spec[]
 include::insns/condbr_16bit.adoc[]
-endif::[]
 
 include::insns/cmv_16bit.adoc[]
 
@@ -176,8 +175,6 @@ include::insns/addi16sp_16bit.adoc[]
 
 include::insns/addi4spn_16bit.adoc[]
 
-//follows standard rules
-ifdef::cheri_standalone_spec[]
 include::insns/jalr_16bit.adoc[]
 
 include::insns/jr_16bit.adoc[]
@@ -227,7 +224,6 @@ include::insns/prefetch.i.adoc[]
 include::insns/prefetch.r.adoc[]
 
 include::insns/prefetch.w.adoc[]
-endif::[]
 
 <<<
 === "Zba" Extension for Bit Manipulation Instructions
@@ -239,6 +235,7 @@ include::insns/adduw_32bit.adoc[]
 include::insns/sh123add_32bit.adoc[]
 
 include::insns/sh123adduw_32bit.adoc[]
+endif::[]
 
 <<<
 [#sh4add_extension]
@@ -260,7 +257,7 @@ include::insns/sh4adduw_32bit.adoc[]
 //include::insns/store_16bit_Zcb.adoc[]
 
 <<<
-[#Zcmp,reftext="Zcmp"]
+[#Zcmp_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
 === "Zcmp" Standard Extension For Code-Size Reduction
 
 The push (<<CM_PUSH_CHERI>>) and pop (<<CM_POP_CHERI>>, <<CM_POPRET_CHERI>>, <<CM_POPRETZ_CHERI>>) instructions are redefined in {cheri_cap_mode_name} to save/restore capability data.
@@ -299,7 +296,7 @@ include::insns/zcmp_cmva01s.adoc[]
 
 
 <<<
-[#Zcmt,reftext="Zcmt"]
+[#Zcmt_CHERI,reftext="Zcmt ({cheri_base32_ext_name})"]
 === "Zcmt" Standard Extension For Code-Size Reduction
 
 The table jump instructions (<<CM_JT_CHERI>>, <<CM_JALT_CHERI>>) defined in cite:[riscv-code-size-spec] are _not_ redefined in {cheri_cap_mode_name} to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.

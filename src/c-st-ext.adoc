@@ -544,7 +544,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 
 |101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
 |001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
+|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp,Zcmp>>/<<Zcmt,Zcmp>> | N/A
 |001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
 |==============================================================================
 
@@ -563,7 +563,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 
 |101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
 |001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
+|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp,Zcmp>>/<<Zcmt,Zcmp>> | N/A
 |001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
 |==============================================================================
 
@@ -855,7 +855,7 @@ convenient to expand C.MV to MV instead of ADD, at slight additional
 hardware cost._
 ====
 
-For {cheri_base_ext_name} C.MV moves a whole capability register.
+For {cheri_base_ext_name} C.MV copies the value in register __cs2__ into register __cd__.
 The expansion is `cmv cd, rs2`.
 
 C.ADD adds the values in registers _rd_ and _rs2_ and writes the result
