@@ -10,10 +10,10 @@ endif::[]
 Synopsis::
 Shift by 4 and add for address generation (SH4ADD)
 
-{cheri_cap_mode_name} Mnemonic (RV64)::
+Mnemonic ({cheri_base64_ext_name})::
 `sh4add cd, rs1, cs2`
 
-{cheri_int_mode_name} Mnemonic (RV64)::
+Mnemonic (RV64I)::
 `sh4add rd, rs1, rs2`
 
 Encoding::
@@ -31,7 +31,7 @@ Encoding::
 
 include::cheri_mode_dependent.adoc[]
 
-Description::
+{cheri_base64_ext_name} Description::
 Copy the capability in `cs2` to `cd`.
 +
 Increment `cd.address` by `rs1` shifted left by 4 bit positions.
@@ -42,17 +42,17 @@ include::rep_range_check.adoc[]
 +
 include::malformed_shadd_clear_tag.adoc[]
 
-{cheri_int_mode_name} Description::
+RV64I Description::
 Increment `rs2` by `rs1` shifted left by 4 bit positions and write the result to `rd`.
 
 //Exceptions::
 //None
 
-Prerequisites::
-{cheri_base64_ext_name}
+Prerequisites for {cheri_base64_ext_name}::
+{sh4add_ext_name}
 
-//Prerequisites for {cheri_int_mode_name}::
-//RV64, {sh4add_ext_name}
+Prerequisites for RV64I::
+{sh4add_ext_name}
 
 Operation::
 +
