@@ -131,7 +131,7 @@ NOTE: Zcd and <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>> incompatible
 ^1^ reserved for future standard Zcm extensions
 
 <<<
-==== RV64
+==== RV64 / {cheri_base64_ext_name}
 
 .16-bit instruction remapping in {cheri_int_mode_name}
 [#insn_remapping_16bit_rv64_a]
@@ -319,7 +319,7 @@ The JVT CSR is exactly as defined by cite:[riscv-code-size-spec]. It is extended
 [#jvtc,reftext="jvtc"]
 ==== Jump Vector Table CSR (jvtc)
 
-<<jvtc>> extends The Zcmt <<jvt_cheri>> to be CLEN-bits, as shown in xref:ucsrnames-renamed[xrefstyle=short].
+<<jvtc>> extends the Zcmt <<jvt_cheri>> CSR to be CLEN-bits.
 
 .Jump Vector Table Capability register
 include::img/jvtcreg.edn[]
@@ -331,8 +331,8 @@ See <<CM_JALT_CHERI>>, <<CM_JT_CHERI>>.
 
 If the access to the jump table succeeds, then the instructions execute as follows:
 
-** <<CM_JT_CHERI>> executes as <<JAL_CHERI,J>> or <<AUIPC_CHERI>>+<<JALR_CHERI,JR>>
-** <<CM_JALT_CHERI>> executes as <<JAL_CHERI>> or <<AUIPC_CHERI>>+<<JALR_CHERI>>
+** <<CM_JT_CHERI>>   executes as <<JAL_CHERI,J>>   or <<AUIPC_CHERI,AUIPC>>+<<JALR_CHERI,JR>>
+** <<CM_JALT_CHERI>> executes as <<JAL_CHERI,JAL>> or <<AUIPC_CHERI,AUIPC>>+<<JALR_CHERI,JALR>>
 
 As a result the capability metadata is retained in <<pcc>> during execution.
 
@@ -342,16 +342,11 @@ include::insns/zcmt_cmjt.adoc[]
 
 <<<
 
-=== "H" Extension for Hypervisor Support
-
-Hypervisor load and store instructions and the {cheri_base_ext_name} extensions.
-
-//include::insns/hypv-virt-load.adoc[]
-
-include::insns/hypv-virt-load-cap.adoc[]
-
-//include::insns/hypv-virt-store.adoc[]
-
-include::insns/hypv-virt-store-cap.adoc[]
-
-//include::insns/hypv-virt-loadx.adoc[]
+//FIXME!! needs to move to PRIV...
+//=== "H" Extension for Hypervisor Support
+//
+//Hypervisor load and store instructions and the {cheri_base_ext_name} extensions.
+//
+//include::insns/hypv-virt-load-cap.adoc[]
+//include::insns/hypv-virt-store-cap.adoc[]
+//

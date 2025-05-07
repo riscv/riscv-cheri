@@ -6,10 +6,10 @@
 Synopsis::
 Shift by 4 and add unsigned words for address generation (SH4ADD.UW)
 
-{cheri_cap_mode_name} Mnemonic (RV64)::
+Mnemonic ({cheri_base64_ext_name})::
 `sh4add.uw cd, rs1, cs2`
 
-{cheri_int_mode_name} Mnemonic (RV64)::
+Mnemonic (RV64I)::
 `sh4add.uw rd, rs1, rs2`
 
 Encoding::
@@ -27,7 +27,7 @@ Encoding::
 
 include::cheri_mode_dependent.adoc[]
 
-Description::
+{cheri_base64_ext_name} Description::
 Copy the capability in `cs2` to `cd`.
 +
 Increment `cd.address` by the unsigned word in `rs1` shifted left by 4 bit positions.
@@ -38,23 +38,23 @@ include::rep_range_check.adoc[]
 +
 include::malformed_shadd_clear_tag.adoc[]
 
-{cheri_int_mode_name} Description::
+RV64I Description::
 Increment `rs2` by the unsigned word in `rs1` shifted left by 4 bit positions
 and write the result to `rd`.
 
 //Exceptions::
 //None
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites for {cheri_base64_ext_name}::
 {cheri_base64_ext_name}, {sh4add_ext_name}
 
-Prerequisites for {cheri_int_mode_name}::
+Prerequisites for RV64I::
 RV64, {sh4add_ext_name}
 
-{cheri_cap_mode_name}} Operation::
+{cheri_base64_ext_name}} Operation::
 +
 sail::execute[clause="ZBA_SH4ADDUW_capmode(_, _, _)",part=body,unindent]
 
-{cheri_int_mode_name} Operation::
+RV64I Operation::
 +
 sail::execute[clause="ZBA_SH4ADDUW(_, _, _)",part=body,unindent]

@@ -12,7 +12,7 @@ endif::[]
 Synopsis::
 CSR access (CSRRW) 32-bit encodings for ({cheri_base_ext_name})
 
-Mnemonic for accessing capability CSRs in {cheri_cap_mode_name}::
+Mnemonic for accessing CLEN-wide CSRs in {cheri_cap_mode_name}::
 `csrrw cd, csr, cs1`
 
 Mnemonic for accessing XLEN-wide CSRs or extended CSRs in {cheri_int_mode_name}::
@@ -23,16 +23,16 @@ include::wavedrom/csrw-instr.adoc[]
 
 Description::
 These are standard RISC-V CSR instructions with extended functionality for
-accessing capability CSRs (see xref:all_capability_CSRs[xrefstyle=short]).
+accessing CLEN-wide CSRs (see xref:all_capability_CSRs[xrefstyle=short]).
 +
 See xref:aliased_CSRs[xrefstyle=short] for a list of CSRs extended to capabilities and
 xref:extended_CSR_writing[xrefstyle=short] for the action taken on writing each one.
 +
-Capability CSRs and the action taken on accessing them is shown in xref:new_cap_CSR_writing[xrefstyle=short].
+CLEN-wide CSRs and the action taken on accessing them is shown in xref:new_cap_CSR_writing[xrefstyle=short].
 +
 CSRRW writes `cs1` to extended CSRs in {cheri_cap_mode_name}, and reads a full capability into `cd`.
 +
-CSRRW writes `cs1` to capability CSRs in both modes, and reads a full capability into `cd`.
+CSRRW writes `cs1` to CLEN-wide CSRs in both modes, and reads a full capability into `cd`.
 +
 CSRRW writes `rs1` to extended CSRs in {cheri_int_mode_name}, and reads the address field into `rd`.
 +

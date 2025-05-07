@@ -74,16 +74,7 @@ The exact location of the M-bit in the capability format for XLEN=32 and XLEN=64
 IMPORTANT: While the <<m_bit>> only has a effect when installed in <<pcc>>, it needs to be encoded in all capabilities.
   Since indirect jumps copy the full target capability into <<pcc>>, it allows indirect jumps to change between modes (see <<sec_changing_cheri_execution_mode>>).
 
-CAUTION: #ARC-QUESTION: This next paragraph has a reference to a section in the priv spec, does it need to move there or can we keep it here?#
-
-#Tariq: I think we need to remove the forward reference to CRE#
-
-The current _<<cheri_execution_mode>>_ is given by the <<m_bit>> of the <<pcc>> and the <<section_cheri_disable,CHERI register and instruction access settings>> as follows:
-
-* The Mode is {cheri_cap_mode_name} when the <<m_bit>> of the <<pcc>> is {CAP_MODE_VALUE}, *and* <<section_cheri_disable,CHERI register and instruction access is enabled>> for the current privilege.
-* Otherwise the Mode is {cheri_int_mode_name}.
-
-// When the <<m_bit>> can be set, the <<sec_permission_transitions,rules>> defined by <<ACPERM>> must be followed.
+The <<m_bit>> of the <<pcc>>, may be overridden by the execution environment which may not grant permission to enter {cheri_cap_mode_name}.
 
 [#sec_changing_cheri_execution_mode]
 ==== Changing CHERI Execution Mode
@@ -103,7 +94,7 @@ NOTE: The mode can also be updated by setting the <<m_bit>> of a target capabili
 [#m_bit_observe,reftext="Observing the CHERI Execution Mode"]
 ==== Observing the CHERI Execution Mode
 
-The effective CHERI execution cannot be determined just by reading the <<m_bit>> from <<pcc>> since it also depends on the values of some <<section_cheri_disable,privileged CSRs>>.
+The effective CHERI execution mode cannot be determined just by reading the <<m_bit>> from <<pcc>> since it also depends on the execution environment.
 The following code sequence demonstrate how a program can observe the current, effective CHERI execution mode.
 It will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
 
@@ -115,11 +106,11 @@ gctag x1, c1
 
 === Added State
 
-{cheri_default_ext_name} adds the capability CSRs shown in
+{cheri_default_ext_name} adds the CLEN-wide CSRs shown in
 xref:default-csrnames-added[xrefstyle=short].
 
 [[default-csrnames-added]]
-.Unprivileged capability CSRs added in {cheri_default_ext_name}
+.Unprivileged CLEN-wide CSRs added in {cheri_default_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
 |CLEN CSR|Address|Permissions|Description
@@ -283,7 +274,7 @@ The following rules apply:
 * When accessing a CSR added by a CHERI extension:
 ** CLEN bits are read from the CSR and written to an output *c* register.
 
-//NOTE: For all non-capability CSRs (i.e., XLEN-width CSRs) XLEN bits are read/written regardless of <<cheri_execution_mode>>.
+//NOTE: For all non-CLEN-wide CSRs (i.e., XLEN-width CSRs) XLEN bits are read/written regardless of <<cheri_execution_mode>>.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* CSpecialRW is removed. Its role is assumed by <<CSRRW_CHERI>>.
