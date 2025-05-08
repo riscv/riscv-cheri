@@ -1,31 +1,39 @@
 <<<
 
-[#C_ADDI4SPN,reftext="C.ADDI4SPN"]
-==== C.ADDI4SPN
+[#C_ADDI4SPN_CHERI,reftext="C.ADDI4SPN ({cheri_base_ext_name})"]
+==== C.ADDI4SPN ({cheri_base_ext_name})
 
 Synopsis::
 Stack pointer increment in blocks of 4 (C.ADDI4SPN), 16-bit encoding
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `c.addi4spn cd', nzuimm`
 
-{cheri_cap_mode_name} Expansion::
+Expansion::
 `caddi cd', csp, nzuimm`
 
-{cheri_int_mode_name} Mnemonic::
-`c.addi4spn rd', nzuimm`
+NOTE: The suggested assembly syntax distinguishes from integer `c.addi4spn` by operand type.
 
-{cheri_int_mode_name} Expansion::
-`addi rd', sp, nzuimm`
+//{cheri_int_mode_name} Mnemonic::
+//`c.addi4spn rd', nzuimm`
+
+//{cheri_int_mode_name} Expansion::
+//`addi rd', sp, nzuimm`
 
 Encoding::
 include::wavedrom/c-ciw.adoc[]
 
-{cheri_cap_mode_name} Description::
+include::cheri_mode_dependent.adoc[]
 
-Add a zero-extended non-zero immediate, scaled by 4, to the stack pointer, `csp`, and writes the result to `cd'`. This instruction is used to generate pointers to stack-allocated variables. Clear the valid tag if the resulting capability is unrepresentable or `csp` is sealed.
+Description::
 
-include::malformed_clear_tag_csp.adoc[]
+Copy `csp` to `cd'`. Add a zero-extended non-zero immediate, scaled by 4, to `cd'.address`.
++
+Set `cd'.tag=0` if `csp` is sealed.
++
+Set `cd'.tag=0` if the resulting capability cannot be <<section_cap_representable_check,represented exactly>>.
++
+Set `cd'.tag=0` if `csp` 's bounds are <<section_cap_malformed,malformed>>, or if any of the reserved fields are set.
 
 {cheri_int_mode_name} Description::
 

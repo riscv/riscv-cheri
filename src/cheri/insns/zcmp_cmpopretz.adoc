@@ -1,16 +1,16 @@
 <<<
 
-[#CM_POPRETZ,reftext="CM.POPRETZ"]
-==== CM.POPRETZ
+[#CM_POPRETZ_CHERI,reftext="CM.POPRETZ ({cheri_base32_ext_name})"]
+==== CM.POPRETZ ({cheri_base32_ext_name})
 
 Synopsis::
-Destroy stack frame (CM.POPRETZ): load the return address register and register 0 to 12 saved registers from the stack frame, deallocate the stack frame. Move zero into argument register zero. Return through the return address register. 16-bit encodings.
+Destroy stack frame (CM.POPRETZ): load the return address register and register 0 to 12 saved registers from the stack frame, deallocate the stack frame. Move zero into argument register zero. Return through the return address register. 16-bit encoding.
 
-{cheri_cap_mode_name} Mnemonic (RV32)::
+Mnemonic::
 `cm.popretz \{creg_list\}, -stack_adj`
 
-{cheri_int_mode_name} Mnemonic::
-`cm.popretz \{xreg_list\}, -stack_adj`
+//{cheri_int_mode_name} Mnemonic::
+//`cm.popretz \{xreg_list\}, -stack_adj`
 
 Encoding::
 [wavedrom, , svg]
@@ -28,30 +28,28 @@ Encoding::
 
 _rlist_ values 0 to 3 are reserved for a future EABI variant
 
-{cheri_cap_mode_name} Description::
-Load capability registers as specified in _creg_list_. Deallocate stack frame. Move zero into `ca0`. Return by calling <<JALR_CHERI>> to `cra`. All data accesses are checked against `csp`. The return destination is checked against `cra`.
+include::cheri_mode_dependent.adoc[]
 
-{cheri_int_mode_name} Description::
-Load integer registers as specified in _xreg_list_. Deallocate stack frame. Move zero into `a0`. Return by calling <<JALR_CHERI>> to `ra`. All data accesses are checked against <<ddc>>. The return destination is checked against <<pcc>>.
-
-Permissions::
-Loads are checked as for <<LC>> in both {cheri_int_mode_name} and
-{cheri_cap_mode_name}.
+Description::
+Load capability registers as specified in _creg_list_ using <<LC>> semantics.
 +
-The return is checked as for <<JALR_CHERI>> in both {cheri_int_mode_name} and
-{cheri_cap_mode_name}.
+Deallocate stack frame.
++
+Move zero into `ca0`.
++
+Return by calling <<JALR_CHERI>> to `cra`.
++
+All data accesses are authorized by `csp`.
++
+The return destination is authorized by `cra`.
 
 include::zcm_common.adoc[]
 
-include::load_exceptions.adoc[]
-
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {c_cheri_base_ext_names}, Zcmp
-
-Prerequisites for {cheri_int_mode_name}::
-{c_cheri_default_ext_names}, Zcmp
+for {cheri_cap_mode_name}
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

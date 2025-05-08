@@ -33,7 +33,7 @@ in `c1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
 `abstractcs.progbufsize` is 5:
 
 ----
-# Read the high MXLEN bits into data0-data1
+# Read the high MXLEN-bits into data0-data1
 csrrw  c2, dscratch0c, c2
 gchi   x2, c1
 csrw   0xBF0, x2
@@ -47,7 +47,7 @@ csrw   0xBF0, x2
 csrrw  c2, dscratch0c, c2
 ebreak
 
-# Write the high MXLEN bits from data0-data1
+# Write the high MXLEN-bits from data0-data1
 csrrw  c2, dscratch0c, c2
 csrr   x2, 0xBF0
 schi   c1, c1, x2
@@ -238,7 +238,7 @@ Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>>'s metadata is
 set to the <<infinite-cap>> capability's metadata (with tag set) and <<ddc>>'s
 address remains unchanged.
 
-When debug mode is exited by executing <<DRET>>, the hart's <<ddc>> is updated to
+When debug mode is exited by executing <<DRET_CHERI>>, the hart's <<ddc>> is updated to
 the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
 hart's context.
 

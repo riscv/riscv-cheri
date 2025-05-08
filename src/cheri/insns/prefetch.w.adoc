@@ -7,11 +7,11 @@ Synopsis::
 Provide a HINT to hardware that a cache block is likely to be accessed by a
 data write in the near future
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `prefetch.w offset(cs1)`
 
-{cheri_int_mode_name} Mnemonic::
-`prefetch.w offset(rs1)`
+//{cheri_int_mode_name} Mnemonic::
+//`prefetch.w offset(rs1)`
 
 Encoding::
 [wavedrom, , svg]
@@ -26,33 +26,35 @@ Encoding::
 ]}
 ....
 
-{cheri_cap_mode_name} Description::
+Description::
 A PREFETCH.W instruction indicates to hardware that the cache block whose
 effective address is the sum of the base address specified in `cs1` and the
 sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
 likely to be accessed by a data write (i.e., store) in the near future. The
 encoding is only valid if imm[4:0]=0. The authorizing capability for this
 operation is `cs1`. This instruction does not throw any exceptions. However,
-following xref:CHERI_SPEC[xrefstyle=short], this instruction does not perform a
+following the rules from xref:rv32y[xrefstyle=short], this instruction does not perform a
 prefetch if it is not authorized by `cs1`.
 
-{cheri_int_mode_name} Description::
-A PREFETCH.W instruction indicates to hardware that the cache block whose
-effective address is the sum of the base address specified in `rs1` and the
-sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
-likely to be accessed by a data write (i.e., store) in the near future.  The
-encoding is only valid if imm[4:0]=0. The authorizing capability for this
-operation is <<ddc>>.
+include::int_mode_remapping_pcc.adoc[]
+
+//{cheri_int_mode_name} Description::
+//A PREFETCH.W instruction indicates to hardware that the cache block whose
+//effective address is the sum of the base address specified in `rs1` and the
+//sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
+//likely to be accessed by a data write (i.e., store) in the near future.  The
+//encoding is only valid if imm[4:0]=0. The authorizing capability for this
+//operation is <<ddc>>.
 
 :prefetch_insn: PREFETCH.W
 :prefetch_perm: <<w_perm>>
 include::prefetch_cap_checks.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 Zicbop, {cheri_base_ext_name}
 
-Prerequisites for {cheri_int_mode_name}::
-Zicbop, {cheri_default_ext_name}
+//Prerequisites for {cheri_int_mode_name}::
+//Zicbop, {cheri_default_ext_name}
 
 Operation::
 [source,sail]

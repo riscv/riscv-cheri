@@ -588,12 +588,12 @@ Setting the SXL or UXL field to a value that is not MXLEN disables most CHERI fe
 NOTE: If CHERI register access must be disabled in a mode for security reasons, software should set CRE to 0 regardless of the SXL and UXL fields.
 +
 Whenever XLEN in any mode is set to a value less than MXLEN, standard RISC-V rules from cite:[riscv-unpriv-spec] are followed.
-This means that all operations must ignore source operand register bits above the configured XLEN, and must sign-extend results to fill all MXLEN bits in the destination register.
+This means that all operations must ignore source operand register bits above the configured XLEN, and must sign-extend results to fill all MXLEN-bits in the destination register.
 Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it is sign-extended to fill MXLEN.
 The integer writing rule from CHERI is followed, so that every register write also zeroes the metadata and tag of the
 destination register.
 +
-However, CHERI operations and security checks will continue using the entire hardware register (i.e., CLEN bits) to correctly decode capability bounds.
+However, CHERI operations and security checks will continue using the entire hardware register (i.e., CLEN-bits) to correctly decode capability bounds.
 
 Changing endianness::
 Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.

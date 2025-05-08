@@ -1,45 +1,46 @@
 <<<
 
-[#C_MV,reftext="C.MV"]
-==== C.MV
+[#C_MV_CHERI,reftext="C.MV ({cheri_base_ext_name})"]
+==== C.MV ({cheri_base_ext_name})
 
 Synopsis::
 Capability move (C.MV), 16-bit encoding
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `c.mv cd, cs2`
 
-{cheri_cap_mode_name} Expansion::
+Expansion::
 `cmv cd, cs2`
 
 Suggested assembly syntax::
-`mv rd, rs2` +
 `mv cd, cs2`
 
 NOTE: The suggested assembly syntax distinguishes from integer `c.mv` by operand type.
 
-{cheri_int_mode_name} Mnemonic::
-`c.mv rd, rs2`
+//{cheri_int_mode_name} Mnemonic::
+//`c.mv rd, rs2`
 
-{cheri_int_mode_name} Expansion::
-`add rd, x0, rs2`
+//{cheri_int_mode_name} Expansion::
+//`add rd, x0, rs2`
 
 Encoding::
 include::wavedrom/c_mv.adoc[]
 
-{cheri_cap_mode_name} Description::
+include::cheri_mode_dependent.adoc[]
+
+Description::
 Capability register `cd` is replaced with the contents of `cs2`.
 
-{cheri_int_mode_name} Description::
-Standard RISC-V <<C_MV>> instruction.
+//{cheri_int_mode_name} Description::
+//Standard RISC-V <<C_MV>> instruction.
 
 include::malformed_no_check.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {c_cheri_base_ext_names}
 
-Prerequisites for {cheri_int_mode_name}::
-{c_cheri_default_ext_names}
+//Prerequisites for {cheri_int_mode_name}::
+//{c_cheri_default_ext_names}
 
-{cheri_cap_mode_name} Operation (after expansion to 32-bit encodings)::
+Operation (after expansion to 32-bit encoding)::
  See <<CMV>>

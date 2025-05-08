@@ -1,16 +1,16 @@
 <<<
 
-[#CM_PUSH,reftext="CM.PUSH"]
-==== CM.PUSH
+[#CM_PUSH_CHERI,reftext="CM.PUSH ({cheri_base32_ext_name})"]
+==== CM.PUSH ({cheri_base32_ext_name})
 
 Synopsis::
-Create stack frame (CM.PUSH): store the return address register and 0 to 12 saved registers to the stack frame, optionally allocate additional stack space. 16-bit encodings.
+Create stack frame (CM.PUSH): store the return address register and 0 to 12 saved registers to the stack frame, optionally allocate additional stack space. 16-bit encoding.
 
-{cheri_cap_mode_name} Mnemonic (RV32)::
+Mnemonic::
 `cm.push \{creg_list\}, -stack_adj`
 
-{cheri_int_mode_name} Mnemonic::
-`cm.push \{xreg_list\}, -stack_adj`
+//{cheri_int_mode_name} Mnemonic::
+//`cm.push \{xreg_list\}, -stack_adj`
 
 Encoding::
 [wavedrom, , svg]
@@ -26,23 +26,21 @@ Encoding::
 
 [NOTE]
 
+include::cheri_mode_dependent.adoc[]
+
 _rlist_ values 0 to 3 are reserved for a future EABI variant
 
-{cheri_cap_mode_name} Description::
-Create stack frame, store capability registers as specified in _creg_list_. Optionally allocate additional multiples of 16-byte stack space. All accesses are checked against `csp`.
-
-{cheri_int_mode_name} Description::
-Create stack frame, store integer registers as specified in _xreg_list_. Optionally allocate additional multiples of 16-byte stack space. All accesses are checked against <<ddc>>.
+Description::
+Create stack frame, store capability registers as specified in _creg_list_ using <<SC>> semantics.
++
+Optionally allocate additional multiples of 16-byte stack space in `csp`.
++
+All accesses are authorized against `csp`.
 
 include::zcm_common.adoc[]
 
-include::store_exceptions.adoc[]
-
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {c_cheri_base_ext_names}, Zcmp
-
-Prerequisites for {cheri_int_mode_name}::
-{c_cheri_default_ext_names}, Zcmp
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

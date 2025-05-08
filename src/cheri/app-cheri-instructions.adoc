@@ -20,20 +20,18 @@ CHERI execution mode
 NOTE: Not all RISC-V extensions have been checked against CHERI. Compatible
 extensions will eventually be listed in a CHERI profile.
 
+//these are unnecessary as they just follow the stated rules
+ifdef::cheri_standalone_spec[]
 <<<
 === RV32I/E and RV64I/E Base Integer Instruction Sets
 
-There are a number of instructions that are already in RISC-V that have modified behavior when CHERI is included (see <<section_existing_riscv_insns>>).
-
-// These four are defined in the priv chapter already
-// include::insns/auipc_32bit.adoc[]
-// include::insns/condbr_32bit.adoc[]
-// include::insns/jalr_32bit.adoc[]
-// include::insns/jal_32bit.adoc[]
+There are a number of load and store instructions that are already in RISC-V that have modified behavior when CHERI is included (see <<section_existing_riscv_insns>>).
 
 include::insns/load_32bit.adoc[]
 
 include::insns/store_32bit.adoc[]
+
+endif::[]
 
 <<<
 === RV32I/E and RV64I/E Privileged Instruction Sets
@@ -44,6 +42,8 @@ include::insns/mret_sret.adoc[]
 
 include::insns/dret.adoc[]
 
+//these are merged into the atomics chapter in unpriv
+ifdef::cheri_standalone_spec[]
 <<<
 === "A" Standard Extension for Atomic Instructions
 
@@ -60,6 +60,10 @@ include::insns/load_res_cap_32bit.adoc[]
 include::insns/store_cond_32bit.adoc[]
 
 include::insns/store_cond_cap_32bit.adoc[]
+endif::[]
+
+//these are unnecessary as they just follow the stated rules
+ifdef::cheri_standalone_spec[]
 
 <<<
 === "Zfh", "Zfhmin", "F" and "D" Standard Extension for Floating-Point
@@ -69,16 +73,21 @@ Floating point instructions and how CHERI affects them.
 include::insns/load_32bit_fp.adoc[]
 
 include::insns/store_32bit_fp.adoc[]
+endif::[]
 
+//this has all been integrated into the relevant chapter
+ifdef::cheri_standalone_spec[]
 <<<
 === "C" Standard Extension for Compressed Instructions
 
 One group of 16-bit encodings are remapped to different instructions dependent
 upon the CHERI execution mode, MXLEN and which extensions are supported.
 
+The following tables summarize the mappings.
+
 NOTE: Zcf and Zclsd are incompatible
 
-NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
+NOTE: Zcd and <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>> incompatible
 
 
 ==== RV32
@@ -96,7 +105,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 
 |101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
 |001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
+|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp,Zcmp>>/<<Zcmt,Zcmp>> | N/A
 |001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
 |==============================================================================
 
@@ -115,14 +124,14 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 
 |101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
 |001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
+|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp,Zcmp>>/<<Zcmt,Zcmp>> | N/A
 |001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
 |==============================================================================
 
 ^1^ reserved for future standard Zcm extensions
 
 <<<
-==== RV64
+==== RV64 / {cheri_base64_ext_name}
 
 .16-bit instruction remapping in {cheri_int_mode_name}
 [#insn_remapping_16bit_rv64_a]
@@ -137,7 +146,7 @@ NOTE: Zcd and <<Zcmp>>/<<Zcmt>> incompatible
 
 |101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
 |001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp>>/<<Zcmt>> | N/A
+|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp,Zcmp>>/<<Zcmt,Zcmp>> | N/A
 |001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
 |==============================================================================
 
@@ -193,7 +202,10 @@ include::insns/store_16bit_fp_sp.adoc[]
 include::insns/store_16bit_fp_dp.adoc[]
 
 include::insns/store_16bit_cap_sprel.adoc[]
+endif::[]
 
+//integrated into the CBO chapter
+ifdef::cheri_standalone_spec[]
 <<<
 === "Zicbom", "Zicbop", "Zicboz" Standard Extensions for Base Cache Management Operations
 
@@ -223,6 +235,7 @@ include::insns/adduw_32bit.adoc[]
 include::insns/sh123add_32bit.adoc[]
 
 include::insns/sh123adduw_32bit.adoc[]
+endif::[]
 
 <<<
 [#sh4add_extension]
@@ -232,23 +245,24 @@ include::insns/sh4add_32bit.adoc[]
 
 include::insns/sh4adduw_32bit.adoc[]
 
+//these all follow the standard rules
+//<<<
+//[#Zcb,reftext="Zcb"]
+//=== "Zcb" Standard Extension For Code-Size Reduction
+//
+//Code-size reduction instructions and how they interact with CHERI.
+//
+//include::insns/load_16bit_Zcb.adoc[]
+//
+//include::insns/store_16bit_Zcb.adoc[]
+
 <<<
-[#Zcb,reftext="Zcb"]
-=== "Zcb" Standard Extension For Code-Size Reduction
-
-Code-size reduction instructions and how they interact with CHERI.
-
-include::insns/load_16bit_Zcb.adoc[]
-
-include::insns/store_16bit_Zcb.adoc[]
-
-<<<
-[#Zcmp,reftext="Zcmp"]
+[#Zcmp_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
 === "Zcmp" Standard Extension For Code-Size Reduction
 
-The push (<<CM.PUSH>>) and pop (<<CM.POP>>, <<CM.POPRET>>, <<CM.POPRETZ>>) instructions are redefined in {cheri_cap_mode_name} to save/restore full capabilities.
+The push (<<CM_PUSH_CHERI>>) and pop (<<CM_POP_CHERI>>, <<CM_POPRET_CHERI>>, <<CM_POPRETZ_CHERI>>) instructions are redefined in {cheri_cap_mode_name} to save/restore capability data.
 
-The double move instructions (<<CM.MVSA01>>, <<CM.MVA01S>>) are redefined in {cheri_cap_mode_name} to move full capabilities between registers. The saved register mapping is as shown in
+The double move instructions (<<CM_MVSA01_CHERI>>, <<CM_MVA01S_CHERI>>) are redefined in {cheri_cap_mode_name} to move capability data between registers. The saved register mapping is as shown in <<saved_register_mapping>>.
 
 .saved register mapping for Zcmp
 [#saved_register_mapping]
@@ -282,45 +296,43 @@ include::insns/zcmp_cmva01s.adoc[]
 
 
 <<<
-[#Zcmt,reftext="Zcmt"]
+[#Zcmt_CHERI,reftext="Zcmt ({cheri_base32_ext_name})"]
 === "Zcmt" Standard Extension For Code-Size Reduction
 
-The table jump instructions (<<CM.JT>>, <<CM.JALT>>) defined in cite:[riscv-code-size-spec] are _not_ redefined in {cheri_cap_mode_name} to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.
+The table jump instructions (<<CM_JT_CHERI>>, <<CM_JALT_CHERI>>) defined in cite:[riscv-code-size-spec] are _not_ redefined in {cheri_cap_mode_name} to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.
 
 In the future, new jump table modes or new encodings can be added to have capabilities in the jump table.
 
-The jump vector table CSR <<jvt>> has a capability alias <<jvtc>> so that it can only be configured to point to accessible memory. All accesses to the jump table are checked against <<jvtc>> in {cheri_cap_mode_name}, and against <<pcc>> bounds in {cheri_int_mode_name}. This allows the jump table to be accessed
-when the <<pcc>> bounds are set narrowly to the local function only in {cheri_cap_mode_name}.
+The jump vector table CSR <<jvt_cheri>> has a capability alias <<jvtc>> so that it can only be configured to point to accessible memory.
+All accesses to the jump table are checked against <<jvtc>> in {cheri_cap_mode_name}, and against <<pcc>> bounds in {cheri_int_mode_name}.
+This allows the jump table to be accessed when the <<pcc>> bounds are set narrowly to the local function only in {cheri_cap_mode_name}.
 
-NOTE: Zcmt defines that the fetch from the jump table is from instruction memory.
- The overall instruction executed is effectively 48-bit, with 16-bits from <<CM.JALT>>/<<CM.JT>>, the other 32-bits (for RV32) from the table.
- Therefore <<pcc>> is used to authorize the fetch in {cheri_int_mode_name}, as the fetch is designated to be from instruction memory in cite:[riscv-unpriv-spec].
+NOTE: In {cheri_cap_mode_name} the instruction fetch bounds check is authorized by two different capabilities - <<jvtc>> for the table access and <<pcc>> for the <<CM_JALT_CHERI>>/<<CM_JT_CHERI>> instruction, and target instruction.
 
 NOTE: In {cheri_cap_mode_name} the implementation doesn't need to expand and bounds check against <<jvtc>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvtc>>, and then check that the accessed entry is in that range.
 
-[#jvt,reftext="jvt"]
-==== Jump Vector Table CSR (jvt)
+[#jvt_cheri,reftext="jvt ({cheri_base_ext_name})"]
+==== Jump Vector Table CSR (jvt) ({cheri_base_ext_name})
 
-The JVT CSR is exactly as defined by cite:[riscv-code-size-spec]. It is renamed to <<jvtc>>.
+The JVT CSR is exactly as defined by cite:[riscv-code-size-spec]. It is extended to <<jvtc>>.
 
 [#jvtc,reftext="jvtc"]
 ==== Jump Vector Table CSR (jvtc)
 
-<<jvtc>> extends <<jvt>> to be a capability width CSR, as shown in xref:ucsrnames-renamed[xrefstyle=short].
+<<jvtc>> extends the Zcmt <<jvt_cheri>> CSR to be CLEN-bits.
 
 .Jump Vector Table Capability register
 include::img/jvtcreg.edn[]
 
 All instruction fetches from the jump vector table are checked against <<jvtc>> in {cheri_cap_mode_name}.
-In {cheri_int_mode_name} the address field gives the base address of the table, and the access is
-checked against <<pcc>> bounds.
+In {cheri_int_mode_name} the address field gives the base address of the table, and the access is checked against <<pcc>> bounds.
 
-See <<CM_JALT>>, <<CM_JT>>.
+See <<CM_JALT_CHERI>>, <<CM_JT_CHERI>>.
 
 If the access to the jump table succeeds, then the instructions execute as follows:
 
-** <<CM_JT>> executes as <<JAL_CHERI,J>> or <<AUIPC_CHERI>>+<<JALR_CHERI,JR>>
-** <<CM_JALT>> executes as <<JAL_CHERI>> or <<AUIPC_CHERI>>+<<JALR_CHERI>>
+** <<CM_JT_CHERI>>   executes as <<JAL_CHERI,J>>   or <<AUIPC_CHERI,AUIPC>>+<<JALR_CHERI,JR>>
+** <<CM_JALT_CHERI>> executes as <<JAL_CHERI,JAL>> or <<AUIPC_CHERI,AUIPC>>+<<JALR_CHERI,JALR>>
 
 As a result the capability metadata is retained in <<pcc>> during execution.
 
@@ -330,16 +342,11 @@ include::insns/zcmt_cmjt.adoc[]
 
 <<<
 
-=== "H" Extension for Hypervisor Support
-
-Hypervisor instructions and the CHERI extensions.
-
-include::insns/hypv-virt-load.adoc[]
-
-include::insns/hypv-virt-load-cap.adoc[]
-
-include::insns/hypv-virt-store.adoc[]
-
-include::insns/hypv-virt-store-cap.adoc[]
-
-include::insns/hypv-virt-loadx.adoc[]
+//FIXME!! needs to move to PRIV...
+//=== "H" Extension for Hypervisor Support
+//
+//Hypervisor load and store instructions and the {cheri_base_ext_name} extensions.
+//
+//include::insns/hypv-virt-load-cap.adoc[]
+//include::insns/hypv-virt-store-cap.adoc[]
+//

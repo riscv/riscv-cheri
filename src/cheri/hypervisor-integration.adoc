@@ -178,30 +178,30 @@ NOTE: <<vstval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 [#vstval2-format]
 include::img/vstval2reg.edn[]
 
-=== Existing Hypervisor Load and Store Instructions
-
-The hypervisor extension defines several integer load and store instructions
-(such as <<HLV_W>>, <<HSV_W>> and <<HLVX_WU>>) that transfer the amount of integer data
-described in cite:[riscv-priv-spec] between the registers and memory as though
-V=1. These instructions change behavior depending on the CHERI execution mode
-although the instruction's encoding remains unchanged.
-
-When in {cheri_cap_mode_name}, the hypervisor load and
-store instructions behave as described in
-xref:section_existing_riscv_insns[xrefstyle=short]. In
-{cheri_int_mode_name}, the instructions behave as
-described in cite:[riscv-priv-spec] and rely on an *x* register operand
-providing the effective address for the memory access; the capability
-authorizing the memory access is <<ddc>>.
-
-The exception cases remain as described in
-xref:section_existing_riscv_insns[xrefstyle=short] regardless of the CHERI
-execution mode.
+//=== Existing Hypervisor Load and Store Instructions
+//
+//The hypervisor extension defines several integer load and store instructions
+//(such as <<HLV_W>>, <<HSV_W>> and <<HLVX_WU>>) that transfer the amount of integer data
+//described in cite:[riscv-priv-spec] between the registers and memory as though
+//V=1. These instructions change behavior depending on the CHERI execution mode
+//although the instruction's encoding remains unchanged.
+//
+//When in {cheri_cap_mode_name}, the hypervisor load and
+//store instructions behave as described in
+//xref:section_existing_riscv_insns[xrefstyle=short]. In
+//{cheri_int_mode_name}, the instructions behave as
+//described in cite:[riscv-priv-spec] and rely on an *x* register operand
+//providing the effective address for the memory access; the capability
+//authorizing the memory access is <<ddc>>.
+//
+//The exception cases remain as described in
+//xref:section_existing_riscv_insns[xrefstyle=short] regardless of the CHERI
+//execution mode.
 
 === Hypervisor Load and Store Instructions For Capability Data
 
 Hypervisor virtual-machine load (<<HLV.C>>) and store (<<HSV.C>>)
-instructions read or write CLEN bits from memory as though V=1. These
+instructions read or write CLEN-bits from memory as though V=1. These
 instructions change behavior depending on the CHERI execution mode although
 the instruction's encoding remains unchanged.
 

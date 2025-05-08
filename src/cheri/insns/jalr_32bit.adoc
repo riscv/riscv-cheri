@@ -43,7 +43,9 @@ CHERI fault exception when one of the checks below fail (see <<sec_cheri_excepti
 | Tag violation         | `cs1` has tag set to 0, or has any reserved bits set
 | Seal violation        | `cs1` is sealed and the immediate is not 0
 | Permission violation  | `cs1` does not grant <<x_perm>>, or the AP field could not have been produced by <<ACPERM>>
+ifdef::invalid_address_viol[]
 | Invalid address violation | The target address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
+endif::[]
 | Bounds violation      | Minimum length instruction is not within the target capability's bounds
 |==============================================================================
 
