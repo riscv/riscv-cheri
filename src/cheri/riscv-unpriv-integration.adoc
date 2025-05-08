@@ -74,7 +74,7 @@ The exact bitwise layout of capabilities as well as the precise encoding of each
 
 ==== Address
 
-The lower XLEN bits of a capability encode the address of where the capability points.
+The lower XLEN-bits of a capability encode the address of where the capability points.
 This is also referred to as the integer part of the capability.
 For registers that are extended but (currently) only hold integer data, all other fields are zero.
 
@@ -106,7 +106,7 @@ Every capability has two bounds - _base_ and _top_.
 The _base_ is returned by the <<GCBASE>> instruction.
 There is no equivalent instruction for the _top_, but there is for the _length_ which is defined to be `length = top - base`, and is returned by <<GCLEN>>.
 
-* The _base_ is XLEN bits and is _inclusive_.
+* The _base_ is XLEN-bits and is _inclusive_.
 * The _top_ is XLEN+1 bits and is _exclusive_.
 ** The extra bit is required to allow the bounds to include the top byte of memory.
 
@@ -367,7 +367,7 @@ This means the following state is added by {cheri_base_ext_name}:
 ----
 
 ==== Extended general purpose integer registers
-The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended with another XLEN bits of capability metadata plus a valid tag bit.
+The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended with another XLEN-bits of capability metadata plus a valid tag bit.
 When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
 The existing integer register names refer to the address part of the capability.
 For the ABI register names the `c` prefix is added, i.e., `csp`, `ca0`.
@@ -379,7 +379,7 @@ NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, et
 All registers that store addresses are extended to contain capabilities.
 In the base {cheri_base_ext_name} ISA, only the program counter (`pc`) register is extended to become the Program Counter Capability (<<pcc>>).
 
-NOTE: All CSRs that hold pointers are extended to CLEN bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, any such change is described in the corresponding chapters.
+NOTE: All CSRs that hold pointers are extended to CLEN-bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, any such change is described in the corresponding chapters.
 
 [#pcc,reftext="pcc"]
 ==== The Program Counter Capability (`pcc`)
@@ -616,6 +616,8 @@ In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well 
 
 The rules for modifying the behavior of such instructions are:
 
+* The result written to the target register is always unchanged.
+** The lower XLEN-bits are always written with the value from RV32I/RV64I.
 * Whenever the PC is handled, it is _always_ the <<pcc>>.
 * Any instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead.
 ** This capability register is used to <<sec_cap_checks,authorize the access>>.
@@ -694,6 +696,8 @@ include::insns/jalr_32bit.adoc[]
 
 include::insns/condbr_32bit.adoc[]
 
+<<<
+
 [#section_int_load_store_insns,reftext="Loads and Stores"]
 ==== Load and Store Instructions ({cheri_base_ext_name})
 
@@ -704,9 +708,10 @@ All load and store instructions behave as described in <<ldst>> with one fundame
 All load and store instructions authorized by `cs1` cause CHERI exceptions if any of these checks fails:
 
 * `cs1` must not be `c0`^1^
-* The valid tag (`cs1.tag`) must be set, and there must be no reserved bits set in `cs1`.
+* The valid tag (`cs1.tag`) must be set, and there must be no reserved bits set in `cs1`
 * `cs1` must be unsealed
-* The virtual address in `cs1` must not be invalid if virtual memory is enabled.
+//move to priv spec
+//* The virtual address in `cs1` must not be invalid if virtual memory is enabled.
 * All bytes of accessed memory must be inside `cs1's` bounds, and the bounds can't be <<section_cap_malformed,malformed>>.
 * For loads, the <<r_perm,read permission>> must be set in `cs1`
 * For stores, the <<w_perm,write permission>> must be set in `cs1`
@@ -714,12 +719,14 @@ All load and store instructions authorized by `cs1` cause CHERI exceptions if an
 ^1^ All load/store encodings are _reserved_ if `cs1=c0` (since dereferencing <<null-cap>> always faults).
  This principle is extended to _all_ loads and stores authorized by `cs1`.
 
-Load instructions except for <<LC>> always zero the valid tag and metadata of the result register.
+Load instructions, except for <<LC>>, always zero the valid tag and metadata of the result register.
 
-Store instructions except for <<SC>> always write zero to the valid tag or tags associated with the memory locations that are written to.
+Store instructions, except for <<SC>>, always write zero to the valid tag or tags associated with the memory locations that are written to.
 
 Therefore, misaligned stores may clear up to two associated valid tag bits.
 
-The changed interpretation of the base register also applies to all loads and stores defined in later chapters of this specification (including floating-point and vector loads/stores).
+The changed interpretation of the base register also applies to all loads, stores and other memory operations defined in later chapters of this specification with a base operands of `rs1` unless stated otherwise.
 
-Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.
+NOTE: this applies to all existing loads and stores including integer, floating-point and vector.
+
+*Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.*
