@@ -1,15 +1,12 @@
 <<<
 
-[#CM_JT,reftext="CM.JT"]
-==== CM.JT
+[#CM_JT_CHERI,reftext="CM.JT ({cheri_base32_ext_name})"]
+==== CM.JT ({cheri_base32_ext_name})
 
 Synopsis::
 Jump via table with link (CM.JT), 16-bit encodings
 
-{cheri_cap_mode_name} Mnemonic::
-`cm.jt _index_`
-
-{cheri_int_mode_name} Mnemonic::
+Mnemonic (RV32)::
 `cm.jt _index_`
 
 Encoding::
@@ -25,21 +22,20 @@ Encoding::
 
 [NOTE]
 
-  For this encoding to decode as <<CM.JT>>, _index<32_, otherwise it decodes as <<CM.JALT>>.
+  For this encoding to decode as <<CM_JT_CHERI>>, _index<32_, otherwise it decodes as <<CM_JALT_CHERI>>.
 
-{cheri_cap_mode_name} Description::
+include::cheri_mode_dependent.adoc[]
+
+Description ({cheri_base32_ext_name})::
 Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of the jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>.
-
-{cheri_int_mode_name} Description::
-Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of the jump table access against <<pcc>> bounds and requiring <<x_perm>>.
 
 include::zcm_common.adoc[]
 
-{cheri_cap_mode_name} Permissions::
-Requires <<jvtc>> to be tagged, not sealed, have <<x_perm>> and for the full XLEN-wide access to be in <<jvtc>> bounds.
+Permissions ({cheri_base32_ext_name})::
+Requires <<jvtc>> to have its valid tag set, not be sealed, have <<x_perm>> and for the full XLEN-wide table access to be in <<jvtc>> bounds.
 
-{cheri_cap_mode_name} Exceptions::
-_CHERI instruction fetch fault_ (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details) can be triggered with one the following errors:
+Exceptions ({cheri_base32_ext_name})::
+_CHERI instruction fetch fault_ can be caused for one the following reasons:
 +
 [width="50%",options=header,cols="2,^1",align=center]
 |==============================================================================
@@ -47,17 +43,16 @@ _CHERI instruction fetch fault_ (see <<sec_cheri_exception_handling,_CHERI Excep
 | Tag violation         |  ✔
 | Seal violation        |  ✔
 | Permission violation  |  ✔
+ifdef::invalid_address_viol[]
 | Invalid address violation  |  ✔
+endif::[]
 | Bounds violation      |  ✔
 |==============================================================================
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites for ({cheri_base32_ext_name})::
 {c_cheri_base_ext_names}, Zcmt
-
-Prerequisites for {cheri_int_mode_name}::
-{c_cheri_default_ext_names}, Zcmt
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

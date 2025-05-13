@@ -12,17 +12,29 @@ Mnemonic::
 Encoding::
 include::wavedrom/loadcap.adoc[]
 
-Load a CLEN-bit value from memory and writes it to `cd`. The capability in `cs1` authorizes the operation. The effective address of the memory access is obtained by adding the address of `cs1` to the sign-extended 12-bit offset.
-
 include::load_store_c0.adoc[]
 
-include::load_tag_perms.adoc[]
 
+Description::
+Calculate the effective address of the memory access by adding the address of `cs1` to the sign-extended 12-bit offset.
++
+Authorize the memory access with the capability in `cs1`.
++
+Load a naturally aligned CLEN-bit data value and the associated valid tag from memory.
++
+Write the CLEN-bit data and the valid tag to `cd` and conditionally update them as specified below.
++
 include::malformed_no_check.adoc[]
-
++
+include::load_store_c0.adoc[]
+//+ remove as this is in the base ISA chapter
+//include::int_mode_remapping_ddc.adoc[]
++
+include::load_tag_perms.adoc[]
++
 :has_cap_data:
 include::load_exceptions.adoc[]
-
-LC Operation::
++
+Operation::
 +
 sail::execute[clause="LoadCapImm(_, _, _)",part=body,unindent]

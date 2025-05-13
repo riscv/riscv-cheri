@@ -1,4 +1,6 @@
 Exceptions::
+#ARC suggestion: consider software check fault#
++
 _CHERI data fault_ exceptions occur when the authorizing capability fails one of the checks
 listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
 +
@@ -15,17 +17,15 @@ endif::cbo_clean_flush[]
 ifdef::cbo_inval[]
 | Permission violation  | Authorizing capability does not grant <<w_perm>>, <<r_perm>> or <<asr_perm>>, or the AP field could not have been produced by <<ACPERM>>
 endif::[]
+ifdef::invalid_address_viol[]
 | Invalid address violation  | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
+endif::[]
 | Bounds violation      | None of the bytes accessed are within the bounds, or the capability has <<section_cap_malformed,malformed>> bounds
 
 |==============================================================================
 
 ifdef::cbo_inval[]
-The CBIE bit in <<menvcfg>> and <<senvcfg>> indicates whether
-CBO.INVAL performs cache block flushes instead of
-invalidations for less privileged modes. The instruction checks shown in the
-table below remain unchanged regardless of the value of CBIE and the privilege
-mode.
+CSR state controls whether CBO.INVAL performs cache block flushes instead of invalidations for less privileged modes.
 
 NOTE: Invalidating a cache block can re-expose capabilities previously stored
 to it after the most recent flush, not just secret values. As such, CBO.INVAL

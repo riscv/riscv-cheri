@@ -1,24 +1,24 @@
 <<<
 
-[#SH1ADD_UW,reftext="SH1ADD.UW"]
-==== SH1ADD.UW
-See <<SH3ADD.UW>>.
+[#SH1ADD_UW_CHERI,reftext="SH1ADD.UW ({cheri_base64_ext_name})"]
+==== SH1ADD.UW ({cheri_base64_ext_name})
+See <<SH3ADD_UW_CHERI>>.
 
-[#SH2ADD_UW,reftext="SH2ADD.UW"]
-==== SH2ADD.UW
-See <<SH3ADD.UW>>.
+[#SH2ADD_UW_CHERI,reftext="SH2ADD.UW ({cheri_base64_ext_name})"]
+==== SH2ADD.UW ({cheri_base64_ext_name})
+See <<SH3ADD_UW_CHERI>>.
 
-[#SH3ADD_UW,reftext="SH3ADD.UW"]
-==== SH3ADD.UW
+[#SH3ADD_UW_CHERI,reftext="SH3ADD.UW ({cheri_base64_ext_name})"]
+==== SH3ADD.UW ({cheri_base64_ext_name})
 
 Synopsis::
 Shift by _n_ and add unsigned word for address generation (SH1ADD.UW, SH2ADD.UW, SH3ADD.UW)
 
-{cheri_cap_mode_name} Mnemonics (RV64)::
+Mnemonics ({cheri_base64_ext_name})::
 `sh[1|2|3]add.uw cd, rs1, cs2`
 
-{cheri_int_mode_name} Mnemonics (RV64)::
-`sh[1|2|3]add.uw rd, rs1, rs2`
+//{cheri_int_mode_name} Mnemonics (RV64)::
+//`sh[1|2|3]add.uw rd, rs1, rs2`
 
 Encoding::
 [wavedrom, , svg]
@@ -33,31 +33,36 @@ Encoding::
 ]}
 ....
 
-{cheri_cap_mode_name} Description::
-Increment the address field of `cs2` by the unsigned word in `rs1` shifted left
-by _n_ bit positions and write the result to `cd`. The valid tag bit of the output
-capability is 0 if `cs2` did not have its tag set to 1, the incremented address
-is outside `cs2` 's <<section_cap_representable_check>> or `cs2` is sealed.
+include::cheri_mode_dependent.adoc[]
 
+Description::
+Copy the capability in `cs2` to `cd`.
++
+Increment `cd.address` by the unsigned word `rs1` shifted left by _n_ bit positions.
++
+Set `cd.tag=0` if `cs2` is sealed.
++
+include::rep_range_check.adoc[]
++
 include::malformed_shadd_clear_tag.adoc[]
 
-{cheri_int_mode_name} Description::
-Increment `rs2` by the unsigned word in `rs1` shifted left by _n_ bit positions
-and write the result to `rd`.
+//{cheri_int_mode_name} Description::
+//Increment `rs2` by the unsigned word in `rs1` shifted left by _n_ bit positions
+//and write the result to `rd`.
 
-Exceptions::
-None
+//Exceptions::
+//None
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 RV64, {cheri_base_ext_name}, Zba
 
-Prerequisites for {cheri_int_mode_name}::
-RV64, {cheri_default_ext_name}, Zba
+//Prerequisites for {cheri_int_mode_name}::
+//RV64, {cheri_default_ext_name}, Zba
 
-{cheri_cap_mode_name} Operation::
+Operation::
 +
 sail::execute[clause="ZBA_RTYPEUW_capmode(_, _, _, _)",part=body,unindent]
 
-{cheri_int_mode_name} Operation::
-+
-sail::execute[clause="ZBA_RTYPEUW(_, _, _, _)",part=body,unindent]
+//{cheri_int_mode_name} Operation::
+//+
+//sail::execute[clause="ZBA_RTYPEUW(_, _, _, _)",part=body,unindent]

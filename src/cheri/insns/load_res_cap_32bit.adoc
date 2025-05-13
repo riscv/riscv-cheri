@@ -16,22 +16,33 @@ Encoding::
 include::wavedrom/load_res_cap.adoc[]
 
 Description::
-Load reserved instructions, authorized by the capability in `cs1`.
- All misaligned load reservations cause a load address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
+Calculate the effective address of the memory access by adding the address of `cs1` to the sign-extended 12-bit offset.
++
+Authorize the memory access with the capability in `cs1`.
++
+Load a naturally aligned CLEN-bit data value and the associated valid tag from memory.
++
+Set the reservation as for LR.W/D.
++
+Write the CLEN-bit data and the valid tag to `cd` and conditionally update them as specified below.
++
+//All misaligned load reservations cause a load address misaligned exception to allow software emulation (Zam extension, see cite://[riscv-unpriv-spec]).
 +
 include::load_store_c0.adoc[]
-
++
+include::int_mode_remapping_ddc.adoc[]
++
+include::malformed_no_check.adoc[]
++
 //{cheri_int_mode_name} Description::
 //Load reserved instructions, authorized by the capability in <<ddc>>.
 // All misaligned load reservations cause a load address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
-
++
 include::load_tag_perms.adoc[]
-
++
 :cap_load:
-
-include::malformed_no_check.adoc[]
-
-//include::load_exceptions.adoc[]
+:load_res:
+include::load_exceptions.adoc[]
 
 Prerequisites::
 {cheri_base_ext_name}, and A or Zalrsc

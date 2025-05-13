@@ -16,6 +16,8 @@ remapped_isns = {
     'SH1ADD': 'SH1ADD_CHERI',
     'SH2ADD': 'SH2ADD_CHERI',
     'SH3ADD': 'SH3ADD_CHERI',
+    'MRET': 'MRET_CHERI',
+    'SRET': 'SRET_CHERI',
 }
 
 def insn_xref(insn: str):
@@ -63,7 +65,7 @@ class Zabhlrsc_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -87,7 +89,7 @@ class Zish4add_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -111,7 +113,7 @@ class Zcheri_hybrid_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -165,7 +167,7 @@ class cap_mode_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -189,7 +191,7 @@ class legacy_mode_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -213,7 +215,7 @@ class both_mode_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -237,7 +239,7 @@ class xlen_dependent_encoding_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -261,7 +263,7 @@ class illegal_insns(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -284,14 +286,14 @@ class legacy_mnemonic_insns(table):
         if self.check(row):
             outStr = ""
             for i in self.indices:
-                outStr += '|' + insn_xref(row[i]) + '>>'
+                outStr += '|' + insn_xref(row[i])
             self.file.write(outStr+'\n')
 
     def check(self,row):
         return row[self.header.index("{cheri_int_mode_name} mnemonic RV32")] != "" and row[self.header.index("{cheri_int_mode_name} mnemonic RV64")] != ""
 
 class csr_aliases(table):
-    cols = ["YLEN CSR", "Alias", "Prerequisites"]
+    cols = ["CLEN CSR", "Alias", "Prerequisites"]
     indices = []
 
     def __init__(self, filename, header):
@@ -306,7 +308,7 @@ class csr_aliases(table):
             outStr = ""
             for i in self.indices:
                 if i<=2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -316,14 +318,14 @@ class csr_aliases(table):
 
 def resolve_col_display_name(col_name):
     col_display_names = {
-        "YLEN CSR": "{cheri_base_ext_name} CSR",
+        "CLEN CSR": "{cheri_base_ext_name} CSR",
         "Alias":    "Extended CSR"
     }
 
     return col_display_names[col_name] if col_name in col_display_names else col_name
 
 class csr_renamed_purecap_mode_d(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -338,7 +340,7 @@ class csr_renamed_purecap_mode_d(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -347,7 +349,7 @@ class csr_renamed_purecap_mode_d(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "D"
 
 class csr_added_legacy(table):
-    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
+    cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -362,7 +364,7 @@ class csr_added_legacy(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -371,7 +373,7 @@ class csr_added_legacy(table):
         return row[self.header.index("Alias")] == "" and "{cheri_default_ext_name}" == row[self.header.index("Prerequisites")].strip()
 
 class csr_added_purecap_mode_d(table):
-    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
+    cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -386,7 +388,7 @@ class csr_added_purecap_mode_d(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -396,7 +398,7 @@ class csr_added_purecap_mode_d(table):
 
 
 class csr_renamed_purecap_mode_m(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -411,7 +413,7 @@ class csr_renamed_purecap_mode_m(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -420,7 +422,7 @@ class csr_renamed_purecap_mode_m(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "M"
 
 class csr_added_purecap_mode_m(table):
-    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
+    cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -435,7 +437,7 @@ class csr_added_purecap_mode_m(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -444,7 +446,7 @@ class csr_added_purecap_mode_m(table):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "M"
 
 class csr_renamed_purecap_mode_s(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -459,7 +461,7 @@ class csr_renamed_purecap_mode_s(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -468,7 +470,7 @@ class csr_renamed_purecap_mode_s(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "S"
 
 class csr_renamed_purecap_mode_vs(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -483,7 +485,7 @@ class csr_renamed_purecap_mode_vs(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -492,7 +494,7 @@ class csr_renamed_purecap_mode_vs(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "VS"
 
 class csr_added_purecap_mode_s(table):
-    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
+    cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -507,7 +509,7 @@ class csr_added_purecap_mode_s(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -516,7 +518,7 @@ class csr_added_purecap_mode_s(table):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "S"
 
 class csr_renamed_purecap_mode_u(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -531,7 +533,7 @@ class csr_renamed_purecap_mode_u(table):
             outStr = ""
             for i in self.indices:
                 if i==0 or i==2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -540,7 +542,7 @@ class csr_renamed_purecap_mode_u(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "U"
 
 class csr_alias_action(table):
-    cols = ["YLEN CSR", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["CLEN CSR", "Action on XLEN write", "Action on CLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -555,7 +557,7 @@ class csr_alias_action(table):
             outStr = ""
             for i in self.indices:
                 if i<2:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
@@ -568,7 +570,7 @@ class csr_new_write_action(csr_alias_action):
         return row[self.header.index("Alias")] == ""
 
 class csr_perms(table):
-    cols = ["YLEN CSR", "Prerequisites", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["CLEN CSR", "Prerequisites", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -583,16 +585,16 @@ class csr_perms(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("YLEN CSR")] != ""
+        return row[self.header.index("CLEN CSR")] != ""
 
 class csr_exevectors(table):
-    cols = ["YLEN CSR", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["CLEN CSR", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -607,7 +609,7 @@ class csr_exevectors(table):
             outStr = ""
             for i in self.indices:
                 if i==0:
-                    outStr += '|' + insn_xref(row[i]) + '>>'
+                    outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
             self.file.write(outStr+'\n')

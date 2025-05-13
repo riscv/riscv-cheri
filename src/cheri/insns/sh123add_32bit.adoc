@@ -14,11 +14,11 @@ See <<SH3ADD_CHERI>>.
 Synopsis::
 Shift by _n_ and add for address generation (SH1ADD, SH2ADD, SH3ADD)
 
-{cheri_cap_mode_name} Mnemonics::
+Mnemonics ({cheri_base_ext_name})::
 `sh[1|2|3]add cd, rs1, cs2`
 
-{cheri_int_mode_name} Mnemonics::
-`sh[1|2|3]add rd, rs1, rs2`
+//{cheri_int_mode_name} Mnemonics::
+//`sh[1|2|3]add rd, rs1, rs2`
 
 Encoding::
 [wavedrom, , svg]
@@ -33,10 +33,14 @@ Encoding::
 ]}
 ....
 
+include::cheri_mode_dependent.adoc[]
+
 Description::
-Increment the address field of the capability `cs2` by `rs1`
-shifted left by _n_ bit positions and write the result to ``cd``.
-Set `cd.tag=0` if `cs1.tag=0` or `cs1` is sealed.
+Copy the capability in `cs2` to `cd`.
++
+Increment `cd.address` by `rs1` shifted left by _n_ bit positions.
++
+Set `cd.tag=0` if `cs2` is sealed.
 +
 include::rep_range_check.adoc[]
 +
