@@ -19,13 +19,13 @@ ifdef::cbo_inval[]
 endif::[]
 ifdef::invalid_address_viol[]
 | Invalid address violation  | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
-endif::[]
+endif::invalid_address_viol[]
 ifdef::cbo_clean_flush[]
 | Bounds violation      | None of the bytes accessed are within the bounds, or the capability has <<section_cap_malformed,malformed>> bounds
 endif::cbo_clean_flush[]
 ifdef::cbo_inval[]
 | Bounds violation      | At least one byte accessed is outside the authorizing capability bounds, or the capability has <<section_cap_malformed,malformed>> bounds
-endif::[]
+endif::cbo_inval[]
 
 |==============================================================================
 
@@ -38,7 +38,7 @@ has stricter checks on its use than CBO.FLUSH, and should only be made available
 and used by, sufficiently-trusted software. Untrusted software should use CBO.FLUSH
 instead.
 
-endif::[]
+endif::cbo_inval[]
 
 :!cbo_clean_flush:
 :!cbo_inval:
