@@ -19,14 +19,17 @@ Encoding::
 include::wavedrom/gclen.adoc[]
 
 Description::
-Calculate the length of `cs1` 's bounds and write the result in `rd`. The length
-is defined as the difference between the decoded bounds' top and base addresses
-i.e. `top - base`. It is not required that the input capability `cs1`  has its
-tag set to 1. <<GCLEN>> outputs 0 if `cs1` 's bounds are malformed (see
-xref:section_cap_malformed[xrefstyle=short]), and 2^MXLEN^-1 if the length of
-`cs1` is 2^MXLEN^.
-
+Calculate the length of `cs1` 's bounds and write the result in `rd`.
++
+The length
+is defined as the difference between the decoded bounds' top and base addresses,
+i.e., `top - base`.
++
+Return the maximum length, 2^MXLEN^-1, if the length of `cs1` is 2^MXLEN^.
++
 include::malformed_return_0.adoc[]
++
+include::no_tag_affect.adoc[]
 
 Operation::
 +

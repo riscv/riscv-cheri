@@ -38,11 +38,12 @@ difference being that capabilities cannot have their valid tag
 cleared by <<CMV>>.
 
 Description::
-Increment the address field of the capability `cs1`  and write the result to ``cd``.
-Set `cd.tag=0` if `cs1.tag=0` or `cs1` is sealed.
+Copy the capability `cs1` to `cd`.
 +
-For <<CADD>>, the address is incremented by the value in `rs2` . +
-For <<CADDI>>, the address is incremented by the immediate value `imm`.
+For <<CADD>>,  increment `cd.address` by the value in `rs2` . +
+For <<CADDI>>, increment `cd.address` by the immediate value `imm`.
++
+Set `cd.tag=0` if `cs1` is sealed.
 +
 include::rep_range_check.adoc[]
 +

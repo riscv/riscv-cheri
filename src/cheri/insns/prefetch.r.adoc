@@ -7,11 +7,11 @@ Synopsis::
 Provide a HINT to hardware that a cache block is likely to be accessed by a
 data read in the near future
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `prefetch.r offset(cs1)`
 
-{cheri_int_mode_name} Mnemonic::
-`prefetch.r offset(rs1)`
+//{cheri_int_mode_name} Mnemonic::
+//`prefetch.r offset(rs1)`
 
 Encoding::
 [wavedrom, , svg]
@@ -26,33 +26,35 @@ Encoding::
 ]}
 ....
 
-{cheri_cap_mode_name} Description::
+Description::
 A PREFETCH.R instruction indicates to hardware that the cache block whose
 effective address is the sum of the base address specified in `cs1` and the
 sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
-likely to be accessed by a data read (i.e. load) in the near future. The
+likely to be accessed by a data read (i.e., load) in the near future. The
 encoding is only valid if imm[4:0]=0. The authorizing capability for this
 operation is `cs1`. This instruction does not throw any exceptions. However,
-in following xref:CHERI_SPEC[xrefstyle=short], this instruction does not
+following the rules from xref:rv32y[xrefstyle=short], this instruction does not
 perform a prefetch if it is not authorized by `cs1`.
 
-{cheri_int_mode_name} Description::
-A PREFETCH.R instruction indicates to hardware that the cache block whose
-effective address is the sum of the base address specified in `rs1` and the
-sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
-likely to be accessed by a data read (i.e. load) in the near future. The
-encoding is only valid if imm[4:0]=0. The authorizing capability for this
-operation is <<ddc>>.
+include::int_mode_remapping_pcc.adoc[]
+
+//{cheri_int_mode_name} Description::
+//A PREFETCH.R instruction indicates to hardware that the cache block whose
+//effective address is the sum of the base address specified in `rs1` and the
+//sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
+//likely to be accessed by a data read (i.e., load) in the near future. The
+//encoding is only valid if imm[4:0]=0. The authorizing capability for this
+//operation is <<ddc>>.
 
 :prefetch_insn: PREFETCH.R
 :prefetch_perm: <<r_perm>>
 include::prefetch_cap_checks.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 Zicbop, {cheri_base_ext_name}
 
-Prerequisites for {cheri_int_mode_name}::
-Zicbop, {cheri_default_ext_name}
+//Prerequisites for {cheri_int_mode_name}::
+//Zicbop, {cheri_default_ext_name}
 
 Operation::
 [source,sail]

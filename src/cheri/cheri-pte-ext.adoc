@@ -27,7 +27,7 @@ NOTE: The description below assumes that {cheri_priv_crg_ext} has been implement
  If that is _not_ the case then PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG should be taken as read-only-zero for purpose of the description in the remainder of this chapter only.
  PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG remain reserved in this case.
 
-The minimum level of PTE support is to set CW to 1 in all PTEs intended for storing capabilities (i.e. private anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
+The minimum level of PTE support is to set CW to 1 in all PTEs intended for storing capabilities (i.e., private anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
 
 NOTE: Hardware initiated memory accesses from the page-table walker are not checked by a capability.
 
@@ -104,7 +104,7 @@ The PTE update must be
 atomic with respect to other accesses to the PTE, and must atomically check
 that the PTE is valid and grants sufficient permissions. Updates to the CW bit
 and CRG bit
-must be exact (i.e. not speculative), and observed in program order by the
+must be exact (i.e., not speculative), and observed in program order by the
 local hart. Furthermore, the PTE update must appear in the global memory order
 no later than the explicit memory access, or any subsequent explicit memory
 access to that virtual page by the local hart.  The ordering on loads and

@@ -1,13 +1,18 @@
 Exceptions::
+ifdef::has_cap_data[]
+#ARC feedback: needs to be an access fault as it can't be emulated#
++
+Misaligned address fault exception when the effective address is not aligned to CLEN/8 if Zam is supported, otherwise store access fault exception.
++
+endif::[]
+ifndef::has_cap_data[]
 ifdef::store_cond[]
 All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a store/AMO access fault exception.
 +
 endif::[]
-ifdef::has_cap_data[]
-Misaligned address fault exception when the effective address is not aligned
-to CLEN/8.
-+
 endif::[]
+#ARC suggestion: consider software check fault#
++
 _CHERI data fault_ exceptions occur when the authorizing capability fails one of the checks
 listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
 +
@@ -17,7 +22,9 @@ listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in t
 | Tag violation         | Authorizing capability valid tag set to 0, or has any reserved bits set
 | Seal violation        | Authorizing capability is sealed
 | Permission violation  | Authorizing capability does not grant <<w_perm>>, or the AP field could not have been produced by <<ACPERM>>
+ifdef::invalid_address_viol[]
 | Invalid address violation  | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
+endif::[]
 | Bounds violation      | At least one byte accessed is outside the authorizing capability bounds, or the capability has <<section_cap_malformed,malformed>> bounds
 |==============================================================================
 +
