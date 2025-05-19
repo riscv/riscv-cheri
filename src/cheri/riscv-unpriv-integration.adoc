@@ -366,12 +366,17 @@ This means the following state is added by {cheri_base_ext_name}:
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
-==== Extended general purpose integer registers
-The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended with another XLEN-bits of capability metadata plus a valid tag bit.
-When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
-The existing integer register names refer to the address part of the capability.
-For the ABI register names the `c` prefix is added, i.e., `csp`, `ca0`.
-The zero register is extended with zero metadata and a cleared valid tag: this is called the <<null-cap>> capability.
+==== Extended registers
+
+_All_ register which can contain addresses are extended with another XLEN-bits of capability metadata and a valid tag bit.
+
+The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended in this way.
+
+When referring to the extended registers, the `x` prefix is replaced with a `c`: i.e. the extended version of `x1` becomes `c1`.
+The register can be referred to either way - as `c1` accessing all CLEN-bits or as `x1` accessing only the address field (i.e., the lower XLEN bits).
+For the ABI register names the `c` prefix is added, e.g., `csp` to refer to all CLEN-bits, and so the assembler can refer to wither `sp` or `csp`.
+
+The zero register is extended with zero metadata and a zero valid tag: this is called the <<null-cap>> capability.
 
 NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
 

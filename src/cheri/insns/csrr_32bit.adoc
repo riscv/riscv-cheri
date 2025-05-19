@@ -28,14 +28,21 @@ endif::[]
 Synopsis::
 CSR access (CSRRWI, CSRRS, CSRRSI, CSRRC, CSRRCI) 32-bit encodings for {cheri_base_ext_name}
 
-Mnemonics for accessing CLEN-wide CSRs in {cheri_cap_mode_name}::
+Mnemonics for accessing CLEN-bit CSRs::
 `csrrs  cd, csr, rs1` +
 `csrrc  cd, csr, rs1` +
 `csrrwi cd, csr, imm` +
 `csrrsi cd, csr, imm` +
 `csrrci cd, csr, imm`
 
-Mnemonics for accessing XLEN-wide CSRs or extended CSRs in {cheri_int_mode_name}::
+Mnemonics for accessing extended CSRs in {cheri_cap_mode_name}::
+`csrrs  cd, csr, rs1` +
+`csrrc  cd, csr, rs1` +
+`csrrwi cd, csr, imm` +
+`csrrsi cd, csr, imm` +
+`csrrci cd, csr, imm`
+
+Mnemonics for accessing extended CSRs in {cheri_int_mode_name}::
 `csrrs  rd, csr, rs1` +
 `csrrc  rd, csr, rs1` +
 `csrrwi rd, csr, imm` +
@@ -46,16 +53,17 @@ Encoding::
 include::wavedrom/csr-instr.adoc[]
 
 Description::
-These are standard RISC-V CSR instructions with extended functionality for accessing CLEN-wide CSRs.
+These CSR instructions have extended functionality for accessing CLEN-bit CSRs, and XLEN-bit CSRs extended to CLEN-bits (_Extended CSRs_).
 +
-For CLEN-wide CSRs, the full capability is read into `cd` in {cheri_cap_mode_name}.
-In {cheri_int_mode_name}, the address field is instead read into `rd`.
+Access to XLEN-bit CSRs is as defined in Zicsr.
 +
-Unlike <<CSRRW_CHERI>>, these instructions only update the address field and the valid tag
-as defined in xref:extended_CSR_writing[xrefstyle=short] when writing
-CLEN-wide CSRs regardless of the execution mode. The CSR update is made using <<SCADDR>> semantics.
+Zicsr rules are followed when determining whether to read or write the CSR.
 +
-NOTE: If the CSR accessed is a capability, and `rs1` is `x0` for <<CSRRS_CHERI,CSRRS>> and <<CSRRC_CHERI,CSRRC>>, or `imm` is 0 for <<CSRRSI_CHERI,CSRRSI>> and <<CSRRCI_CHERI,CSRRCI>>, then the CSR is not written so no representability check is needed in this case.
+All writes are XLEN-bits only, as determined by Zicsr, and use <<SCADDR>> semantics to determine the final write data.
++
+Read data from extended CSRs is CLEN-bits in {cheri_cap_mode_name} or XLEN-bits in {cheri_int_mode_name}.
++
+Read data from CLEN-bit CSRs is always CLEN-bits.
 
 Permissions::
 Accessing CSRs may require <<asr_perm>>.
