@@ -366,6 +366,20 @@ This means the following state is added by {cheri_base_ext_name}:
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
+.New CHERI CSR added in {cheri_base_ext_name}
+[#base_csr_registers]
+[bytefield]
+----
+(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 40}])
+(def row-height 100)
+(def row-header-fn nil)
+(def boxes-per-row 65)
+(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
+
+(draw-box "" [:box-first {:span 1}]) (draw-box "utidc" [:box-related {:span 32}]) (draw-box "utidc" [:box-last {:span 32 }])
+(draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
+----
+
 ==== Extended general purpose integer registers
 The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended with another XLEN-bits of capability metadata plus a valid tag bit.
 When referring to the extended register, the `x` prefix is replaced with a `c`: i.e. the capability extended version of `x0` becomes `c0`.
@@ -394,8 +408,6 @@ xref:utidc-csrnames-added[xrefstyle=short].
 The <<utidc>> register is used to identify the current software thread in user mode.
 On reset the valid tag of <<utidc>> will be set to 0 and the remainder of the data is UNSPECIFIED.
 
-.User thread identifier capability register
-include::img/utidcreg.edn[]
 
 NOTE: Compartmentalization seeks to separate the privileges between different
 protection units, e.g., two or more libraries. Code can be separated by sentries,
