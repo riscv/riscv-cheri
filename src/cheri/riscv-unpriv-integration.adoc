@@ -415,21 +415,21 @@ which allow for giving out code capabilities to untrusted code where the untrust
 code can only call the code capability, but not modify it. The <<utidc>> register supports
 a model where untrusted code is separated by trusted code and each call from one piece of untrusted
 code to another piece of untrusted piece of code goes through trusted code. Often, the trusted
-code is referred to as a _trampoline_. Sentries can
+code is referred to as a *trampoline*. Sentries can
 be called from different software threads and thus there needs to be a way of
 identifying the current software thread. While identifying the current software thread
 can be done by privileged code, e.g., the kernel, the implied performance
 overhead of this is not bearable for CHERI systems with many compartments.
 The <<utidc>> register is designed to hold a capability, which can only be accessed by
-trusted code, which can be ensured through making the capability a sentry.
-Trusted code can access memory through this capability and use it for implementing compartment
-switches, e.g., by implementing a trusted stack.
+trusted code. This can be ensured through making the capability a sentry.
+Trusted code can access memory through this capability and use it for implementing secure
+compartment switches, e.g., by implementing a trusted stack.
 
 NOTE: The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
 usable for the purpose of reliably identifying the current software thread because
 the tp register is a general purpose register and can be changed arbitrarily
 by untrusted code. Therefore, this specification offers an additional CSR
-that facilitates a trusted source for the thread ID.
+that facilitates a trusted source for identifying software threads.
 
 ==== Extended CSRs
 All registers that store addresses are extended to contain capabilities.
