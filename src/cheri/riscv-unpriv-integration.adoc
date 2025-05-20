@@ -424,8 +424,8 @@ overhead of this is not bearable for CHERI systems with many compartments.
 NOTE: The <<utidc>> register is designed to hold a capability, which can only be accessed by
 trusted code. In a commonly used model on CHERI systems, the trusted code's responsibility
 is only to switch between compartments, but not to switch threads. This responsibility is usually
-taken over by more privileged code, e.g., the kernel running on a different privilege level. The privileged
-code switches software threads and writes the <<utidc>> register.
+taken over by more privileged code, e.g., an operating system kernel running on a different privilege level.
+The privileged code switches software threads and writes the <<utidc>> register.
 
 NOTE: Every piece of code in the user space (and more privileged levels) can read the content of the <<utidc>>
 register. However, the memory authorized by the capability in <<utidc>> must not be accessible to untrusted code,
@@ -435,8 +435,10 @@ For the untrusted code, the sentry stored in <<utidc>> is inaccessible. The sent
 memory pointed to by the sentry is a secret and must not be accessed by any untrusted code.
 
 NOTE: Trusted code can use the sentry in <<utidc>> to implement secure compartment switches. Often, the sentry is
-use to implement a trusted stack. Whenever a compartment switch happens, the trusted code can pass arguments between
-the caller and callee compartment avoid capability leaks between the two compartments. 
+used to implement a trusted stack. Whenever a compartment switch happens, the trusted code can pass arguments between
+the caller and callee compartment avoid capability leaks between the two compartments.
+The trusted code can store capabilities on the trusted stack when calling out of a compartment and can install them
+when returning the same compartment.
 
 NOTE: The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
 usable for the purpose of reliably identifying the current software thread because
