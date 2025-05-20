@@ -420,10 +420,23 @@ be called from different software threads and thus there needs to be a way of
 identifying the current software thread. While identifying the current software thread
 can be done by privileged code, e.g., the kernel, the implied performance
 overhead of this is not bearable for CHERI systems with many compartments.
-The <<utidc>> register is designed to hold a capability, which can only be accessed by
-trusted code. This can be ensured through making the capability a sentry.
-Trusted code can access memory through this capability and use it for implementing secure
-compartment switches, e.g., by implementing a trusted stack.
+
+NOTE: The <<utidc>> register is designed to hold a capability, which can only be accessed by
+trusted code. In a commonly used model on CHERI systems, the trusted code's responsibility
+is only to switch between compartments, but not to switch threads. This responsibility is usually
+taken over by more privileged code, e.g., the kernel running on a different privilege level. The privileged
+code switches software threads and writes the <<utidc>> register.
+
+NOTE: Every piece of code in the user space (and more privileged levels) can read the content of the <<utidc>>
+register. However, the memory authorized by the capability in <<utidc>> must not be accessible to untrusted code,
+but only to trusted code. In order to protect this capability, it can be made a sentry (thus being sealed). The
+trusted code will be given a capability large enough so that it can recover the sentry stored in <<utidc>>.
+For the untrusted code, the sentry stored in <<utidc>> is inaccessible. The sentry itself is no secret, but the
+memory pointed to by the sentry is a secret and must not be accessed by any untrusted code.
+
+NOTE: Trusted code can use the sentry in <<utidc>> to implement secure compartment switches. Often, the sentry is
+use to implement a trusted stack. Whenever a compartment switch happens, the trusted code can pass arguments between
+the caller and callee compartment avoid capability leaks between the two compartments. 
 
 NOTE: The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
 usable for the purpose of reliably identifying the current software thread because
