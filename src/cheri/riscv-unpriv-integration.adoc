@@ -28,12 +28,14 @@ surfaces.
 
 Protection properties for capabilities include the ISA ensuring that
 capabilities are always derived via valid manipulations of other capabilities
-(_provenance_), that corrupted in-memory capabilities cannot be dereferenced
+(_provenance_), that corrupted^1^ in-memory capabilities cannot be dereferenced
 (_integrity_), and that rights associated with capabilities shall only ever be
 equal or less permissive (_monotonicity_). Tampering or modifying capabilities
 in an attempt to elevate their rights will yield an invalid capability.
 Attempting to dereference via an invalid capability
 will result in a hardware exception.
+
+^1^ #Not all possible corrupted states are detected, see XXX.#
 
 CHERI capabilities may be held in registers or in memories, and are loaded,
 stored, and dereferenced using CHERI-aware instructions that expect capability
@@ -90,17 +92,36 @@ For registers that are extended but currently only hold integer data, all other 
 
 #ARC note C registers will become Y registers#
 
-The valid tag is an additional hardware managed bit added to addressable memory and all *c* registers.
-It is stored separately and may be referred to as _out of band_ or _hidden_ and is hardware managed.
-It indicates whether a *c* register or CLEN-aligned memory location contains a valid capability.
+The valid tag is an additional bit added to addressable memory and all CLEN-bit registers.
+It is stored separately and may be referred to as _out of band_ or _hidden_, and is _hardware managed_.
+It indicates whether a CLEN-bit register or CLEN-aligned memory location contains a valid capability.
 If the valid tag is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds_overview,bounds>>).
 
-The capability is invalid if the valid tag is clear.
-Using an invalid capability to dereference memory or authorize any operation raises an exception.
-All capabilities derived from invalid capabilities are themselves invalid, i.e., their valid tags are 0.
+All registers or memory locations able to hold a capability are CLEN-bits wide including the valid tag bit.
+These are referred as being _CLEN-bit_ in this specification.
 
-All locations in registers or memory able to hold a capability are CLEN-bits wide including the valid tag bit.
-Those locations are referred as being _CLEN-bit_ in this specification.
+The valid tag cannot be directly set to 1 by software, it is _not_ a conventionally accessible bit of state.
+If the tag valid is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
+If the rules are followed then the valid tag will propagate through the instructions which modify, load or store the capability.
+
+Therefore, for capability manipulation in registers:
+
+* Any instruction which wrote the capability to a register had at least one valid tag set in its input operands.
+** This is the _provenance_ check.
+* Any instruction which wrote the capability to a register requested a legal operation which does not increase bounds or permissions, and set the valid tag on the output.
+** This is the _monotonicity_ check.
+* Any instruction which wrote the capability to a register detected any corrupted values.
+** This is the _integrity_ check.
+
+Capability load/store require the _provenance_ check:
+
+* Any store which wrote the capability to memory was correctly authorized
+* Any load which read the capability from memory was correctly authorized
+
+When an operation fails a check, either due to software error or malicious intent, then the valid tag will be set to zero.
+
+Using an invalid capability to dereference memory or authorize any operation raises an exception.
+All capabilities derived from invalid capabilities are themselves invalid, i.e., their valid tags are zero.
 
 NOTE: When the valid tag is zero, the register or memory location may be used to store non-capability data.
 
@@ -116,13 +137,13 @@ It is not permitted to make any partially or fully out-of-bounds memory accesses
 Every capability has two memory address bounds - _base_ representing the lowest accessible byte, and _top_ representing one byte above the highest accessible byte.
 
 * The _base_ is XLEN-bits and is _inclusive_.
-* The _top_ is XLEN+1 bits and is _exclusive_.
+* The _top_ is XLEN+1-bits and is _exclusive_.
 ** The extra bit is required to allow the bounds to include the top byte of memory.
-* The _length_ is XLEN-bits and is defined to be _top - base_, saturated to 2^XLEN^ -1
-
-NOTE: Inclusive top, with XLEN-bits, was considered but rejected in favor of the exclusive top.
+* The _length_ is XLEN+1-bits and is defined to be _top - base_.
 
 Therefore a memory location `A` in the range `base &#8804; A < top` is within bounds, and so valid to access.
+
+NOTE: Inclusive _top_, with XLEN-bits, was considered but rejected in favor of the exclusive _top_.
 
 NOTE: Checking every byte of every executed instruction and every byte of every data memory access is fundamental to the memory safety which CHERI provides.
  In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
@@ -138,22 +159,31 @@ Software can query the capability bounds:
 
 * The _base_ is returned by <<GCBASE>>.
 * The _length_ is returned by <<GCLEN>>.
+** <<GCLEN>> saturates the _length_ to XLEN-bits
 * The _top_ can be calculated via <<GCBASE>>+<<GCLEN>>
 
 NOTE: A future extension may add an instruction to directly read the _top_ if needed for performance.
 
 ==== Updating The Bounds
 
-On system initialization the <<infinite-cap>> is available which has bounds which cover all of memory, and maximum permissions set.
+On system initialization the <<infinite-cap>> capability is available which has bounds which cover all of memory, and maximum permissions set.
 All smaller capabilities are derived from this.
 
-The ISA only allows the bounds (and permissions) of a capability to be reduced.
+The ISA does not allow the bounds (and permissions) of a capability with its valid tag set to be increased (_monotonicity_).
 
-Therefore instructions cannot output any capability with the valid tag set which include bounds (or permissions) which are greater than any input capability which also has its valid tag set.
+Bounds can be programmed using the <<SCBNDS>>,<<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs1` or `imm` value).
+The granularity constraints means that not all requested bounds can be encoded exactly.
 
-Bounds can be reduced using the <<SCBNDS>>/<<SCBNDSI>> instructions, which require the final bounds to be accurately encoded, setting the valid tag to zero if that is not possible due to the granularity constraints.
-The requested bounds can be rounded up to the nearest encodable value above the requested bounds using <<SCBNDSR>> and <<CRAM>> can be used to determine the granularity which is possible to encode.
-If <<SCBNDSR>> rounds up the requested bounds, they must still be no larger than the initial bounds.
+* <<SCBNDS>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. Set the valid tag to zero if the bounds cannot be encoded exactly.
+* <<SCBNDSI>> sets the _base_ to `cs1.address`, and the _length_ to the immediate value. Set the valid tag to zero if the bounds cannot be encoded exactly.
+* <<SCBNDSR>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. The bounds may be rounded up if they cannot be encoded exactly.
+** If <<SCBNDSR>> rounds up the requested bounds, they must still be no larger than the initial bounds.
+
+<<CRAM>> can be used to determine the granularity which is possible to encode.
+
+#some example usage here of CRAM+SCBNDSR would be good#
+
+NOTE: Instructions like <<SCBNDS>> can be reused to reduce the bounds of am existing capability while retaining the valid tag, or they can be used to construct a new capability which is then validated using <<CBLD>>.
 
 The bounds are encoded relative to the address field, sharing some upper bits of the address.
 The number of shared bits depends on the exponent, see xref:section_cap_bounds[xrefstyle=short].
@@ -161,8 +191,7 @@ The number of shared bits depends on the exponent, see xref:section_cap_bounds[x
 NOTE: Early versions of CHERI encoded the top and bottom bounds as full width addresses.
  This proved to be impractical for real systems, and so the https://www.cl.cam.ac.uk/research/security/ctsrd/pdfs/2019tc-cheri-concentrate.pdf[CHERI-concentrate] compressed system was developed to reduce the overhead.
 
-The CHERI concentrate encoding scheme shares the upper bits of the address with the bounds.
-Therefore the address of a capability cannot be arbitrary modified without risking changing the meaning of the bounds.
+Because CHERI concentrate encoding scheme shares the upper bits of the address with the bounds, the address of a capability cannot be arbitrary modified without risking changing the meaning of the bounds.
 This means that whenever a capability address is updated, the semantics of the <<SCADDR>> instruction are required to check that the decoding of the bounds hasn't changed.
 If the bounds _have_ changed, then the valid tag is set to zero, so that the capability is invalid for use.
 
@@ -177,7 +206,7 @@ NOTE: Behavior was observed in software which allows pointers to legitimately mo
 The maximum range of address values that the pointer can take is defined by the <<section_cap_representable_check, representable region>>, which is checked on every update by <<SCADDR>>.
 
 NOTE: CHERI versions which use a different encoding scheme to the default may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
- Therefore the rest of the specification uses the phrase *represented exactly*.
+ Therefore the rest of the specification uses the phrase *represented exactly* for the check performed by <<SCADDR>>.
 
 The bounds and representable region (or space) are illustrated in <<cap_bounds_map>>.
 E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
@@ -186,8 +215,8 @@ E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding
 .Memory address bounds encoded within a capability
 image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
-In the presence of memory corruption, fault injection, or hardware bugs, bounds can theoretically become <<section_cap_malformed,malformed>>.
-Instructions which decode bounds will typically set the output valid tag to zero if the input is found to be malformed.
+In the presence of memory corruption, fault injection, or hardware bugs, bounds can theoretically become <<section_cap_malformed,malformed>> (representing a lack of _integrity_).
+Instructions which decode bounds will typically set the output valid tag to zero if the input is found to be <<section_cap_malformed,malformed>>.
 
 NOTE: CHERI requires that the capability is correctly formed if the valid tag is set.
  Including handling of malformed bounds, and invalid settings of reserved bits, in the architecture allows the behavior to be clearly specified for all 2^(CLEN+1)^ input values.
@@ -214,7 +243,7 @@ When `CT=0`, the capability authorizes access to a region of memory as defined b
 
 [#sentry_cap,reftext="sentry capability"]
 Sentry capabilities::
-Capabilities with `CT=1` are sealed against modification.
+Capabilities with `CT≠0` are sealed against modification.
 They cannot be dereferenced to access memory and it is not permitted to change the address, bounds or permissions.
 Modifications are restricted to _reducing_ the <<section_cap_level, CL>> field using <<ACPERM>>.
 +
@@ -226,10 +255,9 @@ Sentry capabilities can establish a form of control-flow integrity between mutua
 +
 <<JALR_CHERI>> also seals the return register, so the callee can return to the caller but cannot access the memory pointed at by the return register, and cannot return elsewhere.
 +
-#Tariq: I'm concerned by this note - as it doesn't seem to fit the definition of CBLD#
-+
 NOTE: In addition to using them for secure entry points, sentry capabilities can also be useful to software as secure software tokens.
-They can be converted to an unsealed capability by rebuilding via a superset capability with the <<CBLD>> instruction.
+ They can be converted to an unsealed capability by extracting the metadata with <<GCHI>>, zeroing the `CT` field, reapplying it with <<SCHI>> and then rebuilding via a superset capability with the <<CBLD>> instruction.
+ A future extension may add an unseal instruction for performance.
 
 [#sec_cap_ap]
 ==== Architectural Permissions (AP)
