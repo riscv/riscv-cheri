@@ -297,7 +297,7 @@ NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-o
 
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow read and write access to privileged CSRs as well as some privileged instructions.
-In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing (but not for reading).
+In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing, but not for reading.
 
 NOTE: This permission is important in privileged execution environments.
   Removing this permission allows constraining privileged software to a sandbox that cannot be subverted by changing privileged state.
@@ -425,6 +425,20 @@ This means the following state is added by {cheri_base_ext_name}:
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
+.New CHERI CSR added in {cheri_base_ext_name}
+[#base_csr_registers]
+[bytefield]
+----
+(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 40}])
+(def row-height 100)
+(def row-header-fn nil)
+(def boxes-per-row 65)
+(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
+
+(draw-box "" [:box-first {:span 1}]) (draw-box "utidc" [:box-related {:span 32}]) (draw-box "utidc" [:box-last {:span 32 }])
+(draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
+----
+
 ==== Extended registers
 
 _All_ registers which can contain addresses are extended with another XLEN-bits of capability metadata and a valid tag bit.
@@ -438,6 +452,64 @@ For the ABI register names the `c` prefix is added, e.g., `csp` to refer to all 
 The zero register is extended with zero metadata and a zero valid tag: this is called the <<null-cap>> capability.
 
 NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
+
+==== Added CSRs
+
+{cheri_base32_ext_name} and {cheri_base64_ext_name} add the capability CSR shown in
+xref:utidc-csrnames-added[xrefstyle=short].
+
+[[utidc-csrnames-added]]
+.Unprivileged capability CSRs added in {cheri_base32_ext_name} and {cheri_base64_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
+|===
+|CLEN CSR|Permissions|Description
+|<<utidc>>|RW, <<asr_perm>> required for writes, not reads|User Thread ID Capability
+|===
+
+[#utidc,reftext="utidc"]
+===== User Thread Identifier Capability (utidc)
+
+The <<utidc>> register is used to identify the current software thread in user mode.
+
+.User thread identifier capability register
+include::img/utidcreg.edn[]
+
+NOTE: Compartmentalization seeks to separate the privileges between different
+protection units, e.g., two or more libraries. Code can be separated by sentries,
+which allow for giving out code capabilities to untrusted code where the untrusted
+code can only call the code capability, but not modify it. The <<utidc>> register supports
+a model where untrusted code is separated by trusted code and each call from one piece of untrusted
+code to another piece of untrusted piece of code goes through trusted code. Often, the trusted
+code is referred to as a *trampoline*. Sentries can
+be called from different software threads and thus there needs to be a way of
+identifying the current software thread. While identifying the current software thread
+can be done by privileged code, e.g., the kernel, the implied performance
+overhead of this is not bearable for CHERI systems with many compartments.
+
+NOTE: The <<utidc>> register is designed to hold a capability, which can only be used for memory accesses by
+trusted code. In a commonly used model on CHERI systems, the trusted code's responsibility
+is only to switch between compartments, but not to switch threads. This responsibility is usually
+taken over by more privileged code, e.g., an operating system kernel running on a different privilege level.
+The privileged code switches software threads and writes the <<utidc>> register.
+
+NOTE: Every piece of code in the user space (and more privileged levels) can read the content of the <<utidc>>
+register. However, the memory authorized by the capability in <<utidc>> must not be accessible to untrusted code,
+but only to trusted code. In order to protect this capability, it can be made a sentry (thus being sealed). The
+trusted code will be given a capability large enough so that it can recover the sentry stored in <<utidc>>.
+For the untrusted code, the sentry stored in <<utidc>> is inaccessible. The sentry itself is no secret, but the
+memory pointed to by the sentry is a secret and must not be accessed by any untrusted code.
+
+NOTE: Trusted code can use the sentry in <<utidc>> to implement secure compartment switches. Often, the sentry is
+used to implement a trusted stack. Whenever a compartment switch happens, the trusted code can pass arguments between
+the caller and callee compartment avoid capability leaks between the two compartments.
+The trusted code can store capabilities on the trusted stack when calling out of a compartment and can install them
+when returning the same compartment.
+
+NOTE: The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
+usable for the purpose of reliably identifying the current software thread because
+the tp register is a general purpose register and can be changed arbitrarily
+by untrusted code. Therefore, this specification offers an additional CSR
+that facilitates a trusted source for identifying software threads.
 
 ==== Extended CSRs
 All registers that store addresses are extended to contain capabilities.

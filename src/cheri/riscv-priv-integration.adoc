@@ -108,6 +108,16 @@ As shown in xref:CSR_exevectors[xrefstyle=short], <<mepcc>> is a code capability
 Additionally, the capability in <<mepcc>> is unsealed when it is installed in
 <<pcc>> on execution of an <<MRET_CHERI>> instruction.
 
+[#mtidc,reftext="mtidc"]
+==== Machine Thread Identifier Capability (mtidc)
+
+The <<mtidc>> register is used to identify the current software thread in machine mode.
+On reset the valid tag of <<mtidc>> will be set to 0 and the remainder
+of the data is UNSPECIFIED.
+
+.Machine thread identifier capability register
+include::img/mtidcreg.edn[]
+
 === Machine-Level CSRs modified by {cheri_priv_m_ext}
 
 [#mstatus_cheri]
@@ -377,6 +387,16 @@ IMPORTANT: #The mechanism to report exception subcodes needs to be finalized: ht
 .Supervisor trap value register 2
 [#stval2-format]
 include::img/stval2reg.edn[]
+
+[#stidc,reftext="stidc"]
+==== Supervisor Thread Identifier Capability (stidc)
+
+The <<stidc>> register is used to identify the current software thread in supervisor mode.
+On reset the valid tag of <<stidc>> will be set to 0 and the remainder
+of the data is UNSPECIFIED.
+
+.Supervisor thread identifier capability register
+include::img/stidcreg.edn[]
 
 === Supervisor-Level CSRs modified by {cheri_priv_s_ext}
 ==== Supervisor Cause Register (scause)
