@@ -297,8 +297,6 @@ The permission stripping behavior _only_ applies to loaded capabilities that hav
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
 
-#ARC note: I think this chapter needs to be after Zicsr, otherwise it's painful to add ASR and utid/utidc later as we'll end up with a fragmented description of ACPERM#
-
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow read and write access to privileged CSRs as well as some privileged instructions.
 In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing, but not for reading.
@@ -445,7 +443,7 @@ This means the following state is added by {cheri_base_ext_name}:
 
 ==== Extended registers
 
-_All_ registers which can contain addresses are extended with another XLEN-bits of capability metadata and a valid tag bit.
+_All_ registers that can contain addresses are extended with another XLEN-bits of capability metadata and a valid tag bit.
 
 The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended in this way.
 
@@ -457,13 +455,38 @@ The zero register is extended with zero metadata and a zero valid tag: this is c
 
 NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
 
+[#pcc,reftext="pcc"]
+==== The Program Counter Capability (`pcc`)
+
+The `pc` is extended to be the Program Counter Capability.
+Extending the `pc` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
+The <<pcc>> address field is the `pc` in the base RISC-V ISA so that the
+hardware automatically updates it as instructions are executed.
+
+The hardware performs the following checks on <<pcc>> for each instruction
+executed in addition to the checks already required by the base RISC-V ISA. A
+failing check raises a CHERI exception.
+
+CAUTION: #ARC suggest that this become a software check exception, which would need a CHERI specific value in Xtval2#
+
+* The valid tag must be set
+* The capability must not be sealed
+* The capability must grant execute permission
+* All bytes of the instruction must be in bounds
+
+On system initialization the `pc` bounds and permissions must be set such that the program can run successfully (e.g., by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
+
+.Program Counter Capability
+[#pcc-format]
+include::img/pccreg.edn[]
+
 ==== Added CSRs
 
-{cheri_base32_ext_name} and {cheri_base64_ext_name} add the capability CSR shown in
+{cheri_base32_ext_name} and {cheri_base64_ext_name} add the CLEN-bit CSR shown in
 xref:utidc-csrnames-added[xrefstyle=short].
 
 [[utidc-csrnames-added]]
-.Unprivileged capability CSRs added in {cheri_base32_ext_name} and {cheri_base64_ext_name}
+.Unprivileged capability CSRs added in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
 |CLEN CSR|Permissions|Description
@@ -477,6 +500,8 @@ The <<utidc>> register is used to identify the current software thread in user m
 
 .User thread identifier capability register
 include::img/utidcreg.edn[]
+
+NOTE: #this text should move to a programmers guide#
 
 NOTE: Compartmentalization seeks to separate the privileges between different
 protection units, e.g., two or more libraries. Code can be separated by sentries,
@@ -516,39 +541,51 @@ by untrusted code. Therefore, this specification offers an additional CSR
 that facilitates a trusted source for identifying software threads.
 
 ==== Extended CSRs
-All registers that store addresses are extended to contain capabilities.
 
-NOTE: All CSRs that hold pointers are extended to CLEN-bits, but since no CSRs are defined in the RV32I/RV64I base instruction set, any such change is described in the corresponding chapters.
+All CSRs that can hold addresses are extended to CLEN-bits.
 
-[#pcc,reftext="pcc"]
-==== The Program Counter Capability (`pcc`)
+{cheri_base_ext_name} has three classes of CSR:
 
-The `pc` is extended to be the Program Counter Capability.
-Extending the `pc` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
-The <<pcc>> address field is the `pc` in the base RISC-V ISA so that the
-hardware automatically updates it as instructions are executed.
+. XLEN-bit CSRs, which do not contain addresses
+.. e.g., _fcsr_ from the "F" extension
+. XLEN-bit CSRs extended to CLEN-bits, which are able to contain addresses (referred to as _extended CSRs_)
+.. e.g., _jvt_ from the "Zcmt" extension
+. CLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
+.. e.g. <<utidc>>
 
-The hardware performs the following checks on <<pcc>> for each instruction
-executed in addition to the checks already required by the base RISC-V ISA. A
-failing check raises a CHERI exception.
+When accessing CSRs these rules are followed:
 
-CAUTION: #ARC suggest that this become a software check exception, which would need a CHERI specific value in Xtval2#
+. Accesses to XLEN-bit CSRs are as specified by Zicsr
+. Accesses to CLEN-bit CSRs and extended CSRs, using CSRRW will:
+.. Read CLEN-bits
+.. Write CLEN-bits, and will write the valid tag to zero if:
+... #integrity check fails, would read better#
+... the bounds are <<section_cap_malformed,malformed>>, or
+... any reserved bits are set, or
+... the permissions could not have been produced by <<ACPERM>>
+. Accesses to CLEN-bit CSRs and extended CSRs, using encodings other than CSRRW will:
+.. Read CLEN-bits
+.. Write an XLEN-bit to the address field, and use <<SCADDR>> semantics to determine the final written value
 
-* The valid tag must be set
-* The capability must not be sealed
-* The capability must grant execute permission
-* All bytes of the instruction must be in bounds
+NOTE: Any CLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the valid tag.
 
-When beginning execution <<pcc>> bounds and permissions must have been set such that the program can run successfully (e.g., by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
+The assembler pseudoinstruction to read a capability CSR `csrr cd, csr`, is encoded as `csrrs cd, csr, c0`.
 
-.Program Counter Capability
-[#pcc-format]
-include::img/pccreg.edn[]
+.CLEN-bit CSR and Extended CSR access summary for {cheri_base_ext_name}
+[#clen_access_summary_base,%autowidth,options=header,align="center"]
+|=======================
+|Instruction          | Read Width  | Write Width
+|CSRRW       rd==x0   |             | CLEN
+|CSRRW       rd!=x0   |CLEN         | CLEN
+|CSRR[C\|S]  rs1==x0  |CLEN         |
+|CSRR[C\|S]  rs1!=x0  |CLEN         | XLEN
+|CSRRWI      rd==x0   |             | XLEN
+|CSRRWI      rd!=x0   |CLEN         | XLEN
+|CSRR[C\|S]I uimm==x0 |CLEN         |
+|CSRR[C\|S]I uimm!=x0 |CLEN         | XLEN
+|=======================
 
-//move to priv section
-//<<pcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses.
-//FIXME! ref to priv here, need associated text there instead?
-// (see <<section_invalid_addr_conv>>).
+In <<clen_access_summary_base>> and <<clen_access_summary_default>>, when there is no read or write width shown, the CSR access is _not_ made and there are no side-effects following standard Zicsr rules.
 
 ==== Valid tags in registers
 
