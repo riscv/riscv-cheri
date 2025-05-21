@@ -235,3 +235,68 @@ ordered CSRs and accesses to memory-mapped I/O regions.
 The rules for the reordering of CSR accesses in the global memory order
 should probably be moved to <<memorymodel>> concerning the RVWMO memory consistency model.
 ====
+
+==== CSR accesses for ({cheri_base_ext_name})
+
+#ARC review: need to decide on naming for extended CSRs - should JVT become JVTC, JVTY, YJVT, something else?#
+
+{cheri_base_ext_name} has three classes of CSR:
+
+. XLEN-bit CSRs, which do not contain addresses
+.. e.g., _fcsr_
+. XLEN-bit CSRs extended to CLEN-bits, which are able to contain addresses (referred to as _extended CSRs_)
+.. #TODO: e.g., <<jvt>> from <<Zcmt_CHERI>> is extended to <<jvtc>>, the `c` suffix indicating capability#
+. CLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
+.. e.g. <<utidc>>
+
+When accessing CSRs these rules are followed:
+
+. Accesses to XLEN-bit CSRs are as specified by Zicsr
+. Accesses to CLEN-bit CSRs and extended CSRs, using <<CSRRW_CHERI>> will:
+.. Read CLEN-bits
+.. Write CLEN-bits, and will write the valid tag to zero if:
+... the bounds are <<section_cap_malformed,malformed>>, or
+... any reserved bits are set, or
+... the permissions could not have been produced by <<ACPERM>>
+. Accesses to CLEN-bit CSRs and extended CSRs, using encodings other than <<CSRRW_CHERI>> will:
+.. Read CLEN-bits
+.. Write an XLEN-bit to the address field, and use <<SCADDR>> semantics to determine the final written value
+
+NOTE: Any CLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the valid tag.
+
+The assembler pseudoinstruction to read a capability CSR `csrr cd, csr`, is encoded as `csrrs cd, csr, c0`.
+
+.CLEN-bit CSR and Extended CSR access summary for {cheri_base_ext_name}
+[#clen_access_summary_base,%autowidth,options=header,align="center"]
+|=======================
+|Instruction          | Read Width  | Write Width
+|CSRRW       rd==x0   |             | CLEN
+|CSRRW       rd!=x0   |CLEN         | CLEN
+|CSRR[C\|S]  rs1==x0  |CLEN         |
+|CSRR[C\|S]  rs1!=x0  |CLEN         | XLEN
+|CSRRWI      rd==x0   |             | XLEN
+|CSRRWI      rd!=x0   |CLEN         | XLEN
+|CSRR[C\|S]I uimm==x0 |CLEN         |
+|CSRR[C\|S]I uimm!=x0 |CLEN         | XLEN
+|=======================
+
+In <<clen_access_summary_base>> and <<clen_access_summary_default>>, when there is no read or write width shown, the CSR access is _not_ made and there are no side-effects following standard Zicsr rules.
+
+==== CSR accesses for {cheri_default_ext_name}
+
+Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN-bits for compatibility, and so use <<SCADDR>> semantics to determine the final written value.
+
+.CLEN-bit CSR and Extended CSR access summary for {cheri_default_ext_name}
+[#clen_access_summary_default,%autowidth,options=header,align="center"]
+|=======================
+|                   2+| CLEN-bit CSR              2+| Extended CSR
+|Instruction          | Read Width  | Write Width   | Read Width  | Write Width
+|CSRRW       rd==x0   |             | CLEN          |             | XLEN
+|CSRRW       rd!=x0   |CLEN         | CLEN          |XLEN         | XLEN
+|CSRR[C\|S]  rs1==x0  |CLEN         |               |XLEN         |
+|CSRR[C\|S]  rs1!=x0  |CLEN         | XLEN          |XLEN         | XLEN
+|CSRRWI      rd==x0   |             | XLEN          |             | XLEN
+|CSRRWI      rd!=x0   |CLEN         | XLEN          |XLEN         | XLEN
+|CSRR[C\|S]I uimm==x0 |CLEN         |               |XLEN         |
+|CSRR[C\|S]I uimm!=x0 |CLEN         | XLEN          |XLEN         | XLEN
+|=======================

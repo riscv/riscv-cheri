@@ -16,12 +16,12 @@ There are two types of bus connections used in SoCs which contain CHERI CPUs:
 .. These busses will write the valid tag to memory as an extension of the data write.
 . Non-tag aware busses, i.e., current non-CHERI aware busses.
 .. Reads of tagged memory will not read the valid tag.
-.. Writes to tagged memory will clear the valid tag of any CLEN-aligned CLEN-wide memory location where any byte matches the memory write.
+.. Writes to tagged memory will set the valid tag to zero of any CLEN-aligned CLEN-wide memory location where any byte matches the memory write.
 
 The fundamental rule for any CHERI system is that the valid tag and data are always accessed atomically. For every naturally aligned CLEN-wide memory location, it must never be possible to:
 
 . Update any data bytes without also writing the valid tag
-.. This implies clearing the valid tag if a non-CHERI aware bus master overwrites a capability in memory
+.. This implies setting the valid tag to zero if a non-CHERI aware bus master overwrites a capability in memory
 . Read a tagged value with mismatched (stale or newer) data
 . Set the valid tag without also writing the data.
 
