@@ -221,7 +221,7 @@ Instructions which decode bounds will typically set the output valid tag to zero
 NOTE: CHERI requires that the capability is correctly formed if the valid tag is set.
  Including handling of malformed bounds, and invalid settings of reserved bits, in the architecture allows the behavior to be clearly specified for all 2^(CLEN+1)^ input values.
 
-[#sec_cap_type]
+[#sec_cap_type, "CT-field"]
 ==== Capability Type (CT)
 
 This metadata field indicates the type of the capability.
@@ -237,6 +237,9 @@ The following capability types are defined in {cheri_base_ext_name}:
 |1    | Sealed entry (sentry) capability
 |===
 
+NOTE: Future extensions are likely to add more types of sealed capabilities by extending the width of the CT-field.
+ In the base ISA, sentries are the only type of sealed capability and the CT field is only 1-bit.
+
 [#unsealed_cap,reftext="unsealed capability]
 Unsealed capabilities::
 When `CT=0`, the capability authorizes access to a region of memory as defined by the permissions and bounds.
@@ -247,7 +250,7 @@ Capabilities with `CT≠0` are sealed against modification.
 They cannot be dereferenced to access memory and it is not permitted to change the address, bounds or permissions.
 Modifications are restricted to _reducing_ the <<section_cap_level, CL>> field using <<ACPERM>>.
 +
-Sealed entries (also known as sentries) describe secure function entry points.
+Sentries describe secure function entry points.
 They are used as the target of <<JALR_CHERI>>, which must have a zero offset for the use of a sentry to be valid.
 +
 Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
@@ -259,7 +262,7 @@ NOTE: In addition to using them for secure entry points, sentry capabilities can
  They can be converted to an unsealed capability by extracting the metadata with <<GCHI>>, zeroing the `CT` field, reapplying it with <<SCHI>> and then rebuilding via a superset capability with the <<CBLD>> instruction.
  A future extension may add an unseal instruction for performance.
 
-[#sec_cap_ap]
+[#AP-field, reftext="AP-field"]
 ==== Architectural Permissions (AP)
 
 This metadata field encodes architecturally defined permissions of the capability.
@@ -267,17 +270,18 @@ Permissions grant access subject to the <<cap_validity_tag>> being set, the capa
 Any operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP and PMAs, even if the capability grants sufficient permissions.
 The permissions currently defined in {cheri_base_ext_name} are listed below.
 
-Permissions can only be removed using <<ACPERM>>, they cannot be added.
+Permissions can only be removed using <<ACPERM>> on valid capabilities, they cannot be added.
+
+NOTE: The encoding of permissions varies with MXLEN and is described in xref:AP-field-encoding[xrefstyle=full].
 
 [#r_perm,reftext="R-permission"]
-Read Permission \(R):: Allow reading data from memory. Tags are always
+Read Permission \(R):: Allow reading data from memory. Valid tags are always
 read as zero when reading non-capability data.
 
 [#w_perm,reftext="W-permission"]
 Write Permission (W):: Allow writing data to memory. Valid tags are always
-written as zero when writing non-capability data. Every CLEN aligned word in memory
-has a valid tag, if any byte is overwritten with non-capability data then the valid tag for all
-CLEN-bits is cleared.
+written as zero when writing non-capability data. Every CLEN/8-byte aligned location in memory
+has an associated valid tag. If any byte is overwritten with non-capability data then the associated valid tag or tags are set to zero.
 
 [#c_perm,reftext="C-permission"]
 Capability Permission \(C):: Allow reading capability data from memory if the
@@ -290,10 +294,12 @@ Execute Permission (X):: Allow instruction execution.
 [#lm_perm,reftext="LM-permission"]
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
-The permission stripping behavior only applies to loaded capabilities that have their valid tag set and are not sealed; loaded capabilities that are sealed or invalid do not have their permissions changed.
-  This ensures that capability loads/stores of non-capability data do not modify the stored value.
+The permission stripping behavior _only_ applies to loaded capabilities that have their valid tag set and are not sealed.
+  This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
+
+#ARC note: I think this chapter needs to be after Zicsr, otherwise it's painful to add ASR and utid/utidc later as we'll end up with a fragmented description of ACPERM#
 
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR):: Allow read and write access to privileged CSRs as well as some privileged instructions.
@@ -305,10 +311,13 @@ NOTE: This permission is important in privileged execution environments.
 NOTE: Extensions may add additional non-privileged CSRs that require <<asr_perm>>.
 
 [#sl_perm,reftext="SL-permission"]
-Store Level Permission (SL):: This is a variable width field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> less than the inverse of the authorizing capability's <<sl_perm>> will be stored with the valid tag cleared.
-With `LVLBITS=1` there is a single bit comparison, so it behaves as follows:
+Store Level Permission (SL):: This is a `LVLBITS`-bit field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero valid tag.
+
+The base ISA has `LVLBITS=1` and so there is a single bit comparison, behaving as follows:
 - If this field (as well as <<c_perm>> and <<w_perm>>) is set to 1 then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
 - If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e., _local_), will be stored with the valid tag cleared.
+
+NOTE: Future extensions may make `LVLBITS` wider to allow more levels.
 
 ifdef::cheri_v9_annotations[]
 NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9, Morello and CHERIoT.
@@ -317,6 +326,7 @@ endif::[]
 [#el_perm,reftext="EL-permission"]
 Elevate Level Permission (EL):: Any unsealed capability with its valid tag set to 1 that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
 If sealed, then only <<section_cap_level,CL>> is modified, <<el_perm>> is unchanged.
+
 This permission is similar to the existing <<lm_perm>>, but instead of applying to the <<w_perm>> on the loaded capability it restricts the <<section_cap_level,CL>> field.
 
 ifdef::cheri_v9_annotations[]
@@ -326,28 +336,24 @@ endif::[]
 [#section_cap_level,reftext="Capability Level (CL)"]
 ==== Capability Level (CL)
 
-The _Capability Level_ (CL) is a variable width field that allows enforcing invariants on capability propagation.
+The _Capability Level_ (CL) is a `LVLBITS`-bit field that allows enforcing invariants on capability propagation.
+
 For example, the _Capability Level_ can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g., the callee's stack frame but not the heap).
 It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
 
 NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
 
-The width of this field depends on whether the {cheri_0levels_ext_name} or {cheri_1levels_ext_name} extension is implemented:
+The base ISA has `LVLBITS`=1 and so the _Capability Level_ can hold two values:
 
-===== {cheri_0levels_ext_name}
-In this case the field is hardwired to 1 and all checks based on the _Capability Level_ can be omitted (since they always pass).
+* 1: the capability is _global_, in general allowing it to be stored using any authorizing capability.
+* 0: the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
 
-===== {cheri_1levels_ext_name}
-The _Capability Level_ can hold two values: when set to 1 the capability is _global_ (in general allowing it to be stored using any authorizing capability), and when set to 0 the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
-  Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabilities -- causing the hardware to automatically set the level of loaded capabilities to _local_ instead.
+Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabilities -- causing the hardware to automatically set the level of loaded capabilities to _local_ instead.
 
-As with permissions, the capability level can only be decreased but never increased (without deriving from a capability with a higher level).
-// Therefore, the capability level is adjusted using the <<ACPERM>> instruction (see <<section_cap_level_change>>) and are queried using <<GCPERM>>.
-But unlike architectural permissions, CL can be reduced even if the capability is sealed.
+As with permissions, the _Capability Level_ of a valid capability can only be decreased but never increased (without deriving from a capability with a higher level).
+But unlike architectural permissions, the _Capability Level_ can be reduced even if the capability is sealed.
 
-NOTE: A capability with <<section_cap_level,CL>>=1 is referred to as _global_ and with <<section_cap_level,CL>>=0 as _local_.
-
-.{cheri_1levels_ext_name} summary table for stored capabilities
+.`LVLBITS`=1 summary table for stored capabilities
 [#cap_level_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
 |==============================================================================
    3+|Auth cap field       | Data cap field |
@@ -359,7 +365,7 @@ NOTE: A capability with <<section_cap_level,CL>>=1 is referred to as _global_ an
 
 NOTE: if W=0 or C=0 then SL is irrelevant
 
-.{cheri_1levels_ext_name} additional rules for loading capabilities
+.`LVLBITS`=1 additional rules for loading capabilities
 [#cap_level_load_summary,width="100%",options=header,align=center,cols="1,1,1,1,1,1,6"]
 |==============================================================================
    4+|Auth cap field                  2+| Data cap field |
@@ -372,7 +378,6 @@ NOTE: if W=0 or C=0 then SL is irrelevant
 ifdef::cheri_v9_annotations[]
 NOTE: The current specification only defines up to two levels, equivalent to _local_ and _global_ capabilities from CHERI v9, Morello and CHERIoT.
 endif::[]
-Future extensions are permitted to add more levels.
 
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
@@ -380,7 +385,7 @@ The metadata also contains an encoding-dependent number of software-defined perm
 They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.).
 They can be cleared by <<ACPERM>> but are not interpreted by the CPU otherwise.
 
-While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set.
+While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set on valid capabilities.
 
 NOTE: This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
 
@@ -390,17 +395,18 @@ NOTE: This property is required to ensure restricted programs cannot forge capab
 [#infinite-cap,reftext="Infinite"]
 ===== Infinite Capability
 
-The _Infinite_ capability grants all permissions while its bounds also cover the whole address space.
-All capability checks pass when performed against an <<infinite-cap>> capability.
+The _Infinite_ capability grants all permissions, has the maximum <<section_cap_level,CL-field>>, and its bounds cover the whole 2^MXLEN address space.
+The address field can hold any value.
+
+All capability checks pass when performed against a valid <<infinite-cap>> capability.
 The in-memory encoding of the _Infinite_ capability is described in <<section_infinite_cap_encoding>>.
 
 NOTE: The _Infinite_ capability is also known as 'default', 'almighty', or 'root' capability in other CHERI documentation.
 
 [#null-cap,reftext="NULL"]
 ===== NULL Capability
-A capability with all-zeroes metadata, an unset valid tag, and an address of zero is referred to as the _NULL_ capability.
-This capability grants no permissions and any dereference results in a CHERI exception.
-The memory representation of the <<null-cap>> capability is all zeroes.
+A capability with all-zero metadata, a zero valid tag, and an address of zero is referred to as the _NULL_ capability.
+This capability grants no permissions and any dereference results in raising an exception.
 
 === Added State
 
@@ -493,7 +499,7 @@ NOTE: All system memory and caches that store capabilities must preserve this ab
 
 With {cheri_base_ext_name}, every memory access performed by a CHERI core must be authorized by a capability.
 
-Instruction fetches, branches, jumps, and data memory accesses may result in a fatal exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<sec_cap_ap,permissions>>. I.e.:
+Instruction fetches, branches, jumps, and data memory accesses may result in a fatal exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<AP-field,permissions>>. I.e.:
 
 * all load instructions requires <<r_perm>>
 * all store instructions require <<w_perm>>
