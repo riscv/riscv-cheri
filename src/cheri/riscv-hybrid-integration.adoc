@@ -208,12 +208,31 @@ In {cheri_int_mode_name}, the capability authorizing the memory access is <<ddc>
 [#zicsr-section-default]
 === Changes to Zicsr Instructions
 
-When in {cheri_int_mode_name}, there is a special rule for updating extended CSRs (e.g., <<utid>>/<<utidc>> or <<jvt_cheri>>/<<jvtc>>)
+When in {cheri_int_mode_name}, there is a special rule for updating extended CSRs (e.g., <<utidc>> or <<jvt>>)
 
 * Writing an extended CSR writes the address field (XLEN-bits) only, and the full CSR is updated using <<SCADDR>> semantics.
 * Reading an extended CSR reads the address field (XLEN-bits) only
 
-For this purpose the assembly syntax will refer to <<jvt_cheri>> or <<utid>>.
+For this purpose the assembly syntax will refer to <<jvt_cheri>> or <<utidc>>.
+Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN-bits for compatibility, and so use <<SCADDR>> semantics to determine the final written value.
+
+.CLEN-bit CSR and Extended CSR access summary for {cheri_default_ext_name}
+[#clen_access_summary_default,%autowidth,options=header,align="center"]
+|=======================
+|                   2+| CLEN-bit CSR^1^           2+| Extended CSR^2^
+|Instruction          | Read Width  | Write Width   | Read Width  | Write Width
+|CSRRW       rd==x0   |             | CLEN          |             | XLEN
+|CSRRW       rd!=x0   |CLEN         | CLEN          |XLEN         | XLEN
+|CSRR[C\|S]  rs1==x0  |CLEN         |               |XLEN         |
+|CSRR[C\|S]  rs1!=x0  |CLEN         | XLEN          |XLEN         | XLEN
+|CSRRWI      rd==x0   |             | XLEN          |             | XLEN
+|CSRRWI      rd!=x0   |CLEN         | XLEN          |XLEN         | XLEN
+|CSRR[C\|S]I uimm==x0 |CLEN         |               |XLEN         |
+|CSRR[C\|S]I uimm!=x0 |CLEN         | XLEN          |XLEN         | XLEN
+|=======================
+
+^1^ e.g., <<ddc>>
+^2^ e.g., <<utidc>>
 
 include::insns/csrr_32bit.adoc[]
 include::insns/csrrw_32bit.adoc[]
