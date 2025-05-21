@@ -396,17 +396,16 @@ xref:utidc-csrnames-added[xrefstyle=short].
 
 [[utidc-csrnames-added]]
 .Unprivileged capability CSRs added in {cheri_base32_ext_name} and {cheri_base64_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|CLEN CSR|Address|Permissions|Description
-|<<utidc>>|0x480|RW, <<asr_perm>> required for writes, not reads|User Default Data Capability
+|CLEN CSR|Permissions|Description
+|<<utidc>>|RW, <<asr_perm>> required for writes, not reads|User Thread ID Capability
 |===
 
 [#utidc,reftext="utidc"]
 ===== User Thread Identifier Capability (utidc)
 
 The <<utidc>> register is used to identify the current software thread in user mode.
-On reset the valid tag of <<utidc>> will be set to 0 and the remainder of the data is UNSPECIFIED.
 
 
 NOTE: Compartmentalization seeks to separate the privileges between different
@@ -421,7 +420,7 @@ identifying the current software thread. While identifying the current software 
 can be done by privileged code, e.g., the kernel, the implied performance
 overhead of this is not bearable for CHERI systems with many compartments.
 
-NOTE: The <<utidc>> register is designed to hold a capability, which can only be accessed by
+NOTE: The <<utidc>> register is designed to hold a capability, which can only be used for memory accesses by
 trusted code. In a commonly used model on CHERI systems, the trusted code's responsibility
 is only to switch between compartments, but not to switch threads. This responsibility is usually
 taken over by more privileged code, e.g., an operating system kernel running on a different privilege level.
