@@ -587,7 +587,7 @@ No other exception paths are added by {cheri_base_ext_name}: in particular, capa
 
 NOTE: Branches and jumps may raise exceptions, reusing the Instruction Address Misaligned exception path.
 
-=== Instructions Which Update The Capability Pointer
+=== Instructions to Update The Capability Pointer
 
 Updating the value of the pointer (i.e., the address field) of a capability requires specific instructions instead of integer ADD/ADDI.
 They all include a check that the result can be <<section_cap_representable_check,represented exactly>>.
@@ -606,7 +606,7 @@ include::insns/scaddr_32bit.adoc[]
 
 <<<
 
-=== Instructions Which Manipulate Capability Data
+=== Instructions to Manipulate Capability Data
 
 For security, capabilities can only be modified in restricted ways.
 Special instructions are provided to copy capabilities or perform manipulations such as _shrinking_ the bounds (<<SCBNDS>>), _reducing_ the permissions (<<ACPERM>>) or _authorizing_ a capability with another one which has a superset (or identical) bounds and permissions (<<CBLD>>).
@@ -635,9 +635,9 @@ include::insns/cbld_32bit.adoc[]
 
 <<<
 
-=== Instructions Which Inspect Capability Data
+=== Instructions to Inspect Capability Data
 
-==== Instructions Which Decode Capability Bounds
+==== Instructions to Decode Capability Bounds
 
 The _bounds_ describing the range of addresses the capability gives access to are stored in a compressed format.
 These instructions query the bounds and related information.
@@ -655,7 +655,7 @@ include::insns/gclen_32bit.adoc[]
 
 <<<
 
-==== Instructions Which Extract Capability Fields
+==== Instructions to Extract Capability Fields
 
 These instructions either directly read bit fields from the metadata or valid tag, or only apply simple transformations on the metadata.
 
@@ -676,7 +676,7 @@ include::insns/gchi_32bit.adoc[]
 
 <<<
 
-=== Miscellaneous Instructions Which Handle Capability Data
+=== Miscellaneous Instructions to Handle Capability Data
 
 .Miscellaneous capability instruction summary in {cheri_base_ext_name}
 [#tab_cap_misc_summary,%autowidth,options=header,align="center",cols="1,4"]
@@ -694,7 +694,7 @@ include::insns/cram_32bit.adoc[]
 <<<
 
 [#sec_cap_load_store]
-=== Instructions Which Load and Store Capability Data
+=== Instructions to Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LC>> and <<SC>>.
 They atomically access CLEN-bits of data and the associated valid tag.
