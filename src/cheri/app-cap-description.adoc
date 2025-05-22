@@ -564,25 +564,30 @@ malformedLSB =  (E  < 0) || (E == 0 && enableL8)
 malformed    =  !EF && (malformedMSB || malformedLSB)
 ```
 
-NOTE: The check is for malformed _bounds_, so it does not include reserved
-bits!
-
-CHERI enforces the following invariants for all valid (i.e., tagged) capabilities:
-
-. The bounds are not malformed.
-. No reserved bit in the capability encoding is set.
-. The permissions can be legally produced by <<ACPERM>>.
-
-A valid capability that violates those invariants (i.e., valid tag set but malformed or valid
-tag set with any reserved bit set) can only possibly be caused by
-a logic or memory fault (e.g., bit flipping).
-
 Capabilities with malformed bounds:
 
 . Return both base and top bounds as zero, which affects instructions like <<GCBASE>>.
 . Cause certain manipulation instructions like <<CADDI>> to always set the valid tag of the result to zero.
 
-See specific instruction pages for full details of the effect of malformed capabilities.
+[#section_cap_integrity]
+=== Integrity of Capabilities
+
+CHERI enforces the following rules for all valid capabilities:
+
+. The bounds are not <<section_cap_malformed,malformed>>.
+. No reserved bit in the capability encoding is set.
+. The permissions can be legally produced by <<ACPERM>>.
+
+In all cases the capability could not have been legally created, and so either:
+
+* There has been a corruption of capability state due to memory or logic faults
+* There is an incompatible or faulty CHERI IP within the system
+
+NOTE: These checks are much less rigorous than parity or ECC protection, and are only
+ used to detect simple problems with the capability metadata.
+
+NOTE: Even though valid capabilities which fail the integrity check could not have been legally generated,
+ defining the handling in the architecture allows the behavior to be precisely specified for all 2^(CLEN+1)^ input values.
 
 [#section_special_caps_encoding]
 === Encoding of Special Capabilities

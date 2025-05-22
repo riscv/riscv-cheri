@@ -35,7 +35,7 @@ in an attempt to elevate their rights will yield an invalid capability.
 Attempting to dereference via an invalid capability
 will result in a hardware exception.
 
-^1^ #Not all possible corrupted states are detected, see XXX.#
+^1^ Not all possible corrupted states are detected, see xref:section_cap_integrity[xrefstyle=full].
 
 CHERI capabilities may be held in registers or in memories, and are loaded,
 stored, and dereferenced using CHERI-aware instructions that expect capability
@@ -212,12 +212,6 @@ E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding
 [#cap_bounds_map]
 .Memory address bounds encoded within a capability
 image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
-
-In the presence of memory corruption, fault injection, or hardware bugs, bounds can theoretically become <<section_cap_malformed,malformed>> (representing a lack of _integrity_).
-Instructions that decode bounds will typically set the output valid tag to zero if the input is found to be <<section_cap_malformed,malformed>>.
-
-NOTE: CHERI requires that the capability is correctly formed if the valid tag is set.
-Defining the handling of malformed bounds and invalid settings of reserved bits in the architecture allows the behavior to be precisely specified for all 2^(CLEN+1)^ input values (even though some of these are impossible to observe in a correctly operating environment).
 
 [#sec_cap_type, "CT-field"]
 ==== Capability Type (CT)
@@ -559,10 +553,7 @@ When accessing CSRs these rules are followed:
 . Accesses to CLEN-bit CSRs and extended CSRs, using CSRRW will:
 .. Read CLEN-bits
 .. Write CLEN-bits, and will write the valid tag to zero if:
-... #integrity check fails, would read better#
-... the bounds are <<section_cap_malformed,malformed>>, or
-... any reserved bits are set, or
-... the permissions could not have been produced by <<ACPERM>>
+... any <<section_cap_integrity,integrity>> check fails
 . Accesses to CLEN-bit CSRs and extended CSRs, using encodings other than CSRRW will:
 .. Read CLEN-bits
 .. Write an XLEN-bit to the address field, and use <<SCADDR>> semantics to determine the final written value
@@ -883,16 +874,16 @@ All load and store instructions behave as described in <<ldst>> with one fundame
 
 * For the base operand (`rs1`), the capability source operand `cs1` is used to authorize the resulting memory access.
 
-All load and store instructions authorized by `cs1` cause CHERI exceptions if any of these checks fails:
+All load and store instructions authorized by `cs1` raise exceptions if any of these checks fails:
 
 * `cs1` must not be `c0`^1^
-* The valid tag (`cs1.tag`) must be set, and there must be no reserved bits set in `cs1`
+* The valid tag (`cs1.tag`) must be set
 * `cs1` must be unsealed
 //move to priv spec
 //* The virtual address in `cs1` must not be invalid if virtual memory is enabled.
-* All bytes of accessed memory must be inside `cs1's` bounds, and the bounds can't be <<section_cap_malformed,malformed>>.
 * For loads, the <<r_perm,read permission>> must be set in `cs1`
 * For stores, the <<w_perm,write permission>> must be set in `cs1`
+* Any <<section_cap_integrity,integrity>> check fails
 
 ^1^ All load/store encodings are _reserved_ if `cs1=c0` (since dereferencing <<null-cap>> always faults).
  This principle is extended to _all_ loads and stores authorized by `cs1`.

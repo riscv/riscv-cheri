@@ -35,8 +35,7 @@ CSRRW accesses to extended CSRs in {cheri_cap_mode_name} read CLEN-bits into `cd
 CSRRW accesses to extended CSRs in {cheri_int_mode_name} read XLEN-bits into `rd` and write `rs1` into the CSR.
 The final write data is determined using <<SCADDR>> semantics.
 +
-In all cases, when writing `cs1`, if the bounds are <<section_cap_malformed,malformed>>, any reserved bits are set,
-or the permission could not have been produced by <<ACPERM>> then set the valid tag to zero before writing to the CSR.
+In all cases, when writing `cs1`, if any <<section_cap_integrity,integrity>> check fails then set the valid tag to zero before writing to the CSR.
 
 Permissions::
 Accessing CSRs may require <<asr_perm>>.
