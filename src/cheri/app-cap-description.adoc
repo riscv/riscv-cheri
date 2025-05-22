@@ -63,7 +63,7 @@ include::img/cap-encoding-xlen64.edn[]
 
 Reserved bits are available for future extensions to {cheri_base_ext_name}.
 
-NOTE: Reserved bits must be 0 in tagged capabilities.
+NOTE: Reserved bits must be 0 in valid capabilities.
 
 The encoding of capabilities depends on the extensions supported by the current environment.
 The following extensions affect the capability encoding:
@@ -152,13 +152,13 @@ ifdef::cheri_nolevels[]
 | 7       | ✔ | ✔ | ✔ | ✔ |   |     | N/A | Data & Cap RW
 |==============================================================================
 
-^1^ _Mode (<<m_bit>>) can only be set on a tagged capability when {cheri_default_ext_name}
+^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
 is supported. Despite being encoded here it is *not* an architectural permission._
 
 NOTE: When MXLEN=32 there are many reserved permission encodings (see
-xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a tagged
+xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a valid
 capability to have one of these values since <<ACPERM>> will never create it. It is
-possible for untagged capabilities to have reserved values. <<GCPERM>> will interpret
+possible for invalid capabilities to have reserved values. <<GCPERM>> will interpret
 reserved values as if it were 0b00000 (no permissions). Future extensions may assign
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
@@ -208,7 +208,7 @@ endif::[]
 | 7       | ✔ | ✔ | ✔ | ✔  | ✔  | 0     |   |     | N/A | Data & Cap RW (no store _local_)
 |==============================================================================
 
-^1^ _Mode (<<m_bit>>) can only be set on a tagged capability when {cheri_default_ext_name}
+^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
 is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._ +
 ^2^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>> +
 ^3^ These entries are reserved for adding additional levels in a future extension
@@ -573,8 +573,8 @@ CHERI enforces the following invariants for all valid (i.e., tagged) capabilitie
 . No reserved bit in the capability encoding is set.
 . The permissions can be legally produced by <<ACPERM>>.
 
-A tagged capability that violates those invariants (i.e., a tagged but malformed capability or a tagged
-capability with any reserved bit set) can only possibly be caused by
+A valid capability that violates those invariants (i.e., valid tag set but malformed or valid
+tag set with any reserved bit set) can only possibly be caused by
 a logic or memory fault (e.g., bit flipping).
 
 Capabilities with malformed bounds:
@@ -676,7 +676,7 @@ However, the decoded top field of a capability is MXLEN + 1 bits wide and does *
 a capability with base 2^MXLEN^ - 1 and top 2^MXLEN^ + 1 is not a subset of the
 <<infinite-cap>> capability and does not authorize access to the byte at address 0.
 Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
-a CHERI core to generate a tagged capability with top > 2^MXLEN^.
+a CHERI core to generate a valid capability with top > 2^MXLEN^.
 If such a capability exists then it must have been caused by a logic or memory fault.
 Unlike malformed bounds, the top overflowing is not treated as a special case in the
 architecture: normal bounds check rules should be followed.
