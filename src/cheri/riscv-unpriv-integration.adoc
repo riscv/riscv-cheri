@@ -311,13 +311,13 @@ NOTE: This permission is important in privileged execution environments.
 NOTE: Extensions may add additional non-privileged CSRs that require <<asr_perm>>.
 
 [#sl_perm,reftext="SL-permission"]
-Store Level Permission (SL):: This is a `LVLBITS`-bit field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero valid tag.
+Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero valid tag.
 
-The base ISA has `LVLBITS=1` and so there is a single bit comparison, behaving as follows:
+In the base ISA this is a single bit comparison, behaving as follows:
 - If this field (as well as <<c_perm>> and <<w_perm>>) is set to 1 then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
 - If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e., _local_), will be stored with the valid tag cleared.
 
-NOTE: Future extensions may make `LVLBITS` wider to allow more levels.
+NOTE: Future extensions may make this field wider to enable more use cases.
 
 ifdef::cheri_v9_annotations[]
 NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9, Morello and CHERIoT.
