@@ -72,6 +72,7 @@ The following extensions affect the capability encoding:
 When {cheri_default_ext_name} is supported, capabilities include a <<m_bit>>.
 If not supported this field becomes reserved and reads as zero.
 
+ifdef::cheri_multilevel[]
 [#cheri_lvlbits,reftext="LVLBITS"]
 {cheri_0levels_ext_name}/{cheri_1levels_ext_name}::
 Implementations of {cheri_base_ext_name} may choose how many <<section_cap_level>> bits (`LVLBITS`) to support.
@@ -84,8 +85,9 @@ The CL field is variable width and depends on which of the mutually exclusive ex
   All of <<el_perm>>, <<sl_perm>> and the <<section_cap_level>> are one bit wide and are encoded in the capability format memory.
 
 NOTE: Future extensions may increase the width of this field.
+endif::[]
 
-[#cap_permissions_encoding]
+[#AP-field-encoding, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
 The bit width of the permissions field depends on the value of MXLEN as shown
@@ -101,10 +103,8 @@ Therefore, it is only possible to encode a subset of all combinations.
 |==============================================================================
 ^| MXLEN | AP field width         | Comment
 ^| 32    | {cap_rv32_perms_width} | Encodes some combinations of {cap_rv64_perms_width} permission bits, including the <<m_bit>> if {cheri_default_ext_name} is supported.
-^| 64    | {cap_rv64_perms_width}/{cap_rv64_perms_levels_width}^1^ | Separate bits for each architectural permission.
+^| 64    | {cap_rv64_perms_width} | Separate bits for each architectural permission.
 |==============================================================================
-
-^1^ If {cheri_0levels_ext_name} is supported this field is {cap_rv64_perms_width} bits wide, with {cheri_1levels_ext_name} it uses {cap_rv64_perms_levels_width} instead.
 
 For MXLEN=32, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
@@ -116,6 +116,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 
 <<<
 
+ifdef::cheri_nolevels[]
 .Encoding of architectural permissions for MXLEN=32 when {cheri_0levels_ext_name} is implemented
 [#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
@@ -164,8 +165,9 @@ non-zero value.
 
 NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It is
 orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
+endif::[]
 
-.Encoding of architectural permissions for MXLEN=32 when {cheri_1levels_ext_name} is implemented
+.Encoding of architectural permissions for MXLEN=32
 [#cap_perms_encoding_levels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
 |Bits[4:3]| R | W | C | LM | EL | SL | X | ASR | Mode^1^ | Notes
@@ -228,8 +230,8 @@ A permission is granted if its corresponding bit is set, otherwise the capabilit
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
 | 5   | <<lm_perm>>
-| 6   | <<el_perm>> with {cheri_1levels_ext_name} / _reserved_ with {cheri_0levels_ext_name}
-| 7   | <<sl_perm>> with {cheri_1levels_ext_name} / _reserved_ with {cheri_0levels_ext_name}
+| 6   | <<el_perm>>
+| 7   | <<sl_perm>>
 |==============================================================================
 
 The <<m_bit>> is only assigned meaning when the
@@ -275,22 +277,17 @@ When removing permissions with <<ACPERM>> the following rules are followed in or
 ^2^ For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
 are only valid if {cheri_default_ext_name} is implemented. Otherwise those encodings represent invalid permissions.
 
-CAUTION: Depending on the supported extensions and <<cap_permissions_encoding,permissions encoding>> some referenced bits may have a hardwired value.
-In this case the rules are applied starting with this hardwired value, and proceed as if it had been modified but any change is discarded after following the final rule.
-For example, RV64 without {cheri_default_ext_name}, the <<m_bit>> is a _reserved_ bit, and so is not relevant to <<ACPERM>>.
-Similarly, if {cheri_0levels_ext_name} is implemented then <<el_perm>> is initialized to 1, and <<sl_perm>> is initialized to the maximum value, but the resulting <<el_perm>> and <<sl_perm>> is discarded at the end.
-
 NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
 
-[#cap_sdp_encoding]
+[#SDP-field, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* CHERI v9 had no software-defined permissions for RV32
 endif::[]
 
-The width of the SDP field depends on the underlying base architecture.
-The value of the SDP bits of the <<GCPERM>> result maps 1:1 to the SDP field in the capability.
+The width of the <<SDP-field>> depends on the underlying base architecture.
+The value of the <<SDP-field>> bits of the <<GCPERM>> result maps 1:1 to the <<SDP-field>> field in the capability.
 
 .SDP widths depending on MXLEN
 [#sdp_bit_width,options=header,align="center",width="55%"]
@@ -607,11 +604,11 @@ expanded base is 0 and top is 2^MXLEN^.
 [#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
 |==============================================================================
 | Field    | Value  | Comment
-| Tag      | zero   | Capability is not valid
-| SDP      | zeros  | Grants no permissions
-| AP       | zeros  | Grants no permissions
-| M        | zero   | No meaning since non-executable (MXLEN=64 only)
-| CL       | zero^1^| _Local_
+| Valid Tag                | zero   | Capability is not valid
+| <<SDP-field,SDP>>        | zeros  | Grants no permissions
+| <<AP-field,AP>>          | zeros  | Grants no permissions
+| <<M-bit,M>>              | zero   | No meaning since non-executable (MXLEN=64 and {cheri_default_ext_name} only)
+| <<section_cap_level,CL>> | zero   | _Local_
 | CT       | zero   | Unsealed
 | EF       | zero   | Internal exponent format
 | L~8~     | zero   | Top address reconstruction bit (MXLEN=32 only)
@@ -622,8 +619,6 @@ expanded base is 0 and top is 2^MXLEN^.
 | Address  | zeros  | Capability address
 | Reserved | zeros  | All reserved fields
 |==============================================================================
-
-^1^ This field may be zero bits wide (i.e., omitted) if {cheri_0levels_ext_name} is implemented.
 
 [#section_infinite_cap_encoding]
 ==== Infinite Capability Encoding
@@ -645,7 +640,7 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
                         | Grants all permissions
 | AP (MXLEN=64) | 0xFF (see xref:cap_perms_encoding64[xrefstyle=short])
                         | Grants all permissions
-| CL            | one^2^| _Global_
+| CL            | one   | _Global_
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
 | L~8~          | zero  | Top address reconstruction bit (MXLEN=32 only)
@@ -662,8 +657,6 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
 
 * For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the AP field, giving the value 0x9
 * For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
-
-^2^ This field may be zero bits wide (i.e., omitted) if {cheri_0levels_ext_name} is implemented.
 
 === Memory space
 
@@ -807,6 +800,7 @@ This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
 is _representable_.
 
+ifdef::cheri_multilevel[]
 [#section_ext_cheri_multiple_levels]
 === Extending {cheri_1levels_ext_name} to more than two levels
 When `<<cheri_lvlbits>> > 1`, the behavior of <<ACPERM>> can no longer use masking to adjust the <<section_cap_level>> or <<sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
@@ -828,3 +822,5 @@ Considering for an example `<<cheri_lvlbits>>=2`:
 NOTE: While this extra negation is non-intuitive, it is required such that <<ACPERM>> can use a monotonically decreasing operation for both <<section_cap_level,CL>> <<sl_perm>>.
 
 NOTE: The layout of the <<ACPERM>> input / <<GCPERM>> result is not yet defined, but existing bits will not be moved around so the <<sl_perm,SL>>/<<section_cap_level,CL>> fields will be non-contiguous.
+
+endif::[]

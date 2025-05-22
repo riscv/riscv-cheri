@@ -34,9 +34,6 @@ permission bits in `rd` are set to 0.
 [#gcperm_bit_field]
 include::../img/acperm_bit_field.edn[]
 +
-NOTE: When {cheri_0levels_ext_name} is implemented, the `CL`, `SL`, and `EL` fields always report 1.
-This ensures forwards-compatibility with {cheri_1levels_ext_name} since loads/stores on a core without dynamic levels behave as if these permissions are always present.
-+
 NOTE: Any future extension that defines new permission that are a refinement of existing permissions (e.g., finer-grained <<asr_perm>>) must be allocated to the bits that are currently reported as 1 to ensure forward-compatibility.
 Completely new permissions (e.g., sealing) should use the bits that are reported as zero in the current specification.
 +

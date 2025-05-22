@@ -14,7 +14,7 @@ endif::[]
 include::new_encoding_note.adoc[]
 
 Synopsis::
-Mask capability permissions
+Reduce capability permissions and level by bitwise ANDing with a mask
 
 Mnemonics::
 `acperm cd, cs1, rs2`
@@ -25,23 +25,19 @@ include::wavedrom/acperm.adoc[]
 Description::
 ACPERM performs the following operations:
 
-. Convert the AP and SDP fields of capability `cs1` into a bit field with the
+. Convert the <<AP-field>>, <<section_cap_level,CL-field>> and <<SDP-field>> fields of capability `cs1` into a bit field with the
 format shown in xref:acperm_bit_field[xrefstyle=short].
-. Calculate the bitwise AND of the bit field with the mask `rs2`.
+. Calculate the bitwise AND of the bit field with the mask in `rs2`.
 +
-NOTE: Some permission bits may be hardwired, in which case they are not included in this bitwise AND.
+NOTE: Future extensions may include hardwired permission bits, in which case they are not included in this bitwise AND.
 . Encode the resulting architectural permissions following the rules in <<sec_permission_transitions>>.
 +
 IMPORTANT: Depending on the base ISA and supported extensions, some combinations of permissions cannot be encoded or are not useful.
 In case the requested permissions combination falls into this category, <<ACPERM>> will return useful minimal sets of permissions, which may be no permissions.
 Therefore, it is possible that requesting to clear a permission also clears others, but <<ACPERM>> will never _add_ new permissions.
-. Copy `cs1` to `cd`, and update the AP and SDP fields with the newly calculated versions.
-. Set `cd.tag=0` if `cs1` is sealed and any permission bits were affected by <<ACPERM>>.
-.. Do not invalidate the tag on sealed capability if only the <<section_cap_level,capability levels (CL)>> changed.
-// TODO: reserved fields can only be set through a memory error, should all of this go into an appendix?
-// or if any reserved fields of `cs1` are set.
-
-IMPORTANT: The <<el_perm,EL>>, <<sl_perm,SL>> and <<section_cap_level,CL>> fields are only modifiable if the implementation supports {cheri_1levels_ext_name}, for {cheri_0levels_ext_name} they are hardwired to 1.
+. Copy `cs1` to `cd`, and update the <<AP-field>>, <<section_cap_level,CL-field>> and <<SDP-field>> with the newly calculated versions.
+. Set `cd.tag=0` if `cs1` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<ACPERM>>.
+.. Do not set the valid tag to zero on a sealed capability if _only_ the <<section_cap_level,CL-field>> changed.
 
 .Capability permissions bit field
 [#acperm_bit_field]
