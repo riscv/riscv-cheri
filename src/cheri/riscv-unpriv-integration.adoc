@@ -85,7 +85,7 @@ NOTE: Future extensions may redefine the capability format providing they follow
 
 The lower XLEN-bits of a capability encode the address of where the capability points.
 This is also referred to as the integer part of the capability.
-For registers that are extended but currently only hold integer data, all other fields are zero.
+For registers that are extended but currently only hold data, all other fields are zero.
 
 [#cap_validity_tag,reftext="valid tag"]
 ==== Valid Tag
@@ -97,7 +97,7 @@ It is stored separately and may be referred to as _out of band_ or _hidden_, and
 It indicates whether a CLEN-bit register or CLEN-aligned memory location contains a valid capability.
 If the valid tag is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds_overview,bounds>>).
 
-All registers or memory locations able to hold a capability are CLEN-bits wide including the valid tag bit.
+All registers or memory locations able to hold a capability are CLEN-bits wide with an additional hidden valid tag bit.
 These are referred as being _CLEN-bit_ in this specification.
 
 The valid tag cannot be directly set to 1 by software, it is _not_ a conventionally accessible bit of state.
