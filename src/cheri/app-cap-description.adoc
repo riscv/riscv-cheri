@@ -118,7 +118,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 
 ifdef::cheri_nolevels[]
 .Encoding of architectural permissions for MXLEN=32 when {cheri_0levels_ext_name} is implemented
-[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
+[#cap_perms_encoding_nolevels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
 | Encoding[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
 9+| *Quadrant 0: Non-capability data read/write*
@@ -168,7 +168,7 @@ orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 endif::[]
 
 .Encoding of architectural permissions for MXLEN=32
-[#cap_perms_encoding_levels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
+[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
 |Bits[4:3]| R | W | C | LM | EL | SL | X | ASR | Mode^1^ | Notes
 11+| *Quadrant 0: Non-capability data read/write*
@@ -192,8 +192,8 @@ endif::[]
 |Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
 | 3       | ✔ |   | ✔ |    |    | 0^1^  |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
-| 4       | ✔ | ✔ | ✔ | ✔  |    | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
-| 5       | ✔ | ✔ | ✔ | ✔  |    | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 4       | ✔ | ✔ | ✔ | ✔  |    | _(3)_ |   |     | N/A | _Reserved_^3^
+| 5       | ✔ | ✔ | ✔ | ✔  |    | _(2)_ |   |     | N/A | _Reserved_^3^
 | 6       | ✔ | ✔ | ✔ | ✔  |    | 1     |   |     | N/A | Data & Cap RW (with store _local_, no <<el_perm>>)
 | 7       | ✔ | ✔ | ✔ | ✔  |    | 0     |   |     | N/A | Data & Cap RW (no store _local_, no <<el_perm>>)
 11+| *Quadrant 3: Capability data read/write*
@@ -202,8 +202,8 @@ endif::[]
 |Bits[4:3]| R | W | C | LM | EL | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
 | 3       | ✔ |   | ✔ | ✔  | ✔  | 0^2^  |   |     | N/A | Data & Cap R0
-| 4       | ✔ | ✔ | ✔ | ✔  | ✔  | _(3)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
-| 5       | ✔ | ✔ | ✔ | ✔  | ✔  | _(2)_ |   |     | N/A | _Reserved_ when `LVLBITS=1` ^3^
+| 4       | ✔ | ✔ | ✔ | ✔  | ✔  | _(3)_ |   |     | N/A | _Reserved_^3^
+| 5       | ✔ | ✔ | ✔ | ✔  | ✔  | _(2)_ |   |     | N/A | _Reserved_^3^
 | 6       | ✔ | ✔ | ✔ | ✔  | ✔  | 1     |   |     | N/A | Data & Cap RW (with store _local_)
 | 7       | ✔ | ✔ | ✔ | ✔  | ✔  | 0     |   |     | N/A | Data & Cap RW (no store _local_)
 |==============================================================================
@@ -211,7 +211,7 @@ endif::[]
 ^1^ _Mode (<<m_bit>>) can only be set on a tagged capability when {cheri_default_ext_name}
 is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._ +
 ^2^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>> +
-^3^ These entries are reserved when `LVLBITS=1` and in use when `LVLBITS=2`
+^3^ These entries are reserved for future extensions adding more level bits.
 
 
 
