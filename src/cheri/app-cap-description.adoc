@@ -167,7 +167,7 @@ NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It
 orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 endif::[]
 
-.Encoding of architectural permissions for MXLEN=32 when `LVLBITS`=1
+.Encoding of architectural permissions for MXLEN=32
 [#cap_perms_encoding_levels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^2,4",align="center"]
 |==============================================================================
 |Bits[4:3]| R | W | C | LM | EL | SL | X | ASR | Mode^1^ | Notes
@@ -181,7 +181,7 @@ endif::[]
 | 5   | ✔ | ✔ |   |   |   |   |   |   | N/A | Data RW
 | 6-7   10+| reserved
 11+| *Quadrant 1: Executable capabilities*
-11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}- gcperm{cheri_int_mode_name})
+11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
 |Bits[4:3]| R | W | C | LM | EL | SL  | X | ASR | Mode^1^ |
 | 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | ∞   | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
 | 2-3   | ✔ |   | ✔ | ✔  | ✔  | ∞^2^| ✔ |     | Mode^1^  | Execute + Data & Cap RO
@@ -286,7 +286,7 @@ ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* CHERI v9 had no software-defined permissions for RV32
 endif::[]
 
-The width of the <<SDP-field>> field depends on the underlying base architecture.
+The width of the <<SDP-field>> depends on the underlying base architecture.
 The value of the <<SDP-field>> bits of the <<GCPERM>> result maps 1:1 to the <<SDP-field>> field in the capability.
 
 .SDP widths depending on MXLEN

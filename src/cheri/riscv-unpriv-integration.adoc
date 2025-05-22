@@ -336,14 +336,14 @@ endif::[]
 [#section_cap_level,reftext="Capability Level (CL)"]
 ==== Capability Level (CL)
 
-The _Capability Level_ (CL) is a `LVLBITS`-bit field that allows enforcing invariants on capability propagation.
+The _Capability Level_ (CL) field allows enforcing invariants on capability propagation.
 
 For example, the _Capability Level_ can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g., the callee's stack frame but not the heap).
 It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
 
 NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
 
-The base ISA has `LVLBITS`=1 and so the _Capability Level_ can hold two values:
+The _Capability Level_ can hold two values:
 
 * 1: the capability is _global_, in general allowing it to be stored using any authorizing capability.
 * 0: the capability is _local_, and can only be stored by authorizing capabilities with the <<sl_perm>> set.
@@ -353,7 +353,7 @@ Furthermore, the <<el_perm>> can be used to restrict loading of _global_ capabil
 As with permissions, the _Capability Level_ of a valid capability can only be decreased but never increased (without deriving from a capability with a higher level).
 But unlike architectural permissions, the _Capability Level_ can be reduced even if the capability is sealed.
 
-.`LVLBITS`=1 summary table for stored capabilities
+.<<sl_perm>> effects for stored capabilities
 [#cap_level_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
 |==============================================================================
    3+|Auth cap field       | Data cap field |
@@ -365,7 +365,7 @@ But unlike architectural permissions, the _Capability Level_ can be reduced even
 
 NOTE: if W=0 or C=0 then SL is irrelevant
 
-.`LVLBITS`=1 additional rules for loading capabilities
+.<<el_perm>> effects for loading capabilities
 [#cap_level_load_summary,width="100%",options=header,align=center,cols="1,1,1,1,1,1,6"]
 |==============================================================================
    4+|Auth cap field                  2+| Data cap field |
