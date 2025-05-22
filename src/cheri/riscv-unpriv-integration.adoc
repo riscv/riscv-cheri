@@ -118,7 +118,7 @@ Capability load/store require the _provenance_ check:
 * Any store which wrote the capability to memory was correctly authorized
 * Any load which read the capability from memory was correctly authorized
 
-When an operation fails a check, either due to software error or malicious intent, then the valid tag will be set to zero.
+When an operation fails a check, either due to software error or malicious intent, then the operation raises an exception or sets the resulting valid tag.
 
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
 All capabilities derived from invalid capabilities are themselves invalid, i.e., their valid tags are zero.
@@ -178,6 +178,7 @@ The granularity constraints means that not all requested combinations of _top_ a
 * <<SCBNDSI>> sets the _base_ to `cs1.address`, and the _length_ to the immediate value. Set the valid tag to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSR>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. The bounds may be rounded up if they cannot be encoded exactly.
 ** If <<SCBNDSR>> rounds up the requested bounds, they must still be no larger than the initial bounds.
+* <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
 // #some example usage here of CRAM+SCBNDSR would be good#
 
