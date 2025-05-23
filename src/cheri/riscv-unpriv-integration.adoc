@@ -716,10 +716,12 @@ If <<c_perm>> is not granted then:
 //<<w_perm>> and <<c_perm>> and the stored capability has the valid tag set.
 
 All capability data memory access instructions require CLEN-aligned addresses, and will
-take a misaligned exception if this requirement is not met.
+take an access fault exception if this requirement is not met.
 They cannot be emulated.
 
-CAUTION: #ARC request that this become an access fault#
+NOTE: An access fault is raised instead of a misaligned exceptions since these instructions cannot be emulated since there is one hidden valid tag per CLEN-aligned memory region.
+
+CAUTION: #This is a change in behavior relative to v0.9.5 (previously a misaligned exception was taken)#
 
 All memory accesses, of any type, require permission from the authorizing capability in `cs1`.
 
