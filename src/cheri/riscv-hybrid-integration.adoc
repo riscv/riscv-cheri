@@ -1,6 +1,7 @@
 [#section_cheri_hybrid_ext]
 == "{cheri_default_ext_name}" Extension for CHERI {cheri_int_mode_name}
 
+#ARC-QUESTION: Should the name be something like Zyhybrid/Zycompat/Zyi?#
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the unpriv spec somewhere after the Zicsr chapter (since it depends on Zicsr).
 endif::[]
@@ -128,9 +129,10 @@ On startup <<ddc>> bounds and permissions must be set such that the program can 
 .Unprivileged default data capability register
 include::img/ddcreg.edn[]
 
-NOTE: <<section_cheri_disable,CHERI register and instruction access>> is not required for the implicit access required by checking memory accesses against <<ddc>>.
-
-NOTE: <<ddc>> is a data pointer, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+// This depends on the priv spec, can't mention it here
+// NOTE: <<section_cheri_disable,CHERI register and instruction access>> is not required for the implicit access required by checking memory accesses against <<ddc>>.
+//
+// NOTE: <<ddc>> is a data pointer, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
 === {cheri_default_ext_name} Memory Accesses
 

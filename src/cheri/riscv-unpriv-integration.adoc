@@ -172,7 +172,7 @@ All smaller capabilities are derived from this.
 
 The ISA does not allow the bounds (and permissions) of a capability with its valid tag set to be increased (_monotonicity_).
 
-Bounds can be programmed using the <<SCBNDS>>,<<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs1` or `imm`) value.
+Bounds can be programmed using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs1` or `imm`) value.
 The granularity constraints means that not all requested combinations of _top_ and _base_ bounds can be encoded exactly.
 
 * <<SCBNDS>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. Set the valid tag to zero if the bounds cannot be encoded exactly.
@@ -373,7 +373,7 @@ endif::[]
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
-They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g. permit/deny system calls, memory allocation, etc.).
+They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g.,permit/deny system calls, memory allocation, etc.).
 They can be cleared by <<ACPERM>> but are not interpreted by the CPU otherwise.
 
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set on valid capabilities.
@@ -549,7 +549,7 @@ All CSRs that can hold addresses are extended to CLEN bits.
 . XLEN-bit CSRs extended to CLEN bits, which are able to contain addresses (referred to as _extended CSRs_)
 .. e.g., _jvt_ from the "Zcmt" extension
 . CLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
-.. e.g. <<utidc>>
+.. e.g., <<utidc>>
 
 When accessing CSRs these rules are followed:
 
@@ -695,10 +695,10 @@ These instructions either directly read bit fields from the metadata or valid ta
 [#tab_cap_inspection_fields_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic   |Description
-|<<GCTAG>>  |Get tag field
-|<<GCPERM>> |Get hperm and uperm fields as 1-bit per permission, packed together
+|<<GCTAG>>  |Get capability tag
+|<<GCPERM>> |Get capability architectural and software permissions
 |<<GCTYPE>> |Get capability type
-|<<GCHI>>   |Get metadata
+|<<GCHI>>   |Get capability metadata
 |=======================
 
 include::insns/gctag_32bit.adoc[]
@@ -782,30 +782,26 @@ include::insns/store_32bit_cap.adoc[]
 [#section_existing_riscv_insns]
 === Changes to Existing RISC-V Base ISA Instructions
 
-{cheri_base_ext_name} extend existing instructions which are used for handling addresses so that they manipulate a whole capability.
+{cheri_base_ext_name} extend existing instructions that are used for handling addresses so that they manipulate a whole capability.
 The affected operands change type from *x* to *c* to represent this, and/or the PC is replaced by the <<pcc>>
 
-In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well as all loads and stores.
-
+In the base ISA this affects <<AUIPC_CHERI>>, all jumps and branches as well as all loads and stores.
 The rules for modifying the behavior of such instructions are:
 
-* The result written to the target register *x* is _always_ unchanged. I.e., the lower XLEN-bits are always written with the value from RV32I/RV64I.
-* Whenever the PC is handled, it is _always_ the <<pcc>>.
+* The result written to the destination *x* register is _always_ unchanged. I.e., the lower XLEN bits are always written with the value from RV32I/RV64I.
+* Whenever the PC is handled, it is _always_ the CLEN-bit <<pcc>>.
 * Any memory instruction that has `rs1` as a base address register reads the full capability register (`cs1`) instead.
-** The base address is unchanged, using the value from `rs1`.
-** The metadata and valid tag are used to <<sec_cap_checks,authorize the access>>.
-* Any instruction that writes back an address (e.g., <<AUIPC_CHERI>>), writes a full capability register instead.
+  The base address is unchanged, i.e., using the value from `rs1`.
+  The metadata and valid tag are used to <<sec_cap_checks,authorize the access>>.
+* Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead.
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
-** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
- In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
+  This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
+  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
-** An exception is raised on the branch or jump on failure.
+  An exception is raised on the branch or jump on failure.
 * <<JALR_CHERI>> updates <<pcc>>.address as expected, but also copies the metadata and valid tag from `cs1` into the <<pcc>>.
-** If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>>.
-** See xref:pcc[xrefstyle=full] for the definition of suitability.
-* Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
-** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
-** In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
+  If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>>.
+  See xref:pcc[xrefstyle=full] for the definition of suitability.
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
 
@@ -815,8 +811,8 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 * Shift-and-add instructions from <<zba_cheri>>, such as <<SH3ADD_CHERI>>.
 * RVC encodings C.ADDI16SPN, C.ADDI4SP and C.MV change behavior, and encodings such as C.FSD, C.FLD are remapped so load/store capabilities.
 
-NOTE: Exceptions are raised _on the branch or jump_ which cause an exception, not at the target, primarily to reduce the attack surface but also to aid with debugging.
- Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is authorized.
+NOTE: Exceptions are raised _on the branch or jump_ that cause an exception, not at the target, primarily to reduce the attack surface but also to aid with debugging.
+Therefore, it is impossible to execute from a memory location without having _already_ checked that execution of that location is authorized.
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
