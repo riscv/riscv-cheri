@@ -178,6 +178,44 @@ NOTE: <<vstval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
 [#vstval2-format]
 include::img/vstval2reg.edn[]
 
+[#vstidc,reftext="vstidc"]
+=== Virtual Supervisor Thread Identifier Capability (vstidc)
+
+The <<vstidc>> register is used to identify the current software thread in virtual supervisor mode.
+It is used to identify the current software thread in
+As other Virtual Supervisor registers when V=1, <<vstidc>> substitutes
+for <<stidc>>, so that instructions that normally read or modify
+<<stidc>> actually access <<vstidc>> instead.
+When V=0, <<vstidc>> does not directly affect the
+behavior of the machine.
+On reset the valid tag of <<vstidc>> will be set to 0 and the remainder
+of the data is UNSPECIFIED.
+
+.Virtual supervisor thread identifier capability register
+include::img/vstidcreg.edn[]
+
+=== "Smstateen/Ssstateen" Integration
+The new TID bit controls access to the <<vstidc>> CSR.
+
+.Hypervisor State Enable 0 Register (`hstateen0`)
+[wavedrom, ,svg]
+....
+{reg: [
+{bits: 1, name: 'C'},
+{bits: 1, name: 'FCSR'},
+{bits: 1, name: 'JVT'},
+{bits: 1, name: 'TID'},
+{bits: 53, name: 'WPRI'},
+{bits: 1, name: 'CONTEXT'},
+{bits: 1, name: 'IMSIC'},
+{bits: 1, name: 'AIA'},
+{bits: 1, name: 'CSRIND'},
+{bits: 1, name: 'WPRI'},
+{bits: 1, name: 'ENVCFG'},
+{bits: 1, name: 'SE0'},
+], config: {bits: 64, lanes: 4, hspace:1024}}
+....
+
 //=== Existing Hypervisor Load and Store Instructions
 //
 //The hypervisor extension defines several integer load and store instructions

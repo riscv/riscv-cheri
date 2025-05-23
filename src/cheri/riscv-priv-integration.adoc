@@ -326,6 +326,30 @@ NOTE: Reporting both allows the software the choice about which action to take f
  Software can then decide whether to prioritize the copy-on-write procedure to fix the lack of write
  permission, or to sweep the page.
 
+==== "Smstateen/Ssstateen" Integration
+The new TID bit in `mstateen0` controls access to the <<stidc>> CSR.
+
+.Machine State Enable 0 Register (`mstateen0`)
+[wavedrom, ,svg]
+....
+{reg: [
+{bits: 1, name: 'C'},
+{bits: 1, name: 'FCSR'},
+{bits: 1, name: 'JVT'},
+{bits: 1, name: 'TID'},
+{bits: 52, name: 'WPRI'},
+{bits: 1, name: 'P1P13'},
+{bits: 1, name: 'CONTEXT'},
+{bits: 1, name: 'IMSIC'},
+{bits: 1, name: 'AIA'},
+{bits: 1, name: 'CSRIND'},
+{bits: 1, name: 'WPRI'},
+{bits: 1, name: 'ENVCFG'},
+{bits: 1, name: 'SE0'},
+], config: {bits: 64, lanes: 4, hspace:1024}}
+....
+
+
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs added or extended by {cheri_priv_s_ext}
 
@@ -412,6 +436,20 @@ See <<cheri-mcause>> for the new exceptions priorities when {cheri_base_ext_name
 
 <<stval>> is updated following the same rules as <<mtval-cheri>> for CHERI exceptions
 and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
+
+==== "Smstateen/Ssstateen" Integration
+The new TID bit in `sstateen0` controls access to the <<utidc>> CSR.
+.Supervisor State Enable 0 Register (`sstateen0`)
+[wavedrom, ,svg]
+....
+{reg: [
+{bits: 1, name: 'C'},
+{bits: 1, name: 'FCSR'},
+{bits: 1, name: 'JVT'},
+{bits: 1, name: 'TID'},
+{bits: 28, name: 'WPRI'}
+], config:{bits: 32, lanes: 2, hspace:1024}}
+....
 
 [#sec_cheri_exception_handling]
 === CHERI Exception handling
