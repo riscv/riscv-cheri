@@ -34,7 +34,7 @@ IMPORTANT: All instructions from existing RISC-V extensions can be run in {cheri
 {cheri_cap_mode_name}::
 Executing with the {cheri_base_ext_name} base ISA.
 +
-Some instructions in the RV32I/RV64I base ISA (and in some other extensions) use capabilities instead of integers for memory references (see xref:section_existing_riscv_insns[xrefstyle=short]). In these cases, such as <<SH1ADD_CHERI>>, the lower XLEN-bits of the result is the same in either mode and the upper XLEN-bits, and valid tag, are either handled as capabilities in {cheri_cap_mode_name}, or are ignored in the source and written to zero in {cheri_int_mode_name}
+Some instructions in the RV32I/RV64I base ISA (and in some other extensions) use capabilities instead of integers for memory references (see xref:section_existing_riscv_insns[xrefstyle=short]). In these cases, such as <<SH1ADD_CHERI>>, the lower XLEN bits of the result is the same in either mode and the upper XLEN bits, and valid tag, are either handled as capabilities in {cheri_cap_mode_name}, or are ignored in the source and written to zero in {cheri_int_mode_name}
 
 The _<<cheri_execution_mode>>_ impacts the instruction set in the following way:
 
@@ -210,11 +210,11 @@ In {cheri_int_mode_name}, the capability authorizing the memory access is <<ddc>
 
 When in {cheri_int_mode_name}, there is a special rule for updating extended CSRs (e.g., <<jvtc>>/<<jvt_cheri>>)
 
-* Writing an extended CSR writes the address field (XLEN-bits) only, and the full CSR is updated using <<SCADDR>> semantics.
-* Reading an extended CSR reads the address field (XLEN-bits) only
+* Writing an extended CSR writes the address field (XLEN bits) only, and the full CSR is updated using <<SCADDR>> semantics.
+* Reading an extended CSR reads the address field (XLEN bits) only
 
 For this purpose the assembly syntax will refer to <<jvt_cheri>>.
-Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN-bits for compatibility, and so use <<SCADDR>> semantics to determine the final written value.
+Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN bits for compatibility, and so use <<SCADDR>> semantics to determine the final written value.
 
 .CLEN-bit CSR and Extended CSR access summary for {cheri_default_ext_name}
 [#clen_access_summary_default,%autowidth,options=header,align="center"]
