@@ -403,7 +403,7 @@ This capability grants no permissions and any dereference results in raising an 
 A CHERI core adds state to allow capabilities to be used from within integer (X) registers, and to ensure they are not corrupted as they flow through the system.
 This means the following state is added by {cheri_base_ext_name}:
 
-.CHERI *c* registers extending existing *x* registers in {cheri_base_ext_name}
+.Extended registers in {cheri_base_ext_name}
 [#base_cap_registers]
 [bytefield]
 ----
@@ -421,7 +421,7 @@ This means the following state is added by {cheri_base_ext_name}:
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
-.New CHERI CSR added in {cheri_base_ext_name}
+.New CLEN CSRs added in {cheri_base_ext_name}
 [#base_csr_registers]
 [bytefield]
 ----
@@ -431,13 +431,15 @@ This means the following state is added by {cheri_base_ext_name}:
 (def boxes-per-row 65)
 (draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
 
-(draw-box "" [:box-first {:span 1}]) (draw-box "utidc" [:box-related {:span 32}]) (draw-box "utidc" [:box-last {:span 32 }])
+(draw-box "" [:box-first {:span 1}]) (draw-box "utidc (metadata)" [:box-related {:span 32}]) (draw-box "utidc (address)" [:box-last {:span 32 }])
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
 ==== Extended registers
 
 _All_ registers that can contain addresses are extended with another XLEN-bits of capability metadata and a valid tag bit.
+
+===== General Purpose Registers
 
 The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended in this way.
 
@@ -450,7 +452,7 @@ The zero register is extended with zero metadata and a zero valid tag: this is c
 NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
 
 [#pcc,reftext="pcc"]
-==== The Program Counter Capability (`pcc`)
+===== The Program Counter Capability (`pcc`)
 
 The `pc` is extended to be the Program Counter Capability.
 Extending the `pc` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
@@ -491,11 +493,15 @@ xref:utidc-csrnames-added[xrefstyle=short].
 ===== User Thread Identifier Capability (utidc)
 
 The <<utidc>> register is used to identify the current software thread in user mode.
+Any operations that modifies <<utidc>> raises an exception unless the <<asr_perm>> is set in the current <<pcc>>.
+
+NOTE: While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
+Therefore, this specification offers an additional CSR that facilitates a trusted source for identifying software threads.
 
 .User thread identifier capability register
 include::img/utidcreg.edn[]
 
-NOTE: #this text should move to a programmers guide#
+NOTE: #the following notes should move to a programmers guide#
 
 NOTE: Compartmentalization seeks to separate the privileges between different
 protection units, e.g., two or more libraries. Code can be separated by sentries,
@@ -527,12 +533,6 @@ used to implement a trusted stack. Whenever a compartment switch happens, the tr
 the caller and callee compartment avoid capability leaks between the two compartments.
 The trusted code can store capabilities on the trusted stack when calling out of a compartment and can install them
 when returning the same compartment.
-
-NOTE: The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
-usable for the purpose of reliably identifying the current software thread because
-the tp register is a general purpose register and can be changed arbitrarily
-by untrusted code. Therefore, this specification offers an additional CSR
-that facilitates a trusted source for identifying software threads.
 
 ==== Extended CSRs
 
@@ -759,7 +759,7 @@ All memory accesses, of any type, require permission from the authorizing capabi
 //NOTE: Misaligned capability memory accesses cannot be emulated.
 //  To transfer CLEN misaligned bits without a valid tag, use integer loads and stores.
 
-Under some circumstances <<LC>> will _modify_ metadata before returning the value.
+Under some circumstances <<LC>> will _modify_ the data loaded from memory before writing it back to the destination register.
 See <<LC>> for details.
 
 .Capability load/store instruction summary in {cheri_base_ext_name}
