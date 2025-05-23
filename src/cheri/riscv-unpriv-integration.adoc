@@ -103,21 +103,21 @@ These are referred as being _CLEN-bit_ in this specification.
 
 The valid tag cannot be directly set to 1 by software, it is _not_ a conventionally accessible bit of state.
 If the tag valid is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
-If the rules are followed then the valid tag will propagate through the instructions which modify, load or store the capability.
+If the rules are followed then the valid tag will propagate through the instructions that modify, load or store the capability.
 
 Therefore, for capability manipulation in registers:
 
-* Any instruction which wrote the capability to a register had at least one valid tag set in its input operands.
+* Any instruction that wrote the capability to a register had at least one valid tag set in its input operands.
 ** This is the _provenance_ check.
-* Any instruction which wrote the capability to a register requested a legal operation which does not increase bounds or permissions, and set the valid tag on the output.
+* Any instruction that wrote the capability to a register requested a legal operation that does not increase bounds or permissions, and set the valid tag on the output.
 ** This is the _monotonicity_ check.
-* Any instruction which wrote the capability to a register detected any corrupted values.
+* Any instruction that wrote the capability to a register detected corrupted values.
 ** This is the _integrity_ check.
 
 Capability load/store require the _provenance_ check:
 
-* Any store which wrote the capability to memory was correctly authorized
-* Any load which read the capability from memory was correctly authorized
+* Any store that wrote the capability to memory was correctly authorized
+* Any load that read the capability from memory was correctly authorized
 
 When an operation fails a check, either due to software error or malicious intent, then the operation raises an exception or sets the resulting valid tag.
 
@@ -129,13 +129,13 @@ NOTE: When the valid tag is zero, the register or memory location may be used to
 [#sec_cap_bounds_overview]
 ==== Capability Bounds
 
-Capabilities encode memory bounds, i.e. the lowest and highest byte in memory that it is permitted to access when dereferenced for data memory access, or for instruction execution.
+Capabilities encode memory bounds, i.e., the lowest and highest byte in memory that it is permitted to access when dereferenced for data memory access, or for instruction execution.
 
 Checking is on a byte-by-byte basis, so that it is possible for a memory access to be fully in-bounds, partially out-of-bounds or fully out-of-bounds.
 
 It is not permitted to make any partially or fully out-of-bounds memory accesses.
 
-Every capability has two memory address bounds - _base_ representing the lowest accessible byte, and _top_ representing one byte above the highest accessible byte.
+Every capability has two memory address bounds: _base_ representing the lowest accessible byte, and _top_ representing one byte above the highest accessible byte.
 
 * The _base_ is XLEN-bits and is _inclusive_.
 * The _top_ is XLEN+1-bits and is _exclusive_.
@@ -147,7 +147,7 @@ Therefore a memory location `A` in the range `base &#8804; A < top` is within bo
 NOTE: Inclusive _top_, with XLEN-bits, was considered but rejected in favor of the exclusive _top_.
 
 NOTE: Checking every byte of every executed instruction and every byte of every data memory access is fundamental to the memory safety which CHERI provides.
- In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
+In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
 
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
@@ -189,11 +189,11 @@ The bounds are encoded relative to the address field, sharing some upper bits of
 The number of shared bits depends on the exponent, see xref:section_cap_bounds[xrefstyle=short].
 
 NOTE: Early versions of CHERI encoded the top and bottom bounds as full width addresses.
- This proved to be impractical for real systems, and so the https://www.cl.cam.ac.uk/research/security/ctsrd/pdfs/2019tc-cheri-concentrate.pdf[CHERI-concentrate] compressed system was developed to reduce the overhead.
+This proved to be impractical for real systems, and so the https://www.cl.cam.ac.uk/research/security/ctsrd/pdfs/2019tc-cheri-concentrate.pdf[CHERI-concentrate] compressed system was developed to reduce the overhead.
 
 Because CHERI concentrate encoding scheme shares the upper bits of the address with the bounds, the address of a capability cannot be arbitrary modified without risking changing the meaning of the bounds.
 This means that whenever a capability address is updated, the semantics of the <<SCADDR>> instruction are required to check that the decoding of the bounds hasn't changed.
-If the bounds _have_ changed, then the valid tag is set to zero, so that the capability is invalid for use.
+If the interpretation of bounds _has_ changed, then the valid tag is set to zero, so that the capability is invalid for use.
 
 NOTE: <<SCADDR>> updates the address field of a capability and then checks that the updated capability is still valid.
 
@@ -204,8 +204,8 @@ The maximum range of address values that the pointer can take is defined by the 
 
 NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only come back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
 
-NOTE: CHERI versions which use a different encoding scheme to the default may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
- Therefore the rest of the specification uses the phrase *represented exactly* for the check performed by <<SCADDR>>.
+NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to the default (e.g., for accellerators or specific micro-controllers) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
+Therefore, the rest of the specification uses the phrase *represented exactly* for the check performed by <<SCADDR>>.
 
 The bounds and representable region (or space) are illustrated in <<cap_bounds_map>>.
 E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
@@ -791,7 +791,7 @@ The rules for modifying the behavior of such instructions are:
 * Any memory instruction that has `rs1` as a base address register reads the full capability register (`cs1`) instead.
 ** The base address is unchanged, using the value from `rs1`.
 ** The metadata and valid tag are used to <<sec_cap_checks,authorize the access>>.
-* Any instruction which writes back an address (e.g., <<AUIPC_CHERI>>), writes a full capability register instead.
+* Any instruction that writes back an address (e.g., <<AUIPC_CHERI>>), writes a full capability register instead.
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
