@@ -476,6 +476,12 @@ xref:utidc-csrnames-added[xrefstyle=short].
 
 The <<utidc>> register is used to identify the current software thread in user mode.
 
+NOTE: The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
+usable for the purpose of reliably identifying the current software thread because
+the tp register is a general purpose register and can be changed arbitrarily
+by untrusted code. Therefore, this specification offers an additional CSR
+that facilitates a trusted source for identifying software threads.
+
 .User thread identifier capability register
 include::img/utidcreg.edn[]
 
@@ -509,12 +515,6 @@ used to implement a trusted stack. Whenever a compartment switch happens, the tr
 the caller and callee compartment avoid capability leaks between the two compartments.
 The trusted code can store capabilities on the trusted stack when calling out of a compartment and can install them
 when returning the same compartment.
-
-NOTE: The RISC-V ABI includes a _thread pointer (tp)_ register, which is not
-usable for the purpose of reliably identifying the current software thread because
-the tp register is a general purpose register and can be changed arbitrarily
-by untrusted code. Therefore, this specification offers an additional CSR
-that facilitates a trusted source for identifying software threads.
 
 ==== Extended CSRs
 All registers that store addresses are extended to contain capabilities.
@@ -732,7 +732,7 @@ All memory accesses, of any type, require permission from the authorizing capabi
 //NOTE: Misaligned capability memory accesses cannot be emulated.
 //  To transfer CLEN misaligned bits without a valid tag, use integer loads and stores.
 
-Under some circumstances <<LC>> will _modify_ metadata before returning the value.
+Under some circumstances <<LC>> will _modify_ the data loaded from memory before writing it back to the destination register.
 See <<LC>> for details.
 
 .Capability load/store instruction summary in {cheri_base_ext_name}
