@@ -9,14 +9,11 @@ Store Conditional (SC.C), 32-bit encoding
 Mnemonic::
 `sc.c rd, cs2, 0(cs1)`
 
-//{cheri_int_mode_name} Mnemonic::
-//`sc.c rd, cs2, 0(rs1)`
-
 Encoding::
 include::wavedrom/store_cond_cap.adoc[]
 
 Description::
-Calculate the effective address of the memory access by adding the address of `cs1` to the sign-extended 12-bit offset.
+Calculate the effective address of the memory access by adding `cs1.address` to the sign-extended 12-bit offset.
 +
 Authorize the memory access with the capability in `cs1`.
 +
@@ -25,10 +22,6 @@ Conditionally store, following the same rules as SC.W, a naturally aligned CLEN-
 Set rd to 1 for success or 0 for failure.
 +
 include::load_store_c0.adoc[]
-+
-//{cheri_int_mode_name} Description::
-//Store conditional instructions, authorized by the capability in <<ddc>>.
-// All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (Zam extension, see cite:[riscv-unpriv-spec]).
 +
 include::store_tag_perms.adoc[]
 +

@@ -785,33 +785,34 @@ In the base ISA this affects <<AUIPC_CHERI>> and all jumps and branches as well 
 
 The rules for modifying the behavior of such instructions are:
 
-* The result written to the target register is always unchanged.
-** The lower XLEN-bits are always written with the value from RV32I/RV64I.
+* The result written to the target register *x* is _always_ unchanged. I.e., the lower XLEN-bits are always written with the value from RV32I/RV64I.
 * Whenever the PC is handled, it is _always_ the <<pcc>>.
-* Any instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead.
-** This capability register is used to <<sec_cap_checks,authorize the access>>.
-* Any instruction writes back an address (e.g., <<AUIPC_CHERI>>), writes a full capability register instead.
+* Any memory instruction that has `rs1` as a base address register reads the full capability register (`cs1`) instead.
+** The base address is unchanged, using the value from `rs1`.
+** The metadata and valid tag are used to <<sec_cap_checks,authorize the access>>.
+* Any instruction which writes back an address (e.g., <<AUIPC_CHERI>>), writes a full capability register instead.
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 * All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
-** An exception is taken by the branch or jump on failure.
-* <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition of suitability).
-* Any memory access instruction that has a base address register (generally `rs1`) reads the full capability register (`cs1`) instead which is used to <<sec_cap_checks,check whether the access is permitted>>, taking an exception if it is not.
+** An exception is raised on the branch or jump on failure.
+* <<JALR_CHERI>> updates <<pcc>>.address as expected, but also copies the metadata and valid tag from `cs1` into the <<pcc>>.
+** If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>>.
+** See xref:pcc[xrefstyle=full] for the definition of suitability.
 * Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
 ** This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
- In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
-* All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
-** An exception is taken by the branch or jump on failure.
-* <<JALR_CHERI>> copies _all_ of `cs1` into the <<pcc>>. If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>> (see <<pcc>> for the definition of suitability).
+** In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 
-These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions (e.g. floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
 
-IMPORTANT: These rules also apply to instructions added by other extensions (e.g., floating-point/vector loads/stores or the shift-and-add instruction from <<zba,Zba>>).
+* Floating-point loads and stores
+* <<section_cheri_vector_integration,Vector load and stores>>.
+* Atomic memory accesses, see <<zaamo_cheri>> and <<zalrsc_cheri>>.
+* Shift-and-add instructions from <<zba_cheri>>, such as <<SH3ADD_CHERI>>.
+* RVC encodings C.ADDI16SPN, C.ADDI4SP and C.MV change behavior
 
-NOTE: Exceptions are taken on the branch or jump which cause an exception, not at the target, to reduce the attack surface and also to aid with debugging.
+NOTE: Exceptions are raised _on the branch or jump_ which cause an exception, not at the target, primarily to reduce the attack surface but also to aid with debugging.
  Therefore it is _not_ possible to execute from a memory location without having _already_ checked that execution of that location is authorized.
-
 
 .Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
@@ -828,41 +829,6 @@ NOTE: Exceptions are taken on the branch or jump which cause an exception, not a
 include::insns/auipc_32bit.adoc[]
 include::insns/jal_32bit.adoc[]
 include::insns/jalr_32bit.adoc[]
-
-//==== Unconditional Jumps
-//
-//Unconditional jumps operate as described in <<ct-insns,the base RISC-V ISA>> but with added bounds and permission checks.
-//For jump-and-link instructions, the value written to the link register is a full capability derived from <<pcc>> with the address updated //to the link address.
-// //CHERIoT compatiblity
-//If the resulting capability cannot be <<section_cap_representable_check,<<section_cap_representable_check,represented exactly>> then the valid tag is cleared.
-//The resulting jump address is checked against <<pcc>> as described below.
-//Additionally, the link register is sealed (as if executing an implicit <<SENTRY>>) to ensure that the callee cannot modify the return //address and (maliciously) return to an incorrect instruction.
-//
-//For indirect jumps, the authorizing capability is not <<pcc>> but the base capability register in `cs1`.
-//
-//The target capability is unsealed if it is a sentry and the instructions has a zero immediate offset.
-//
-//<<JALR_CHERI>> raises a CHERI exception when:
-//
-//* The target capability's valid tag is zero
-//* The target capability is sealed and the immediate is not zero
-//* A minimum sized instruction (2 or 4 bytes depending on enabled extensions) at the target capability's address is not
-//within bounds
-//* The target capability does not grant <<x_perm>>
-//
-//<<JAL_CHERI>> and <<JALR_CHERI>> can also cause instruction address misaligned exceptions
-//following the standard RISC-V rules.
-
-
-//[#condbr-purecap]
-//==== Conditional Branches
-//
-//Conditional branch instructions compare two *x* registers as described in the base RISC-V
-//ISA, so the metadata and tag values are disregarded in the comparison if the
-//operand registers hold capabilities. If the comparison evaluates to true, then
-//the target address is installed in the <<pcc>>'s address field.
-//These instructions cause CHERI exceptions when a minimum sized instruction at the target address is not within the <<pcc>>'s bounds.
-
 include::insns/condbr_32bit.adoc[]
 
 <<<
@@ -872,18 +838,19 @@ include::insns/condbr_32bit.adoc[]
 
 All load and store instructions behave as described in <<ldst>> with one fundamental difference:
 
-* For the base operand (`rs1`), the capability source operand `cs1` is used to authorize the resulting memory access.
+* Where the base operand is `rs1`, the capability source operand `cs1` is used to authorize the resulting memory access.
 
-All load and store instructions authorized by `cs1` raise exceptions if any of these checks fails:
+All load and store instructions authorized by `cs1` raise exceptions if any of these checks fail:
 
 * `cs1` must not be `c0`^1^
 * The valid tag (`cs1.tag`) must be set
 * `cs1` must be unsealed
-//move to priv spec
-//* The virtual address in `cs1` must not be invalid if virtual memory is enabled.
-* For loads, the <<r_perm,read permission>> must be set in `cs1`
-* For stores, the <<w_perm,write permission>> must be set in `cs1`
-* Any <<section_cap_integrity,integrity>> check fails
+ifdef::invalid_addresss_viol[]
+* The virtual address in `cs1` must not be invalid if virtual memory is enabled.
+endif::[]
+* For loads, <<r_perm,read permission>> must be set in `cs1`
+* For stores, <<w_perm,write permission>> must be set in `cs1`
+* All <<section_cap_integrity,integrity>> checks on `cs1` must pass
 
 ^1^ All load/store encodings are _reserved_ if `cs1=c0` (since dereferencing <<null-cap>> always faults).
  This principle is extended to _all_ loads and stores authorized by `cs1`.
@@ -895,7 +862,5 @@ Store instructions, except for <<SC>>, always write zero to the valid tag or tag
 Therefore, misaligned stores may clear up to two associated valid tag bits.
 
 The changed interpretation of the base register also applies to all loads, stores and other memory operations defined in later chapters of this specification with a base operands of `rs1` unless stated otherwise.
-
-NOTE: this applies to all existing loads and stores including integer, floating-point and vector.
 
 *Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.*

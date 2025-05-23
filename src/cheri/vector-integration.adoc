@@ -1,40 +1,23 @@
-[#section_vector_integration]
-== Integrating {cheri_base_ext_name} and {cheri_default_ext_name} with the Vector Extension
+[#section_cheri_vector_integration]
+=== Vector with {cheri_base_ext_name}
 
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter should appear as a section in the vector chapter. Exact location TBD.
 endif::[]
 
-The RISC-V vector (V) extension is orthogonal to CHERI because the
-vector registers only hold integer or floating-point data. The vector registers
-are _not_ extended to hold capabilities.
+The Vector extension is orthogonal to {cheri_base_ext_name} because the vector registers do not support valid tags.
 
-NOTE: A future extension may allow tags to be stored in vector registers.
+NOTE: A future extension may allow valid tags to be stored in vector registers.
   Until that time, vector load and store instructions must not be used to implement generic
   memory copying in software, such as the `memcpy()` standard C library function,
   because the vector registers do not hold capabilities, so the valid tags of any
   copied capabilities will be set to 0 in the destination memory.
 
-Vector loads and stores all follow the behavior as described in
-xref:section_int_load_store_insns[xrefstyle=short].
+Under {cheri_base_ext_name}, vector loads and stores follow the standard rules for _active_ elements:
 
-The assembly syntax of all vector loads and stores are updated in
-{cheri_cap_mode_name}, so that the address operand becomes a *c* operand instead
-of an *x* operand.
+* Only _active_ elements are subject to CHERI exception checks.
+* If there are no _active_ elements then no CHERI exceptions will be raised.
+* CHERI exceptions are only raised on fault-only-first loads if element 0 is both _active_ and fails any exception checks.
 
-According to the vector extension cite:[riscv-v-spec] only _active_ elements are
-accessed or updated in memory. Therefore only _active_ elements are subject to
-CHERI exception checks. If a vector load or store has no _active_ elements then
-_no_ CHERI fault will be taken.
-
-This is consistent with other exceptions such as page faults which are only taken
-on _active_ elements.
-
-In the case of fault-only-first loads, a CHERI bounds violation is only taken if any bytes of element 0 are out of bounds, or if the CHERI bounds are <<section_cap_malformed,malformed>> and there are any _active_ elements.
-If another _active_ element causes a CHERI bounds violation then it is treated the same way as other exceptions, the trap is not taken and instead vl is reduced.
-All other CHERI fault types, such as tag violations, are only taken if element zero is _active_.
-
-NOTE: Indexed loads in {cheri_cap_mode_name} check the bounds of every access against
-the authorizing capability in `cs1`. Therefore the approach of having a zero base
-register and treating every element as an absolute address may not work well
-in this mode.
+NOTE: Indexed loads check the bounds of every access against the authorizing capability in `cs1`.
+ Therefore the approach of having a zero base register and treating every element as an absolute address may not work well in this mode.
