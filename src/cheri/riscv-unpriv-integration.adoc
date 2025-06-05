@@ -54,7 +54,7 @@ improve their security.
 
 #ARC note - CLEN will become YLEN#
 
-{cheri_base_ext_name} extends all registers which can hold addresses to `2*XLEN-bits` (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+{cheri_base_ext_name} extends all registers which can hold addresses to `2*XLEN` bits (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to CLEN, each register also gains one-bit valid tag which is defined below.
 
 {cheri_base_ext_name} specify the fields which the capability format supports, and how those fields behave for XLEN=32 and XLEN=64.
@@ -420,7 +420,7 @@ As stated above, all state which can hold addresses are extended from XLEN to CL
 
 #ARC note C registers will become Y registers#
 
-The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to CLEN-bits.
+The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to CLEN bits.
 
 .Extended registers in {cheri_base_ext_name}
 [#base_cap_registers]
@@ -536,13 +536,13 @@ when returning the same compartment.
 
 ==== Extended CSRs
 
-All CSRs that can hold addresses are extended to CLEN-bits.
+All CSRs that can hold addresses are extended to CLEN bits.
 
 {cheri_base_ext_name} has three classes of CSR:
 
 . XLEN-bit CSRs, which do not contain addresses
 .. e.g., _fcsr_ from the "F" extension
-. XLEN-bit CSRs extended to CLEN-bits, which are able to contain addresses (referred to as _extended CSRs_)
+. XLEN-bit CSRs extended to CLEN bits, which are able to contain addresses (referred to as _extended CSRs_)
 .. e.g., _jvt_ from the "Zcmt" extension
 . CLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
 .. e.g., <<utidc>>
@@ -551,11 +551,11 @@ When accessing CSRs these rules are followed:
 
 . Accesses to XLEN-bit CSRs are as specified by Zicsr
 . Accesses to CLEN-bit CSRs and extended CSRs, using CSRRW will:
-.. Read CLEN-bits
-.. Write CLEN-bits, and will write the valid tag to zero if:
+.. Read CLEN bits
+.. Write CLEN bits, and will write the valid tag to zero if:
 ... any <<section_cap_integrity,integrity>> check fails
 . Accesses to CLEN-bit CSRs and extended CSRs, using encodings other than CSRRW will:
-.. Read CLEN-bits
+.. Read CLEN bits
 .. Write an XLEN-bit value to the address field, and use <<SCADDR>> semantics to determine the final written value
 
 NOTE: Any CLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the valid tag.
