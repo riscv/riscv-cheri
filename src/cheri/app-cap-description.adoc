@@ -653,7 +653,7 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
 | T~E~          | zeros | Exponent bits
 | B             | zeros | Base address bits
 | B~E~          | zeros | Exponent bits
-| Address       | zeros | Capability address
+| Address       | zeros^2^ | Capability address
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
@@ -662,6 +662,9 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
 
 * For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the <<AP-field>>, giving the value 0x9
 * For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
+
+^2^If an <<infinite-cap>> capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
+ If the address field is non-zero then it is still referred to as an <<infinite-cap>> capability, and it still has the authority to authorize all memory accesses.
 
 === Memory space
 

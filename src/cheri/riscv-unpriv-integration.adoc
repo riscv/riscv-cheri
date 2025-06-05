@@ -50,11 +50,11 @@ protection into their system software and applications and significantly
 improve their security.
 
 [#sec_capability_registers]
-=== General purpose registers
+=== Capability Registers and Format
 
 #ARC note - CLEN will become YLEN#
 
-{cheri_base_ext_name} extends the general purpose registers to `2*XLEN-bit` (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+{cheri_base_ext_name} extends all registers which can hold addresses to `2*XLEN-bits` (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to CLEN, each register also gains one-bit valid tag which is defined below.
 
 {cheri_base_ext_name} specify the fields which the capability format supports, and how those fields behave for XLEN=32 and XLEN=64.
@@ -84,25 +84,25 @@ NOTE: Future extensions may redefine the capability format providing they follow
 
 ==== Address
 
-The lower XLEN bits of a capability encode the address of where the capability points.
+The lower XLEN-bits of a capability encode the address of where the capability points.
 This is also referred to as the integer part of the capability.
-For registers that are extended but currently only hold data, all other fields are zero.
+For registers that are extended but currently hold non-capability data, all other fields are typically zero.
 
-[#cap_validity_tag,reftext="valid tag"]
+NOTE: Future extensions may add 2*XLEN-bit operations to make use of the wide registers for efficient handling of 2*XLEN-bit non-capability data.
+
+[#cap_valid_tag,reftext="valid tag"]
 ==== Valid Tag
-
-#ARC note C registers will become Y registers#
 
 The valid tag is an additional bit added to addressable memory and all CLEN-bit registers.
 It is stored separately and may be referred to as _out of band_ or _hidden_, and is _hardware managed_.
 It indicates whether a CLEN-bit register or CLEN-aligned memory location contains a valid capability.
 If the valid tag is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds_overview,bounds>>).
 
-All registers or memory locations able to hold a capability are CLEN bits wide with an additional hidden valid tag bit.
-These are referred as being _CLEN-bit_ in this specification.
+All registers or memory locations able to hold a capability are CLEN-bits wide with an additional hidden valid tag bit.
+These are referred to as being _CLEN-bit_ in this specification.
 
-The valid tag cannot be directly set to 1 by software, it is _not_ a conventionally accessible bit of state.
-If the tag valid is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
+The valid tag cannot be directly set to one by software, it is _not_ a conventionally accessible bit of state.
+If the valid tag is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
 If the rules are followed then the valid tag will propagate through the instructions that modify, load or store the capability.
 
 Therefore, for capability manipulation in registers:
@@ -126,6 +126,19 @@ All capabilities derived from invalid capabilities are themselves invalid, i.e.,
 
 NOTE: When the valid tag is zero, the register or memory location may be used to store non-capability data.
 
+==== Valid tags in registers
+
+Every CLEN-bit register has a one-bit valid tag, indicating whether the capability in the register is valid to be dereferenced.
+This valid tag is cleared whenever an invalid capability operation is performed.
+Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
+
+==== Valid tags in memory
+
+Valid tags are tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit valid tag, which the hardware manages atomically with the data.
+The valid tag is set to zero if any byte in the CLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand which is permitted to set the valid tag to one (see <<c_perm>>), and that the stored capability data has its valid tag set.
+
+NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the valid tags atomically with the data.
+
 [#sec_cap_bounds_overview]
 ==== Capability Bounds
 
@@ -137,14 +150,14 @@ It is not permitted to make any partially or fully out-of-bounds memory accesses
 
 Every capability has two memory address bounds: _base_ representing the lowest accessible byte, and _top_ representing one byte above the highest accessible byte.
 
-* The _base_ is XLEN bits and is _inclusive_.
+* The _base_ is XLEN-bits and is _inclusive_.
 * The _top_ is XLEN+1-bits and is _exclusive_.
 ** The extra bit is required to allow the bounds to include the top byte of memory.
 * The _length_ is XLEN+1-bits and is defined to be _top - base_.
 
 Therefore a memory location `A` in the range `base &#8804; A < top` is within bounds, and so valid to access.
 
-NOTE: Inclusive _top_, with XLEN bits, was considered but rejected in favor of the exclusive _top_.
+NOTE: Inclusive _top_, with XLEN-bits, was considered but rejected in favor of the exclusive _top_.
 
 NOTE: Checking every byte of every executed instruction and every byte of every data memory access is fundamental to the memory safety which CHERI provides.
 In a typical load/store unit, the expansion of the bounds from `cs1` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
@@ -160,7 +173,7 @@ Software can query the capability bounds:
 
 * The _base_ is returned by <<GCBASE>>.
 * The _length_ is returned by <<GCLEN>>.
-** <<GCLEN>> saturates the _length_ to XLEN bits
+** <<GCLEN>> saturates the _length_ to XLEN-bits
 * The _top_ can be calculated via <<GCBASE>>+<<GCLEN>>
 
 NOTE: A future extension may add an instruction to directly read the _top_ if needed for performance.
@@ -259,7 +272,7 @@ NOTE: In addition to using them for secure entry points, sentry capabilities can
 ==== Architectural Permissions (AP)
 
 This metadata field encodes architecturally defined permissions of the capability.
-Permissions grant access subject to the <<cap_validity_tag>> being set, the capability being unsealed, and bounds checks passing.
+Permissions grant access subject to the <<cap_valid_tag>> being set, the capability being unsealed, and bounds checks passing.
 Any operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP and PMAs, even if the capability grants sufficient permissions.
 The permissions currently defined in {cheri_base_ext_name} are listed below.
 
@@ -305,7 +318,7 @@ NOTE: Extensions may add additional non-privileged CSRs that require <<asr_perm>
 Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero valid tag.
 
 In the base ISA this is a single bit comparison, behaving as follows:
-- If this field (as well as <<c_perm>> and <<w_perm>>) is set to 1 then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
+- If this field (as well as <<c_perm>> and <<w_perm>>) is set to one then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
 - If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e., _local_), will be stored with the valid tag cleared.
 
 NOTE: Future extensions may make this field wider to enable more use cases.
@@ -315,7 +328,7 @@ NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9,
 endif::[]
 
 [#el_perm,reftext="EL-permission"]
-Elevate Level Permission (EL):: Any unsealed capability with its valid tag set to 1 that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
+Elevate Level Permission (EL):: Any unsealed capability with its valid tag set to one that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
 If sealed, then only <<section_cap_level,CL>> is modified, <<el_perm>> is unchanged.
 
 This permission is similar to the existing <<lm_perm>>, but instead of applying to the <<w_perm>> on the loaded capability it restricts the <<section_cap_level,CL>> field.
@@ -373,7 +386,7 @@ endif::[]
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
-They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g.,permit/deny system calls, memory allocation, etc.).
+They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.).
 They can be cleared by <<ACPERM>> but are not interpreted by the CPU otherwise.
 
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set on valid capabilities.
@@ -386,11 +399,11 @@ NOTE: This property is required to ensure restricted programs cannot forge capab
 [#infinite-cap,reftext="Infinite"]
 ===== Infinite Capability
 
-The _Infinite_ capability grants all permissions, has the maximum <<section_cap_level,CL-field>>, and its bounds cover the whole 2^MXLEN address space.
+The _Infinite_ capability grants all permissions, has the maximum <<section_cap_level,CL-field>>, and its bounds cover the whole 2^MXLEN^ address space.
 The address field can hold any value.
 
 All capability checks pass when performed against a valid <<infinite-cap>> capability.
-The in-memory encoding of the _Infinite_ capability is described in <<section_infinite_cap_encoding>>.
+The encoding of the _Infinite_ capability is described in <<section_infinite_cap_encoding>>.
 
 NOTE: The _Infinite_ capability is also known as 'default', 'almighty', or 'root' capability in other CHERI documentation.
 
@@ -399,10 +412,15 @@ NOTE: The _Infinite_ capability is also known as 'default', 'almighty', or 'root
 A capability with all-zero metadata, a zero valid tag, and an address of zero is referred to as the _NULL_ capability.
 This capability grants no permissions and any dereference results in raising an exception.
 
-=== Added State
+=== Extended State
 
-A CHERI core adds state to allow capabilities to be used from within integer (X) registers, and to ensure they are not corrupted as they flow through the system.
-This means the following state is added by {cheri_base_ext_name}:
+As stated above, all state which can hold addresses are extended from XLEN to CLEN-bits.
+
+==== General Purpose Registers
+
+#ARC note C registers will become Y registers#
+
+The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to CLEN-bits.
 
 .Extended registers in {cheri_base_ext_name}
 [#base_cap_registers]
@@ -422,38 +440,16 @@ This means the following state is added by {cheri_base_ext_name}:
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
-.New CLEN CSRs added in {cheri_base_ext_name}
-[#base_csr_registers]
-[bytefield]
-----
-(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 40}])
-(def row-height 100)
-(def row-header-fn nil)
-(def boxes-per-row 65)
-(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
-
-(draw-box "" [:box-first {:span 1}]) (draw-box "utidc (metadata)" [:box-related {:span 32}]) (draw-box "utidc (address)" [:box-last {:span 32 }])
-(draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
-----
-
-==== Extended registers
-
-_All_ registers that can contain addresses are extended with another XLEN bits of capability metadata and a valid tag bit.
-
-===== General Purpose Registers
-
-The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended in this way.
-
 When referring to the extended registers, the `x` prefix is replaced with a `c`: i.e. the extended version of `x1` becomes `c1`.
-The register can be referred to either way - as `c1` accessing all CLEN bits or as `x1` accessing only the address field (i.e., the lower XLEN bits).
-For the ABI register names the `c` prefix is added, e.g., `csp` to refer to all CLEN bits, and so the assembler can refer to wither `sp` or `csp`.
+The register can be referred to either way - as `c1` accessing all CLEN-bits or as `x1` accessing only the address field (i.e., the lower XLEN-bits).
+For the ABI register names the `c` prefix is added, e.g., `csp` to refer to all CLEN-bits, and so the assembler can refer to either `sp` or `csp`.
 
 The zero register is extended with zero metadata and a zero valid tag: this is called the <<null-cap>> capability.
 
 NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
 
 [#pcc,reftext="pcc"]
-===== The Program Counter Capability (`pcc`)
+==== The Program Counter Capability (`pcc`)
 
 The `pc` is extended to be the Program Counter Capability.
 Extending the `pc` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
@@ -540,13 +536,13 @@ when returning the same compartment.
 
 ==== Extended CSRs
 
-All CSRs that can hold addresses are extended to CLEN bits.
+All CSRs that can hold addresses are extended to CLEN-bits.
 
 {cheri_base_ext_name} has three classes of CSR:
 
 . XLEN-bit CSRs, which do not contain addresses
 .. e.g., _fcsr_ from the "F" extension
-. XLEN-bit CSRs extended to CLEN bits, which are able to contain addresses (referred to as _extended CSRs_)
+. XLEN-bit CSRs extended to CLEN-bits, which are able to contain addresses (referred to as _extended CSRs_)
 .. e.g., _jvt_ from the "Zcmt" extension
 . CLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
 .. e.g., <<utidc>>
@@ -555,12 +551,12 @@ When accessing CSRs these rules are followed:
 
 . Accesses to XLEN-bit CSRs are as specified by Zicsr
 . Accesses to CLEN-bit CSRs and extended CSRs, using CSRRW will:
-.. Read CLEN bits
-.. Write CLEN bits, and will write the valid tag to zero if:
+.. Read CLEN-bits
+.. Write CLEN-bits, and will write the valid tag to zero if:
 ... any <<section_cap_integrity,integrity>> check fails
 . Accesses to CLEN-bit CSRs and extended CSRs, using encodings other than CSRRW will:
-.. Read CLEN bits
-.. Write an XLEN-bit to the address field, and use <<SCADDR>> semantics to determine the final written value
+.. Read CLEN-bits
+.. Write an XLEN-bit value to the address field, and use <<SCADDR>> semantics to determine the final written value
 
 NOTE: Any CLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the valid tag.
 
@@ -580,20 +576,7 @@ The assembler pseudoinstruction to read a capability CSR `csrr cd, csr`, is enco
 |CSRR[C\|S]I uimm!=x0 |CLEN         | XLEN
 |=======================
 
-In <<clen_access_summary_base>> and <<clen_access_summary_default>>, when there is no read or write width shown, the CSR access is _not_ made and there are no side-effects following standard Zicsr rules.
-
-==== Valid tags in registers
-
-Every register has a one-bit valid tag, indicating whether the capability in the register is valid to be dereferenced.
-This valid tag is cleared whenever an invalid capability operation is performed.
-Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
-
-==== Valid tags in memory
-
-The valid tags are tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit valid tag, which the hardware manages atomically with the data.
-The valid tag is cleared if any byte in the CLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand with <<c_perm>> granted.
-
-NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the valid tags atomically with the data.
+In <<clen_access_summary_base>>, when there is no read or write width shown, the CSR access is _not_ made and there are no side-effects following standard Zicsr rules.
 
 [#sec_cap_checks]
 === Capability checks
@@ -729,19 +712,19 @@ include::insns/cram_32bit.adoc[]
 === Instructions to Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LC>> and <<SC>>.
-They atomically access CLEN bits of data and the associated valid tag.
+They atomically access CLEN-bits of data and the associated valid tag.
 
 All capability memory accesses check for <<c_perm>> in the authorizing capability in `cs1`.
 
 If <<c_perm>> is granted then:
 
-* <<LC>> reads CLEN bits of data from memory, and returns the associated valid tag.
-* <<SC>> writes CLEN bits of data to memory, and writes the associated valid tag.
+* <<LC>> reads CLEN-bits of data from memory, and returns the associated valid tag.
+* <<SC>> writes CLEN-bits of data to memory, and writes the associated valid tag.
 
 If <<c_perm>> is not granted then:
 
-* <<LC>> reads CLEN bits from memory, but does not return the associated valid tag, instead zero is returned.
-* <<SC>> writes CLEN bits to memory, and writes zero to the associated valid tag.
+* <<LC>> reads CLEN-bits from memory, but does not return the associated valid tag, instead zero is returned.
+* <<SC>> writes CLEN-bits to memory, and writes zero to the associated valid tag.
 
 //NOTE: Future extensions to {cheri_base_ext_name} may add mechanisms that cause
 //stores of capabilities to raise exceptions when the authorizing capability does not grant both
@@ -788,7 +771,7 @@ The affected operands change type from *x* to *c* to represent this, and/or the 
 In the base ISA this affects <<AUIPC_CHERI>>, all jumps and branches as well as all loads and stores.
 The rules for modifying the behavior of such instructions are:
 
-* The result written to the destination *x* register is _always_ unchanged. I.e., the lower XLEN bits are always written with the value from RV32I/RV64I.
+* The result written to the destination *x* register is _always_ unchanged. I.e., the lower XLEN-bits are always written with the value from RV32I/RV64I.
 * Whenever the PC is handled, it is _always_ the CLEN-bit <<pcc>>.
 * Any memory instruction that has `rs1` as a base address register reads the full capability register (`cs1`) instead.
   The base address is unchanged, i.e., using the value from `rs1`.
