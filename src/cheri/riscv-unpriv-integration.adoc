@@ -287,27 +287,28 @@ Permissions can only be removed using <<ACPERM>> on valid capabilities, they can
 NOTE: The encoding of permissions varies with MXLEN and is described in xref:AP-field-encoding[xrefstyle=full].
 
 .AP-field summary
-[#ap_field_summary,width="100%",options=header,halign=center,cols="1,5"]
+[#ap_field_summary,width="100%",options=header,halign=center,cols="1,2,5"]
 |==============================================================================
-| Permission  | Comment
-2+| *Data memory permissions*
-| <<r_perm>>  | Authorize data memory access
-| <<w_perm>>  | Authorize data memory access
-| <<lm_perm>> | Used to filter the permissions of loaded capabilities.
-| <<el_perm>> | Used to filter the permissions of loaded capabilities.
-| <<sl_perm>> | Used to filter the permissions of loaded capabilities.
-2+| *Instruction memory permission*
-| <<x_perm>>  | Authorize instruction memory access
-2+| *CSR permission^1^*
-| <<asr_perm>> | Authorize CSR accesses
+| Permission   | Type | Comment
+| <<r_perm>>   | Data memory permission         | Authorize data memory access
+| <<w_perm>>   | Data memory permission         | Authorize data memory access
+| <<x_perm>>   | Instruction memory permission  | Authorize instruction memory access
+| <<lm_perm>>  | Instruction memory permissions | Used to filter the permissions of loaded capabilities.
+| <<el_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
+| <<sl_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
+| <<asr_perm>> | Privileged state permission    | Authorize CSR accesses^1^
 |==============================================================================
 
 ^1^ ASR permission is used for additional permission checks by some instructions from other extensions such as <<cbo_inval_cheri>>.
 
 [#r_perm,reftext="R-permission"]
 Read Permission \(R):: Allow reading data from memory.
+
 [#w_perm,reftext="W-permission"]
 Write Permission (W):: Allow writing data to memory.
+
+[#x_perm,reftext="X-permission"]
+Execute Permission (X):: Allow instruction execution.
 
 [#c_perm,reftext="C-permission"]
 Capability Permission \(C)::
@@ -352,9 +353,6 @@ This permission is similar to the existing <<lm_perm>>, but instead of applying 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is similar to CHERIoT's _LoadGlobal_ permission, except that any _global_ capability implicitly grants _LoadGlobal_.
 endif::[]
-
-[#x_perm,reftext="X-permission"]
-Execute Permission (X, used to authorize instruction fetch):: Allow instruction execution.
 
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to privileged CSRs as well as some privileged instructions.
