@@ -354,8 +354,9 @@ NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is simila
 endif::[]
 
 [#asr_perm,reftext="ASR-permission"]
-Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to privileged CSRs as well as some privileged instructions.
+Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to all privileged CSRs as well as some privileged instructions.
 In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing, but not for reading.
+ASR permission is used for additional permission checks by some instructions from other extensions such as <<cbo_inval_cheri>>.
 
 NOTE: This permission is important in privileged execution environments.
   Removing this permission allows constraining privileged software to a sandbox that cannot be subverted by changing privileged state.
