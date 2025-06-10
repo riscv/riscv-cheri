@@ -227,7 +227,7 @@ E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding
 .Memory address bounds encoded within a capability
 image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
-[#sec_cap_type, "CT-field"]
+[#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
 
 This metadata field indicates the type of the capability.
@@ -250,21 +250,27 @@ NOTE: Future extensions are likely to add more types of sealed capabilities by e
 Unsealed capabilities::
 When `CT=0`, the capability authorizes access to a region of memory as defined by the permissions and bounds.
 
-[#sentry_cap,reftext="sentry capability"]
-Sentry capabilities::
+[#sealed_cap,reftext="sealed capability"]
+Sealed capabilities::
 Capabilities with `CT≠0` are sealed against modification.
 They cannot be dereferenced to access memory and it is not permitted to change the address, bounds or permissions.
 Modifications are restricted to _reducing_ the <<section_cap_level, CL>> field using <<ACPERM>>.
-+
+
+When a sealed capability is used as a function pointer it is known as a <<sentry_cap>>.
+
+[#sentry_cap,reftext="sentry capability"]
+==== Sentry Capabilities
 Sentries describe secure function entry points.
+They have a <<sec_cap_type>> of 1.
+
 They are used as the target of <<JALR_CHERI>>, which must have a zero offset for the use of a sentry to be valid.
-+
+
 Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
 <<JALR_CHERI>> with zero offset automatically unseals a sentry target capability and installs it in the <<pcc,program counter capability>>.
-+
+
 <<JALR_CHERI>> also seals the return register, so the callee can return to the caller but cannot access the memory pointed at by the return register, and cannot return elsewhere.
-+
-NOTE: In addition to using them for secure entry points, sentry capabilities can also be useful to software as secure software tokens.
+
+NOTE: In addition to using sealed capabilities as sentries for secure entry points, sealed capabilities can also be useful to software as secure software tokens.
  They can be converted to an unsealed capability by extracting the metadata with <<GCHI>>, zeroing the `CT` field, reapplying it with <<SCHI>> and then rebuilding via a superset capability with the <<CBLD>> instruction.
  A future extension may add an unseal instruction for performance.
 
@@ -280,46 +286,55 @@ Permissions can only be removed using <<ACPERM>> on valid capabilities, they can
 
 NOTE: The encoding of permissions varies with MXLEN and is described in xref:AP-field-encoding[xrefstyle=full].
 
+.AP-field summary
+[#ap_field_summary,width="100%",options=header,halign=center,cols="2,2,5"]
+|==============================================================================
+| Permission   | Type | Comment
+| <<r_perm>>   | Data memory permission         | Authorize data memory read access
+| <<w_perm>>   | Data memory permission         | Authorize data memory write access
+| <<x_perm>>   | Instruction memory permission  | Authorize instruction memory execute access
+| <<c_perm>>   | Data memory permission         | Authorize loading/storing of valid tags
+| <<lm_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
+| <<el_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
+| <<sl_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
+| <<asr_perm>> | Privileged state permission    | Authorize privileged instructions and CSR accesses.
+|==============================================================================
+
 [#r_perm,reftext="R-permission"]
-Read Permission \(R):: Allow reading data from memory. Valid tags are always
-read as zero when reading non-capability data.
+Read Permission \(R):: Allow reading data from memory.
 
 [#w_perm,reftext="W-permission"]
-Write Permission (W):: Allow writing data to memory. Valid tags are always
-written as zero when writing non-capability data. Every CLEN/8-byte aligned location in memory
-has an associated valid tag. If any byte is overwritten with non-capability data then the associated valid tag or tags are set to zero.
-
-[#c_perm,reftext="C-permission"]
-Capability Permission \(C):: Allow reading capability data from memory if the
-authorizing capability also grants <<r_perm>>. Allow writing capability data to
-memory if the authorizing capability also grants <<w_perm>>.
+Write Permission (W):: Allow writing data to memory.
 
 [#x_perm,reftext="X-permission"]
 Execute Permission (X):: Allow instruction execution.
 
+[#c_perm,reftext="C-permission"]
+Capability Permission \(C)::
+Allow reading capability data from memory if the authorizing capability also grants <<r_perm>>.
++
+Allow writing capability data to memory if the authorizing capability also grants <<w_perm>>.
++
+If <<c_perm>> is missing then the valid tags for capability loads and stores are read and written as zero.
+
 [#lm_perm,reftext="LM-permission"]
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
++
 The permission stripping behavior _only_ applies to loaded capabilities that have their valid tag set and are not sealed.
-  This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
+This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
 
-[#asr_perm,reftext="ASR-permission"]
-Access System Registers Permission (ASR):: Allow read and write access to privileged CSRs as well as some privileged instructions.
-In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing, but not for reading.
-
-NOTE: This permission is important in privileged execution environments.
-  Removing this permission allows constraining privileged software to a sandbox that cannot be subverted by changing privileged state.
-
-NOTE: Extensions may add additional non-privileged CSRs that require <<asr_perm>>.
-
 [#sl_perm,reftext="SL-permission"]
-Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic: capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero valid tag.
-
+Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic:
++
+Capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero valid tag.
++
 In the base ISA this is a single bit comparison, behaving as follows:
-- If this field (as well as <<c_perm>> and <<w_perm>>) is set to one then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
-- If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e., _local_), will be stored with the valid tag cleared.
+
+* If this field (as well as <<c_perm>> and <<w_perm>>) is set to one then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
+* If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e., _local_), will be stored with the valid tag cleared.
 
 NOTE: Future extensions may make this field wider to enable more use cases.
 
@@ -329,18 +344,29 @@ endif::[]
 
 [#el_perm,reftext="EL-permission"]
 Elevate Level Permission (EL):: Any unsealed capability with its valid tag set to one that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
++
 If sealed, then only <<section_cap_level,CL>> is modified, <<el_perm>> is unchanged.
-
++
 This permission is similar to the existing <<lm_perm>>, but instead of applying to the <<w_perm>> on the loaded capability it restricts the <<section_cap_level,CL>> field.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is similar to CHERIoT's _LoadGlobal_ permission, except that any _global_ capability implicitly grants _LoadGlobal_.
 endif::[]
 
+[#asr_perm,reftext="ASR-permission"]
+Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to all privileged CSRs, some unprivileged CSRs and some privileged instructions.
+In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing, but not for reading.
+ASR permission is used for additional permission checks by some instructions from other extensions such as <<cbo_inval_cheri>>.
+
+NOTE: This permission is important in privileged execution environments.
+  Removing this permission allows constraining privileged software to a sandbox that cannot be subverted by changing privileged state.
+
+NOTE: Extensions may add additional non-privileged CSRs that require <<asr_perm>>.
+
 [#section_cap_level,reftext="Capability Level (CL)"]
 ==== Capability Level (CL)
 
-The _Capability Level_ (CL) field allows enforcing invariants on capability propagation.
+The _Capability Level_ (CL) field allows enforcing invariants on capability propagation. It affects data memory accesses.
 
 For example, the _Capability Level_ can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g., the callee's stack frame but not the heap).
 It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
@@ -650,9 +676,7 @@ include::insns/cbld_32bit.adoc[]
 
 <<<
 
-=== Instructions to Inspect Capability Data
-
-==== Instructions to Decode Capability Bounds
+=== Instructions to Decode Capability Bounds
 
 The _bounds_ describing the range of addresses the capability gives access to are stored in a compressed format.
 These instructions query the bounds and related information.
@@ -670,7 +694,7 @@ include::insns/gclen_32bit.adoc[]
 
 <<<
 
-==== Instructions to Extract Capability Fields
+=== Instructions to Extract Capability Fields
 
 These instructions either directly read bit fields from the metadata or valid tag, or only apply simple transformations on the metadata.
 
@@ -766,69 +790,32 @@ include::insns/store_32bit_cap.adoc[]
 === Changes to Existing RISC-V Base ISA Instructions
 
 {cheri_base_ext_name} extend existing instructions that are used for handling addresses so that they manipulate a whole capability.
-The affected operands change type from *x* to *c* to represent this, and/or the PC is replaced by the <<pcc>>
 
-In the base ISA this affects <<AUIPC_CHERI>>, all jumps and branches as well as all loads and stores.
-The rules for modifying the behavior of such instructions are:
-
-* The result written to the destination *x* register is _always_ unchanged. I.e., the lower XLEN bits are always written with the value from RV32I/RV64I.
-* Whenever the PC is handled, it is _always_ the CLEN-bit <<pcc>>.
-* Any memory instruction that has `rs1` as a base address register reads the full capability register (`cs1`) instead.
-  The base address is unchanged, i.e., using the value from `rs1`.
-  The metadata and valid tag are used to <<sec_cap_checks,authorize the access>>.
+* The affected operands change type from *x* to *c* to represent this.
+* Whenever the address field of any capability is modified, it is _always_ updated using <<SCADDR>> semantics.
 * Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead.
-* Whenever the address field of any capability (including the <<pcc>>) is modified, it is _always_ updated using <<SCADDR>> semantics.
-  This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
-  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
-* All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
-  An exception is raised on the branch or jump on failure.
-* <<JALR_CHERI>> updates <<pcc>>.address as expected, but also copies the metadata and valid tag from `cs1` into the <<pcc>>.
-  If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>>.
-  See xref:pcc[xrefstyle=full] for the definition of suitability.
 
-These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
+These rules affect the following <<rv32,base ISA>> instructions listed in the following subsections, and also apply to instructions added by other extensions, e.g.:
 
-* Floating-point loads and stores
-* <<section_cheri_vector_integration,Vector load and stores>>.
-* Atomic memory accesses, see <<zaamo_cheri>> and <<zalrsc_cheri>>.
 * Shift-and-add instructions from <<zba_cheri>>, such as <<SH3ADD_CHERI>>.
-* RVC encodings C.ADDI16SPN, C.ADDI4SP and C.MV change behavior, and encodings such as C.FSD, C.FLD are remapped so load/store capabilities.
+* RVC encodings C.ADDI16SPN, C.ADDI4SP and C.MV change behavior, and encodings such as C.FSD, C.FLD are remapped to load/store capabilities.
 
-NOTE: Exceptions are raised _on the branch or jump_ that cause an exception, not at the target, primarily to reduce the attack surface but also to aid with debugging.
-Therefore, it is impossible to execute from a memory location without having _already_ checked that execution of that location is authorized.
-
-.Changed RISC-V base ISA instructions summary in {cheri_base_ext_name}
-[#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
-|=======================
-|Mnemonic                   |Description
-|<<AUIPC_CHERI>>            |Add immediate to PCC address, return capability
-|<<JAL_CHERI>>              |Jump to PC+offset, bounds check minimum size target instruction, link to cd
-|<<JALR_CHERI>>             |Indirect jump and link, bounds check minimum size target instruction.
-|<<insns-conbr-32bit_CHERI,BEQ, BNE, BLT[U], BGE[U]>>|Conditional branches (checked by <<pcc>>)
-|<<section_int_load_store_insns,LD, LW[U], LH[U], LB[U]>>|Integer loads (authorized by the capability in `cs1`)
-|<<section_int_load_store_insns,SD, SW, SH, SB>>|Integer stores (authorized by the capability in `cs1`)
-|=======================
-
-include::insns/auipc_32bit.adoc[]
-include::insns/jal_32bit.adoc[]
-include::insns/jalr_32bit.adoc[]
-include::insns/condbr_32bit.adoc[]
-
-<<<
-
-[#section_int_load_store_insns,reftext="Loads and Stores"]
-==== Load and Store Instructions ({cheri_base_ext_name})
+==== Changes to load/stores
 
 All load and store instructions behave as described in <<ldst>> with one fundamental difference:
 
-* Where the base operand is `rs1`, the capability source operand `cs1` is used to authorize the resulting memory access.
+* Any memory instruction that has `rs1` as a base address register reads the full capability register (`cs1`) instead.
+  The base address is unchanged, i.e., using the value from `rs1`.
+  The metadata and valid tag are used to <<sec_cap_checks,authorize the access>>.
+
+* The result written to the destination *x* register is _always_ unchanged. I.e., the lower XLEN bits are always written with the value from RV32I/RV64I.
 
 All load and store instructions authorized by `cs1` raise exceptions if any of these checks fail:
 
 * `cs1` must not be `c0`^1^
 * The valid tag (`cs1.tag`) must be set
 * `cs1` must be unsealed
-ifdef::invalid_addresss_viol[]
+ifdef::invalid_address_viol[]
 * The virtual address in `cs1` must not be invalid if virtual memory is enabled.
 endif::[]
 * For loads, <<r_perm,read permission>> must be set in `cs1`
@@ -847,3 +834,51 @@ Therefore, misaligned stores may clear up to two associated valid tag bits.
 The changed interpretation of the base register also applies to all loads, stores and other memory operations defined in later chapters of this specification with a base operands of `rs1` unless stated otherwise.
 
 *Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.*
+
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
+
+* Floating-point loads and stores
+* <<section_cheri_vector_integration,Vector load and stores>>.
+* Atomic memory accesses, see <<zaamo_cheri>> and <<zalrsc_cheri>>.
+
+Also note that the RVC encodings C.FSD, C.FLD, C.FSDSP, C.FLDSP are remapped to load/store capability data instead.
+
+.Changed RISC-V base ISA load/store instructions summary in {cheri_base_ext_name}
+[#tab_cap_base_ldst_summary,%autowidth,options=header,align="center",cols="2,4"]
+|=======================
+|Mnemonic                   |Description
+|<<section_int_load_store_insns,LD, LW[U], LH[U], LB[U]>>|Integer loads (authorized by the capability in `cs1`)
+|<<section_int_load_store_insns,SD, SW, SH, SB>>|Integer stores (authorized by the capability in `cs1`)
+|=======================
+
+==== Changes to PC handing
+
+* Whenever the PC is handled, it is _always_ the CLEN-bit <<pcc>>.
+* Whenever the address field of the <<pcc>> is modified, following the rule above, it is _always_ updated using <<SCADDR>> semantics.
+  This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
+  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
+* All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
+  An exception is raised on the branch or jump on failure.
+* <<JALR_CHERI>> updates <<pcc>>.address as expected, but also copies the metadata and valid tag from `cs1` into the <<pcc>>.
+  If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>>.
+  See xref:pcc[xrefstyle=full] for the definition of suitability.
+
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
+
+NOTE: Exceptions are raised _on the branch or jump_ that cause an exception, not at the target, primarily to reduce the attack surface but also to aid with debugging.
+Therefore, it is impossible to execute from a memory location without having _already_ checked that execution of that location is authorized.
+
+.Changed RISC-V base ISA PC relative instructions summary in {cheri_base_ext_name}
+[#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
+|=======================
+|Mnemonic                   |Description
+|<<AUIPC_CHERI>>            |Add immediate to PCC address, return capability
+|<<JAL_CHERI>>              |Jump to PC+offset, bounds check minimum size target instruction, link to cd
+|<<JALR_CHERI>>             |Indirect jump and link, bounds check minimum size target instruction.
+|<<insns-conbr-32bit_CHERI,BEQ, BNE, BLT[U], BGE[U]>>|Conditional branches (checked by <<pcc>>)
+|=======================
+
+include::insns/auipc_32bit.adoc[]
+include::insns/jal_32bit.adoc[]
+include::insns/jalr_32bit.adoc[]
+include::insns/condbr_32bit.adoc[]
