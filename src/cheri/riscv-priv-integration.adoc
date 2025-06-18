@@ -71,31 +71,38 @@ include::img/mscratchcreg.edn[]
 ==== Machine Exception Program Counter Capability (mepcc)
 
 The <<mepcc>> register extends <<mepc>> to hold a capability.
-Its reset value is the <<infinite-cap>> capability.
+Its reset value is nominally the <<infinite-cap>> capability.
 
 .Machine exception program counter capability register
 include::img/mepccreg.edn[]
 
-Capabilities written to <<mepcc>> must be legalized by implicitly zeroing bit
-**mepcc[0]**. Additionally, if an implementation allows IALIGN to be
-either 16 or 32, then whenever IALIGN=32, the capability read from <<mepcc>>
-must be legalized by implicitly zeroing **mepcc[1]**. Therefore, the
-capability read or written has its valid tag bit cleared if the legalized address is
-not within the <<section_cap_representable_check>> or if the legalization
-changes the address and the capability is sealed.
+`mepcc.address` is the `mepc` CSR, and so the follows the standard rules meaning that:
 
-NOTE: When reading or writing a sealed capability in <<mepcc>>, the
-tag is not cleared if the original address equals the legalized
-address.
+.  `mepcc.address[0]=0`, and
+.  `mepcc.address[1]=0` when IALIGN is fixed to 32
+.  `mepcc.address[1]` reads as zero when IALIGN is programmable and is set to 32
 
-When a trap is taken into M-mode, <<mepcc>> is written with the <<pcc>>
-including the virtual address of the instruction that was interrupted or that
-encountered an exception. Otherwise, <<mepcc>> is never written by the
-implementation, though it may be explicitly written by software.
+As listed above for <<mtvecc>>, this means that `mepcc.address` can represent multiple different values.
+Therefore software must ensure that all possible values are in the <<section_cap_representable_check>> on writing, otherwise the hardware sets the written valid tag to zero.
 
-As shown in xref:CSR_exevectors[xrefstyle=short], <<mepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
-Additionally, the capability in <<mepcc>> is unsealed when it is installed in
-<<pcc>> on execution of an <<MRET_CHERI>> instruction.
+Sealed capabilities may be written to <<mepcc>>.
+The valid tag is set to zero on writing if:
+
+.  `mepcc.address[0]=1`, or
+.  `mepcc.address[1]=1` when IALIGN=32
+
+In the following case the value of the valid tag observable in the CSR depends on the value of IALIGN.
+
+. <<mepcc>> is sealed, the valid tag is set, and
+. `mepcc.address[1]=1` and IALIGN=16 when writing the CSR, and
+. IALIGN=32 when reading the CSR, or executing <<MRET_CHERI>>, cause the valid tag to be observed as zero
+
+When a trap is taken into M-mode, the pc is written to `mepcc.address` following the standard behavior.
+The valid tag and metadata of the <<pcc>> are also written to <<mepcc>>.
+
+The capability in <<mepcc>> is unsealed when it is written to <<pcc>> on execution of an <<MRET_CHERI>> instruction.
+
+<<mepcc>> follows the rule from `mepc` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
 [#mtidc,reftext="mtidc"]
 ==== Machine Thread Identifier Capability (mtidc)
@@ -375,7 +382,7 @@ The <<sepcc>> register extends <<sepc>> to hold a capability.
 Its reset value is the <<infinite-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<sepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
-Additionally, the capability in <<sepcc>> is unsealed when it is installed in <<pcc>> on execution of an <<SRET_CHERI>> instruction.
+Additionally, the capability in <<sepcc>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction.
 The handling of <<sepcc>> is otherwise identical to <<mepcc>>, but in supervisor mode.
 
 .Supervisor exception program counter capability register
@@ -586,7 +593,7 @@ NOTE: The only instruction added by {cheri_base_ext_name} that does not access c
 // The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
 
 Disabling CHERI register access has no effect on implicit accesses or security checks.
-The last capability installed in <<pcc>> and <<ddc>> before disabling CHERI register access will be used to authorize instruction execution and data memory accesses.
+The last capability written to <<pcc>> and <<ddc>> before disabling CHERI register access will be used to authorize instruction execution and data memory accesses.
 
 [NOTE]
 ====
