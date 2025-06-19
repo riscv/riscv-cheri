@@ -192,8 +192,8 @@ Load/store/AMO address misaligned
 CHERI load PTE page fault^4^*
 |===
 
-^1^ PCC bounds are intended to be checked against all the bytes of fetched instructions.
- In the case of variable length instruction encoding, and that the fetch has failed to return any data, then only a minimum length instruction is checked against the PCC bounds.
+^1^ PCC bounds are checked against all bytes of fetched instructions.
+ If the instructions cannot be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
 ^2^ The higher priority <<section_priv_cheri_vmem,CHERI PTE page fault>> covers capability loads or atomics where the loaded valid tag _is not_ checked, and all capability stores and atomics where the stored valid tag is set.
 
@@ -240,18 +240,11 @@ ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9 Note:* This CSR was not part of CHERIv9.
 endif::[]
 
-The <<mtval2>> register is an MXLEN-bit read-write register, which is added as part of the
-Hypervisor extension cite:[riscv-priv-spec]. {cheri_base_ext_name} also requires the implementation of this CSR.
+The <<mtval2>> register is requierd for CHERI machine mode.
 
 When a CHERI fault, or <<section_priv_cheri_vmem,CHERI PTE page fault>>, is taken into M-mode, <<mtval2>> is written
 with additional CHERI-specific exception information with the format shown in
 xref:mtval2-format[xrefstyle=short] to assist software in handling the trap.
-
-<<mtval2>> is written to zero for all other exceptions, except as listed otherwise by
-the Hypervisor extension in cite:[riscv-priv-spec], or by other future extensions.
-
-NOTE: the use of <<mtval2>>/<<stval2>>/<<vstval2>> may be irregular as the Hypervisor uses
- <<mtval2>> and _htval_ for guest page addresses on guest page fault, and CHERI has no use for _htval_.
 
 If <<mtval>> is read-only zero for CHERI exceptions then <<mtval2>> is also read-only zero
 for CHERI exceptions.
@@ -263,7 +256,7 @@ for CHERI exceptions.
 include::img/mtval2reg.edn[]
 
 NOTE: <<mtval2>> is also used for Hypervisor guest physical addresses, and so the implemented bits must also cover that use case.
- If Hypervisor is not implemented then all WPRI fields in <<mtval2-format>> are read-only-zero.
+ If the H extension is not implemented then all WPRI fields in <<mtval2-format>> are read-only-zero.
 
 TYPE is a CHERI-specific fault type that caused the exception while CAUSE
 is the cause of the fault. The possible CHERI types and causes are encoded as
@@ -292,7 +285,7 @@ xref:mtval2-cheri-causes[xrefstyle=short] respectively.
 | 5-15                          | Reserved
 |==============================================================================
 
-CHERI violations have the following order in priority:
+CHERI violations have the following priority order:
 
 . Valid tag violation (_Highest_)
 . Seal violation
@@ -320,7 +313,7 @@ NOTE: Reporting both allows the software the choice about which action to take f
  permission, or to sweep the page.
 
 ==== "Smstateen/Ssstateen" Integration
-The new TID bit in `mstateen0` controls access to the <<stidc>> CSR.
+The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 
 .Machine State Enable 0 Register (`mstateen0`)
 [wavedrom, ,svg]
@@ -347,13 +340,13 @@ The new TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 === Supervisor-Level CSRs added or extended by {cheri_priv_s_ext}
 
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
-hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is typically required for access.
+hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is typically required for access to these CSRs.
 
 [#stvecc,reftext="stvecc"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvecc)
 
 The <<stvecc>> register extends <<stvec>> that is able to hold a capability.
-Its reset value is the <<infinite-cap>> capability.
+When the S-mode execution environment starts, the is nominally the <<infinite-cap>> capability.
 
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
@@ -394,7 +387,7 @@ address is 0x14b.
 
 <<stval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
 and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
-It is written to zero for all other exceptions, except as listed otherwise by other
+It is written to zero by the hardware for all other exceptions, except as listed otherwise by other
 future extensions.
 
 NOTE: Unlike <<mtval2>>, <<stval2>> is a new a CSR added by {cheri_priv_s_ext}.
@@ -448,6 +441,8 @@ The new TID bit in `sstateen0` controls access to the <<utidc>> CSR.
 === CHERI Exception handling
 
 CAUTION: #ARC-QUESTION: Need feedback whether to add this info to xcause or xtval2: https://github.com/riscv/riscv-cheri/issues/536#
+
+CHERI faults are typically higher priority than standard RISC-V faults. E.g., CHERI faults on the <<pcc>> are higher priority than any other fault effecting the program counter such as instruction access fault.
 
 CHERI faults require additional information to be reported.
 The CSRs updated depend on the mode the trap is taken into, as shown in
