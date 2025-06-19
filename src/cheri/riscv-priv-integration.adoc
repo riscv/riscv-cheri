@@ -60,7 +60,7 @@ Therefore requiring that all possible observable addresses are representable but
 
 The <<mscratchc>> register extends <<mscratch>> to hold a capability.
 
-{TAG_RESET_CSR}
+{TAG_RESET_MCSR}
 
 It is not WARL, all capability fields must be implemented.
 
@@ -107,7 +107,7 @@ The capability in <<mepcc>> is unsealed when it is written to <<pcc>> on executi
 [#mtidc,reftext="mtidc"]
 ==== Machine Thread Identifier Capability (mtidc)
 
-The <<mtidc>> register is used to identify the current software thread in machine mode, using the method defined in the section for the unprivileged utidc CSR.
+The <<mtidc>> register is used to identify the current software thread in machine mode, using the method defined in the section for the unprivileged <<utidc>> CSR.
 On reset the valid tag of <<mtidc>> will be set to 0 and the remainder
 of the data is UNSPECIFIED.
 
@@ -240,7 +240,7 @@ ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9 Note:* This CSR was not part of CHERIv9.
 endif::[]
 
-The <<mtval2>> register is requierd for CHERI machine mode.
+The <<mtval2>> register is required for CHERI machine mode.
 
 When a CHERI fault, or <<section_priv_cheri_vmem,CHERI PTE page fault>>, is taken into M-mode, <<mtval2>> is written
 with additional CHERI-specific exception information with the format shown in
@@ -346,7 +346,7 @@ hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is ty
 ==== Supervisor Trap Vector Base Address Capability Register (stvecc)
 
 The <<stvecc>> register extends <<stvec>> that is able to hold a capability.
-When the S-mode execution environment starts, the is nominally the <<infinite-cap>> capability.
+When the S-mode execution environment starts, the value is nominally the <<infinite-cap>> capability.
 
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
@@ -358,7 +358,7 @@ The handling of <<stvecc>> is otherwise identical to <<mtvecc>>, but in supervis
 
 The <<sscratchc>> register extends <<sscratch>> to hold a capability.
 
-{TAG_RESET_CSR}
+{TAG_RESET_SCSR}
 
 It is not WARL, all capability fields must be implemented.
 
@@ -401,9 +401,8 @@ include::img/stval2reg.edn[]
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
 
-The <<stidc>> register is used to identify the current software thread in supervisor mode.
-On reset the valid tag of <<stidc>> will be set to 0 and the remainder
-of the data is UNSPECIFIED.
+The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged utidc CSR.
+On reset the valid tag of <<stidc>> will be set to 0 and the remainder of the data is UNSPECIFIED.
 
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
@@ -424,7 +423,9 @@ See <<cheri-mcause>> for the new exceptions priorities when {cheri_base_ext_name
 and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
 
 ==== "Smstateen/Ssstateen" Integration
-The new TID bit in `sstateen0` controls access to the <<utidc>> CSR.
+The TID (thread ID) bit in `sstateen0` controls access to the <<utidc>> CSR.
+See <<utidc>> for a description of the usage.
+
 .Supervisor State Enable 0 Register (`sstateen0`)
 [wavedrom, ,svg]
 ....
@@ -505,7 +506,10 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 | capability stores                              | 6                    | N/A                     | N/A                          |capability alignment       | Misaligned capability store
 |=========================================================================================
 
-^1^ This check is architecturally required, but is impossible to encounter so may not be required in an implementation.
+^1^ The CHERI architecture requires that the <<pcc>> is valid and unsealed.
+ It is not currently possible to write a valid sealed capability to the <<pcc>>.
+ All methods of writing a new <<pcc>> value either unseal or invalidate the capability.
+ If future extensions ever allow the <<pcc>> to be valid and sealed then the architecture would require this check.
 
 NOTE: <<CBO_ZERO_CHERI>> is performed as a cache block wide store.  All
 CMOs operate on the cache block which contains the address.  Prefetch instructions check
@@ -516,6 +520,8 @@ is not performed but no exception is generated.
 
 [#CHERI_SPEC,reftext="CHERI Exceptions and speculative execution"]
 === CHERI Exceptions and speculative execution
+
+#should be non-normative - and needs more details - move to appendix?#
 
 CHERI adds architectural guarantees that can prove to be microarchitecturally useful.
 Speculative-execution attacks can -- among other factors -- rely on instructions that fail CHERI permission checks not to take effect.
