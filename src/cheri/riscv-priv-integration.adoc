@@ -531,14 +531,25 @@ When implementing any of the extensions proposed here, microarchitects need to c
 === Physical Memory Attributes (PMA)
 
 Typically, only parts of the entire memory space need to support CHERI valid tags.
-Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a _CHERI taggable_ attribute indicating whether a memory region allows storing CHERI valid tags.
+Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a _CHERI taggable_ Physical Memory Attribute indicating whether a memory region allows storing CHERI valid tags.
 
 Data loaded from memory regions that are not _CHERI taggable_ will always have the valid tag cleared.
 When the hart attempts to store data with the valid tag set to memory regions that are not taggable, the implementation may:
 
-* Cause an access fault exception
-* Implicitly set the stored valid tag to 0
+#ARC question do we want both? should they be different PMAs?#
 
+* Cause an access fault exception
+* Ignore the stored valid tag
+
+[#section_vm]
+=== Virtual Memory
+
+CHERI checks are made on the effective address according to the current translation scheme.
+I.e., on the virtual address if translation is enabled or the physical address if transaltion is disabled.
+
+Implicit memory accesses made by the page table walker are not subject to CHERI checks.
+
+NOTE: A future extension may add CHERI checks to the page table walker.
 
 [#section_cheri_disable]
 == "{cheri_priv_m_reg_enable_ext}" Extension, Version 1.0
