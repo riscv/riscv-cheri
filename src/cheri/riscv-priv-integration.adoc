@@ -10,68 +10,57 @@ This chapter describes integration of {cheri_base_ext_name} with the RISC-V priv
 === Machine-Level CSRs added or extended by {cheri_priv_m_ext}
 
 {cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
-otherwise add new functions. <<asr_perm>> in the <<pcc>> is typically required for access.
+otherwise add new functions. <<asr_perm>> in the <<pcc>> is typically required for access
+to the CSRs.
 
 [#mtvecc,reftext="mtvecc"]
 ==== Machine Trap Vector Base Address Capability Register (mtvecc)
 
 The <<mtvecc>> register extends <<mtvec>> to hold a code capability.
-Its reset value is the <<infinite-cap>> capability.
+Its reset value is nominally the <<infinite-cap>> capability.
+
+NOTE: <<mtvecc>> exists in all CHERI implementations, and so may be used as a source of the <<infinite-cap>> capability after reset.
 
 .Machine-mode trap-vector base-capability register
 include::img/mtveccreg.edn[]
 
-The metadata is WARL as not all fields need to be implemented, for example the
-reserved fields will always read as zero.
+The fields in the metadata are WARL as many fields can be implemented as constants.
 
-When interpreting <<mtvecc>> as a capability, as for <<mtvec>>, address bits
-[1:0] are always zero (as they are reused by the MODE field).
+NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setting the reserved fields to zero, otherwise the capability is unusable.
+ Another example is to partially or fully restrict the bounds to constant values.
 
-When MODE=Vectored, all synchronous exceptions into machine mode
-cause the <<pcc>> to be set to the capability, whereas
-interrupts cause the <<pcc>> to be set to the capability with
-its address incremented by four times the interrupt cause number.
+NOTE: Care must be taken however that an <<infinite-cap>> capability is available to software after reset if this CSR does not represent one.
 
-Capabilities written to <<mtvecc>> also include writing the MODE field in
-**mtvecc.address[1:0]**, which is a WARL field, meaning that the capability address can
-be legalized. If the MODE field is non-zero after any legalization,
-then the address used for the exception vector (which has **mtvecc.address[1:0]=2'b00**)
-will not match the value read by software from the CSR.
+When traps are taken into machine mode, the pc is updated following the standard `mtvec` behavior.
+The valid tag and metadata from <<mtvecc>> are also written to the <<pcc>>.
 
-When updating the CSR _all possible_ values of the address visible either by CSR read,
-or which are used as the <<pcc>> on exception launch, must be in the
-<<section_cap_representable_check>>, and the valid tag cleared if _any_ are not.
+Following the standard `mtvec` behavior, the value of `mtvecc.address` can be viewed with a range of different addresses:
 
-The capability is always written using <<SCADDR>> semantics to update the address field,
-even when writing the full capability, and so sealed capabilities will always have
-their tags cleared.
+. The MODE field is included in `mtvecc.address[1:0]` but it does not form part of the trap vector address.
+. When MODE=Vectored, the trap vector address is incremented by four times the interrupt number.
+. CSR reads include MODE in `mtvecc.address[1:0]`.
 
-Additionally, when MODE=Vectored the capability has its tag bit cleared if the
-`(capability address & ~3) + 4 * HICAUSE` is not within the <<section_cap_representable_check>>.
-HICAUSE is the largest interrupt cause value that the implementation can write
-to <<mcause>> or <<scause>>/<<vscause>> when an interrupt is taken.
+`HICAUSE` is defined to be the largest interrupt cause value that the implementation can write
+to `Xcause` when an interrupt is taken.
 
-NOTE: When MODE=Vectored, it is only required that the capability address + `4 *  HICAUSE` is
-within the <<section_cap_representable_check>> instead of the capability's bounds.
-This ensures
-that software is not forced to allocate a capability granting access to more
-memory for the trap-vector than necessary to handle the trap causes that
-actually occur in the system.
+Therefore the minimum observable address is `mtvecc.address & ~3` and the maximum is `(mtvecc.address & ~3) + 4 x HICAUSE`.
 
-NOTE: When MODE=Vectored, if either the capability address _or_ the capability
-address + `4 * HICAUSE` are invalid then the <<section_invalid_addr_conv>> rules
-are followed which may require the valid tag to be zeroed. In particular, if any part
-of the range is in the invalid address space then setting the valid tag to zero is strongly
-recommended.
+All possible observable values must be in the <<section_cap_representable_check>>.
+Software must ensure this is true when writing to <<mtvecc>>, and the hardware sets the valid tag to zero if any values are out of the <<section_cap_representable_check>>.
 
-As shown in xref:CSR_exevectors[xrefstyle=short], <<mtvecc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+NOTE: Modifying the address of any capability outside of the <<section_cap_representable_check>> without clearing the valid tag causes a security hole as the interpretation of the bounds changes.
+Therefore requiring that all possible observable addresses are representable but not necessary in bounds is the minimum security requirement.
+
+<<mtvecc>> is always updated using <<SCADDR>> semantics and so writing a sealed capability will cause the valid tag to be set to zero.
+
+<<mtvecc>> follows the rule from `mtvec` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
 [#mscratchc, reftext="mscratchc"]
 ==== Machine Scratch Capability Register (mscratchc)
 
 The <<mscratchc>> register extends <<mscratch>> to hold a capability.
 
-{TAG_RESET_CSR}
+{TAG_RESET_MCSR}
 
 It is not WARL, all capability fields must be implemented.
 
@@ -82,37 +71,45 @@ include::img/mscratchcreg.edn[]
 ==== Machine Exception Program Counter Capability (mepcc)
 
 The <<mepcc>> register extends <<mepc>> to hold a capability.
-Its reset value is the <<infinite-cap>> capability.
+Its reset value is nominally the <<infinite-cap>> capability.
 
 .Machine exception program counter capability register
 include::img/mepccreg.edn[]
 
-Capabilities written to <<mepcc>> must be legalized by implicitly zeroing bit
-**mepcc[0]**. Additionally, if an implementation allows IALIGN to be
-either 16 or 32, then whenever IALIGN=32, the capability read from <<mepcc>>
-must be legalized by implicitly zeroing **mepcc[1]**. Therefore, the
-capability read or written has its tag bit cleared if the legalized address is
-not within the <<section_cap_representable_check>> or if the legalization
-changes the address and the capability is sealed.
+`mepcc.address` is the `mepc` CSR, and so the follows the standard rules meaning that:
 
-NOTE: When reading or writing a sealed capability in <<mepcc>>, the
-tag is not cleared if the original address equals the legalized
-address.
+.  `mepcc.address[0]=0`, and
+.  `mepcc.address[1]=0` when IALIGN is fixed to 32
+.  `mepcc.address[1]` reads as zero when IALIGN is programmable and is set to 32
 
-When a trap is taken into M-mode, <<mepcc>> is written with the <<pcc>>
-including the virtual address of the instruction that was interrupted or that
-encountered an exception. Otherwise, <<mepcc>> is never written by the
-implementation, though it may be explicitly written by software.
+As listed above for <<mtvecc>>, this means that `mepcc.address` can represent multiple different values.
+Therefore software must ensure that all possible values are in the <<section_cap_representable_check>> on writing, otherwise the hardware sets the written valid tag to zero.
 
-As shown in xref:CSR_exevectors[xrefstyle=short], <<mepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
-Additionally, the capability in <<mepcc>> is unsealed when it is installed in
-<<pcc>> on execution of an <<MRET_CHERI>> instruction.
+Sealed capabilities may be written to <<mepcc>>.
+The valid tag is set to zero on writing if:
+
+.  `mepcc.address[0]=1`, or
+.  `mepcc.address[1]=1` when IALIGN=32
+
+In the following case the value of the valid tag observable in the CSR depends on the value of IALIGN:
+
+. <<mepcc>> is sealed, the valid tag is set, and
+. `mepcc.address[1]=1` and IALIGN=16 when writing the CSR
+
+The valid tag is zero then IALIGN=32 when reading the CSR, or executing <<MRET_CHERI>>, and the valid tag is one when IALIGN=16.
+
+When a trap is taken into M-mode, the pc is written to `mepcc.address` following the standard behavior.
+The valid tag and metadata of the <<pcc>> are also written to <<mepcc>>.
+
+The capability in <<mepcc>> is unsealed when it is written to <<pcc>> on execution of an <<MRET_CHERI>> instruction.
+
+<<mepcc>> follows the rule from `mepc` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
 [#mtidc,reftext="mtidc"]
 ==== Machine Thread Identifier Capability (mtidc)
 
-The <<mtidc>> register is used to identify the current software thread in machine mode.
-On reset the valid tag of <<mtidc>> will be set to 0 and the remainder
+The <<mtidc>> register is used to identify the current software thread in machine mode, using the method defined in the section for the unprivileged <<utidc>> CSR.
+On reset the valid tag of <<mtidc>> will be set to zero and the remainder
 of the data is UNSPECIFIED.
 
 .Machine thread identifier capability register
@@ -152,10 +149,7 @@ WARNING: The current specification uses the CHERI ISAv9 mcause value of {cheri_e
 
 CAUTION:: #ARC-QUESTION: The exact code as well as the mechanism to report subcodes needs to be finalized: https://github.com/riscv/riscv-cheri/issues/536#
 
-If an instruction may raise multiple synchronous exceptions, the decreasing priority order of <<exception-priority-cheri>> indicates which exception is taken and reported in `mcause`.
-This table extends the existing priority order from <<exception-priority>> with new entries.
-
-IMPORTANT: Once finalized this table should be merged with the main table.
+#This table needs to be merged with the main table once we've resolve the Xcause type#
 
 [[exception-priority-cheri]]
 .Synchronous exception priority in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
@@ -199,14 +193,14 @@ Load/store/AMO address misaligned
 CHERI load PTE page fault^4^*
 |===
 
-^1^ PCC bounds are intended to be checked against all the bytes of fetched instructions.
- In the case of variable length instruction encoding, and that the fetch has failed to return any data, then only a minimum length instruction is checked against the PCC bounds.
+^1^ PCC bounds are checked against all bytes of fetched instructions.
+ If the instructions cannot be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
-^2^ The higher priority <<section_priv_cheri_vmem,CHERI PTE page fault>> covers capability loads or atomics where the loaded tag _is not_ checked, and all capability stores and atomics where the stored tag is set.
+^2^ The higher priority <<section_priv_cheri_vmem,CHERI PTE page fault>> covers capability loads or atomics where the loaded valid tag _is not_ checked, and all capability stores and atomics where the stored valid tag is set.
 
 ^3^ <<section_priv_cheri_vmem,CHERI PTE page fault>> exceptions have the same priority against access faults as normal RISC-V page faults. If a normal RISC-V page fault _and_ a <<section_priv_cheri_vmem,CHERI PTE page fault>> are both detected simultaneously, then both are recorded as shown in <<mtval2-page-fault>>.
 
-^4^ The lower priority <<section_priv_cheri_vmem,CHERI PTE page fault>> only covers capability loads and atomics where the loaded tag _is_ checked.
+^4^ The lower priority <<section_priv_cheri_vmem,CHERI PTE page fault>> only covers capability loads and atomics where the loaded valid tag _is_ checked.
 
 NOTE: The full details of the CHERI exceptions with cause value {cheri_excep_mcause} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
@@ -247,18 +241,11 @@ ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9 Note:* This CSR was not part of CHERIv9.
 endif::[]
 
-The <<mtval2>> register is an MXLEN-bit read-write register, which is added as part of the
-Hypervisor extension cite:[riscv-priv-spec]. {cheri_base_ext_name} also requires the implementation of this CSR.
+The <<mtval2>> register is required for CHERI machine mode.
 
 When a CHERI fault, or <<section_priv_cheri_vmem,CHERI PTE page fault>>, is taken into M-mode, <<mtval2>> is written
 with additional CHERI-specific exception information with the format shown in
 xref:mtval2-format[xrefstyle=short] to assist software in handling the trap.
-
-<<mtval2>> is written to zero for all other exceptions, except as listed otherwise by
-the Hypervisor extension in cite:[riscv-priv-spec], or by other future extensions.
-
-NOTE: the use of <<mtval2>>/<<stval2>>/<<vstval2>> may be irregular as the Hypervisor uses
- <<mtval2>> and _htval_ for guest page addresses on guest page fault, and CHERI has no use for _htval_.
 
 If <<mtval>> is read-only zero for CHERI exceptions then <<mtval2>> is also read-only zero
 for CHERI exceptions.
@@ -270,7 +257,7 @@ for CHERI exceptions.
 include::img/mtval2reg.edn[]
 
 NOTE: <<mtval2>> is also used for Hypervisor guest physical addresses, and so the implemented bits must also cover that use case.
- If Hypervisor is not implemented then all WPRI fields in <<mtval2-format>> are read-only-zero.
+ If the H extension is not implemented then all WPRI fields in <<mtval2-format>> are read-only-zero.
 
 TYPE is a CHERI-specific fault type that caused the exception while CAUSE
 is the cause of the fault. The possible CHERI types and causes are encoded as
@@ -291,7 +278,7 @@ xref:mtval2-cheri-causes[xrefstyle=short] respectively.
 [#mtval2-cheri-causes,width=55%,float="center",align="center",options=header]
 |==============================================================================
 | CHERI Cause Code              | Description
-| {cheri_excep_cause_tag}       | Tag violation
+| {cheri_excep_cause_tag}       | Valid tag violation
 | {cheri_excep_cause_seal}      | Seal violation
 | {cheri_excep_cause_perm}      | Permission violation
 | {cheri_excep_cause_inv_addr}  | Invalid address violation
@@ -299,9 +286,9 @@ xref:mtval2-cheri-causes[xrefstyle=short] respectively.
 | 5-15                          | Reserved
 |==============================================================================
 
-CHERI violations have the following order in priority:
+CHERI violations have the following priority order:
 
-. Tag violation (_Highest_)
+. Valid tag violation (_Highest_)
 . Seal violation
 . Permission violation
 . Invalid address violation
@@ -327,7 +314,7 @@ NOTE: Reporting both allows the software the choice about which action to take f
  permission, or to sweep the page.
 
 ==== "Smstateen/Ssstateen" Integration
-The new TID bit in `mstateen0` controls access to the <<stidc>> CSR.
+The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 
 .Machine State Enable 0 Register (`mstateen0`)
 [wavedrom, ,svg]
@@ -354,13 +341,13 @@ The new TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 === Supervisor-Level CSRs added or extended by {cheri_priv_s_ext}
 
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
-hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is typically required for access.
+hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is typically required for access to these CSRs.
 
 [#stvecc,reftext="stvecc"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvecc)
 
 The <<stvecc>> register extends <<stvec>> that is able to hold a capability.
-Its reset value is the <<infinite-cap>> capability.
+When the S-mode execution environment starts, the value is nominally the <<infinite-cap>> capability.
 
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
@@ -372,7 +359,7 @@ The handling of <<stvecc>> is otherwise identical to <<mtvecc>>, but in supervis
 
 The <<sscratchc>> register extends <<sscratch>> to hold a capability.
 
-{TAG_RESET_CSR}
+{TAG_RESET_SCSR}
 
 It is not WARL, all capability fields must be implemented.
 
@@ -386,7 +373,7 @@ The <<sepcc>> register extends <<sepc>> to hold a capability.
 Its reset value is the <<infinite-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<sepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
-Additionally, the capability in <<sepcc>> is unsealed when it is installed in <<pcc>> on execution of an <<SRET_CHERI>> instruction.
+Additionally, the capability in <<sepcc>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction.
 The handling of <<sepcc>> is otherwise identical to <<mepcc>>, but in supervisor mode.
 
 .Supervisor exception program counter capability register
@@ -401,7 +388,7 @@ address is 0x14b.
 
 <<stval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
 and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
-It is written to zero for all other exceptions, except as listed otherwise by other
+It is written to zero by the hardware for all other exceptions, except as listed otherwise by other
 future extensions.
 
 NOTE: Unlike <<mtval2>>, <<stval2>> is a new a CSR added by {cheri_priv_s_ext}.
@@ -415,9 +402,8 @@ include::img/stval2reg.edn[]
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
 
-The <<stidc>> register is used to identify the current software thread in supervisor mode.
-On reset the valid tag of <<stidc>> will be set to 0 and the remainder
-of the data is UNSPECIFIED.
+The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged utidc CSR.
+On reset the valid tag of <<stidc>> will be set to zero and the remainder of the data is UNSPECIFIED.
 
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
@@ -438,7 +424,9 @@ See <<cheri-mcause>> for the new exceptions priorities when {cheri_base_ext_name
 and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
 
 ==== "Smstateen/Ssstateen" Integration
-The new TID bit in `sstateen0` controls access to the <<utidc>> CSR.
+The TID (thread ID) bit in `sstateen0` controls access to the <<utidc>> CSR.
+See <<utidc>> for a description of the usage.
+
 .Supervisor State Enable 0 Register (`sstateen0`)
 [wavedrom, ,svg]
 ....
@@ -455,6 +443,8 @@ The new TID bit in `sstateen0` controls access to the <<utidc>> CSR.
 === CHERI Exception handling
 
 CAUTION: #ARC-QUESTION: Need feedback whether to add this info to xcause or xtval2: https://github.com/riscv/riscv-cheri/issues/536#
+
+CHERI faults are typically higher priority than standard RISC-V faults. E.g., CHERI faults on the <<pcc>> are higher priority than any other fault effecting the program counter such as instruction access fault.
 
 CHERI faults require additional information to be reported.
 The CSRs updated depend on the mode the trap is taken into, as shown in
@@ -481,7 +471,7 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 |=========================================================================================
 | Instructions | Xcause | Xtval2. TYPE | Xtval2. CAUSE | Description | Check
 6+| *All instructions have these exception checks first*
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}      | <<pcc>> tag             | not(<<pcc>>.tag)
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}      | <<pcc>> valid tag       | not(<<pcc>>.tag)
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}     | <<pcc>> seal            | isCapSealed(<<pcc>>)^1^
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}     | <<pcc>> permission      | not(<<pcc>>.<<x_perm>>)
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_inv_addr} | <<pcc>> invalid address | <<pcc>> holds an invalid address
@@ -491,25 +481,25 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 6+| *direct jumps additional exception check*
 | <<JAL_CHERI>>, <<insns-conbr-32bit_CHERI,conditional branches>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds} | <<pcc>> bounds     | any byte of minimum length instruction at target out of <<pcc>> bounds
 6+| *indirect jumps additional exception checks*
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}      |`cs1` tag             | not(`cs1.tag`)
+| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}      |`cs1` valid tag       | not(`cs1.tag`)
 | indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}     |`cs1` seal            | isCapSealed(`cs1`) and imm12 != 0
 | indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}     |`cs1` permission      | not(`cs1`.<<x_perm>>)
 | indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_inv_addr} |`cs1` invalid address | target address is an invalid address
 | indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds}   |`cs1` bounds          | any byte of minimum length instruction at target out of `cs1` bounds
 6+| *Load additional exception checks*
-| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}      | `auth_cap` tag             | not(`auth_cap.tag`)
+| all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}      | `auth_cap` valid tag       | not(`auth_cap.tag`)
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}     | `auth_cap` seal            | isCapSealed(`auth_cap`)
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}     | `auth_cap` permission      | not(`auth_cap`.<<r_perm>>)
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_inv_addr} | `auth_cap` invalid address | Address is invalid (see <<section_invalid_addr_conv>>)
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_bounds}   | `auth_cap` bounds          | Any byte of load access out of `auth_cap` bounds
 | capability loads | 4                    | N/A                     | N/A                          | load address misaligned    | Misaligned capability load
 6+| *Store/atomic/cache-block-operation additional exception checks*
-| all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    |`auth_cap` tag        | not(`auth_cap.tag`)
-| all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   |`auth_cap` seal       | isCapSealed(`auth_cap`)
+| all stores, all atomics, all CBOs              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}    |`auth_cap` valid tag  | not(`auth_cap.tag`)
+| all stores, all atomics, all CBOs              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}   |`auth_cap` seal       | isCapSealed(`auth_cap`)
 | all atomics, CBO.INVAL*                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>)
 | all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<w_perm>>)
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_perm}   |`auth_cap` permission | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
-| all stores, all atomics, all cbos              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_inv_addr} |`auth_cap` invalid address | Address is invalid (see <<section_invalid_addr_conv>>)
+| all stores, all atomics, all CBOs              | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_inv_addr} |`auth_cap` invalid address | Address is invalid (see <<section_invalid_addr_conv>>)
 | all stores, all atomics                        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_bounds}   |`auth_cap` bounds          | any byte of access out of `auth_cap` bounds
 | CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_bounds}   |`auth_cap` bounds          | any byte of cache block out of `auth_cap` bounds
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_bounds}   |`auth_cap` bounds          | all bytes of cache block out of `auth_cap` bounds
@@ -517,17 +507,22 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 | capability stores                              | 6                    | N/A                     | N/A                          |capability alignment       | Misaligned capability store
 |=========================================================================================
 
-^1^ This check is architecturally required, but is impossible to encounter so may not required in an implementation.
+^1^ The CHERI architecture requires that the <<pcc>> is valid and unsealed.
+ It is not currently possible to write a valid sealed capability to the <<pcc>>.
+ All methods of writing a new <<pcc>> value either unseal or invalidate the capability.
+ If future extensions ever allow the <<pcc>> to be valid and sealed then the architecture would require this check.
 
-NOTE: <<CBO_ZERO_CHERI>> issues as a cache block wide store.  All
-CMOs operate on the cache block which contains the address.  Prefetches check
-that the capability is tagged, not sealed, has the permission (<<r_perm>>,
+NOTE: <<CBO_ZERO_CHERI>> is performed as a cache block wide store.  All
+CMOs operate on the cache block which contains the address.  Prefetch instructions check
+that the authorizing capability is has its valid tag set, is not sealed, has the required permission (<<r_perm>>,
 <<w_perm>>, <<x_perm>>) corresponding to the instruction, and has bounds which
 include at least one byte of the cache block; if any check fails, the prefetch
 is not performed but no exception is generated.
 
 [#CHERI_SPEC,reftext="CHERI Exceptions and speculative execution"]
 === CHERI Exceptions and speculative execution
+
+#should be non-normative - and needs more details - move to appendix?#
 
 CHERI adds architectural guarantees that can prove to be microarchitecturally useful.
 Speculative-execution attacks can -- among other factors -- rely on instructions that fail CHERI permission checks not to take effect.
@@ -537,14 +532,25 @@ When implementing any of the extensions proposed here, microarchitects need to c
 === Physical Memory Attributes (PMA)
 
 Typically, only parts of the entire memory space need to support CHERI valid tags.
-Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a _CHERI taggable_ attribute indicating whether a memory region allows storing CHERI valid tags.
+Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a _CHERI taggable_ Physical Memory Attribute indicating whether a memory region allows storing CHERI valid tags.
 
 Data loaded from memory regions that are not _CHERI taggable_ will always have the valid tag cleared.
 When the hart attempts to store data with the valid tag set to memory regions that are not taggable, the implementation may:
 
-* Cause an access fault exception
-* Implicitly set the stored tag to 0
+#ARC question do we want both? should they be different PMAs?#
 
+* Cause an access fault exception
+* Ignore the stored valid tag
+
+[#section_vm]
+=== Virtual Memory
+
+CHERI checks are made on the effective address according to the current translation scheme.
+I.e., on the virtual address if translation is enabled or the physical address if translation is disabled.
+
+Implicit memory accesses made by the page table walker are not subject to CHERI checks.
+
+NOTE: A future extension may add CHERI checks to the page table walker.
 
 [#section_cheri_disable]
 == "{cheri_priv_m_reg_enable_ext}" Extension, Version 1.0
@@ -597,7 +603,7 @@ NOTE: The only instruction added by {cheri_base_ext_name} that does not access c
 // The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
 
 Disabling CHERI register access has no effect on implicit accesses or security checks.
-The last capability installed in <<pcc>> and <<ddc>> before disabling CHERI register access will be used to authorize instruction execution and data memory accesses.
+The last capability written to <<pcc>> and <<ddc>> before disabling CHERI register access will be used to authorize instruction execution and data memory accesses.
 
 [NOTE]
 ====
@@ -648,7 +654,7 @@ NOTE: If CHERI register access must be disabled in a mode for security reasons, 
 Whenever XLEN in any mode is set to a value less than MXLEN, standard RISC-V rules from cite:[riscv-unpriv-spec] are followed.
 This means that all operations must ignore source operand register bits above the configured XLEN, and must sign-extend results to fill all MXLEN bits in the destination register.
 Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it is sign-extended to fill MXLEN.
-The integer writing rule from CHERI is followed, so that every register write also zeroes the metadata and tag of the
+The integer writing rule from CHERI is followed, so that every register write also zeroes the metadata and valid tag of the
 destination register.
 +
 However, CHERI operations and security checks will continue using the entire hardware register (i.e., CLEN bits) to correctly decode capability bounds.
@@ -741,7 +747,7 @@ If the CW bit is clear then:
 [%autowidth,float="center",align="center",cols="<,<",options="header"]
 |===
 |PTE.CW |Store/AMO
-| 0     | <<cheri_pte_fault,CHERI store/AMO PTE page fault>> if stored tag is set
+| 0     | <<cheri_pte_fault,CHERI store/AMO PTE page fault>> if stored valid tag is set
 | 1     | Normal operation
 |===
 
@@ -808,12 +814,12 @@ Some situations may require that a CSR may be updated to hold a capability with 
 In order to satisfy the definitions of such CSRs and preserve capability system invariants, the following procedure must be used as part of write-back to the CSR:
 
 . If A's address is invalid and A does not have infinite bounds (see
-xref:section_cap_encoding[xrefstyle=short]), then A's tag is set to 0.
+xref:section_cap_encoding[xrefstyle=short]), then A's valid tag is set to zero.
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
 
 NOTE: When A's address is invalid and happens to match an invalid address which the CSR
-can hold, then it is implementation defined whether to clear A's tag.
+can hold, then it is implementation defined whether to clear A's valid tag.
 
 ==== Branches and Jumps
 
@@ -835,7 +841,7 @@ a CHERI fault; the _CHERI jump or branch_ fault is reported in the TYPE field
 and invalid address violation is reported in the CAUSE field of <<mtval2>>,
 <<stval2>> or <<vstval2>>.
 . If T is invalid and A has infinite bounds (see
-xref:section_cap_encoding[xrefstyle=short]), then A's tag is unchanged and T is
+xref:section_cap_encoding[xrefstyle=short]), then A's valid tag is unchanged and T is
 written into A's address field. Attempting to execute the instruction at
 address T causes an instruction access fault or page fault as is usual in RISC-V.
 . Otherwise T is valid and the instruction behaves as normal.
