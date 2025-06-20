@@ -27,7 +27,7 @@ include::img/mtveccreg.edn[]
 The fields in the metadata are WARL as many fields can be implemented as constants.
 
 NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setting the reserved fields to zero, otherwise the capability is unusable.
- Another example is to set the bounds to a constant value.
+ Another example is to partially or fully restrict the bounds to constant values.
 
 NOTE: Care must be taken however that an <<infinite-cap>> capability is available to software after reset if this CSR does not represent one.
 
@@ -91,11 +91,12 @@ The valid tag is set to zero on writing if:
 .  `mepcc.address[0]=1`, or
 .  `mepcc.address[1]=1` when IALIGN=32
 
-In the following case the value of the valid tag observable in the CSR depends on the value of IALIGN.
+In the following case the value of the valid tag observable in the CSR depends on the value of IALIGN:
 
 . <<mepcc>> is sealed, the valid tag is set, and
-. `mepcc.address[1]=1` and IALIGN=16 when writing the CSR, and
-. IALIGN=32 when reading the CSR, or executing <<MRET_CHERI>>, cause the valid tag to be observed as zero
+. `mepcc.address[1]=1` and IALIGN=16 when writing the CSR
+
+The valid tag is zero then IALIGN=32 when reading the CSR, or executing <<MRET_CHERI>>, and the valid tag is one when IALIGN=16.
 
 When a trap is taken into M-mode, the pc is written to `mepcc.address` following the standard behavior.
 The valid tag and metadata of the <<pcc>> are also written to <<mepcc>>.
@@ -108,7 +109,7 @@ The capability in <<mepcc>> is unsealed when it is written to <<pcc>> on executi
 ==== Machine Thread Identifier Capability (mtidc)
 
 The <<mtidc>> register is used to identify the current software thread in machine mode, using the method defined in the section for the unprivileged <<utidc>> CSR.
-On reset the valid tag of <<mtidc>> will be set to 0 and the remainder
+On reset the valid tag of <<mtidc>> will be set to zero and the remainder
 of the data is UNSPECIFIED.
 
 .Machine thread identifier capability register
@@ -402,7 +403,7 @@ include::img/stval2reg.edn[]
 ==== Supervisor Thread Identifier Capability (stidc)
 
 The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged utidc CSR.
-On reset the valid tag of <<stidc>> will be set to 0 and the remainder of the data is UNSPECIFIED.
+On reset the valid tag of <<stidc>> will be set to zero and the remainder of the data is UNSPECIFIED.
 
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
@@ -545,7 +546,7 @@ When the hart attempts to store data with the valid tag set to memory regions th
 === Virtual Memory
 
 CHERI checks are made on the effective address according to the current translation scheme.
-I.e., on the virtual address if translation is enabled or the physical address if transaltion is disabled.
+I.e., on the virtual address if translation is enabled or the physical address if translation is disabled.
 
 Implicit memory accesses made by the page table walker are not subject to CHERI checks.
 
@@ -813,7 +814,7 @@ Some situations may require that a CSR may be updated to hold a capability with 
 In order to satisfy the definitions of such CSRs and preserve capability system invariants, the following procedure must be used as part of write-back to the CSR:
 
 . If A's address is invalid and A does not have infinite bounds (see
-xref:section_cap_encoding[xrefstyle=short]), then A's valid tag is set to 0.
+xref:section_cap_encoding[xrefstyle=short]), then A's valid tag is set to zero.
 . Write the final (potentially modified) version of capability A to the CSR e.g.
 <<mtvecc>>, <<mepcc>>, etc.
 
