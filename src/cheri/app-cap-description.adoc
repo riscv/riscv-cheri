@@ -495,15 +495,17 @@ alignment boundaries.
 
 The EF bit selects between two cases:
 
-1. EF = 1: The exponent is 0 for regions less than 2^MW-2^ bytes long. L~8~ is
-used to encode the MSB of the length and is added to B along with T[MW-3:0] to
-form the decoded top.
+1. EF = 1: The exponent is 0. When MXLEN=32, L~8~ encodes the MSB of the length,
+which can be used to derive T[MW-1:MW-2], forming a full MW-wide T field.
 2. EF = 0: The exponent is _internal_ with E stored in the lower bits of T and
-B along with L~8~ when MXLEN=32. E is chosen so that the most significant
-non-zero bit of the length of the region aligns with T[MW - 2] in the decoded
-top. Therefore, the most significant two bits of T can be derived from B using
+B, with L~8~ used for the MSB of E when MXLEN=32. E is chosen so that the most
+significant non-zero bit of the length of the region aligns with T[MW - 2] such
+that this bit is implied by E.
+
+The most significant two bits of T can be derived from B using
 the equality `T = B + L`, where L[MW - 2] is known from the values of EF and E
-and a carry out is implied if `T[MW - 3:0] < B[MW - 3:0]` since it is
+(as well as L~8~ when MXLEN=32).
+A carry out is implied if `T[MW - 3:0] < B[MW - 3:0]` since it is
 guaranteed that the top is larger than the base.
 
 The compressed bounds encoding allows the address to roam over a large
