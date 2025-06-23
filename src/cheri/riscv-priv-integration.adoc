@@ -537,9 +537,9 @@ Typically, only parts of the entire memory space need to support CHERI valid tag
 Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a _CHERI taggable_ Physical Memory Attribute indicating whether a memory region allows storing CHERI valid tags.
 
 Data loaded from memory regions that are not _CHERI taggable_ will always have the valid tag cleared.
-When the hart attempts to store data with the valid tag set to memory regions that are not taggable, the implementation ignores the stored valid tag.
+When the hart attempts to store data with the valid tag set to memory regions that do not have the _CHERI taggable_ PMA set, the implementation ignores the stored valid tag.
 
-NOTE: A PMA from a future extension could raise an access fault exception when attempting to store a valid tag to non taggable memory.
+NOTE: A future extension could raise an access fault exception when attempting to store a valid tag to non taggable memory.
 
 [#section_vm]
 === Virtual Memory
