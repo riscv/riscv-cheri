@@ -534,12 +534,24 @@ When implementing any of the extensions proposed here, microarchitects need to c
 === Physical Memory Attributes (PMA)
 
 Typically, only parts of the entire memory space need to support CHERI valid tags.
-Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with a _CHERI taggable_ Physical Memory Attribute indicating whether a memory region allows storing CHERI valid tags.
+Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with Physical Memory Attributes indicating whether a memory region allows storing CHERI valid tags.
+If they are not supported, then what the behavior is when attempting to access them.
 
-Data loaded from memory regions that are not _CHERI taggable_ will always have the valid tag cleared.
-When the hart attempts to store data with the valid tag set to memory regions that do not have the _CHERI taggable_ PMA set, the implementation ignores the stored valid tag.
+There are three levels of support:
 
-NOTE: A future extension could raise an access fault exception when attempting to store a valid tag to non taggable memory.
+.CHERI PMAs
+[#cheri_pmas]
+[width="100%",options=header]
+|=========================================================================================
+| PMA                     | Load Behavior       | Store Behavior                         | Comment
+| _CHERI Valid Tag_       | Load valid tag      | Store valid tag                        | Tagged memory supporting valid tags
+| _CHERI Valid Tag Strip_ | Load zero valid tag | Ignore stored valid tag                | No support for valid tags, ignore them
+| _CHERI Valid Tag Fault_ | Load zero valid tag | Store/AMO Access Fault on valid tag^1^ | No support for valid tags, trap on storing one
+|=========================================================================================
+
+^1^ The access fault is triggered on all capability stores or atomics such as <<SC>> or <<AMOSWAP_C>> when <<c_perm>> and <<w_perm>> are granted and the valid tag is set to one.
+
+Memory regions that do not have the _CHERI Valid Tag_ PMA do not have storage for valid tags.
 
 [#section_vm]
 === Virtual Memory
