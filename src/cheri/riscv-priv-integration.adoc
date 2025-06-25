@@ -474,20 +474,12 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 | Instructions | Xcause | Xtval2. TYPE | Xtval2. CAUSE | Description | Check
 6+| *All instructions have these exception checks first*
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_tag}      | <<pcc>> valid tag       | not(<<pcc>>.tag)
-| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}     | <<pcc>> seal            | isCapSealed(<<pcc>>)^1^
+| All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_seal}     | <<pcc>> seal            | isCapSealed(<<pcc>>)
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}     | <<pcc>> permission      | not(<<pcc>>.<<x_perm>>)
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_inv_addr} | <<pcc>> invalid address | <<pcc>> holds an invalid address
 | All | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_bounds}   | <<pcc>> bounds          | Any byte of current instruction out of <<pcc>> bounds
 6+| *CSR/Xret additional exception check*
 | CSR*, <<MRET_CHERI>>, <<SRET_CHERI>> | {cheri_excep_mcause} | {cheri_excep_type_pcc} | {cheri_excep_cause_perm}          | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
-6+| *direct jumps additional exception check*
-| <<JAL_CHERI>>, <<insns-conbr-32bit_CHERI,conditional branches>> | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds} | <<pcc>> bounds     | any byte of minimum length instruction at target out of <<pcc>> bounds
-6+| *indirect jumps additional exception checks*
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_tag}      |`cs1` valid tag       | not(`cs1.tag`)
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_seal}     |`cs1` seal            | isCapSealed(`cs1`) and imm12 != 0
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_perm}     |`cs1` permission      | not(`cs1`.<<x_perm>>)
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_inv_addr} |`cs1` invalid address | target address is an invalid address
-| indirect jumps | {cheri_excep_mcause} | {cheri_excep_type_jump} | {cheri_excep_cause_bounds}   |`cs1` bounds          | any byte of minimum length instruction at target out of `cs1` bounds
 6+| *Load additional exception checks*
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_tag}      | `auth_cap` valid tag       | not(`auth_cap.tag`)
 | all loads        | {cheri_excep_mcause} | {cheri_excep_type_data} | {cheri_excep_cause_seal}     | `auth_cap` seal            | isCapSealed(`auth_cap`)
@@ -508,11 +500,6 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 | CBO.INVAL*                                     | {cheri_excep_mcause} | {cheri_excep_type_pcc}  | {cheri_excep_cause_perm}     |<<pcc>> permission         | not(<<pcc>>.<<asr_perm>>)
 | capability stores                              | 6                    | N/A                     | N/A                          |capability alignment       | Misaligned capability store
 |=========================================================================================
-
-^1^ The CHERI architecture requires that the <<pcc>> is valid and unsealed.
- It is not currently possible to write a valid sealed capability to the <<pcc>>.
- All methods of writing a new <<pcc>> value either unseal or invalidate the capability.
- If future extensions ever allow the <<pcc>> to be valid and sealed then the architecture would require this check.
 
 NOTE: <<CBO_ZERO_CHERI>> is performed as a cache block wide store.  All
 CMOs operate on the cache block which contains the address.  Prefetch instructions check
