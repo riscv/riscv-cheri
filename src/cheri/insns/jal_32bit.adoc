@@ -22,7 +22,8 @@ The <<pcc>> of the next instruction is sealed and written to `cd`.
 Both address increments use <<SCADDR>> semantics to determine the result.
 
 NOTE: A future extension may raise an exception on the branch instruction itself if fetching a minimum sized instruction at the target <<pcc>> will raise a CHERI bounds exception.
-
+  Peforming the <<pcc>> bounds check at the branch source instead of on instruction fetch is helpful for debugging and can simplify the implementation of CPUs with very short pipelines.
+  
 
 Operation::
 +
