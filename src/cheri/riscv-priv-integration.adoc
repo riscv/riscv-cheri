@@ -123,7 +123,7 @@ include::img/mtidcreg.edn[]
 ==== Machine Status Registers (mstatus and mstatush)
 
 The *mstatus* and *mstatush* registers operate as described in
-<<mstatus>> with two restrictions:
+<<mstatus_cheri>> with two restrictions:
 
 * The <<xlen-control, SXL and UXL>> fields that control the
 value of XLEN for S-mode and U-mode must be read-only in implementations supporting {cheri_base_ext_name}.
@@ -139,6 +139,11 @@ NOTE: These restrictions are relaxed if a further privileged CHERI extension, {c
 UXL, MBE, SBE, and UBE writeable, to support CHERI on implementations that support dynamic XLEN or endianness changes.
 
 CAUTION:: #ARC-QUESTION: Does {cheri_priv_m_dyn_xlen_ext} need to be a separate extension or just a "if xME,xXL bits are writable, then this behavior is followed" note in {cheri_priv_m_ext}#
+
+<<mstatus_cheri>>.MXR has no effect on the CHERI permission checking.
+
+NOTE: CHERI does not need to make use execute only memory for security reasons, and so MXR has no relevance.
+ Additionally the 32-bit encoding format does not allow <<x_perm>> to be encoded without <<r_perm>>.
 
 [[cheri-mcause]]
 ==== Machine Cause Register (mcause)
@@ -588,7 +593,7 @@ This allows implementing a hart that always runs in {cheri_cap_mode_name}.
 CHERI register access is disabled if
 
 * XLEN in the current mode is less than MXLEN, or
-* the endianness in the current mode is not the reset value of <<mstatus>>.MBE, or
+* the endianness in the current mode is not the reset value of <<mstatus_cheri>>.MBE, or
 * the effective CRE for the current privilege is 0.
 
 The effective CRE for the current privilege is:
@@ -653,7 +658,7 @@ instructions. +
 == "{cheri_priv_m_dyn_xlen_ext}" Extension, Version 1.0
 
 {cheri_priv_m_dyn_xlen_ext} eliminates some restrictions for SXL and UXL imposed in {cheri_priv_m_ext} to allow implementations supporting multiple base ISAs.
-This extension allows the SXL, UXL, MBE, SBE, and UBE fields of <<mstatus>>/<<sstatus>> to be writable (which is prohibited by {cheri_priv_m_ext} otherwise).
+This extension allows the SXL, UXL, MBE, SBE, and UBE fields of <<mstatus_cheri>> to be writable (which is prohibited by {cheri_priv_m_ext} otherwise).
 
 CAUTION: #ARC-QUESTION: Should this extension be folded into the {cheri_priv_m_reg_enable_ext} extension?#
 
@@ -679,7 +684,7 @@ Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE
 
 RISC-V's page-based virtual-memory management is generally orthogonal to CHERI.
 In {cheri_base_ext_name}, capability addresses are interpreted with respect to the privilege level of the processor in line with RISC-V's handling of integer addresses.
-In machine mode, capability addresses are generally interpreted as physical addresses; if the <<mstatus>> MPRV flag is asserted, then data accesses (but not instruction accesses) will be interpreted as if performed by the privilege mode in mstatus's MPP.
+In machine mode, capability addresses are generally interpreted as physical addresses; if the <<mstatus_cheri>> MPRV flag is asserted, then data accesses (but not instruction accesses) will be interpreted as if performed by the privilege mode in <<mstatus_cheri>>'s MPP.
 In supervisor and user modes, capability addresses are interpreted as dictated by the current *satp* configuration: addresses are virtual if paging is enabled and physical if not.
 
 {cheri_priv_vmem_ext} requires that the <<pcc>> grants the <<asr_perm>> to change the page-table root *satp* and other virtual-memory parameters as described in xref:supervisor-level-csrs-section[xrefstyle=short].
