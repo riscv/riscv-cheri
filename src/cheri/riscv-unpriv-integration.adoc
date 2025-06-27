@@ -502,7 +502,9 @@ The {cheri_base_ext_name} ISA requires capabilities written to the <<pcc>> to fo
 3. The capability is not sealed.
 4. There are no reserved bits set.
 
-NOTE: Future ISA extensions should respect these rules so that these bits do not need storing in the implementation.
+If any of these rules are not followed then execution will raise an exception.
+
+NOTE: Future ISA extensions should respect these rules so that these bits do not need storing in all copies of the <<pcc>> in the implementation.
 
 .Program Counter Capability
 [#pcc-format]
@@ -864,27 +866,21 @@ Also note that the RVC encodings C.FSD, C.FLD, C.FSDSP, C.FLDSP are remapped to 
 
 * Whenever the PC is handled, it is _always_ the CLEN-bit <<pcc>>.
 * Whenever the address field of the <<pcc>> is modified, following the rule above, it is _always_ updated using <<SCADDR>> semantics.
-  This includes adding an offset to the <<pcc>> from jumps and branches for both the target address and the link register.
+  This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
   In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
-* All jumps and branches check that a minimum sized instruction is in bounds of the target <<pcc>>.
-  An exception is raised on the branch or jump on failure.
-* <<JALR_CHERI>> updates <<pcc>>.address as expected, but also copies the metadata and valid tag from `cs1` into the <<pcc>>.
-  If `cs1` is not suitable for execution then an exception is taken on the <<JALR_CHERI>>.
-  See xref:pcc[xrefstyle=full] for the definition of suitability.
+* <<JALR_CHERI>> copies `cs1` into the <<pcc>>, and increments the address field with the offset.
+  In this case, e.g., `new_pcc = SCADDR(cs1, offset)`
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
-
-NOTE: Exceptions are raised _on the branch or jump_ that cause an exception, not at the target, primarily to reduce the attack surface but also to aid with debugging.
-Therefore, it is impossible to execute from a memory location without having _already_ checked that execution of that location is authorized.
 
 .Changed RISC-V base ISA PC relative instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
 |=======================
 |Mnemonic                   |Description
-|<<AUIPC_CHERI>>            |Add immediate to PCC address, return capability
-|<<JAL_CHERI>>              |Jump to PC+offset, bounds check minimum size target instruction, link to cd
-|<<JALR_CHERI>>             |Indirect jump and link, bounds check minimum size target instruction.
-|<<insns-conbr-32bit_CHERI,BEQ, BNE, BLT[U], BGE[U]>>|Conditional branches (checked by <<pcc>>)
+|<<AUIPC_CHERI>>            |Add immediate to <<pcc>> address, return capability.
+|<<JAL_CHERI>>              |Jump to <<pcc>>+offset, link and seal capability to cd.
+|<<JALR_CHERI>>             |Indirect jump, link and seal capability to cd.
+|<<insns-conbr-32bit_CHERI,BEQ, BNE, BLT[U], BGE[U]>>|Conditional branches
 |=======================
 
 include::insns/auipc_32bit.adoc[]

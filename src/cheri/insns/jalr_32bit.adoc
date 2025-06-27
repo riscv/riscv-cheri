@@ -22,23 +22,17 @@ include::base_isa_extension.adoc[]
 Description::
 Jump to the target capability in `cs1`.
 +
-The target capability is unsealed if the `offset` is zero.
+If the `cs1` is a sentry, unseal it if the `offset` is zero.
 Increment `cs1.address` by the sign-extended 12-bit `offset` and set the least-significant bit of the result to zero.
 The <<pcc>> of the next instruction is sealed and written to `cd`.
++
+Both address increments use <<SCADDR>> semantics to determine the result.
 
-Exceptions::
-[%autowidth,options=header,align=center]
-|==============================================================================
-| Kind                  | Reason
-| Tag violation         | `cs1` has tag set to 0, or has any reserved bits set
-| Seal violation        | `cs1` is sealed and the immediate is not 0
-| Permission violation  | `cs1` does not grant <<x_perm>>, or the <<AP-field>> could not have been produced by <<ACPERM>>
-ifdef::invalid_address_viol[]
-| Invalid address violation | The target address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
-endif::[]
-| Bounds violation      | Minimum length instruction at the target is not within the target capability's bounds
-|==============================================================================
+NOTE: A future extension may raise an exception on the JALR instruction itself if the target <<pcc>> will raise a CHERI exception at the target.
 
 Operation::
 +
-sail::execute[clause="JALR_capmode(_, _)",part=body,unindent]
+TODO
+
+//commented out as it still has exception checks
+//sail::execute[clause="JALR_capmode(_, _)",part=body,unindent]
