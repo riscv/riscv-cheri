@@ -90,6 +90,8 @@ Encoding::
 
 Description::
 If _rs2_ contains the value zero, this instruction writes the value zero to _rd_.  Otherwise, this instruction copies the contents of _rs1_ to _rd_.
+When {cheri_base_ext_name} is supported, this instruction copies all bits of _rs1_ to _rd_ including capability metadata and valid tag.
+If _rs2_ is zero, this instructions writes a <<null-cap>> (with zero metadata and valid tag).
 
 This instruction carries a syntactic dependency from both _rs1_ and _rs2_ to _rd_.
 Furthermore, if the Zkt extension is implemented, this instruction's timing is independent of the data values in _rs1_ and _rs2_.
@@ -129,6 +131,8 @@ Encoding::
 
 Description::
 If _rs2_ contains a nonzero value, this instruction writes the value zero to _rd_.  Otherwise, this instruction copies the contents of _rs1_ to _rd_.
+When {cheri_base_ext_name} is supported, this instruction copies all bits of _rs1_ to _rd_ including capability metadata and valid tag.
+If _rs2_ is nonzero, this instructions writes a <<null-cap>> (with zero metadata and valid tag).
 
 This instruction carries a syntactic dependency from both _rs1_ and _rs2_ to _rd_.
 Furthermore, if the Zkt extension is implemented, this instruction's timing is independent of the data values in _rs1_ and _rs2_.
