@@ -17,14 +17,14 @@ CHERI fault exception when one of the checks below fail (see <<sec_cheri_excepti
 +
 [%autowidth,options=header,align=center]
 |==============================================================================
-| Kind                  | Reason
-| Valid tag violation   | Authorizing capability valid tag set to 0, or has any reserved bits set
-| Seal violation        | Authorizing capability is sealed
-| Permission violation  | Authorizing capability does not grant <<r_perm>>, or the <<AP-field>> could not have been produced by <<ACPERM>>
+| Kind                   | Reason
+| {cheri_excep_name_tag} | Authorizing capability valid tag set to 0, or has any reserved bits set
+| {cheri_excep_name_seal}| Authorizing capability is sealed
+| {cheri_excep_name_perm}| Authorizing capability does not grant <<r_perm>>, or the <<AP-field>> could not have been produced by <<ACPERM>>
 ifdef::invalid_address_viol[]
-| Invalid address violation  | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
+| {cheri_excep_name_inv_addr} | The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
 endif::[]
-| Bounds violation      | At least one byte accessed is outside the authorizing capability bounds, or the capability has <<section_cap_malformed,malformed>> bounds
+| {cheri_excep_name_bounds}| At least one byte accessed is outside the authorizing capability bounds, or the capability has <<section_cap_malformed,malformed>> bounds
 |==============================================================================
 +
 // TODO: check that the priv spec defines all of this!
