@@ -277,29 +277,30 @@ xref:mtval2-cheri-causes[xrefstyle=short] respectively.
 | CHERI Type Code           | Description
 | {cheri_excep_type_pcc}    | CHERI instruction fetch fault
 | {cheri_excep_type_data}   | CHERI data fault due to load, store or AMO
-| {cheri_excep_type_jump}   | CHERI jump or branch fault
-| 3-15                      | Reserved
+| 2-15                      | Reserved
 |==============================================================================
+
+#ARC note: we plan to merge invalid addresses and bounds faults - giving 4 types (riscv-cheri issue #601)#
 
 .Encoding of CAUSE field
 [#mtval2-cheri-causes,width=55%,float="center",align="center",options=header]
 |==============================================================================
 | CHERI Cause Code              | Description
-| {cheri_excep_cause_tag}       | Valid tag violation
-| {cheri_excep_cause_seal}      | Seal violation
-| {cheri_excep_cause_perm}      | Permission violation
-| {cheri_excep_cause_inv_addr}  | Invalid address violation
-| {cheri_excep_cause_bounds}    | Bounds violation
+| {cheri_excep_cause_tag}       | {cheri_excep_name_tag}
+| {cheri_excep_cause_seal}      | {cheri_excep_name_seal}
+| {cheri_excep_cause_perm}      | {cheri_excep_name_perm}
+| {cheri_excep_cause_inv_addr}  | {cheri_excep_name_inv_addr}
+| {cheri_excep_cause_bounds}    | {cheri_excep_name_bounds}
 | 5-15                          | Reserved
 |==============================================================================
 
 CHERI violations have the following priority order:
 
-. Valid tag violation (_Highest_)
-. Seal violation
-. Permission violation
-. Invalid address violation
-. Bounds violation (_Lowest_)
+. {cheri_excep_name_tag} (_Highest_)
+. {cheri_excep_name_seal}
+. {cheri_excep_name_perm}
+. {cheri_excep_name_inv_addr}
+. {cheri_excep_name_bounds} (_Lowest_)
 
 ===== mtval2 values for Load/Store/AMO Page Faults
 
@@ -839,10 +840,8 @@ capability A if the <<pcc>> cannot hold all invalid addresses:
 . Calculate the effective target address T of the jump or branch as required by
 the instruction's behavior.
 . If T is invalid and A does not have infinite bounds (see
-xref:section_cap_encoding[xrefstyle=short]), then the instruction causes
-a CHERI fault; the _CHERI jump or branch_ fault is reported in the TYPE field
-and invalid address violation is reported in the CAUSE field of <<mtval2>>,
-<<stval2>> or <<vstval2>>.
+xref:section_cap_encoding[xrefstyle=short]), then set A's valid tag to zero.
+ This will cause a {cheri_excep_name_tag} when executing the target instruction.
 . If T is invalid and A has infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then A's valid tag is unchanged and T is
 written into A's address field. Attempting to execute the instruction at
