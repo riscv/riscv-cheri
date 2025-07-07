@@ -840,10 +840,8 @@ capability A if the <<pcc>> cannot hold all invalid addresses:
 . Calculate the effective target address T of the jump or branch as required by
 the instruction's behavior.
 . If T is invalid and A does not have infinite bounds (see
-xref:section_cap_encoding[xrefstyle=short]), then the instruction causes
-a CHERI fault; the _CHERI jump or branch_ fault is reported in the TYPE field
-and invalid address violation is reported in the CAUSE field of <<mtval2>>,
-<<stval2>> or <<vstval2>>.
+xref:section_cap_encoding[xrefstyle=short]), then set A's valid tag to zero.
+ This will cause a CHERI Valid Tag Violation when executing the target instruction.
 . If T is invalid and A has infinite bounds (see
 xref:section_cap_encoding[xrefstyle=short]), then A's valid tag is unchanged and T is
 written into A's address field. Attempting to execute the instruction at
