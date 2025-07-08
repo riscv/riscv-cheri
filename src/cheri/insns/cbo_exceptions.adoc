@@ -7,24 +7,24 @@ listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in t
 [%autowidth,options=header,align=center]
 |==============================================================================
 | Kind                   | Reason
-| {cheri_excep_name_tag} | Authorizing capability valid tag set to 0, or has any reserved bits set
-| {cheri_excep_name_seal}| Authorizing capability is sealed
+| {cheri_excep_name_tag} | {cheri_excep_desc_tag}
+| {cheri_excep_name_seal}| {cheri_excep_desc_seal}
 
 ifdef::cbo_clean_flush[]
-| {cheri_excep_name_perm}| Authorizing capability does not grant <<w_perm>>, or does not grant <<r_perm>>, or the <<AP-field>> could not have been produced by <<ACPERM>>
+| {cheri_excep_name_perm}| {cheri_excep_desc_perm} <<w_perm>> and <<r_perm>> are both required.
 endif::cbo_clean_flush[]
 
 ifdef::cbo_inval[]
-| {cheri_excep_name_perm}| Authorizing capability does not grant <<w_perm>>, or does not grant <<r_perm>> or does not grant <<asr_perm>>, or the <<AP-field>> could not have been produced by <<ACPERM>>
+| {cheri_excep_name_perm}| {cheri_excep_desc_perm} <<w_perm>>, <<r_perm>> and <<asr_perm>> are all required.
 endif::[]
 ifdef::invalid_address_viol[]
-| {cheri_excep_cause_inv_addr}| The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short]
+| {cheri_excep_cause_inv_addr}| {cheri_excep_desc_inv_addr}
 endif::invalid_address_viol[]
 ifdef::cbo_clean_flush[]
-| {cheri_excep_cause_bounds} | None of the bytes accessed are within the bounds, or the capability has <<section_cap_malformed,malformed>> bounds
+| {cheri_excep_name_bounds} | None of the bytes accessed are within the bounds, or the capability has <<section_cap_malformed,malformed>> bounds
 endif::cbo_clean_flush[]
 ifdef::cbo_inval[]
-| {cheri_excep_cause_bounds} | At least one byte accessed is outside the authorizing capability bounds, or the capability has <<section_cap_malformed,malformed>> bounds
+| {cheri_excep_name_bounds} | {cheri_excep_desc_bounds}
 endif::cbo_inval[]
 
 |==============================================================================
