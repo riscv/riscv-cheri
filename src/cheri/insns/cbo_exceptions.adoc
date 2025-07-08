@@ -1,30 +1,25 @@
 Exceptions::
-#ARC suggestion: consider software check fault#
-+
 _CHERI data fault_ exceptions occur when the authorizing capability fails one of the checks
 listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
 +
 [%autowidth,options=header,align=center]
 |==============================================================================
-| Kind                   | Reason
-| {cheri_excep_name_tag} | {cheri_excep_desc_tag}
-| {cheri_excep_name_seal}| {cheri_excep_desc_seal}
+| Kind                       | Reason
+| {cheri_excep_name_ls_ytag} | {cheri_excep_desc_ytag}
+| {cheri_excep_name_ls_seal} | {cheri_excep_desc_seal}
 
 ifdef::cbo_clean_flush[]
-| {cheri_excep_name_perm}| {cheri_excep_desc_perm} <<w_perm>> and <<r_perm>> are both required.
+| {cheri_excep_name_ls_perm} | {cheri_excep_desc_perm} <<w_perm>> and <<r_perm>> are both required.
 endif::cbo_clean_flush[]
 
 ifdef::cbo_inval[]
-| {cheri_excep_name_perm}| {cheri_excep_desc_perm} <<w_perm>>, <<r_perm>> and <<asr_perm>> are all required.
+| {cheri_excep_name_ls_perm} | {cheri_excep_desc_perm} <<w_perm>>, <<r_perm>> and <<asr_perm>> are all required.
 endif::[]
-ifdef::invalid_address_viol[]
-| {cheri_excep_cause_inv_addr}| {cheri_excep_desc_inv_addr}
-endif::invalid_address_viol[]
 ifdef::cbo_clean_flush[]
-| {cheri_excep_name_bounds} | None of the bytes accessed are within the bounds, or the capability has <<section_cap_malformed,malformed>> bounds
+| {cheri_excep_name_ls_bnds} | None of the bytes accessed are within the bounds, or the capability has <<section_cap_malformed,malformed>> bounds
 endif::cbo_clean_flush[]
 ifdef::cbo_inval[]
-| {cheri_excep_name_bounds} | {cheri_excep_desc_bounds}
+| {cheri_excep_name_ls_bnds} | {cheri_excep_desc_bnds}
 endif::cbo_inval[]
 
 |==============================================================================

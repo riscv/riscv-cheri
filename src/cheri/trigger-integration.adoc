@@ -23,8 +23,8 @@ itrigger +
 mcontrol/mcontrol6 after (on previous instruction)
 
 | .>|3 .<|Instruction address breakpoint |mcontrol/mcontrol6 execute address before
-| .>|*{cheri_excep_mcause}* .<|*Prior to instruction address translation:* +
-*CHERI fault due to PCC checks (tag, execute permission, invalid address and bounds)* |
+| .>|*{cheri_excep_pc_list}* .<|*Prior to instruction address translation:* +
+*CHERI fault due to PCC checks (tag, execute permission, and bounds)* |
 | .>|12, 1 .<|During instruction address translation: +
 First encountered *<<section_priv_cheri_vmem,CHERI PTE page fault>>*, page fault or access fault |
 | .>|1 .<|With physical address for instruction: +
@@ -43,10 +43,10 @@ Environment break |
 | .>|3 .<|Load/store/AMO address breakpoint |mcontrol/mcontrol6 load/store address before
 | .>|3 .<| |mcontrol/mcontrol6 store data before
 
-| .>| *{cheri_excep_mcause}* .<| *CHERI faults due to:* +
+| .>| *{cheri_excep_pc_list}* .<| *CHERI faults due to:* +
 *PCC <<asr_perm>> clear* +
 *Branch/jump target address checks (tag, execute permissions, invalid address and bounds)* |
-| .>|*{cheri_excep_mcause}* .<|*Prior to address translation for an explicit memory access:* +
+| .>|*{cheri_excep_ls_list}* .<|*Prior to address translation for an explicit memory access:* +
 *Load/store/AMO capability address misaligned* +
 *CHERI fault due to capability checks (tag, sealed, permissions, invalid address and bounds)* |
 
