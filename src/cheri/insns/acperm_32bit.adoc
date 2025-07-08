@@ -25,7 +25,7 @@ include::wavedrom/acperm.adoc[]
 Description::
 ACPERM performs the following operations:
 
-. Convert the <<AP-field>>, <<section_cap_level,CL-field>> and <<SDP-field>> of capability `cs1` into a bit field with the
+. Convert the <<AP-field>>, <<m_bit>>, <<section_cap_level,CL-field>> and <<SDP-field>> of capability `cs1` into a bit field with the
 format shown in xref:acperm_bit_field[xrefstyle=short].
 . Calculate the bitwise AND of the bit field with the mask in `rs2`.
 +
@@ -35,8 +35,8 @@ NOTE: Future extensions may include hardwired permission bits, in which case the
 IMPORTANT: Depending on the base ISA and supported extensions, some combinations of permissions cannot be encoded or are not useful.
 In these cases, <<ACPERM>> will return a minimal sets of permissions, which may be no permissions.
 Therefore, it is possible that requesting to clear a permission also clears others, but <<ACPERM>> will never _add_ new permissions.
-. Copy `cs1` to `cd`, and update the <<AP-field>>, <<section_cap_level,CL-field>> and <<SDP-field>> with the newly calculated versions.
-. Set `cd.tag=0` if `cs1` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<ACPERM>>.
+. Copy `cs1` to `cd`, and update the <<AP-field>>, <<m_bit>>, <<section_cap_level,CL-field>> and <<SDP-field>> with the newly calculated versions.
+. Set `cd.tag=0` if `cs1` is sealed and any bits in the <<AP-field>>, <<m_bit>> or <<SDP-field>> were affected by <<ACPERM>>.
 .. Do _not_ set the valid tag to zero on a sealed capability if _only_ the <<section_cap_level,CL-field>> changed.
 
 .Capability permissions bit field
