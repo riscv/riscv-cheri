@@ -24,11 +24,7 @@ as defined by cite:[riscv-priv-spec]. MRET unseals <<mepcc>> and writes the
 result into <<pcc>>. SRET unseals <<sepcc>> and writes the result into <<pcc>>.
 
 Exceptions::
-CHERI fault exceptions occur when <<pcc>> does not grant <<asr_perm>> because
-<<MRET_CHERI>> and <<SRET_CHERI>> require access to privileged CSRs. When that exception
-occurs, _CHERI instruction fetch fault_ is reported in the TYPE field and the
-Permission violation code is reported in the CAUSE field of <<mtval2>>,
-<<stval2>> or <<vstval2>>.
+A {cheri_excep_name_pc_perm} fault is raised when <<pcc>> does not grant <<asr_perm>> because <<MRET_CHERI>> and <<SRET_CHERI>> require access to privileged CSRs.
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

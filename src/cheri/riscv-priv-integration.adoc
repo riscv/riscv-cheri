@@ -187,23 +187,21 @@ Load/store/AMO address breakpoint
 Optionally: +
 Load/store/AMO address misaligned
 | .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
-First encountered *<<section_priv_cheri_vmem,CHERI PTE page fault>>*^23^, page fault or access fault
+First encountered *{cheri_excep_name_pte_ld}^2^, {cheri_excep_name_pte_st}*, page fault or access fault
 | .>|5,7 .<|With physical address for an explicit memory access: +
 Load/store/AMO access fault
 | .>|4,6 .<|If not higher priority: +
 Load/store/AMO address misaligned
 .>|_Lowest_ .>|13 .<|*If not higher priority: +
-CHERI load PTE page fault^4^*
+*{cheri_excep_name_pte_ld}^3^*
 |===
 
 ^1^ PCC bounds are checked against all bytes of fetched instructions.
  If the instructions cannot be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
-^2^ The higher priority <<section_priv_cheri_vmem,CHERI PTE page fault>> covers capability loads or atomics where the loaded valid tag _is not_ checked, and all capability stores and atomics where the stored valid tag is set.
+^2^ The higher priority {cheri_excep_name_pte_ld} covers capability loads ({cheri_priv_crg_ext} only) or atomics where the loaded valid tag _is not_ checked.
 
-^3^ <<section_priv_cheri_vmem,CHERI PTE page fault>> exceptions have the same priority against access faults as normal RISC-V page faults. If a normal RISC-V page fault _and_ a <<section_priv_cheri_vmem,CHERI PTE page fault>> are both detected simultaneously, then both are recorded as shown in <<mtval2-page-fault>>.
-
-^4^ The lower priority <<section_priv_cheri_vmem,CHERI PTE page fault>> only covers capability loads and atomics where the loaded valid tag _is_ checked.
+^3^ The lower priority {cheri_excep_name_pte_ld} covers capability loads ({cheri_priv_crg_ext} only) or atomics where the loaded valid tag _is_ checked.
 
 NOTE: The full details of the CHERI exceptions are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
@@ -220,54 +218,11 @@ WARNING: *CHERI v9 Note:* Encoding and values changed, and generally were
 simplified.
 endif::[]
 
-For all CHERI PC faults ({cheri_excep_pc_list}), <<mtval>> is written with the
-MXLEN-bit effective PC address which caused the fault.
-
-For all CHERI Data faults ({cheri_excep_ls_list}), <<mtval>> is written with the
-MXLEN-bit effective address which caused the fault.
-
-The behavior of <<mtval>> is otherwise as described in xref:mtval[xrefstyle=short].
-
-If the hardware platform specifies that no exceptions set <<mtval>> to a
-non-zero value, then <<mtval>> is read-only zero for all CHERI exceptions.
+For all CHERI faults, <<mtval>> is written with the MXLEN-bit effective address which caused the fault.
 
 .Machine trap value register
 [#mtval-format]
 include::img/mtvalreg.edn[]
-
-[#mtval2,reftext="mtval2"]
-==== Machine Trap Value Register 2 (mtval2)
-
-ifdef::cheri_v9_annotations[]
-WARNING: *CHERI v9 Note:* This CSR was not part of CHERIv9.
-endif::[]
-
-The <<mtval2>> register is required for CHERI machine mode when virtual memory is supported.
-
-When a <<section_priv_cheri_vmem,CHERI PTE page fault>>, is taken into M-mode, <<mtval2>> is written
-with additional information.
-
-If <<mtval>> is read-only zero for CHERI exceptions then <<mtval2>> is also read-only zero
-for CHERI exceptions.
-
-===== mtval2 values for Load/Store/AMO Page Faults
-
-Page faults can be caused by normal RISC-V page faults and also by CHERI <<section_priv_cheri_vmem,PTE>> faults.
-If both are detected at once, then both are recorded.
-
-.mtval2 for page faults
-[#mtval2-page-fault,width=70%,float="center",align="center",cols="2,1",options=header]
-|==============================================================================
-| Fault                                                        | Value
-| RISC-V page fault                                            | 0
-| <<section_priv_cheri_vmem,CHERI PTE page fault>>                       | 1
-| RISC-V page fault and <<section_priv_cheri_vmem,CHERI PTE page fault>> | 2
-|==============================================================================
-
-NOTE: Reporting both allows the software the choice about which action to take first, for example a write to a
- page with no write permission, _and_ the incorrect value of <<section_cheri_priv_crg_ext,PTE.CRG>> requires two actions.
- Software can then decide whether to prioritize the copy-on-write procedure to fix the lack of write
- permission, or to sweep the page.
 
 ==== "Smstateen/Ssstateen" Integration
 The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
@@ -335,26 +290,6 @@ The handling of <<sepcc>> is otherwise identical to <<mepcc>>, but in supervisor
 .Supervisor exception program counter capability register
 include::img/sepccreg.edn[]
 
-[#stval2,reftext="stval2"]
-==== Supervisor Trap Value Register 2 (stval2)
-
-The <<stval2>> register is an SXLEN-bit read-write register, which is added as
-part of {cheri_priv_s_ext} when the implementation supports S-mode. Its CSR
-address is 0x14b.
-
-<<stval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
-and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
-It is written to zero by the hardware for all other exceptions, except as listed otherwise by other
-future extensions.
-
-NOTE: Unlike <<mtval2>>, <<stval2>> is a new a CSR added by {cheri_priv_s_ext}.
-
-IMPORTANT: #The mechanism to report exception subcodes needs to be finalized: https://github.com/riscv/riscv-cheri/issues/536#
-
-.Supervisor trap value register 2
-[#stval2-format]
-include::img/stval2reg.edn[]
-
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
 
@@ -398,28 +333,9 @@ See <<utidc>> for a description of the usage.
 [#sec_cheri_exception_handling]
 === CHERI Exception handling
 
-CAUTION: #ARC-QUESTION: Need feedback whether to add this info to xcause or xtval2: https://github.com/riscv/riscv-cheri/issues/536#
-
 CHERI faults are typically higher priority than standard RISC-V faults. E.g., CHERI faults on the <<pcc>> are higher priority than any other fault effecting the program counter such as instruction access fault.
 
-CHERI faults require additional information to be reported.
-The CSRs updated depend on the mode the trap is taken into, as shown in
-<<cheri-fault-reporting>>.
-
-The additional information is written for CHERI faults and <<cheri_pte_fault,CHERI PTE page faults>>, and
-is otherwise written to zero for all other exceptions, except as listed otherwise by other
-future extensions.
-
-.CHERI fault reporting
-[#cheri-fault-reporting,width=65%,float="center",align="center",options=header,cols="1,1,1"]
-|==============================================================================
-| Trap taken into  | Faulting address | Additional CHERI fault information
-| M-mode           | <<mtval>>        | <<mtval2>>
-| HS-mode / S-mode | <<stval>>        | <<stval2>>
-| VS-mode          | <<vstval>>       | <<vstval2>>
-|==============================================================================
-
-NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_mode_name}
+NOTE: `auth_cap` is `cs1`
 
 .Valid CHERI exception combination description
 [#cheri_exception_combs_descriptions]
@@ -434,21 +350,20 @@ NOTE: `auth_cap` is <<ddc>> for {cheri_int_mode_name} and `cs1` for {cheri_cap_m
 4+| *CSR/Xret additional exception check*
 | CSR*, <<MRET_CHERI>>, <<SRET_CHERI>> | {cheri_excep_cause_pc_perm} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
 4+| *Load additional exception checks*
-| All loads        | {cheri_excep_cause_ls_ytag} | `auth_cap` valid tag       | not(`auth_cap.tag`)
-| All loads        | {cheri_excep_cause_ls_seal} | `auth_cap` seal            | isCapSealed(`auth_cap`)
-| All loads        | {cheri_excep_cause_ls_perm} | `auth_cap` permission      | not(`auth_cap`.<<r_perm>>)
-| all loads        | {cheri_excep_cause_ls_bnds} | `auth_cap` bounds          | Any byte of load access out of `auth_cap` bounds^1^
+| All loads        | {cheri_excep_cause_ls_ytag} | `cs1` valid tag            | not(`auth_cap.tag`)
+| All loads        | {cheri_excep_cause_ls_seal} | `cs1` seal                 | isCapSealed(`auth_cap`)
+| All loads        | {cheri_excep_cause_ls_perm} | `cs1` permission           | not(`auth_cap`.<<r_perm>>)
+| all loads        | {cheri_excep_cause_ls_bnds} | `cs1` bounds               | Any byte of load access out of `auth_cap` bounds^1^
 | capability loads | 4                           | load address misaligned    | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_ls_ytag} |`auth_cap` valid tag      | not(`auth_cap.tag`)
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_ls_seal} |`auth_cap` seal           | isCapSealed(`auth_cap`)
-| all atomics, CBO.INVAL*                        | {cheri_excep_cause_ls_perm} |`auth_cap` permission     | not(`auth_cap`.<<r_perm>>)
-| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_ls_perm} |`auth_cap` permission     | not(`auth_cap`.<<w_perm>>)
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_ls_perm} |`auth_cap` permission     | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_ls_bnds} |`auth_cap` invalid address| Address is invalid (see <<section_invalid_addr_conv>>)
-| all stores, all atomics                        | {cheri_excep_cause_ls_bnds} |`auth_cap` bounds         | any byte of access out of `auth_cap` bounds^1^
-| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_ls_bnds} |`auth_cap` bounds         | any byte of cache block out of `auth_cap` bounds^1^
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_ls_bnds} |`auth_cap` bounds         | all bytes of cache block out of `auth_cap` bounds^1^
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_ls_ytag} |`cs1` valid tag           | not(`auth_cap.tag`)
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_ls_seal} |`cs1` seal                | isCapSealed(`auth_cap`)
+| all atomics, CBO.INVAL*                        | {cheri_excep_cause_ls_perm} |`cs1` permission          | not(`auth_cap`.<<r_perm>>)
+| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_ls_perm} |`cs1` permission          | not(`auth_cap`.<<w_perm>>)
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_ls_perm} |`cs1` permission          | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
+| all stores, all atomics                        | {cheri_excep_cause_ls_bnds} |`cs1` bounds              | any byte of access out of `auth_cap` bounds^1^
+| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_ls_bnds} |`cs1` bounds              | any byte of cache block out of `auth_cap` bounds^1^
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_ls_bnds} |`cs1` bounds              | all bytes of cache block out of `auth_cap` bounds^1^
 | CBO.INVAL*                                     | {cheri_excep_cause_ls_perm} |<<pcc>> permission        | not(<<pcc>>.<<asr_perm>>)
 | capability stores                              | 6                           |capability alignment      | Misaligned capability store
 |=========================================================================================
@@ -616,7 +531,7 @@ Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE
 
 
 [#section_priv_cheri_vmem]
-== "{cheri_priv_vmem_ext}" Extension, Version 1.0
+== "{cheri_priv_vmem_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
 
 RISC-V's page-based virtual-memory management is generally orthogonal to CHERI.
 In {cheri_base_ext_name}, capability addresses are interpreted with respect to the privilege level of the processor in line with RISC-V's handling of integer addresses.
@@ -628,7 +543,7 @@ In supervisor and user modes, capability addresses are interpreted as dictated b
 [#section_cw_bit]
 === Capability Write (CW) Bit
 
-{cheri_priv_vmem_ext} defines the Capability Write (CW) bit in Page Table Entries (PTEs) for Sv39, Sv48, and Sv57 virtual memory systems on RV64 harts. The CW bit controls whether capabilities with their valid tag set can be written to a virtual page.
+{cheri_priv_vmem_ext} defines the Capability Write (CW) bit in Page Table Entries (PTEs) for Sv39, Sv48, and Sv57 virtual memory systems on {cheri_base64_ext_name} harts. The CW bit controls whether capabilities with their valid tag set can be written to a virtual page.
 
 NOTE: _Sv32_ does not have any spare PTE bits, and so this bit does not exist for RV32.
 
@@ -653,17 +568,13 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 [#cheri_pte_fault]
 === CHERI PTE page faults
 
-CHERI adds the concept of _CHERI PTE page faults_.
-These reuse the load page fault and store/AMO page fault exception causes, and write additional information to <<mtval2>>/<<stval2>>/<<vstval2>>.
+CHERI adds the concept of _CHERI PTE page faults_. They are split into :
 
-Page faults are considered to be _CHERI PTE page faults_ if the `Xtval2` register is written with a non-zero value.
+* {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld}), and
+* {cheri_excep_name_pte_st} (cause value {cheri_excep_cause_pte_st})
 
-NOTE: It is possible for both a _normal_ page fault and a _CHERI PTE page fault_ to both trigger at once, as represented in the `Xtval2` value, as shown in <<mtval2-page-fault>>.
-
-NOTE: Where two stage translation is enabled, the _CHERI PTE page fault_ is only raised when the second stage translation has completed, and so is prioritized below guest page faults.
-
-All RV64 harts with virtual memory can raise _CHERI store/AMO PTE page faults_.
-Only harts which implement {cheri_priv_vmem_ext} can raise _CHERI load PTE page faults_.
+All {cheri_base64_ext_name} harts with virtual memory must implement {cheri_priv_vmem_ext} and so can raise _{cheri_excep_name_pte_st}_ exceptions.
+Only harts which also implement a revocation scheme such as {cheri_priv_crg_ext} can raise _{cheri_excep_name_pte_ld}_.
 
 ==== Extending the Page Table Entry Format
 
@@ -692,15 +603,16 @@ When the CW bit is set, capabilities are written as usual.
 If the CW bit is clear then:
 
 * When a capability load or AMO instruction is executed, the implementation clears the valid tag bit of the capability read from the virtual page.
-* A <<cheri_pte_fault,CHERI store/AMO PTE page fault>> exception is raised when a capability store or AMO instruction is executed and the valid tag bit of the capability being written is set.
+* A _{cheri_excep_name_pte_st}_ exception is raised when a capability store or AMO instruction is executed and the valid tag bit of the capability being written is set.
 
 [[pte_cw_store_summary]]
 .Summary of Store CW behavior in the PTEs
-[%autowidth,float="center",align="center",cols="<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|PTE.CW |Store/AMO
-| 0     | <<cheri_pte_fault,CHERI store/AMO PTE page fault>> if stored valid tag is set
-| 1     | Normal operation
+|PTE.CW |Instruction          | Behavior
+| 0     |Capability load      | Set loaded valid tag to zero
+| 0     |Capability store/AMO | Raise a _{cheri_excep_name_pte_st}_ if the stored valid tag is set
+| 1     |Any                  | Normal operation
 |===
 
 [NOTE]
@@ -715,13 +627,13 @@ Therefore, the behavior in this section isn't relevant if:
 [#section_invalid_addr_conv,reftext="Invalid address conversion"]
 === Invalid Address Handling
 
-When address translation is in effect and XLEN=64, the upper bits of virtual
+When address translation is in effect and MXLEN=64, the upper bits of virtual
 memory addresses must match for the address to be valid.
 
 The CSRs shown in xref:CSR_exevectors[xrefstyle=short], as well as the pc, need not hold all possible invalid addresses.
 Implementations may convert an invalid address into some other invalid address that the register is capable of holding.
 
-However, the bounds encoding of capabilities in {cheri_base_ext_name} depends on the address value if the bounds are not of the <<infinite-cap>> capability.
+However, the bounds encoding of capabilities depends on the address value if the bounds are not of the <<infinite-cap>> capability.
 
 Therefore implementations must not convert invalid addresses to other arbitrary invalid addresses in an unrestricted manner if the bounds are not <<infinite-cap>>.
 
@@ -729,9 +641,9 @@ If the bounds cannot be decoded due to the address being invalid, and the bounds
 
 NOTE: In all cases, if the authorizing capability has <<infinite-cap>> bounds, then the behavior is identical to the normal RISC-V behavior without CHERI.
 
-NOTE: Replacing an address of a valid capability normally requires an <<SCADDR>>. This specification does not require an <<SCADDR>> when compressing an invalid address to reduce the implentation cost.
+NOTE: Replacing an address of a valid capability normally requires an <<SCADDR>>. This specification does not require an <<SCADDR>> when compressing an invalid address to reduce the implementation cost.
 
-NOTE: Not requiring to decode the bounds for invalid addresses reduces the size of bounds comparators to the supported virtual address width, not the maximum address width.
+NOTE: Not requiring to the implementation to decode the bounds for invalid addresses reduces the size of bounds comparators from 64-bits to the supported virtual address width.
 
 ==== Updating CSRs
 

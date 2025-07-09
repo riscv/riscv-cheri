@@ -35,11 +35,11 @@ be read-only and equal to MBE when the implementation only supports
 {cheri_base_ext_name}. VSBE is optionally writeable when
 {cheri_default_ext_name} is also supported.
 
-[#henvcfg,reftext="henvcfg"]
+[#henvcfg_cheri,reftext="henvcfg {cheri_base_arch_name}"]
 === Hypervisor Environment Configuration Register (henvcfg)
 
-The <<henvcfg>> register operates as described in the RISC-V Privileged
-Specification. A new enable bit is added to <<henvcfg>> when the implementation
+The <<henvcfg_cheri>> register operates as described in the RISC-V Privileged
+Specification. A new enable bit is added to <<henvcfg_cheri>> when the implementation
 supports {cheri_default_ext_name} as shown in xref:henvcfgreg[xrefstyle=short].
 
 .Hypervisor environment configuration register (*henvcfg*)
@@ -57,8 +57,8 @@ The reset value is 0.
 [#hedeleg,reftext="hedeleg"]
 === Hypervisor Exception Delegation Register (hedeleg)
 
-Bit 28 of <<hedeleg>> now refers to a valid exception and so can be used to
-delegate CHERI exceptions to virtual supervisor mode.
+Bits {cheri_excep_list} of <<hedeleg>> now refers to a valid exception and so can be used to
+delegate CHERI exceptions to supervisor mode.
 
 [#vsstatus,reftext="vsstatus"]
 === Virtual Supervisor Status Register (vsstatus)
@@ -134,9 +134,8 @@ The <<vsepcc>> register extends <<vsepc>> to hold a capability.
 Its reset value is the <<infinite-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<vsepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
-Additionally, the capability in <<vsepcc>> is unsealed when it is installed in
-<<pcc>> on execute of an <<SRET_CHERI>> instruction. The handling of <<vsepcc>> is
-otherwise identical to <<mepcc>>, but in virtual supervisor mode.
+Additionally, the capability in <<vsepcc>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction when V=1.
+The handling of <<vsepcc>> is otherwise identical to <<mepcc>>, but in VS-mode.
 
 .Virtual supervisor exception program counter capability
 include::img/vsepccreg.edn[]
@@ -159,24 +158,6 @@ and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to VS-mode.
 .Virtual supervisor trap value register
 [#vstval-format]
 include::img/vstvalreg.edn[]
-
-[#vstval2,reftext="vstval2"]
-=== Virtual Supervisor Trap Value Register 2 (vstval2)
-
-The <<vstval2>> register is a VSXLEN-bit read-write register, which is added as
-part of {cheri_base_ext_name} when the hypervisor extension is supported. Its
-CSR address is 0x24b.
-
-<<vstval2>> is updated following the same rules as <<mtval2>> for CHERI exceptions
-and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to VS-mode.
-It is written to zero for all other exceptions, except as listed otherwise by other
-future extensions.
-
-NOTE: <<vstval2>> is not a standard RISC-V CSR, but <<mtval2>> is.
-
-.Virtual supervisor trap value register 2
-[#vstval2-format]
-include::img/vstval2reg.edn[]
 
 [#vstidc,reftext="vstidc"]
 === Virtual Supervisor Thread Identifier Capability (vstidc)
