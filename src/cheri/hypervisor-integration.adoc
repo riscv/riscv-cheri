@@ -9,6 +9,10 @@ architecture to support the efficient hosting of guest operating systems atop a
 type-1 or type-2 hypervisor cite:[riscv-priv-spec].
 endif::[]
 
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 The hypervisor extension is
 generally orthogonal to CHERI; the main requirements, when integrating with
 {cheri_base_ext_name} and {cheri_default_ext_name}, is that address CSRs added
@@ -18,7 +22,7 @@ The remainder of this chapter describes these changes in detail.
 [#hstatus,reftext="hstatus"]
 === Hypervisor Status Register (hstatus)
 
-The <<hstatus>> register operates as described in cite:[riscv-priv-spec] except
+The <<hstatus>> register operates as described above except
 for the VSXL field that controls the value of XLEN for VS-mode (known as
 VSXLEN).
 
@@ -65,7 +69,7 @@ delegate CHERI exceptions to supervisor mode.
 [#vsstatus,reftext="vsstatus"]
 === Virtual Supervisor Status Register (vsstatus)
 
-The <<vsstatus>> register operates as described in cite:[riscv-priv-spec]
+The <<vsstatus>> register operates as described above
 except for the UXL field that controls the value of XLEN for VU-mode.
 
 The encoding of the UXL field is the same as the MXL field of **misa**. Only 1
@@ -75,16 +79,6 @@ must be read-only as described in xref:mstatus[xrefstyle=short] for
 <<mstatus>>.UXL. When the implementation supports both {cheri_base_ext_name}
 and {cheri_default_ext_name}, then UXL behaves as described in
 xref:mstatus_cheri[xrefstyle=short] for mstatus.UXL.
-
-[#vstvec,reftext="vstvec"]
-=== Virtual Supervisor Trap Vector Base Address Register (vstvec)
-
-The <<vstvec>> register is as defined in cite:[riscv-priv-spec]. It is
-the VSXLEN-bit read/write register that is the VS mode's version of the
-supervisor register <<stvec>>.
-
-.Virtual supervisor trap vector base address register
-include::img/vstvecreg.edn[]
 
 [#vstvecc,reftext="vstvecc"]
 === Virtual Supervisor Trap Vector Base Address Capability Register (vstvecc)
@@ -98,16 +92,6 @@ include::img/vstveccreg.edn[]
 The handling of <<vstvecc>> is otherwise identical to <<mtvecc>>, but in
 virtual supervisor mode.
 
-[#vsscratch,reftext="vsscratch"]
-=== Virtual Supervisor Scratch Register (vsscratch)
-
-The <<vsscratch>> register is as defined in cite:[riscv-priv-spec]. It is a
-VSXLEN read/write register that is VS-mode's version of supervisor register
-<<sscratch>>. <<vsscratch>> is extended into <<vsscratchc>>.
-
-.Virtual supervisor scratch register
-include::img/vsscratchreg.edn[]
-
 [#vsscratchc,reftext="vsscratchc"]
 === Virtual Supervisor Scratch Register (vsscratchc)
 
@@ -119,15 +103,6 @@ It is not WARL, all capability fields must be implemented.
 
 .Virtual supervisor scratch capability register
 include::img/vsscratchcreg.edn[]
-
-[#vsepc,reftext="vsepc"]
-=== Virtual Supervisor Exception Program Counter (vsepc)
-
-The <<vsepc>> register is as defined in cite:[riscv-priv-spec]. It is extended
-into <<vsepcc>>.
-
-.Virtual supervisor exception program counter
-include::img/vsepcreg.edn[]
 
 [#vsepcc,reftext="vsepcc"]
 === Virtual Supervisor Exception Program Counter Capability (vsepcc)
@@ -141,13 +116,6 @@ The handling of <<vsepcc>> is otherwise identical to <<mepcc>>, but in VS-mode.
 
 .Virtual supervisor exception program counter capability
 include::img/vsepccreg.edn[]
-
-[#vscause,reftext="vscause"]
-=== Virtual Supervisor Cause Register (vscause)
-
-The <<vscause>> register is as defined in cite:[riscv-priv-spec]. It must
-additionally support the new exception code for CHERI exceptions that
-<<scause>> supports.
 
 [#vstval,reftext="vstval"]
 === Virtual Supervisor Trap Value Register (vstval)
@@ -198,26 +166,6 @@ The new TID bit controls access to the <<vstidc>> CSR.
 {bits: 1, name: 'SE0'},
 ], config: {bits: 64, lanes: 4, hspace:1024}}
 ....
-
-//=== Existing Hypervisor Load and Store Instructions
-//
-//The hypervisor extension defines several integer load and store instructions
-//(such as <<HLV_W>>, <<HSV_W>> and <<HLVX_WU>>) that transfer the amount of data
-//described in cite:[riscv-priv-spec] between the registers and memory as though
-//V=1. These instructions change behavior depending on the CHERI execution mode
-//although the instruction's encoding remains unchanged.
-//
-//When in {cheri_cap_mode_name}, the hypervisor load and
-//store instructions behave as described in
-//xref:section_existing_riscv_insns[xrefstyle=short]. In
-//{cheri_int_mode_name}, the instructions behave as
-//described in cite:[riscv-priv-spec] and rely on an *x* register operand
-//providing the effective address for the memory access; the capability
-//authorizing the memory access is <<ddc>>.
-//
-//The exception cases remain as described in
-//xref:section_existing_riscv_insns[xrefstyle=short] regardless of the CHERI
-//execution mode.
 
 === Hypervisor Load and Store Instructions For Capability Data
 

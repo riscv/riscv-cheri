@@ -92,7 +92,6 @@ OPTIONS := --trace --verbose \
            --failure-level=ERROR
 REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-diagram \
-            --require=asciidoctor-lists \
             --require=asciidoctor-mathematical \
             --require=asciidoctor-sail
 
