@@ -20,14 +20,19 @@ include::wavedrom/ct-unconditional-2.adoc[]
 include::base_isa_extension.adoc[]
 
 Description::
-Jump to the target capability in `cs1`.
+Indirect jump to the target capability in `cs1` with an address offset.
 +
-If the `cs1` is a sentry, unseal it if the `offset` is zero.
-Increment `cs1.address` by the sign-extended 12-bit `offset` and set the least-significant bit of the result to zero.
-The <<pcc>> of the next instruction is sealed and written to `cd`.
+Copy `cs1` to the target <<pcc>>
 +
-Both address increments use <<SCADDR>> semantics to determine the result.
-
+. If the target <<pcc>> is a sentry, and the `offset` is zero, then unseal the target <<pcc>>.
+. Set bit zero of the `offset` to zero.
+. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset` using <<SCADDR>> semantics.
+. Jump to the target <<pcc>>
++
+The <<pcc>> of the next instruction is calculated using <<SCADDR>> semantics, sealed and written to `cd`.
++
+NOTE: Because of the unsealing and <<SCADDR>> behavior, it is not possible for the target <<pcc>> to be sealed.
++
 NOTE: A future extension may raise an exception on the JALR instruction itself if the target <<pcc>> will raise a CHERI exception at the target.
 
 Operation::
