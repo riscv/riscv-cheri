@@ -642,7 +642,8 @@ If the bounds cannot be decoded due to the address being invalid, and the bounds
 
 NOTE: In all cases, if the authorizing capability has <<infinite-cap>> bounds, then the behavior is identical to the normal RISC-V behavior without CHERI.
 
-NOTE: Replacing an address of a valid capability normally requires an <<SCADDR>>. This specification does not require an <<SCADDR>> when compressing an invalid address to reduce the implementation cost.
+NOTE: Capability addresses cannot generally be updated without using <<SCADDR>> to check that the new address doesn't change the bounds.
+ This check is avoided when discarding address bits of invalid addresses to reduce hardware cost, as a CHERI exception is guaranteed on dereferencing the capability.
 
 NOTE: Not requiring to the implementation to decode the bounds for invalid addresses reduces the size of bounds comparators from 64-bits to the supported virtual address width.
 
