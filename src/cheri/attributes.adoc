@@ -20,7 +20,8 @@
 :cheri_priv_vmem_ext: Svcheri
 :cheri_priv_debug_ext: Sdcheri
 // Extension for CHERI CRG bits
-:cheri_priv_crg_ext:       Svucrg
+:cheri_priv_crg_ext:          Svucrg
+:cheri_priv_crg_load_tag_ext: Svucrglvt
 ifdef::cheri_multilevel[]
 // Extension for capability levels (flow control)
 :cheri_0levels_ext_name:             Zcheri0lvl
@@ -65,23 +66,23 @@ endif::[]
 :cap_rv32_exp_width:    5
 :cap_rv64_exp_width:    6
 
-:cheri_excep_mcause:         28
-:cheri_excep_type_pcc:       0
-:cheri_excep_type_data:      1
-:cheri_excep_cause_tag:      0
-:cheri_excep_cause_seal:     1
-:cheri_excep_cause_perm:     2
-:cheri_excep_cause_inv_addr: 3
-:cheri_excep_cause_bounds:   4
+:cheri_excep_cause_pc:       32
+:cheri_excep_cause_ld:       33
+:cheri_excep_cause_st:       34
+:cheri_excep_cause_pte_ld:   35
+:cheri_excep_cause_pte_st:   36
 
-:cheri_excep_name_tag:      CHERI Valid Tag Violation
-:cheri_excep_name_seal:     CHERI Seal Violation
-:cheri_excep_name_perm:     CHERI Permission Violation
-:cheri_excep_name_inv_addr: CHERI Invalid Address Violation
-:cheri_excep_name_bounds:   CHERI Bounds Violation
+:cheri_excep_name_pc:        CHERI Instruction Access Fault
+:cheri_excep_name_ld:        CHERI Load Access Fault
+:cheri_excep_name_st:        CHERI Store/AMO Access Fault
+:cheri_excep_name_pte:       CHERI Page Fault
+:cheri_excep_name_pte_ld:    CHERI Load Page Fault
+:cheri_excep_name_pte_st:    CHERI Store/AMO Page Fault
 
-:cheri_excep_desc_tag:      Authorizing capability valid tag set to 0, or has any reserved bits set.
-:cheri_excep_desc_seal:     Authorizing capability is sealed.
-:cheri_excep_desc_perm:     Authorizing capability does not grant the necessary permissions, or the <<AP-field>> could not have been produced by <<ACPERM>>.
-:cheri_excep_desc_inv_addr: The effective address is invalid according to xref:section_invalid_addr_conv[xrefstyle=short].
-:cheri_excep_desc_bounds:   At least one byte accessed is outside the authorizing capability bounds, or the capability has <<section_cap_malformed,malformed>> bounds.
+:cheri_excep_desc_ytag:      Authorizing capability valid tag set to 0, or has any reserved bits set.
+:cheri_excep_desc_seal:      Authorizing capability is sealed.
+:cheri_excep_desc_perm:      Authorizing capability does not grant the necessary permissions, or the <<AP-field>> could not have been produced by <<ACPERM>>.
+:cheri_excep_desc_bnds:      At least one byte accessed is outside the authorizing capability bounds, or the bounds could not be decoded.
+
+:cheri_excep_cause_ls_list:  {cheri_excep_cause_ld},{cheri_excep_cause_st}
+:cheri_excep_cause_list:     {cheri_excep_cause_pc},{cheri_excep_cause_ls_list},{cheri_excep_cause_pte_ld},{cheri_excep_cause_pte_st}

@@ -8,34 +8,19 @@ Store/AMO access fault if the stored valid tag is set to one and the PMA is _CHE
 endif::[]
 ifndef::has_cap_data[]
 ifdef::store_cond[]
-All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a store/AMO access fault exception.
+All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported), otherwise they take a store/AMO access fault exception.
 +
 endif::[]
 endif::[]
-+
-#ARC suggestion: consider software check fault#
-+
-_CHERI data fault_ exceptions occur when the authorizing capability fails one of the checks
-listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
 +
 [%autowidth,options=header,align=center]
 |==============================================================================
-| Kind                   | Reason
-| {cheri_excep_name_tag} | {cheri_excep_desc_tag}
-| {cheri_excep_name_seal}| {cheri_excep_desc_seal}
-| {cheri_excep_name_perm}| {cheri_excep_desc_perm} Only <<w_perm>> is required.
-ifdef::invalid_address_viol[]
-| {cheri_excep_name_inv_addr}| {cheri_excep_desc_inv_addr}
-endif::[]
-| {cheri_excep_name_bounds}| {cheri_excep_desc_bounds}
+| Kind                       | Reason
+| {cheri_excep_name_st}      | {cheri_excep_desc_ytag}
+| {cheri_excep_name_st}      | {cheri_excep_desc_seal}
+| {cheri_excep_name_st}      | {cheri_excep_desc_perm} Only <<w_perm>> is required.
+| {cheri_excep_name_st}      | {cheri_excep_desc_bnds}
 |==============================================================================
 +
-// TODO: check that the priv spec defines all of this!
-// If virtual memory is enabled on an RV64 hart, then the state of <<section_priv_cheri_vmem,PTE>>.CW,
-// and, if {cheri_priv_crg_ext} is implemented, <<section_cheri_priv_crg_ext,PTE.CRG>> from the current virtual memory page may
-// cause a <<section_priv_cheri_vmem,CHERI PTE store/AMO page fault>> exception in addition to a normal RISC-V page fault
-// when operating in user mode.
-// See <<mtval2-page-fault>> for the exception reporting in this case.
-// +
 :!store_cond:
 :!has_cap_data:

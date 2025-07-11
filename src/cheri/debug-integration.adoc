@@ -72,7 +72,7 @@ however there is no way to discover the former property.
 ==== Debug Mode
 
 When executing code due to an abstract command, the hart stays in debug mode
-and the rules outlined in Section 4.1 of cite:[riscv-debug-spec]
+and the rules outlined in Section 4.1 of the _RISC-V Debug Specification_
 apply.
 
 ==== Core Debug Registers
@@ -86,12 +86,12 @@ automatically provided when the hart enters debug mode as described
 in the <<dpcc>> section. The <<pcc>> metadata can only be changed if the
 implementation supports executing control transfer instructions from the
 program buffer -- this is an optional feature according to
-cite:[riscv-debug-spec].
+the _RISC-V Debug Specification_.
 
 [#dpc,reftext="dpc"]
 ==== Debug Program Counter (dpc)
 
-The <<dpc>> register is as defined in cite:[riscv-debug-spec]. It is a
+The <<dpc>> register is as defined in the _RISC-V Debug Specification_. It is a
 DXLEN-bit register used as the PC saved when entering debug mode. <<dpc>> is
 extended into <<dpcc>>.
 
@@ -108,7 +108,7 @@ The <<dpcc>> register extends <<dpc>> to hold a capability.
 .Debug program counter capability
 include::img/dpccreg.edn[]
 
-Upon entry to debug mode, cite:[riscv-debug-spec], does not specify how to
+Upon entry to debug mode, the _RISC-V Debug Specification_, does not specify how to
 update the PC, and says PC relative instructions may be illegal. This concept
 is extended to include any instruction which reads or updates <<pcc>>, which refers to
 all jumps, conditional branches and <<AUIPC_CHERI>>. The exceptions are <<MODESW_CAP>> and <<MODESW_INT>>
@@ -118,11 +118,11 @@ for details.
 As a result, the value of <<pcc>> is UNSPECIFIED in debug mode according
 to this specification. The <<pcc>> metadata has no architectural effect in debug
 mode. Therefore <<asr_perm>> is implicitly granted for access to all CSRs and
-no CHERI instruction fetch faults are possible.
+no _{cheri_excep_name_pc}_ is possible.
 
 On debug mode entry <<dpcc>> (and consequently <<dpc>>) are updated with the
 capability in <<pcc>> whose address field is set to the address of the next
-instruction to be executed upon debug mode exit as described in cite:[riscv-debug-spec].
+instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
 
 When leaving debug mode, the capability in <<dpcc>> is unsealed and written
 into <<pcc>>.  A debugger may write <<dpcc>> to change where the hart resumes
@@ -133,7 +133,7 @@ The legalization of <<dpcc>> follows the same rules described for <<mepcc>>.
 [#dscratch0,reftext="dscratch0"]
 ==== Debug Scratch Register 0 (dscratch0)
 
-The <<dscratch0>> register is as defined in cite:[riscv-debug-spec]. It is an
+The <<dscratch0>> register is as defined in the _RISC-V Debug Specification_. It is an
 optional DXLEN-bit scratch register that can be used by implementations which
 need it. <<dscratch0>> is extended into <<dscratch0c>>.
 
@@ -153,7 +153,7 @@ include::img/dscratch0creg.edn[]
 [#dscratch1,reftext="dscratch1"]
 ==== Debug Scratch Register 1 (dscratch1)
 
-The <<dscratch1>> register is as defined in cite:[riscv-debug-spec]. It is an
+The <<dscratch1>> register is as defined in the _RISC-V Debug Specification_. It is an
 optional DXLEN-bit scratch register that can be used by implementations which
 need it. <<dscratch1>> is extended into <<dscratch1c>>.
 

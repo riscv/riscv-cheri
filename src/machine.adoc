@@ -1761,7 +1761,7 @@ synchronous exceptions is implementation-defined.
 <<<
 
 [[mcauses]]
-.Machine cause (`mcause`) register values after trap. #Entries added in {cheri_base_ext_name} are in *bold*#
+.Machine cause (`mcause`) register values after trap.
 [%autowidth,float="center",align="center",cols=">,>,<",options="header",]
 |===
 |Interrupt |Exception Code |Description
@@ -1838,6 +1838,11 @@ _Designated for platform use_
 0 +
 0 +
 0 +
+0 +
+0 +
+0 +
+0 +
+0 +
 0
 |0 +
 1 +
@@ -1860,10 +1865,13 @@ _Designated for platform use_
 18 +
 19 +
 20-23 +
-24-27 +
-#*{cheri_excep_mcause}*# +
-29-31 +
-32-47 +
+24-31 +
+{cheri_excep_cause_pc} +
+{cheri_excep_cause_ld} +
+{cheri_excep_cause_st} +
+{cheri_excep_cause_pte_ld} +
+{cheri_excep_cause_pte_st} +
+37-47 +
 48-63 +
 &#8805;64
 |Instruction address misaligned +
@@ -1879,24 +1887,24 @@ Environment call from S-mode +
 _Reserved_ +
 Environment call from M-mode +
 Instruction page fault +
-Load page fault#^1^# +
+Load page fault +
 _Reserved_ +
-Store/AMO page fault#^2^# +
+Store/AMO page fault +
 Double trap +
 _Reserved_ +
 Software check +
 Hardware error +
 _Reserved_ +
 _Designated for custom use_ +
-#*CHERI fault*# +
-_Designated for custom use_ +
+{cheri_excep_name_pc} +
+{cheri_excep_name_ld} +
+{cheri_excep_name_st} +
+{cheri_excep_name_pte_ld} +
+{cheri_excep_name_pte_st} +
 _Reserved_ +
 _Designated for custom use_ +
-_Reserved_
+_Reserved_ +
 |===
-
-^1^ #Includes <<cheri_pte_fault,CHERI PTE load page faults>> for RV64 harts with virtual memory if {cheri_priv_vmem_ext} is implemented.# +
-^2^ #Includes <<cheri_pte_fault,CHERI PTE store/AMO page faults>> for RV64 harts with virtual memory.#
 
 <<<
 
@@ -2760,7 +2768,7 @@ and writes of that width. Main memory and I/O regions may only support a
 subset or none of the processor-supported atomic operations.
 
 .Classes of AMOs supported by I/O regions.
-[i%autowidth,float="center",align="center",cols="<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<",options="header"]
 |===
 |AMO Class |Supported Operations
 |AMONone +
