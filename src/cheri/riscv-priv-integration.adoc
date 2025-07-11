@@ -343,28 +343,28 @@ NOTE: `auth_cap` is `cs1`
 |=========================================================================================
 | Instructions | Xcause | Description | Check
 4+| *All instructions have these exception checks first*
-| All | {cheri_excep_cause_pc} |<<pcc>> valid tag  | not(<<pcc>>.tag)
-| All | {cheri_excep_cause_pc} |<<pcc>> seal       | isCapSealed(<<pcc>>)
-| All | {cheri_excep_cause_pc} |<<pcc>> permission | not(<<pcc>>.<<x_perm>>)
-| All | {cheri_excep_cause_pc} |<<pcc>> bounds     | Any byte of current instruction out of <<pcc>> bounds^1^
+| All | {cheri_excep_cause_pc} |{cheri_excep_name_pc} | <<pcc>> valid tag is zero
+| All | {cheri_excep_cause_pc} |{cheri_excep_name_pc} | <<pcc>> is sealed
+| All | {cheri_excep_cause_pc} |{cheri_excep_name_pc} | <<pcc>> does not have <<x_perm>>
+| All | {cheri_excep_cause_pc} |{cheri_excep_name_pc} | Any byte of current instruction out of <<pcc>> bounds^1^
 4+| *CSR/Xret additional exception check*
 | CSR*, <<MRET_CHERI>>, <<SRET_CHERI>> | {cheri_excep_cause_pc} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
 4+| *Load additional exception checks*
-| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | not(`auth_cap.tag`)
-| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | isCapSealed(`auth_cap`)
-| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | not(`auth_cap`.<<r_perm>>)
+| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | `auth_cap` valid tag is zero
+| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | `auth_cap` is sealed
+| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | `auth_cap` does not have <<r_perm>>
 | all loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | Any byte of load access out of `auth_cap` bounds^1^
 | capability loads | 4                           | load address misaligned    | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(`auth_cap.tag`)
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | isCapSealed(`auth_cap`)
-| all atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(`auth_cap`.<<r_perm>>)
-| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(`auth_cap`.<<w_perm>>)
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` valid tag is zero
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` is sealed
+| all atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` does not have <<r_perm>>
+| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` does not have <<w_perm>>
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` does not have both <<r_perm>> and <<w_perm>>
 | all stores, all atomics                        | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | any byte of access out of `auth_cap` bounds^1^
 | CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | any byte of cache block out of `auth_cap` bounds^1^
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | all bytes of cache block out of `auth_cap` bounds^1^
-| CBO.INVAL*                                     | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(<<pcc>>.<<asr_perm>>)
+| CBO.INVAL*                                     | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | <<pcc>> does not have <<asr_perm>>
 | capability stores                              | 6                          |capability alignment   | Misaligned capability store
 |=========================================================================================
 
