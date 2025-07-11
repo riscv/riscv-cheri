@@ -354,7 +354,7 @@ NOTE: `auth_cap` is `cs1`
 | All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | `auth_cap` is sealed
 | All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | `auth_cap` does not have <<r_perm>>
 | all loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | Any byte of load access out of `auth_cap` bounds^1^
-| capability loads | 4                           | load address misaligned    | Misaligned capability load
+| capability loads | 4                           | load address misaligned    | Load access fault^2^
 4+| *Store/atomic/cache-block-operation additional exception checks*
 | all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` valid tag is zero
 | all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` is sealed
@@ -365,10 +365,11 @@ NOTE: `auth_cap` is `cs1`
 | CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | any byte of cache block out of `auth_cap` bounds^1^
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | all bytes of cache block out of `auth_cap` bounds^1^
 | CBO.INVAL*                                     | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | <<pcc>> does not have <<asr_perm>>
-| capability stores                              | 6                          |capability alignment   | Misaligned capability store
+| capability stores                              | 6                          |Store access fault ^2^ | Misaligned capability store
 |=========================================================================================
 
 ^1^ The bounds checks include the cases where the bounds could not be decoded.
+^2^ Misaligned capability accesses raise access faults instead of misaligned faults since they cannot be emulated in software.
 
 NOTE: <<CBO_ZERO_CHERI>> is performed as a cache block wide store.  All
 CMOs operate on the cache block which contains the address.  Prefetch instructions check
