@@ -665,6 +665,13 @@ can hold, then it is implementation defined whether to set the valid tag to zero
 If the effective target address of the jump or branch is invalid, and the authorizing capability does not have <<infinite-cap>> bounds, then set the valid tag of the target <<pcc>> to zero.
 This will cause a {cheri_excep_name_pc} exception when executing the target instruction.
 
+NOTE: RISC-V harts that do not support {cheri_base_ext_name} normally raise an
+instruction access fault or page fault after jumping or branching to an invalid address.
+Therefore, {cheri_base_ext_name} aims to preserve that behavior to ensure that
+harts supporting {cheri_base_ext_name} and {cheri_default_ext_name} are fully
+compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
+<<infinite-cap>> capability.
+
 ==== Memory Accesses
 
 If the effective address of the memory access is invalid, and the authorizing capability does not have <<infinite-cap>> bounds, then raise a {cheri_excep_name_ld} or {cheri_excep_name_st} exception because the bounds cannot be reliably decoded.
