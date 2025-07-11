@@ -25,11 +25,11 @@ Indirect jump to the target capability in `cs1` with an address offset.
 Copy `cs1` to the target <<pcc>>
 +
 . If the target <<pcc>> is a sentry, and the `offset` is zero, then unseal the target <<pcc>>.
-. Set bit zero of the `offset` to zero.
-. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset` using <<SCADDR>> semantics.
+Otherwise, increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`.
+. Set bit zero of the target address to zero and update <<pcc>> with the new target address using <<SCADDR>> semantics
 . Jump to the target <<pcc>>
 +
-The <<pcc>> of the next instruction is calculated using <<SCADDR>> semantics, sealed and written to `cd`.
+The <<pcc>> of the next instruction is calculated using <<SCADDR>> semantics, and written to `cd` as a sentry.
 +
 NOTE: Because of the unsealing and <<SCADDR>> behavior, it is not possible for the target <<pcc>> to be sealed.
 +
