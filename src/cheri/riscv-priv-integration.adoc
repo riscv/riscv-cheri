@@ -350,25 +350,25 @@ NOTE: `auth_cap` is `cs1`
 4+| *CSR/Xret additional exception check*
 | CSR*, <<MRET_CHERI>>, <<SRET_CHERI>> | {cheri_excep_cause_pc} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
 4+| *Load additional exception checks*
-| All loads        | {cheri_excep_cause_ld}      | `cs1` valid tag            | not(`auth_cap.tag`)
-| All loads        | {cheri_excep_cause_ld}      | `cs1` seal                 | isCapSealed(`auth_cap`)
-| All loads        | {cheri_excep_cause_ld}      | `cs1` permission           | not(`auth_cap`.<<r_perm>>)
-| all loads        | {cheri_excep_cause_ld}      | `cs1` bounds               | Any byte of load access out of `auth_cap` bounds^1^
+| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | not(`auth_cap.tag`)
+| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | isCapSealed(`auth_cap`)
+| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | not(`auth_cap`.<<r_perm>>)
+| all loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | Any byte of load access out of `auth_cap` bounds^1^
 | capability loads | 4                           | load address misaligned    | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |`cs1` valid tag           | not(`auth_cap.tag`)
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |`cs1` seal                | isCapSealed(`auth_cap`)
-| all atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     |`cs1` permission          | not(`auth_cap`.<<r_perm>>)
-| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     |`cs1` permission          | not(`auth_cap`.<<w_perm>>)
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |`cs1` permission          | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
-| all stores, all atomics                        | {cheri_excep_cause_st}     |`cs1` bounds              | any byte of access out of `auth_cap` bounds^1^
-| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_st}     |`cs1` bounds              | any byte of cache block out of `auth_cap` bounds^1^
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |`cs1` bounds              | all bytes of cache block out of `auth_cap` bounds^1^
-| CBO.INVAL*                                     | {cheri_excep_cause_st}     |<<pcc>> permission        | not(<<pcc>>.<<asr_perm>>)
-| capability stores                              | 6                          |capability alignment      | Misaligned capability store
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(`auth_cap.tag`)
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | isCapSealed(`auth_cap`)
+| all atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(`auth_cap`.<<r_perm>>)
+| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(`auth_cap`.<<w_perm>>)
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
+| all stores, all atomics                        | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | any byte of access out of `auth_cap` bounds^1^
+| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | any byte of cache block out of `auth_cap` bounds^1^
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | all bytes of cache block out of `auth_cap` bounds^1^
+| CBO.INVAL*                                     | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | not(<<pcc>>.<<asr_perm>>)
+| capability stores                              | 6                          |capability alignment   | Misaligned capability store
 |=========================================================================================
 
-^1^ The bounds faults include the cases where the bounds could not be decoded.
+^1^ The bounds checks include the cases where the bounds could not be decoded.
 
 NOTE: <<CBO_ZERO_CHERI>> is performed as a cache block wide store.  All
 CMOs operate on the cache block which contains the address.  Prefetch instructions check
