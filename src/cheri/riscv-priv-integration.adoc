@@ -350,22 +350,22 @@ NOTE: `auth_cap` is `cs1`
 4+| *CSR/Xret additional exception check*
 | CSR*, <<MRET_CHERI>>, <<SRET_CHERI>> | {cheri_excep_cause_pc} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
 4+| *Load additional exception checks*
-| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | `auth_cap` valid tag is zero
-| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | `auth_cap` is sealed
-| All loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | `auth_cap` does not have <<r_perm>>
-| all loads        | {cheri_excep_cause_ld}      | {cheri_excep_name_ld}      | Any byte of load access out of `auth_cap` bounds^1^
-| capability loads | 4                           | load address misaligned    | Load access fault^2^
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` valid tag is zero
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not have <<r_perm>>
+| all loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^1^
+| capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` valid tag is zero
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` is sealed
-| all atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` does not have <<r_perm>>
-| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` does not have <<w_perm>>
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | `auth_cap` does not have both <<r_perm>> and <<w_perm>>
-| all stores, all atomics                        | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | any byte of access out of `auth_cap` bounds^1^
-| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | any byte of cache block out of `auth_cap` bounds^1^
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | all bytes of cache block out of `auth_cap` bounds^1^
-| CBO.INVAL*                                     | {cheri_excep_cause_st}     |{cheri_excep_name_st}  | <<pcc>> does not have <<asr_perm>>
-| capability stores                              | 6                          |Store access fault ^2^ | Misaligned capability store
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` valid tag is zero
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
+| all atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<r_perm>>
+| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<w_perm>>
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have both <<r_perm>> and <<w_perm>>
+| all stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^1^
+| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^1^
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^1^
+| CBO.INVAL*                                     | {cheri_excep_cause_st}     | {cheri_excep_name_st} | <<pcc>> does not have <<asr_perm>>
+| capability stores                              | 7^2^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
 
 ^1^ The bounds checks include the cases where the bounds could not be decoded.
