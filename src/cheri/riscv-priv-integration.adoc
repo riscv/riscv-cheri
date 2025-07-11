@@ -160,7 +160,7 @@ The behavior and usage of <<mcause>> otherwise remains as described in xref:mcau
 |===
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
-| .>|*{cheri_excep_pc_list}* .<|*Prior to instruction address translation:* +
+| .>|*{cheri_excep_cause_pc}* .<|*Prior to instruction address translation:* +
 *CHERI fault due to PCC checks (tag, execute permission, bounds^1^)*
 | .>|12, 1 .<|During instruction address translation: +
 First encountered page fault or access fault
@@ -177,11 +177,11 @@ Environment call +
 Environment break +
 Load/store/AMO address breakpoint
 
-| .>| *{cheri_excep_pc_list}* .<| *CHERI faults due to:* +
+| .>| *{cheri_excep_cause_pc}* .<| *CHERI faults due to:* +
 *PCC <<asr_perm>> clear* +
 *Branch/jump target address checks (tag, execute permissions, bounds)*
 
-| .>|*{cheri_excep_ls_list}* .<|*Prior to address translation for an explicit memory access:* +
+| .>|*{cheri_excep_cause_ls_list}* .<|*Prior to address translation for an explicit memory access:* +
 *CHERI fault due to capability checks (tag, sealed, permissions, bounds)*
 | .>|4,6 .<|*Load/store/AMO capability address misaligned* +
 Optionally: +
@@ -207,7 +207,7 @@ NOTE: The full details of the CHERI exceptions are in xref:cheri_exception_combs
 
 ==== Machine Trap Delegation Register (medeleg)
 
-Bits {cheri_excep_list} of <<medeleg>> now refers to a valid exception and so can be used to
+Bits {cheri_excep_cause_list} of <<medeleg>> refer to a valid CHERI exception and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
 [[mtval-cheri]]
@@ -312,7 +312,7 @@ See <<cheri-mcause>> for the new exceptions priorities when {cheri_base_ext_name
 ==== Supervisor Trap Value Register (stval)
 
 <<stval>> is updated following the same rules as <<mtval-cheri>> for CHERI exceptions
-and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to HS-mode or S-mode.
+and <<cheri_pte_fault,CHERI page faults>> which are delegated to HS-mode or S-mode.
 
 ==== "Smstateen/Ssstateen" Integration
 The TID (thread ID) bit in `sstateen0` controls access to the <<utidc>> CSR.
@@ -343,29 +343,29 @@ NOTE: `auth_cap` is `cs1`
 |=========================================================================================
 | Instructions | Xcause | Description | Check
 4+| *All instructions have these exception checks first*
-| All | {cheri_excep_cause_pc_ytag} |<<pcc>> valid tag  | not(<<pcc>>.tag)
-| All | {cheri_excep_cause_pc_seal} |<<pcc>> seal       | isCapSealed(<<pcc>>)
-| All | {cheri_excep_cause_pc_perm} |<<pcc>> permission | not(<<pcc>>.<<x_perm>>)
-| All | {cheri_excep_cause_pc_bnds} |<<pcc>> bounds     | Any byte of current instruction out of <<pcc>> bounds^1^
+| All | {cheri_excep_cause_pc} |<<pcc>> valid tag  | not(<<pcc>>.tag)
+| All | {cheri_excep_cause_pc} |<<pcc>> seal       | isCapSealed(<<pcc>>)
+| All | {cheri_excep_cause_pc} |<<pcc>> permission | not(<<pcc>>.<<x_perm>>)
+| All | {cheri_excep_cause_pc} |<<pcc>> bounds     | Any byte of current instruction out of <<pcc>> bounds^1^
 4+| *CSR/Xret additional exception check*
-| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>> | {cheri_excep_cause_pc_perm} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
+| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>> | {cheri_excep_cause_pc} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
 4+| *Load additional exception checks*
-| All loads        | {cheri_excep_cause_ls_ytag} | `cs1` valid tag            | not(`auth_cap.tag`)
-| All loads        | {cheri_excep_cause_ls_seal} | `cs1` seal                 | isCapSealed(`auth_cap`)
-| All loads        | {cheri_excep_cause_ls_perm} | `cs1` permission           | not(`auth_cap`.<<r_perm>>)
-| all loads        | {cheri_excep_cause_ls_bnds} | `cs1` bounds               | Any byte of load access out of `auth_cap` bounds^1^
+| All loads        | {cheri_excep_cause_ld}      | `cs1` valid tag            | not(`auth_cap.tag`)
+| All loads        | {cheri_excep_cause_ld}      | `cs1` seal                 | isCapSealed(`auth_cap`)
+| All loads        | {cheri_excep_cause_ld}      | `cs1` permission           | not(`auth_cap`.<<r_perm>>)
+| all loads        | {cheri_excep_cause_ld}      | `cs1` bounds               | Any byte of load access out of `auth_cap` bounds^1^
 | capability loads | 4                           | load address misaligned    | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_ls_ytag} |`cs1` valid tag           | not(`auth_cap.tag`)
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_ls_seal} |`cs1` seal                | isCapSealed(`auth_cap`)
-| all atomics, CBO.INVAL*                        | {cheri_excep_cause_ls_perm} |`cs1` permission          | not(`auth_cap`.<<r_perm>>)
-| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_ls_perm} |`cs1` permission          | not(`auth_cap`.<<w_perm>>)
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_ls_perm} |`cs1` permission          | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
-| all stores, all atomics                        | {cheri_excep_cause_ls_bnds} |`cs1` bounds              | any byte of access out of `auth_cap` bounds^1^
-| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_ls_bnds} |`cs1` bounds              | any byte of cache block out of `auth_cap` bounds^1^
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_ls_bnds} |`cs1` bounds              | all bytes of cache block out of `auth_cap` bounds^1^
-| CBO.INVAL*                                     | {cheri_excep_cause_ls_perm} |<<pcc>> permission        | not(<<pcc>>.<<asr_perm>>)
-| capability stores                              | 6                           |capability alignment      | Misaligned capability store
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |`cs1` valid tag           | not(`auth_cap.tag`)
+| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     |`cs1` seal                | isCapSealed(`auth_cap`)
+| all atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     |`cs1` permission          | not(`auth_cap`.<<r_perm>>)
+| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     |`cs1` permission          | not(`auth_cap`.<<w_perm>>)
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |`cs1` permission          | not(`auth_cap`.<<r_perm>>) and not(`auth_cap`.<<w_perm>>)
+| all stores, all atomics                        | {cheri_excep_cause_st}     |`cs1` bounds              | any byte of access out of `auth_cap` bounds^1^
+| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_st}     |`cs1` bounds              | any byte of cache block out of `auth_cap` bounds^1^
+| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     |`cs1` bounds              | all bytes of cache block out of `auth_cap` bounds^1^
+| CBO.INVAL*                                     | {cheri_excep_cause_st}     |<<pcc>> permission        | not(<<pcc>>.<<asr_perm>>)
+| capability stores                              | 6                          |capability alignment      | Misaligned capability store
 |=========================================================================================
 
 ^1^ The bounds faults include the cases where the bounds could not be decoded.
@@ -566,15 +566,15 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 ^*^ _allocated using mmap_
 
 [#cheri_pte_fault]
-=== CHERI PTE page faults
+=== CHERI page faults
 
-CHERI adds the concept of _CHERI PTE page faults_. They are split into :
+CHERI adds the concept of _CHERI page faults_. They are split into :
 
 * {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld}), and
 * {cheri_excep_name_pte_st} (cause value {cheri_excep_cause_pte_st})
 
 All {cheri_base64_ext_name} harts with virtual memory must implement {cheri_priv_vmem_ext} and so can raise _{cheri_excep_name_pte_st}_ exceptions.
-Only harts which also implement a revocation scheme such as {cheri_priv_crg_ext} can raise _{cheri_excep_name_pte_ld}_.
+Only harts which also implement a revocation scheme such as {cheri_priv_crg_ext} can raise _{cheri_excep_name_pte_ld}_ exceptions.
 
 ==== Extending the Page Table Entry Format
 
@@ -637,7 +637,7 @@ However, the bounds encoding of capabilities depends on the address value if the
 
 Therefore implementations must not convert invalid addresses to other arbitrary invalid addresses in an unrestricted manner if the bounds are not <<infinite-cap>>.
 
-If the bounds cannot be decoded due to the address being invalid, and the bounds not being <<infinite-cap>>, then a _{cheri_excep_name_pc_ytag}_ or _{cheri_excep_name_ls_ytag}_ exception is raised as appropriate.
+If the bounds cannot be decoded due to the address being invalid, and the bounds not being <<infinite-cap>>, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
 
 NOTE: In all cases, if the authorizing capability has <<infinite-cap>> bounds, then the behavior is identical to the normal RISC-V behavior without CHERI.
 
@@ -662,8 +662,8 @@ can hold, then it is implementation defined whether to set the valid tag to zero
 ==== Branches and Jumps
 
 If the effective target address of the jump or branch is invalid, and the authorizing capability does not have <<infinite-cap>> bounds, then set the valid tag of the target <<pcc>> to zero.
-This will cause a {cheri_excep_name_pc_ytag} exception when executing the target instruction.
+This will cause a {cheri_excep_name_pc} exception when executing the target instruction.
 
 ==== Memory Accesses
 
-If the effective address of the memory access is invalid, and the authorizing capability does not have <<infinite-cap>> bounds, then raise a {cheri_excep_name_ls_bnds} exception because the bounds cannot be reliably decoded.
+If the effective address of the memory access is invalid, and the authorizing capability does not have <<infinite-cap>> bounds, then raise a {cheri_excep_name_ld} or {cheri_excep_name_st} exception because the bounds cannot be reliably decoded.

@@ -627,12 +627,12 @@ These instructions use the CJ format.
 C.J performs an unconditional control transfer. The offset is
 sign-extended and added to the `pc` to form the jump target address. C.J
 can therefore target a &#177;2 KiB range. C.J expands to
-`jal x0, offset`, or `jal c0, offset` for {cheri_base_arch_name}.
+`jal x0, offset`, or `jal c0, offset` for {cheri_base_ext_name}.
 
 C.JAL is an RV32C-only instruction that performs the same operation as
 C.J, but additionally writes the address of the instruction following
 the jump (`pc+2`) to the link register, `x1`. C.JAL expands to
-`jal x1, offset`, or `jal c1, offset` for {cheri_base_arch_name}.
+`jal x1, offset`, or `jal c1, offset` for {cheri_base_ext_name}.
 
 [[c-cr-format-ls]]
 include::images/wavedrom/c-cr-format-ls.edn[]
@@ -643,14 +643,14 @@ These instructions use the CR format.
 
 C.JR (jump register) performs an unconditional control transfer to the
 address in register _rs1/cs1_. C.JR expands to `jalr x0, 0(rs1)`, or
-`jalr c0, 0(cs1)` for {cheri_base_arch_name}.
+`jalr c0, 0(cs1)` for {cheri_base_ext_name}.
 C.JR is valid only when _rs1/cs1_≠`x0`; the code
 point with _rs1/cs1_=`x0` is reserved.
 
 C.JALR (jump and link register) performs the same operation as C.JR, but
 additionally writes the address of the instruction following the jump
 (`pc`+2) to the link register, `x1/c1`. C.JALR expands to
-`jalr x1, 0(rs1)`, or `jalr c1, 0(cs1)` for {cheri_base_arch_name}.
+`jalr x1, 0(rs1)`, or `jalr c1, 0(cs1)` for {cheri_base_ext_name}.
 C.JALR is valid only when
 _rs1/cs1_≠`x0`; the code point with
 _rs1/cs1_=`x0` corresponds to the C.EBREAK

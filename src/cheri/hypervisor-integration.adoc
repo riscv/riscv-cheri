@@ -37,7 +37,7 @@ be read-only and equal to MBE when the implementation only supports
 {cheri_base_ext_name}. VSBE is optionally writeable when
 {cheri_default_ext_name} is also supported.
 
-[#henvcfg_cheri,reftext="henvcfg {cheri_base_arch_name}"]
+[#henvcfg_cheri,reftext="henvcfg {cheri_base_ext_name}"]
 === Hypervisor Environment Configuration Register (henvcfg)
 
 The <<henvcfg_cheri>> register operates as described in the RISC-V Privileged
@@ -59,7 +59,7 @@ The reset value is 0.
 [#hedeleg,reftext="hedeleg"]
 === Hypervisor Exception Delegation Register (hedeleg)
 
-Bits {cheri_excep_list} of <<hedeleg>> now refers to a valid exception and so can be used to
+Bits {cheri_excep_cause_list} of <<hedeleg>> refer to a valid CHERI exceptions and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
 [#vsstatus,reftext="vsstatus"]
@@ -119,7 +119,7 @@ include::img/vsepccreg.edn[]
 The <<vstval>> register is a VSXLEN-bit read-write register.
 
 <<vstval>> is updated following the same rules as <<mtval>> for CHERI exceptions
-and <<cheri_pte_fault,CHERI PTE page faults>> which are delegated to VS-mode.
+and <<cheri_pte_fault,CHERI page faults>> which are delegated to VS-mode.
 
 .Virtual supervisor trap value register
 [#vstval-format]

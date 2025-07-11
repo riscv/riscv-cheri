@@ -28,23 +28,15 @@ include::cheri_mode_dependent.adoc[]
 
 Description ({cheri_base32_ext_name})::
 Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of the jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>.
++
+The target <<pcc>> is calculated by replacing the current <<pcc>> address with the value read from the jump table, and is updated using <<SCADDR>> semantics.
++
+If the <<jvtc>> check fails, then clear the tag of the target <<pcc>>.
 
 include::zcm_common.adoc[]
 
 Permissions ({cheri_base32_ext_name})::
 Requires <<jvtc>> to have its valid tag set, not be sealed, have <<x_perm>> and for the full XLEN-wide table access to be in <<jvtc>> bounds.
-
-Exceptions ({cheri_base32_ext_name})::
-_CHERI instruction fetch fault_ can be caused for one the following reasons:
-+
-[width="50%",options=header,cols="2,^1",align=center]
-|==============================================================================
-| Kind                       |
-| {cheri_excep_name_pc_ytag} | {cheri_excep_desc_ytag}
-| {cheri_excep_name_pc_seal} | {cheri_excep_desc_seal}
-| {cheri_excep_name_pc_perm} | {cheri_excep_desc_perm}
-| {cheri_excep_name_pc_bnds} | {cheri_excep_desc_bnds}
-|==============================================================================
 
 include::pcrel_debug_warning.adoc[]
 

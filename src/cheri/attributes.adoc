@@ -65,36 +65,23 @@ endif::[]
 :cap_rv32_exp_width:    5
 :cap_rv64_exp_width:    6
 
-:cheri_excep_cause_ls_ytag: 32
-:cheri_excep_cause_pc_ytag: 33
-:cheri_excep_cause_ls_seal: 34
-:cheri_excep_cause_pc_seal: 35
-:cheri_excep_cause_ls_perm: 36
-:cheri_excep_cause_pc_perm: 37
-:cheri_excep_cause_ls_bnds: 38
-:cheri_excep_cause_pc_bnds: 39
+:cheri_excep_cause_pc:       32
+:cheri_excep_cause_ld:       33
+:cheri_excep_cause_st:       34
+:cheri_excep_cause_pte_ld:   35
+:cheri_excep_cause_pte_st:   36
 
-:cheri_excep_name_pc_ytag:   CHERI PCC Valid Tag Violation
-:cheri_excep_name_pc_seal:   CHERI PCC Seal Violation
-:cheri_excep_name_pc_perm:   CHERI PCC Permission Violation
-:cheri_excep_name_pc_bnds:   CHERI PCC Bounds Violation
-
-:cheri_excep_name_ls_ytag:   CHERI Load/Store Valid Tag Violation
-:cheri_excep_name_ls_seal:   CHERI Load/Store Seal Violation
-:cheri_excep_name_ls_perm:   CHERI Load/Store Permission Violation
-:cheri_excep_name_ls_bnds:   CHERI Load/Store Bounds Violation
+:cheri_excep_name_pc:        CHERI Instruction Access Fault
+:cheri_excep_name_ld:        CHERI Load Access Fault
+:cheri_excep_name_st:        CHERI Store/AMO Access Fault
+:cheri_excep_name_pte:       CHERI Page Fault
+:cheri_excep_name_pte_ld:    CHERI Load Page Fault
+:cheri_excep_name_pte_st:    CHERI Store/AMO Page Fault
 
 :cheri_excep_desc_ytag:      Authorizing capability valid tag set to 0, or has any reserved bits set.
 :cheri_excep_desc_seal:      Authorizing capability is sealed.
 :cheri_excep_desc_perm:      Authorizing capability does not grant the necessary permissions, or the <<AP-field>> could not have been produced by <<ACPERM>>.
 :cheri_excep_desc_bnds:      At least one byte accessed is outside the authorizing capability bounds, or the bounds could not be decoded.
 
-:cheri_excep_pc_list:        {cheri_excep_cause_pc_ytag},{cheri_excep_cause_pc_seal},{cheri_excep_cause_pc_perm},{cheri_excep_cause_pc_bnds}
-:cheri_excep_ls_list:        {cheri_excep_cause_ls_ytag},{cheri_excep_cause_ls_seal},{cheri_excep_cause_ls_perm},{cheri_excep_cause_ls_bnds}
-:cheri_excep_list:           {cheri_excep_pc_list},{cheri_excep_ls_list},{cheri_excep_cause_pte_ld},{cheri_excep_cause_pte_st}
-
-:cheri_excep_name_pte_ld:     CHERI PTE Load Page Fault
-:cheri_excep_name_pte_st:     CHERI PTE Store/AMO Page Fault
-
-:cheri_excep_cause_pte_ld: 40
-:cheri_excep_cause_pte_st: 41
+:cheri_excep_cause_ls_list:  {cheri_excep_cause_ld},{cheri_excep_cause_st}
+:cheri_excep_cause_list:     {cheri_excep_cause_pc},{cheri_excep_cause_ls_list},{cheri_excep_cause_pte_ld},{cheri_excep_cause_pte_st}
