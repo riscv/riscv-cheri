@@ -343,12 +343,12 @@ NOTE: `auth_cap` is `cs1`
 |=========================================================================================
 | Instructions | Xcause | Description | Check
 4+| *All instructions have these exception checks first*
-| All | {cheri_excep_cause_pc} |{cheri_excep_name_pc} | <<pcc>> valid tag is zero
-| All | {cheri_excep_cause_pc} |{cheri_excep_name_pc} | <<pcc>> is sealed
-| All | {cheri_excep_cause_pc} |{cheri_excep_name_pc} | <<pcc>> does not have <<x_perm>>
-| All | {cheri_excep_cause_pc} |{cheri_excep_name_pc} | Any byte of current instruction out of <<pcc>> bounds^1^
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> valid tag is zero
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> is sealed
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not have <<x_perm>>
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of current instruction out of <<pcc>> bounds^1^
 4+| *CSR/Xret additional exception check*
-| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>> | {cheri_excep_cause_pc} | <<pcc>> permission | not(<<pcc>>.<<asr_perm>>) when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
+| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>           | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not have <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
 4+| *Load additional exception checks*
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` valid tag is zero
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
