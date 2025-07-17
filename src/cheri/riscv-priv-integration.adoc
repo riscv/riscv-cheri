@@ -197,7 +197,7 @@ Load/store/AMO address misaligned
 |===
 
 ^1^ PCC bounds are checked against all bytes of fetched instructions.
- If the instructions cannot be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
+ If the instructions could not be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
 ^2^ The higher priority {cheri_excep_name_pte_ld} covers capability loads or atomics where the loaded valid tag _is not_ checked ({cheri_priv_crg_ext} is implemented) .
 
@@ -347,25 +347,28 @@ NOTE: `auth_cap` is `cs1`, unless in {cheri_int_mode_name} when it is <<ddc>> (i
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> is sealed
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not have <<x_perm>>
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of current instruction out of <<pcc>> bounds^1^
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> failed any <<section_cap_integrity,integrity>> check.
 4+| *CSR/Xret additional exception check*
 | CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>           | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not have <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
 4+| *Load additional exception checks*
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` valid tag is zero
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not have <<r_perm>>
-| all loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^1^
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^1^
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
 | capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` valid tag is zero
-| all stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
-| all atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<r_perm>>
-| all stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<w_perm>>
+| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` valid tag is zero
+| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
+| All atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<r_perm>>
+| All stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<w_perm>>
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have both <<r_perm>> and <<w_perm>>
-| all stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^1^
+| All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^1^
 | CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^1^
 | CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^1^
 | CBO.INVAL*                                     | {cheri_excep_cause_st}     | {cheri_excep_name_st} | <<pcc>> does not have <<asr_perm>>
-| capability stores                              | 7^2^                       | Store access fault    | Misaligned capability store
+| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
+| Capability stores                              | 7^2^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
 
 ^1^ The bounds checks include the cases where the bounds could not be decoded.
@@ -639,7 +642,7 @@ However, the bounds encoding of capabilities depends on the address value if the
 
 Therefore implementations must not convert invalid addresses to other arbitrary invalid addresses in an unrestricted manner if the bounds are not <<infinite-cap>>.
 
-If the bounds cannot be decoded due to the address being invalid, and the bounds not being <<infinite-cap>>, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
+If the bounds could not be decoded due to the address being invalid, and the bounds not being <<infinite-cap>>, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
 
 NOTE: In all cases, if the authorizing capability has <<infinite-cap>> bounds, then the behavior is identical to the normal RISC-V behavior without CHERI.
 
