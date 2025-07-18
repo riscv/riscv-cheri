@@ -19,6 +19,7 @@
 :cheri_priv_h_ext: Shcheri
 :cheri_priv_vmem_ext: Svcheri
 :cheri_priv_debug_ext: Sdcheri
+:cheri_nointegrity_ext: Zcherinointegrity
 // Extension for CHERI CRG bits
 :cheri_priv_crg_ext:          Svucrg
 :cheri_priv_crg_load_tag_ext: Svucrglvt
@@ -79,10 +80,11 @@ endif::[]
 :cheri_excep_name_pte_ld:    CHERI Load Page Fault
 :cheri_excep_name_pte_st:    CHERI Store/AMO Page Fault
 
-:cheri_excep_desc_ytag:      Authorizing capability valid tag set to 0, or has any reserved bits set.
+:cheri_excep_desc_ytag:      Authorizing capability valid tag is set to 0.
 :cheri_excep_desc_seal:      Authorizing capability is sealed.
-:cheri_excep_desc_perm:      Authorizing capability does not grant the necessary permissions, or the <<AP-field>> could not have been produced by <<ACPERM>>.
+:cheri_excep_desc_perm:      Authorizing capability does not grant the necessary permissions.
 :cheri_excep_desc_bnds:      At least one byte accessed is outside the authorizing capability bounds, or the bounds could not be decoded.
+:cheri_excep_desc_intg:      cs1 failed any <<section_cap_integrity,integrity>> check.
 
 :cheri_excep_cause_ls_list:  {cheri_excep_cause_ld},{cheri_excep_cause_st}
 :cheri_excep_cause_list:     {cheri_excep_cause_pc},{cheri_excep_cause_ls_list},{cheri_excep_cause_pte_ld},{cheri_excep_cause_pte_st}
