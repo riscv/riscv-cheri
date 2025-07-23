@@ -95,18 +95,17 @@ BUILD_DIR := build
 DOCS_PDF := $(addprefix $(BUILD_DIR)/, $(addsuffix .pdf, $(DOCS)))
 DOCS_HTML := $(addprefix $(BUILD_DIR)/, $(addsuffix .html, $(DOCS)))
 DOCS_EPUB := $(addprefix $(BUILD_DIR)/, $(addsuffix .epub, $(DOCS)))
+DOCS_NORM_TAGS := $(addprefix $(BUILD_DIR)/, $(addsuffix -norm-tags.json, $(DOCS)))
 
 ENV := LANG=C.utf8
-# Default to building only the CHERI changes
-ifdef CHERI_MINIMAL
-XTRA_ADOC_OPTS ?= -a minimal_cheri_changes_doc=1
-else
-XTRA_ADOC_OPTS ?=
-endif
+XTRA_ADOC_OPTS :=
+
 ASCIIDOCTOR_PDF := $(ENV) asciidoctor-pdf
 ASCIIDOCTOR_HTML := $(ENV) asciidoctor
 ASCIIDOCTOR_EPUB := $(ENV) asciidoctor-epub3
-OPTIONS := --trace --verbose \
+ASCIIDOCTOR_TAGS := $(ENV) asciidoctor --backend tags --require=./docs-resources/converters/tags.rb
+
+OPTIONS := --trace \
            -a compress \
            -a mathematical-format=svg \
            -a pdf-fontsdir=docs-resources/fonts \
@@ -114,6 +113,7 @@ OPTIONS := --trace --verbose \
            $(WATERMARK_OPT) \
            -a revnumber='$(DATE)' \
            -a revremark='$(RELEASE_DESCRIPTION)' \
+           -a docinfo=shared \
            $(XTRA_ADOC_OPTS) \
            -D build \
            --failure-level=WARN
@@ -123,14 +123,7 @@ REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-mathematical \
             --require=asciidoctor-sail
 
-# Downloaded Sail Asciidoc JSON, which includes all of
-# the Sail code and can be embedded. We don't vendor it
-# into this repo since it's quite large (~4MB).
-SAIL_ASCIIDOC_JSON_URL_FILE = riscv_RV64.json.url
-CHERI_GEN_DIR = $(SRC_DIR)/cheri/generated
-SAIL_ASCIIDOC_JSON = $(CHERI_GEN_DIR)/riscv_RV64.json
-
-.PHONY: all build clean build-pdf build-html build-epub docker-pull-latest generate generate-cheri-tables
+.PHONY: all build clean build-container build-no-container build-docs build-pdf build-html build-epub build-tags submodule-check
 
 all: build
 
@@ -162,28 +155,53 @@ endif
 build-pdf: $(DOCS_PDF)
 build-html: $(DOCS_HTML)
 build-epub: $(DOCS_EPUB)
+build-tags: $(DOCS_NORM_TAGS)
 
 build: build-pdf build-html build-epub
 
 ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON) generate-cheri-tables
 
-$(BUILD_DIR)/%.pdf: $(SRC_DIR)/%.adoc $(ALL_SRCS)
+$(BUILD_DIR)/%.pdf: $(SRC_DIR)/%.adoc $(ALL_SRCS) $(BUILD_DIR)/%-norm-tags.json
 	$(WORKDIR_SETUP)
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_PDF) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
 	@echo -e '\n  Built \e]8;;file://$(abspath $@)\e\\$@\e]8;;\e\\\n'
 
-$(BUILD_DIR)/%.html: $(SRC_DIR)/%.adoc $(ALL_SRCS)
+$(BUILD_DIR)/%.html: $(SRC_DIR)/%.adoc $(ALL_SRCS) $(BUILD_DIR)/%-norm-tags.json
 	$(WORKDIR_SETUP)
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_HTML) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
 	@echo -e '\n  Built \e]8;;file://$(abspath $@)\e\\$@\e]8;;\e\\\n'
 
-$(BUILD_DIR)/%.epub: $(SRC_DIR)/%.adoc $(ALL_SRCS)
+$(BUILD_DIR)/%.epub: $(SRC_DIR)/%.adoc $(ALL_SRCS) $(BUILD_DIR)/%-norm-tags.json
 	$(WORKDIR_SETUP)
 	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_EPUB) $(OPTIONS) $(REQUIRES) $< $(DOCKER_QUOTE)
 	$(WORKDIR_TEARDOWN)
-	@echo -e '\n  Built \e]8;;file://$(abspath $@)\e\\$@\e]8;;\e\\\n'
+
+$(BUILD_DIR)/%-norm-tags.json: $(SRC_DIR)/%.adoc $(ALL_SRCS) docs-resources/converters/tags.rb
+	$(WORKDIR_SETUP)
+	$(DOCKER_CMD) $(DOCKER_QUOTE) $(ASCIIDOCTOR_TAGS) $(OPTIONS) -a tags-match-prefix='norm:' -a tags-output-suffix='-norm-tags.json' $(REQUIRES) $< $(DOCKER_QUOTE)
+	$(WORKDIR_TEARDOWN)
+
+build: submodule-check
+	@echo "Checking if Docker is available..."
+	@if command -v docker >/dev/null 2>&1 ; then \
+		echo "Docker is available, building inside Docker container..."; \
+		$(MAKE) build-container; \
+	else \
+		echo "Docker is not available, building without Docker..."; \
+		$(MAKE) build-no-container; \
+	fi
+
+build-container: submodule-check
+	@echo "Starting build inside Docker container..."
+	$(MAKE) SKIP_DOCKER=false build-docs
+	@echo "Build completed successfully inside Docker container."
+
+build-no-container: submodule-check
+	@echo "Starting build..."
+	$(MAKE) SKIP_DOCKER=true build-docs
+	@echo "Build completed successfully."
 
 # Update docker image to latest
 docker-pull-latest:
