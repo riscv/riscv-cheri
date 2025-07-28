@@ -5,6 +5,8 @@ ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the unpriv spec after the RV32I chapter.
 endif::[]
 
+#ARC-COMMENT: A fundamental descriptive problem in this narrative is that capabilities are being viewed as variables not as values.  A capability is never modified in place - a new capability value is being created from an existing capability value by instructions.  This confusion makes it more difficult to understand instruction descriptions which operate on values and place them in variables (registers and memory locations).#
+
 This chapter describes the {cheri_base32_ext_name} and {cheri_base64_ext_name} base capability instruction sets, that extend the RV32I and RV64I (or RV32E/RV64E) integer instruction sets with CHERI.
 If the hart supports RV32E/RV64E instead of RV32I/RV64I, {cheri_base_ext_name} the restrictions from <<rv32e>> apply and 16 general purpose registers instead of 32 -- but all other {cheri_base_ext_name} changes are identical so the remainder of this chaper only refers to extending RV32I/RV64I behavior.
 
@@ -54,7 +56,7 @@ improve their security.
 
 #ARC note - CLEN will become YLEN#
 
-{cheri_base_ext_name} extends all registers that hold addresses to `2*XLEN` bits (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+{cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to CLEN, each register also gains one-bit {ctag} which is defined below.
 
 {cheri_base_ext_name} specify the fields which the capability format supports, and how those fields behave for XLEN=32 and XLEN=64.
@@ -73,7 +75,7 @@ NOTE: Future extensions may redefine the capability format providing they follow
 (def boxes-per-row 32)
 (draw-column-headers {:height 50 :font-size 18 :labels (reverse (concat ["0"] (repeat 28 "") ["XLEN-1" "" ""]))})
 
-(draw-box "V"    {:span 1})
+(draw-box "C"    {:span 1})
 (draw-box "" {:span 1 :borders {}})
 (draw-box "Metadata (bounds, permissions, etc.)"    {:span 30})
 (draw-box "" {:span 2 :borders {}})
@@ -151,9 +153,9 @@ It is not permitted to make any partially or fully out-of-bounds memory accesses
 Every capability has two memory address bounds: _base_ representing the lowest accessible byte, and _top_ representing one byte above the highest accessible byte.
 
 * The _base_ is XLEN bits and is _inclusive_.
-* The _top_ is XLEN+1-bits and is _exclusive_.
+* The _top_ is (XLEN+1)-bits and is _exclusive_.
 ** The extra bit is required to allow the bounds to include the top byte of memory.
-* The _length_ is XLEN+1-bits and is defined to be _top - base_.
+* The _length_ is (XLEN+1)-bits and is defined to be _top - base_.
 
 Therefore a memory location `A` in the range `base &#8804; A < top` is within bounds, and so valid to access.
 
@@ -168,17 +170,18 @@ Therefore small exponents can allow byte granularity on the bounds, but larger e
 The bounds encoding format is defined in <<section_cap_bounds>>.
 
 NOTE: Future extensions may redefine the bounds encoding format.
+  #ARC-COMMENT: if they redefine, then they wouldn't be a straightforward extension, but an incompatible alternative?#
 
 Software can query the capability bounds:
 
-* The _base_ is returned by <<GCBASE>>.
-* The _length_ is returned by <<GCLEN>>.
+* The _base_ is returned by the <<GCBASE>> instruction.
+* The _length_ is returned by the <<GCLEN>> instruction.
 ** <<GCLEN>> saturates the _length_ to XLEN bits
-* The _top_ can be calculated via <<GCBASE>>+<<GCLEN>>
+* The _top_ can be calculated using a saturating addition of the <<GCBASE>> and <<GCLEN>> results.
 
 NOTE: A future extension may add an instruction to directly read the _top_ if needed for performance.
 
-==== Updating The Bounds
+==== Updating the Bounds
 
 On system initialization the <<infinite-cap>> capability is available which has bounds which cover all of memory, and maximum permissions set.
 All smaller capabilities are derived from this.
@@ -204,21 +207,19 @@ The number of shared bits depends on the exponent, see xref:section_cap_bounds[x
 NOTE: Early versions of CHERI encoded the top and bottom bounds as full width addresses.
 This proved to be impractical for real systems, and so the https://www.cl.cam.ac.uk/research/security/ctsrd/pdfs/2019tc-cheri-concentrate.pdf[CHERI-concentrate] compressed system was developed to reduce the overhead.
 
-Because CHERI concentrate encoding scheme shares the upper bits of the address with the bounds, the address of a capability cannot be arbitrary modified without risking changing the meaning of the bounds.
-This means that whenever a capability address is updated, the semantics of the <<SCADDR>> instruction are required to check that the decoding of the bounds hasn't changed.
+==== Representability and Updating the Address
+
+Because the CHERI concentrate encoding scheme shares the upper bits of the address with the bounds, not all out-of-bounds pointers can be represented.
+The maximum range of address values that the pointer can take without changing the interpretation of bounds is defined by the <<section_cap_representable_check, representable region>>.
+Since capability address modification could change the meaning of the bounds, all updates to registers (e.g., modification of the program counter via control-flow instructions) and instructions that return capabilities with a modified address must check that the new address is also within the representable region.
 If the interpretation of bounds _has_ changed, then the {ctag} is set to zero, so that the capability is invalid for use.
 
-NOTE: <<SCADDR>> updates the address field of a capability and then checks that the updated capability is still valid.
-
-==== Representability
-
-Due to the encoding of capability bounds, not all out-of-bounds pointers can be represented.
-The maximum range of address values that the pointer can take is defined by the <<section_cap_representable_check, representable region>>, which is checked on every update by <<SCADDR>>.
+Software can create a new capability with an updated address using the <<SCADDR>> instruction.
 
 NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only come back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
 
-NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to the default (e.g., for accellerators or specific micro-controllers) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
-Therefore, the rest of the specification uses the phrase *represented exactly* for the check performed by <<SCADDR>>.
+NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to the default (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
+Therefore, the rest of the specification uses the phrase *represented exactly* for this check.
 
 The bounds and representable region (or space) are illustrated in <<cap_bounds_map>>.
 E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
@@ -226,6 +227,8 @@ E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding
 [#cap_bounds_map]
 .Memory address bounds encoded within a capability
 image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
+
+NOTE: <<SCADDR>> updates the address field of a capability and then checks that the updated capability is still valid.
 
 [#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
@@ -243,7 +246,7 @@ The following capability types are defined in {cheri_base_ext_name}:
 |1    | Sealed entry (sentry) capability
 |===
 
-NOTE: Future extensions are likely to add more types of sealed capabilities by extending the width of the CT-field.
+NOTE: Future extensions will add more types of sealed capabilities by extending the width of the CT-field.
  In the base ISA, sentries are the only type of sealed capability and the CT field is only 1-bit.
 
 [#unsealed_cap,reftext="unsealed capability]
@@ -294,9 +297,9 @@ NOTE: The encoding of permissions varies with MXLEN and is described in xref:AP-
 | <<w_perm>>   | Data memory permission         | Authorize data memory write access
 | <<x_perm>>   | Instruction memory permission  | Authorize instruction memory execute access
 | <<c_perm>>   | Data memory permission         | Authorize loading/storing of {ctag}s
-| <<lm_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
-| <<el_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
-| <<sl_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
+| <<lm_perm>>  | Data memory permission         | Used to restrict the permissions of loaded capabilities.
+| <<el_perm>>  | Data memory permission         | Used to restrict the permissions of loaded capabilities.
+| <<sl_perm>>  | Data memory permission         | Used to restrict the permissions of loaded capabilities.
 | <<asr_perm>> | Privileged state permission    | Authorize privileged instructions and CSR accesses.
 |==============================================================================
 
@@ -311,9 +314,9 @@ Execute Permission (X):: Allow instruction execution.
 
 [#c_perm,reftext="C-permission"]
 Capability Permission \(C)::
-Allow reading capability data from memory if the authorizing capability also grants <<r_perm>>.
+Allow reading {ctag}s from memory if <<r_perm>> is also granted.
 +
-Allow writing capability data to memory if the authorizing capability also grants <<w_perm>>.
+Allow writing {ctag}s to memory if <<w_perm>> is also granted..
 +
 If <<c_perm>> is missing then the {ctag}s for capability loads and stores are read and written as zero.
 
@@ -329,7 +332,7 @@ NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-o
 [#sl_perm,reftext="SL-permission"]
 Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic:
 +
-Capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero {ctag}.
+Capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero {ctag}.#ARC-COMMENT: Introduce levels earlier.#
 +
 In the base ISA this is a single bit comparison, behaving as follows:
 
@@ -464,7 +467,7 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to 
 (draw-gap "Same layout for c2-c30 (extending x2-x30)" {:height 100})
 (draw-box "" [:box-first {:span 1}]) (draw-box "c31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
 (draw-box nil [:box-first {:span 1}]) (draw-box "pcc" [:box-related {:span 32}]) (draw-box "pc" [:box-last {:span 32 }])
-(draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
+(draw-box "C" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
 When referring to the extended registers, the `x` prefix is replaced with a `c`: i.e. the extended version of `x1` becomes `c1`.
@@ -484,26 +487,18 @@ The <<pcc>> address field is the `pc` in the base RISC-V ISA so that the
 hardware automatically updates it as instructions are executed.
 
 The hardware performs the following checks on <<pcc>> for each instruction
-executed in addition to the checks already required by the base RISC-V ISA. A
-failing check raises a CHERI exception.
+executed in addition to the checks already required by the base RISC-V ISA.
+A failing check raises a CHERI exception.
 
 * The {ctag} must be set
 * The capability must not be sealed
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
+* All <<section_cap_integrity,integrity>> checks passed.
 
 On system initialization the `pc` bounds and permissions must be set such that the program can run successfully (e.g., by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
 
-The {cheri_base_ext_name} ISA requires capabilities written to the <<pcc>> to follow these rules:
-
-1. The {ctag} is set.
-2. <<x_perm>> is granted.
-3. The capability is not sealed.
-4. No <<section_cap_integrity, integrity>> checks fail.
-
-If any of these rules are not followed then execution will raise an exception.
-
-NOTE: Future ISA extensions should respect these rules so that these bits do not need storing in all copies of the <<pcc>> in the implementation.
+NOTE: Future ISA extensions should respect these rules so that the checked bits do not need storing in all copies of the <<pcc>> in the implementation.
 
 .Program Counter Capability
 [#pcc-format]
@@ -731,7 +726,7 @@ include::insns/gchi_32bit.adoc[]
 [#tab_cap_misc_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic   |Description
-|<<SCEQ>>   |Full capability bitwise compare, set result true if both are fully equal
+|<<SCEQ>>   |Full capability bitwise compare, set result true if all bits (including the {ctag}) are equal
 |<<SCSS>>   |Set result true if cs1 and cs1 tags match and cs2 bounds and permissions are a subset of cs1
 |<<CRAM>>   |Representable Alignment Mask: Return mask to apply to address to get the requested bounds
 |=======================
@@ -752,6 +747,7 @@ All capability memory accesses check for <<c_perm>> in the authorizing capabilit
 
 If <<c_perm>> is granted then:
 
+#ARC-NOTE: SC has name clash with "store conditional" in A extension. Suggest LY, SY.#
 * <<LC>> reads CLEN bits of data from memory, and returns the associated {ctag}.
 * <<SC>> writes CLEN bits of data to memory, and writes the associated {ctag}.
 
@@ -801,9 +797,10 @@ include::insns/store_32bit_cap.adoc[]
 
 {cheri_base_ext_name} extend existing instructions that are used for handling addresses so that they manipulate a whole capability.
 
-* The affected operands change type from *x* to *c* to represent this.
-* Whenever the address field of any capability is modified, it is _always_ updated using <<SCADDR>> semantics.
+* The affected operands change type from *x* to *c* to represent this. #ARC-COMMENT: What does this actually mean?  What type is x versus c?#
+* Whenever the address field of any capability is modified, it is _always_ updated using <<SCADDR>> semantics. #ARC-COMMENT: Capabilities are not modified.  Capabilites are either input source operands or results from an instruction, they are not modified in place by an instruction.  This should be stated as a rule on results of operations.#
 * Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead.
+ #ARC-COMMENT: Doesn't this rule apply to all instructions that operate on a capability?  Or are there instructions that will always convert result to a non-capability?  The rule should be stated more cleanly - the instructions don't know if values are addresses, and non-capability values can be addresses.#
 
 `ADD` and `ADDI` are not affected by the rule above.
 Even though they _are_ used for handling addresses, they also have other uses.
@@ -822,10 +819,14 @@ Using a single encoding for both is undesirable:
 
 ====
 
-These rules affect the following <<rv32,base ISA>> instructions listed in the following subsections, and also apply to instructions added by other extensions, e.g.:
+The rules above the following <<rv32,base ISA>> instructions listed in the following subsections, and also apply to instructions added by other extensions.
 
-* Shift-and-add instructions from <<zba_cheri>>, such as <<SH3ADD_CHERI>>.
-* RVC encodings C.ADDI16SPN, C.ADDI4SP and C.MV change behavior, and encodings such as C.FSD, C.FLD are remapped to load/store capabilities.
+#ARC-COMMENT: Confusing to list these here as these are not base ISA instructions.#
+
+#TODO: Add another chapter listing the changes to other extensions?#
+
+* #Shift-and-add instructions from <<zba_cheri>>, such as <<SH3ADD_CHERI>>.#
+* #RVC encodings C.ADDI16SPN, C.ADDI4SP and C.MV change behavior, and encodings such as C.FSD, C.FLD are remapped to load/store capabilities.#
 
 ==== Changes to load/stores
 
@@ -835,7 +836,7 @@ All load and store instructions behave as described in <<ldst>> with one fundame
   The base address is unchanged, i.e., using the value from `rs1`.
   The metadata and {ctag} are used to <<sec_cap_checks,authorize the access>>.
 
-* The result written to the destination *x* register is _always_ unchanged. I.e., the lower XLEN bits are always written with the value from RV32I/RV64I.
+* For a load instruction, the lower XLEN bits of the result written to the destination register is the same as in the RV32I/RV64I specification.
 
 All load and store instructions authorized by `cs1` raise exceptions if any of these checks fail:
 
@@ -850,11 +851,10 @@ endif::[]
 * All <<section_cap_integrity,integrity>> checks on `cs1` must pass
 
 ^1^ All load/store encodings are _reserved_ if `cs1=c0` (since dereferencing <<null-cap>> always faults).
- This principle is extended to _all_ loads and stores authorized by `cs1`.
 
-Load instructions, except for <<LC>>, always zero the {ctag} and metadata of the result register.
+All load instructions, except for the {cheri_base_ext_name} <<LC>>, always zero the {ctag} and metadata of the result register.
 
-Store instructions, except for <<SC>>, always write zero to the {ctag} or tags associated with the memory locations that are written to.
+All store instructions, except for the {cheri_base_ext_name} <<SC>>, always write zero to the {ctag} or tags associated with the memory locations that are written to.
 
 Therefore, misaligned stores may clear up to two associated {ctag} bits.
 
@@ -868,7 +868,7 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 * <<section_cheri_vector_integration,Vector load and stores>>.
 * Atomic memory accesses, see <<zaamo_cheri>> and <<zalrsc_cheri>>.
 
-Also note that the RVC encodings C.FSD, C.FLD, C.FSDSP, C.FLDSP are remapped to load/store capability data instead.
+Also note that the RVC encodings C.FSD, C.FLD, C.FSDSP, C.FLDSP are remapped to load/store capability data instead.#ARC-COMMENT: These are not part of the base.#
 
 .Changed RISC-V base ISA load/store instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_ldst_summary,%autowidth,options=header,align="center",cols="2,4"]
@@ -878,9 +878,8 @@ Also note that the RVC encodings C.FSD, C.FLD, C.FSDSP, C.FLDSP are remapped to 
 |<<section_int_load_store_insns,SD, SW, SH, SB>>|Integer stores (authorized by the capability in `cs1`)
 |=======================
 
-==== Changes to PC handing
+==== Changes to PC
 
-* Whenever the PC is handled, it is _always_ the CLEN-bit <<pcc>>.
 * Whenever the address field of the <<pcc>> is modified, following the rule above, it is _always_ updated using <<SCADDR>> semantics.
   This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
   In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
