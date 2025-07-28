@@ -55,7 +55,7 @@ improve their security.
 #ARC note - CLEN will become YLEN#
 
 {cheri_base_ext_name} extends all registers that hold addresses to `2*XLEN` bits (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
-In addition to widening to CLEN, each register also gains one-bit valid tag which is defined below.
+In addition to widening to CLEN, each register also gains one-bit {ctag} which is defined below.
 
 {cheri_base_ext_name} specify the fields which the capability format supports, and how those fields behave for XLEN=32 and XLEN=64.
 
@@ -90,26 +90,26 @@ For registers that are extended but currently hold non-capability data, all othe
 
 NOTE: Future extensions may add 2*XLEN-bit operations to make use of the wide registers for efficient handling of 2*XLEN-bit non-capability data.
 
-[#cap_valid_tag,reftext="valid tag"]
-==== Valid Tag
+[#cap_valid_tag,reftext="{ctag}"]
+==== Capability Tag
 
-The valid tag is an additional bit added to addressable memory and all CLEN-bit registers.
+The {ctag} is an additional bit added to addressable memory and all CLEN-bit registers.
 It is stored separately and may be referred to as _out of band_ or _hidden_, and is _hardware managed_.
 It indicates whether a CLEN-bit register or CLEN-aligned memory location contains a valid capability.
-If the valid tag is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds_overview,bounds>>).
+If the {ctag} is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds_overview,bounds>>).
 
-All registers or memory locations able to hold a capability are CLEN bits wide with an additional hidden valid tag bit.
+All registers or memory locations able to hold a capability are CLEN bits wide with an additional hidden {ctag} bit.
 These are referred to as being _CLEN-bit_ in this specification.
 
-The valid tag cannot be directly set to one by software, it is _not_ a conventionally accessible bit of state.
-If the valid tag is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
-If the rules are followed then the valid tag will propagate through the instructions that modify, load or store the capability.
+The {ctag} cannot be directly set to one by software, it is _not_ a conventionally accessible bit of state.
+If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
+If the rules are followed then the capability tag will propagate through the instructions that modify, load or store the capability.
 
 Therefore, for capability manipulation in registers:
 
-* Any instruction that wrote the capability to a register had at least one valid tag set in its input operands.
+* Any instruction that wrote the capability to a register had at least one capability tag set in its input operands.
 ** This is the _provenance_ check.
-* Any instruction that wrote the capability to a register requested a legal operation that does not increase bounds or permissions, and set the valid tag on the output.
+* Any instruction that wrote the capability to a register requested a legal operation that does not increase bounds or permissions, and set the capability tag on the output.
 ** This is the _monotonicity_ check.
 * Any instruction that wrote the capability to a register detected corrupted values.
 ** This is the _integrity_ check.
@@ -119,25 +119,25 @@ Capability load/store require the _provenance_ check:
 * Any store that wrote the capability to memory was correctly authorized
 * Any load that read the capability from memory was correctly authorized
 
-When an operation fails a check, either due to software error or malicious intent, then the operation raises an exception or sets the resulting valid tag to zero.
+When an operation fails a check, either due to software error or malicious intent, then the operation raises an exception or sets the resulting {ctag} to zero.
 
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
-All capabilities derived from invalid capabilities are themselves invalid, i.e., their valid tags are zero.
+All capabilities derived from invalid capabilities are themselves invalid, i.e., their {ctag}s are zero.
 
-NOTE: When the valid tag is zero, the register or memory location may be used to store non-capability data.
+NOTE: When the {ctag} is zero, the register or memory location may be used to store non-capability data.
 
-==== Valid tags in registers
+==== Capability tags in registers
 
-Every CLEN-bit register has a one-bit valid tag, indicating whether the capability in the register is valid to be dereferenced.
-This valid tag is cleared whenever an invalid capability operation is performed.
+Every CLEN-bit register has a one-bit {ctag}, indicating whether the capability in the register is valid to be dereferenced.
+This {ctag} is cleared whenever an invalid capability operation is performed.
 Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
 
-==== Valid tags in memory
+==== Capability tags in memory
 
-Valid tags are tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit valid tag, which the hardware manages atomically with the data.
-The valid tag is set to zero if any byte in the CLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand which is permitted to set the valid tag to one (see <<c_perm>>), and that the stored capability data has its valid tag set.
+Capability tags are tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
+The {ctag} is set to zero if any byte in the CLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand which is permitted to set the {ctag} to one (see <<c_perm>>), and that the stored capability data has its {ctag} set.
 
-NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the valid tags atomically with the data.
+NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
 
 [#sec_cap_bounds_overview]
 ==== Capability Bounds
@@ -183,20 +183,20 @@ NOTE: A future extension may add an instruction to directly read the _top_ if ne
 On system initialization the <<infinite-cap>> capability is available which has bounds which cover all of memory, and maximum permissions set.
 All smaller capabilities are derived from this.
 
-The ISA does not allow the bounds (and permissions) of a capability with its valid tag set to be increased (_monotonicity_).
+The ISA does not allow the bounds (and permissions) of a capability with its {ctag} set to be increased (_monotonicity_).
 
 Bounds can be programmed using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs1` or `imm`) value.
 The granularity constraints means that not all requested combinations of _top_ and _base_ bounds can be encoded exactly.
 
-* <<SCBNDS>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. Set the valid tag to zero if the bounds cannot be encoded exactly.
-* <<SCBNDSI>> sets the _base_ to `cs1.address`, and the _length_ to the immediate value. Set the valid tag to zero if the bounds cannot be encoded exactly.
+* <<SCBNDS>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. Set the {ctag} to zero if the bounds cannot be encoded exactly.
+* <<SCBNDSI>> sets the _base_ to `cs1.address`, and the _length_ to the immediate value. Set the {ctag} to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSR>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. The bounds may be rounded up if they cannot be encoded exactly.
 ** If <<SCBNDSR>> rounds up the requested bounds, they must still be no larger than the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
 // #some example usage here of CRAM+SCBNDSR would be good#
 
-// NOTE: Instructions like <<SCBNDS>> can be reused to reduce the bounds of an existing capability while retaining the valid tag, or they can be used to construct a new capability which is then validated using <<CBLD>>.
+// NOTE: Instructions like <<SCBNDS>> can be reused to reduce the bounds of an existing capability while retaining the {ctag}, or they can be used to construct a new capability which is then validated using <<CBLD>>.
 
 The bounds are encoded relative to the address field, sharing some upper bits of the address.
 The number of shared bits depends on the exponent, see xref:section_cap_bounds[xrefstyle=short].
@@ -206,7 +206,7 @@ This proved to be impractical for real systems, and so the https://www.cl.cam.ac
 
 Because CHERI concentrate encoding scheme shares the upper bits of the address with the bounds, the address of a capability cannot be arbitrary modified without risking changing the meaning of the bounds.
 This means that whenever a capability address is updated, the semantics of the <<SCADDR>> instruction are required to check that the decoding of the bounds hasn't changed.
-If the interpretation of bounds _has_ changed, then the valid tag is set to zero, so that the capability is invalid for use.
+If the interpretation of bounds _has_ changed, then the {ctag} is set to zero, so that the capability is invalid for use.
 
 NOTE: <<SCADDR>> updates the address field of a capability and then checks that the updated capability is still valid.
 
@@ -293,7 +293,7 @@ NOTE: The encoding of permissions varies with MXLEN and is described in xref:AP-
 | <<r_perm>>   | Data memory permission         | Authorize data memory read access
 | <<w_perm>>   | Data memory permission         | Authorize data memory write access
 | <<x_perm>>   | Instruction memory permission  | Authorize instruction memory execute access
-| <<c_perm>>   | Data memory permission         | Authorize loading/storing of valid tags
+| <<c_perm>>   | Data memory permission         | Authorize loading/storing of {ctag}s
 | <<lm_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
 | <<el_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
 | <<sl_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
@@ -315,13 +315,13 @@ Allow reading capability data from memory if the authorizing capability also gra
 +
 Allow writing capability data to memory if the authorizing capability also grants <<w_perm>>.
 +
-If <<c_perm>> is missing then the valid tags for capability loads and stores are read and written as zero.
+If <<c_perm>> is missing then the {ctag}s for capability loads and stores are read and written as zero.
 
 [#lm_perm,reftext="LM-permission"]
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
 +
-The permission stripping behavior _only_ applies to loaded capabilities that have their valid tag set and are not sealed.
+The permission stripping behavior _only_ applies to loaded capabilities that have their {ctag} set and are not sealed.
 This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
@@ -329,12 +329,12 @@ NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-o
 [#sl_perm,reftext="SL-permission"]
 Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic:
 +
-Capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero valid tag.
+Capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero {ctag}.
 +
 In the base ISA this is a single bit comparison, behaving as follows:
 
 * If this field (as well as <<c_perm>> and <<w_perm>>) is set to one then capabilities may be stored via this capability regardless of their associated <<section_cap_level>>.
-* If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e., _local_), will be stored with the valid tag cleared.
+* If this field is zero, then any capability with a <<section_cap_level>> of zero (i.e., _local_), will be stored with the {ctag} cleared.
 
 NOTE: Future extensions may make this field wider to enable more use cases.
 
@@ -343,7 +343,7 @@ NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9,
 endif::[]
 
 [#el_perm,reftext="EL-permission"]
-Elevate Level Permission (EL):: Any unsealed capability with its valid tag set to one that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
+Elevate Level Permission (EL):: Any unsealed capability with its {ctag} set to one that is loaded from memory has its <<el_perm>> cleared and its <<section_cap_level>> restricted to the authorizing capability's <<section_cap_level>> if the authorizing capability does not grant <<el_perm>>.
 +
 If sealed, then only <<section_cap_level,CL>> is modified, <<el_perm>> is unchanged.
 +
@@ -391,7 +391,7 @@ But unlike architectural permissions, the _Capability Level_ can be reduced even
     h|*W*    h|*C* h|*SL* h|*CL* h| Notes
 .3+.^|1  .3+.^| 1   | 1    | X    | Store data capability unmodified
                .2+.^| 0    | 1    | Store data capability unmodified (`CL ≥ ~SL`)
-                           | 0    | Store data capability with valid tag cleared (`CL < ~SL`)
+                           | 0    | Store data capability with {ctag} cleared (`CL < ~SL`)
 |==============================================================================
 
 NOTE: if W=0 or C=0 then SL is irrelevant
@@ -436,7 +436,7 @@ NOTE: The _Infinite_ capability is also known as 'default', 'almighty', or 'root
 
 [#null-cap,reftext="NULL"]
 ===== NULL Capability
-A capability with all-zero metadata, a zero valid tag, and an address of zero is referred to as the _NULL_ capability.
+A capability with all-zero metadata, a zero {ctag}, and an address of zero is referred to as the _NULL_ capability.
 This capability grants no permissions and any dereference results in raising an exception.
 
 === Extended State
@@ -471,7 +471,7 @@ When referring to the extended registers, the `x` prefix is replaced with a `c`:
 The register can be referred to either way - as `c1` accessing all CLEN bits or as `x1` accessing only the address field (i.e., the lower XLEN bits).
 For the ABI register names the `c` prefix is added, e.g., `csp` to refer to all CLEN bits, and so the assembler can refer to either `sp` or `csp`.
 
-The zero register is extended with zero metadata and a zero valid tag: this is called the <<null-cap>> capability.
+The zero register is extended with zero metadata and a zero {ctag}: this is called the <<null-cap>> capability.
 
 NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
 
@@ -487,7 +487,7 @@ The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA. A
 failing check raises a CHERI exception.
 
-* The valid tag must be set
+* The {ctag} must be set
 * The capability must not be sealed
 * The capability must grant execute permission
 * All bytes of the instruction must be in bounds
@@ -496,7 +496,7 @@ On system initialization the `pc` bounds and permissions must be set such that t
 
 The {cheri_base_ext_name} ISA requires capabilities written to the <<pcc>> to follow these rules:
 
-1. The valid tag is set.
+1. The {ctag} is set.
 2. <<x_perm>> is granted.
 3. The capability is not sealed.
 4. No <<section_cap_integrity, integrity>> checks fail.
@@ -588,13 +588,13 @@ When accessing CSRs these rules are followed:
 . Accesses to XLEN-bit CSRs are as specified by Zicsr
 . Accesses to CLEN-bit CSRs and extended CSRs, using CSRRW will:
 .. Read CLEN bits
-.. Write CLEN bits, and will write the valid tag to zero if:
+.. Write CLEN bits, and will write the {ctag} to zero if:
 ... any <<section_cap_integrity,integrity>> check fails
 . Accesses to CLEN-bit CSRs and extended CSRs, using encodings other than CSRRW will:
 .. Read CLEN bits
 .. Write an XLEN-bit value to the address field, and use <<SCADDR>> semantics to determine the final written value
 
-NOTE: Any CLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the valid tag.
+NOTE: Any CLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
 
 The assembler pseudoinstruction to read a capability CSR `csrr cd, csr`, is encoded as `csrrs cd, csr, c0`.
 
@@ -634,7 +634,7 @@ The authorizing capability is either named explicitly (the base register of a lo
 
 E.g., `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
 
-No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not except, but may set valid tag of the resulting capability to zero if the operation is not permitted.
+No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not except, but may set {ctag} of the resulting capability to zero if the operation is not permitted.
 
 NOTE: Branches and jumps may raise exceptions, reusing the Instruction Address Misaligned exception path.
 
@@ -668,9 +668,9 @@ Special instructions are provided to copy capabilities or perform manipulations 
 |Mnemonic     |Description
 |<<ACPERM>>   |AND capability permissions (expand to 1-bit per permission before ANDing)
 |<<CMV>>      |Move capability register
-|<<SCHI>>     |Set metadata and clear valid tag
-|<<SCBNDSI>>  |Set immediate bounds on capability with rounding, clear valid tag if rounding is required
-|<<SCBNDS>>   |Set register bounds on capability with rounding, clear valid tag if rounding is required
+|<<SCHI>>     |Set metadata and clear {ctag}
+|<<SCBNDSI>>  |Set immediate bounds on capability with rounding, clear {ctag} if rounding is required
+|<<SCBNDS>>   |Set register bounds on capability with rounding, clear {ctag} if rounding is required
 |<<SCBNDSR>>  |Set bounds on capability with rounding up as required
 |<<SENTRY>>   |Seal capability
 |<<CBLD>>     |Set cd to cs2 with its tag set after checking that cs2 is a subset of cs1
@@ -706,7 +706,7 @@ include::insns/gclen_32bit.adoc[]
 
 === Instructions to Extract Capability Fields
 
-These instructions either directly read bit fields from the metadata or valid tag, or only apply simple transformations on the metadata.
+These instructions either directly read bit fields from the metadata or {ctag}, or only apply simple transformations on the metadata.
 
 .Instructions which extract capability fields summary in {cheri_base_ext_name}
 [#tab_cap_inspection_fields_summary,%autowidth,options=header,align="center",cols="1,4"]
@@ -746,29 +746,29 @@ include::insns/cram_32bit.adoc[]
 === Instructions to Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LC>> and <<SC>>.
-They atomically access CLEN bits of data and the associated valid tag.
+They atomically access CLEN bits of data and the associated {ctag}.
 
 All capability memory accesses check for <<c_perm>> in the authorizing capability in `cs1`.
 
 If <<c_perm>> is granted then:
 
-* <<LC>> reads CLEN bits of data from memory, and returns the associated valid tag.
-* <<SC>> writes CLEN bits of data to memory, and writes the associated valid tag.
+* <<LC>> reads CLEN bits of data from memory, and returns the associated {ctag}.
+* <<SC>> writes CLEN bits of data to memory, and writes the associated {ctag}.
 
 If <<c_perm>> is not granted then:
 
-* <<LC>> reads CLEN bits from memory, but does not return the associated valid tag, instead zero is returned.
-* <<SC>> writes CLEN bits to memory, and writes zero to the associated valid tag.
+* <<LC>> reads CLEN bits from memory, but does not return the associated {ctag}, instead zero is returned.
+* <<SC>> writes CLEN bits to memory, and writes zero to the associated {ctag}.
 
 //NOTE: Future extensions to {cheri_base_ext_name} may add mechanisms that cause
 //stores of capabilities to raise exceptions when the authorizing capability does not grant both
-//<<w_perm>> and <<c_perm>> and the stored capability has the valid tag set.
+//<<w_perm>> and <<c_perm>> and the stored capability has the {ctag} set.
 
 All capability data memory access instructions require CLEN-aligned addresses, and will
 take an access fault exception if this requirement is not met.
 They cannot be emulated.
 
-NOTE: An access fault is raised instead of a misaligned exceptions since these instructions cannot be emulated since there is one hidden valid tag per CLEN-aligned memory region.
+NOTE: An access fault is raised instead of a misaligned exceptions since these instructions cannot be emulated since there is one hidden {ctag} per CLEN-aligned memory region.
 
 CAUTION: #This is a change in behavior relative to v0.9.5 (previously a misaligned exception was taken)#
 
@@ -778,7 +778,7 @@ All memory accesses, of any type, require permission from the authorizing capabi
 * All stores require <<w_perm>>, otherwise they raise an exception
 
 //NOTE: Misaligned capability memory accesses cannot be emulated.
-//  To transfer CLEN misaligned bits without a valid tag, use integer loads and stores.
+//  To transfer CLEN misaligned bits without a {ctag}, use integer loads and stores.
 
 Under some circumstances <<LC>> will _modify_ the data loaded from memory before writing it back to the destination register.
 See <<LC>> for details.
@@ -833,14 +833,14 @@ All load and store instructions behave as described in <<ldst>> with one fundame
 
 * Any memory instruction that has `rs1` as a base address register reads the full capability register (`cs1`) instead.
   The base address is unchanged, i.e., using the value from `rs1`.
-  The metadata and valid tag are used to <<sec_cap_checks,authorize the access>>.
+  The metadata and {ctag} are used to <<sec_cap_checks,authorize the access>>.
 
 * The result written to the destination *x* register is _always_ unchanged. I.e., the lower XLEN bits are always written with the value from RV32I/RV64I.
 
 All load and store instructions authorized by `cs1` raise exceptions if any of these checks fail:
 
 * `cs1` must not be `c0`^1^
-* The valid tag (`cs1.tag`) must be set
+* The {ctag} (`cs1.tag`) must be set
 * `cs1` must be unsealed
 ifdef::invalid_address_viol[]
 * The virtual address in `cs1` must not be invalid if virtual memory is enabled.
@@ -852,11 +852,11 @@ endif::[]
 ^1^ All load/store encodings are _reserved_ if `cs1=c0` (since dereferencing <<null-cap>> always faults).
  This principle is extended to _all_ loads and stores authorized by `cs1`.
 
-Load instructions, except for <<LC>>, always zero the valid tag and metadata of the result register.
+Load instructions, except for <<LC>>, always zero the {ctag} and metadata of the result register.
 
-Store instructions, except for <<SC>>, always write zero to the valid tag or tags associated with the memory locations that are written to.
+Store instructions, except for <<SC>>, always write zero to the {ctag} or tags associated with the memory locations that are written to.
 
-Therefore, misaligned stores may clear up to two associated valid tag bits.
+Therefore, misaligned stores may clear up to two associated {ctag} bits.
 
 The changed interpretation of the base register also applies to all loads, stores and other memory operations defined in later chapters of this specification with a base operands of `rs1` unless stated otherwise.
 

@@ -29,6 +29,8 @@ ifdef::cheri_multilevel[]
 :cheri_1levels_ext_name:             Zcheri1lvl
 endif::[]
 
+:ctag: capability tag
+
 :cheri_int_mode_name: pass:quotes[_Integer Pointer Mode_]
 :cheri_cap_mode_name: pass:quotes[_Capability Pointer Mode_]
 
@@ -42,9 +44,9 @@ endif::[]
 :non-csrrw-or:  <<CSRRWI_CHERI>>, <<CSRRS_CHERI>>, <<CSRRSI_CHERI>>, <<CSRRC_CHERI>> or  <<CSRRCI_CHERI>>
 :non-csrrw-and: <<CSRRWI_CHERI>>, <<CSRRS_CHERI>>, <<CSRRSI_CHERI>>, <<CSRRC_CHERI>> and <<CSRRCI_CHERI>>
 
-:TAG_RESET_DCSR: The reset value of the valid tag of this CSR is zero, the reset values of the metadata and address fields are UNSPECIFIED.
-:TAG_RESET_MCSR: The reset value of the valid tag of this CSR is zero, the reset values of the metadata and address fields are UNSPECIFIED.
-:TAG_RESET_SCSR: At the start of the S-mode execution environment, the value of the valid tag of this CSR is zero and the values of the metadata and address fields are UNSPECIFIED.
+:TAG_RESET_DCSR: The reset value of the {ctag} of this CSR is zero, the reset values of the metadata and address fields are UNSPECIFIED.
+:TAG_RESET_MCSR: The reset value of the {ctag} of this CSR is zero, the reset values of the metadata and address fields are UNSPECIFIED.
+:TAG_RESET_SCSR: At the start of the S-mode execution environment, the value of the {ctag} of this CSR is zero and the values of the metadata and address fields are UNSPECIFIED.
 :REQUIRE_CRE_CSR: Explicit access to this CSR is illegal if <<section_cheri_disable,CHERI register and instruction access is disabled>> for the current privilege.
 :REQUIRE_HYBRID_CSR: This CSR is only implemented if {cheri_default_ext_name} is implemented.
 
@@ -80,7 +82,7 @@ endif::[]
 :cheri_excep_name_pte_ld:    CHERI Load Page Fault
 :cheri_excep_name_pte_st:    CHERI Store/AMO Page Fault
 
-:cheri_excep_desc_ytag:      Authorizing capability valid tag is set to 0.
+:cheri_excep_desc_ytag:      Authorizing {ctag} is set to 0.
 :cheri_excep_desc_seal:      Authorizing capability is sealed.
 :cheri_excep_desc_perm:      Authorizing capability does not grant the necessary permissions.
 :cheri_excep_desc_bnds:      At least one byte accessed is outside the authorizing capability bounds, or the bounds could not be decoded.
