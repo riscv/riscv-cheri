@@ -295,7 +295,7 @@ class legacy_mnemonic_insns(table):
         return row[self.header.index("{cheri_int_mode_name} mnemonic RV32")] != "" and row[self.header.index("{cheri_int_mode_name} mnemonic RV64")] != ""
 
 class csr_aliases(table):
-    cols = ["CLEN CSR", "Alias", "Prerequisites"]
+    cols = ["YLEN CSR", "Alias", "Prerequisites"]
     indices = []
 
     def __init__(self, filename, header):
@@ -320,14 +320,14 @@ class csr_aliases(table):
 
 def resolve_col_display_name(col_name):
     col_display_names = {
-        "CLEN CSR": "{cheri_base_ext_name} CSR",
+        "YLEN CSR": "{cheri_base_ext_name} CSR",
         "Alias":    "Extended CSR"
     }
 
     return col_display_names[col_name] if col_name in col_display_names else col_name
 
 class csr_renamed_purecap_mode_d(table):
-    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -351,7 +351,7 @@ class csr_renamed_purecap_mode_d(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "D"
 
 class csr_added_legacy(table):
-    cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -375,7 +375,7 @@ class csr_added_legacy(table):
         return row[self.header.index("Alias")] == "" and "{cheri_default_ext_name}" == row[self.header.index("Prerequisites")].strip()
 
 class csr_added_purecap_mode_d(table):
-    cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -400,7 +400,7 @@ class csr_added_purecap_mode_d(table):
 
 
 class csr_renamed_purecap_mode_m(table):
-    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -424,7 +424,7 @@ class csr_renamed_purecap_mode_m(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "M"
 
 class csr_added_purecap_mode_m(table):
-    cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -448,7 +448,7 @@ class csr_added_purecap_mode_m(table):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "M"
 
 class csr_renamed_purecap_mode_s(table):
-    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -472,7 +472,7 @@ class csr_renamed_purecap_mode_s(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "S"
 
 class csr_renamed_purecap_mode_vs(table):
-    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -496,7 +496,7 @@ class csr_renamed_purecap_mode_vs(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "VS"
 
 class csr_added_purecap_mode_s(table):
-    cols = ["CLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -520,7 +520,7 @@ class csr_added_purecap_mode_s(table):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "S"
 
 class csr_renamed_purecap_mode_u(table):
-    cols = ["CLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -544,7 +544,7 @@ class csr_renamed_purecap_mode_u(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "U"
 
 class csr_alias_action(table):
-    cols = ["CLEN CSR", "Action on XLEN write", "Action on CLEN write"]
+    cols = ["YLEN CSR", "Action on XLEN write", "Action on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -572,7 +572,7 @@ class csr_new_write_action(csr_alias_action):
         return row[self.header.index("Alias")] == ""
 
 class csr_perms(table):
-    cols = ["CLEN CSR", "Prerequisites", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["YLEN CSR", "Prerequisites", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -593,10 +593,10 @@ class csr_perms(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("CLEN CSR")] != ""
+        return row[self.header.index("YLEN CSR")] != ""
 
 class csr_exevectors(table):
-    cols = ["CLEN CSR", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["YLEN CSR", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
