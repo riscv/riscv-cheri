@@ -93,7 +93,7 @@ For registers that are extended but currently hold non-capability data, all othe
 NOTE: Future extensions may add 2*XLEN-bit operations to make use of the wide registers for efficient handling of 2*XLEN-bit non-capability data.
 
 [#cap_valid_tag,reftext="{ctag}"]
-==== Capability Tag
+==== {ctag_title}
 
 The {ctag} is an additional bit added to addressable memory and all CLEN-bit registers.
 It is stored separately and may be referred to as _out of band_ or _hidden_, and is _hardware managed_.
@@ -105,13 +105,13 @@ These are referred to as being _CLEN-bit_ in this specification.
 
 The {ctag} cannot be directly set to one by software, it is _not_ a conventionally accessible bit of state.
 If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
-If the rules are followed then the capability tag will propagate through the instructions that modify, load or store the capability.
+If the rules are followed then the {ctag} will propagate through the instructions that modify, load or store the capability.
 
 Therefore, for capability manipulation in registers:
 
-* Any instruction that wrote the capability to a register had at least one capability tag set in its input operands.
+* Any instruction that wrote the capability to a register had at least one {ctag} set in its input operands.
 ** This is the _provenance_ check.
-* Any instruction that wrote the capability to a register requested a legal operation that does not increase bounds or permissions, and set the capability tag on the output.
+* Any instruction that wrote the capability to a register requested a legal operation that does not increase bounds or permissions, and set the {ctag} on the output.
 ** This is the _monotonicity_ check.
 * Any instruction that wrote the capability to a register detected corrupted values.
 ** This is the _integrity_ check.
@@ -707,7 +707,7 @@ These instructions either directly read bit fields from the metadata or {ctag}, 
 [#tab_cap_inspection_fields_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic   |Description
-|<<GCTAG>>  |Get capability tag
+|<<GCTAG>>  |Get {ctag}
 |<<GCPERM>> |Get capability architectural and software permissions
 |<<GCTYPE>> |Get capability type
 |<<GCHI>>   |Get capability metadata

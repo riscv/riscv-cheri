@@ -88,12 +88,12 @@ As listed above for <<mtvecc>>, this means that `mepcc.address` can represent mu
 Therefore software must ensure that all possible values are in the <<section_cap_representable_check>> on writing, otherwise the hardware sets the written {ctag} to zero.
 
 Sealed capabilities may be written to <<mepcc>>.
-The capability tag is set to zero on writing if:
+The {ctag} is set to zero on writing if:
 
 .  `mepcc.address[0]=1`, or
 .  `mepcc.address[1]=1` when IALIGN=32
 
-In the following case the value of the capability tag observable in the CSR depends on the value of IALIGN:
+In the following case the value of the {ctag} observable in the CSR depends on the value of IALIGN:
 
 . <<mepcc>> is sealed, the {ctag} is set, and
 . `mepcc.address[1]=1` and IALIGN=16 when writing the CSR
@@ -405,14 +405,14 @@ There are three levels of support:
 [width="100%",options=header]
 |=========================================================================================
 | PMA                          | Load Behavior    | Store Behavior                      | Comment
-| _CHERI Capability Tag_       | Load {ctag}      | Store {ctag}                        | Tagged memory supporting {ctag}s
-| _CHERI Capability Tag Strip_ | Load zero {ctag} | Ignore stored {ctag}                | No support for {ctag}s, ignore them
-| _CHERI Capability Tag Fault_ | Load zero {ctag} | Store/AMO Access Fault on {ctag}^1^ | No support for {ctag}s, trap on storing one
+| _CHERI {ctag_title}_       | Load {ctag}      | Store {ctag}                        | Tagged memory supporting {ctag}s
+| _CHERI {ctag_title} Strip_ | Load zero {ctag} | Ignore stored {ctag}                | No support for {ctag}s, ignore them
+| _CHERI {ctag_title} Fault_ | Load zero {ctag} | Store/AMO Access Fault on {ctag}^1^ | No support for {ctag}s, trap on storing one
 |=========================================================================================
 
 ^1^ The access fault is triggered on all capability stores or atomics such as <<SC>> or <<AMOSWAP_C>> when <<c_perm>> and <<w_perm>> are granted and the {ctag} is set to one.
 
-Memory regions that do not have the _CHERI Capability Tag_ PMA do not require storage for {ctag}s.
+Memory regions that do not have the _CHERI {ctag_title}_ PMA do not require storage for {ctag}s.
 
 [#section_vm]
 === Virtual Memory
