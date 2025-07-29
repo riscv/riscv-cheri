@@ -327,7 +327,7 @@ This ensures that capability loads of non-capability data do not modify the load
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
 
 [#sl_perm,reftext="SL-permission"]
-Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic:
+Store Level Permission (SL):: This field allows limiting the propagation of capabilities using the following logic:
 +
 Capabilities with a <<section_cap_level>> (see below) less than the inverse of the authorizing capability's <<sl_perm>> will be stored with a zero {ctag}.#ARC-COMMENT: Introduce levels earlier.#
 +
@@ -467,7 +467,7 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to 
 ----
 
 #FIXME: need to avoid separate names#
-When referring to the extended registers, the `x` prefix is replaced with a `c`: i.e. the extended version of `x1` becomes `c1`.
+When referring to the extended registers, the `x` prefix is replaced with a `c`: i.e., the extended version of `x1` becomes `c1`.
 The register can be referred to either way - as `c1` accessing all YLEN bits or as `x1` accessing only the address field (i.e., the lower XLEN bits).
 For the ABI register names the `c` prefix is added, e.g., `csp` to refer to all YLEN bits, and so the assembler can refer to either `sp` or `csp`.
 
@@ -516,7 +516,7 @@ xref:utidc-csrnames-added[xrefstyle=short].
 ===== User Thread Identifier Capability (utidc)
 
 The <<utidc>> register is used to identify the current software thread in user mode.
-Any operations that modifies <<utidc>> raises an exception unless the <<asr_perm>> is set in the current <<pcc>>.
+Any operation that modifies <<utidc>> raises an exception unless the <<asr_perm>> is set in the current <<pcc>>.
 
 NOTE: While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
 Therefore, this specification offers an additional CSR that facilitates a trusted source for identifying software threads.
@@ -546,7 +546,7 @@ is only to switch between compartments, but not to switch threads. This responsi
 taken over by more privileged code, e.g., an operating system kernel running on a different privilege level.
 The privileged code switches software threads and writes the <<utidc>> register.
 
-Every piece of code in the user space (and more privileged levels) can read the content of the <<utidc>>
+Every piece of code in the user space (and more privileged levels) can read the contents of the <<utidc>>
 register. However, the memory authorized by the capability in <<utidc>> must not be accessible to untrusted code,
 but only to trusted code. In order to protect this capability, it can be made a sentry (thus being sealed). The
 trusted code will be given a capability large enough so that it can recover the sentry stored in <<utidc>>.
@@ -557,7 +557,7 @@ Trusted code can use the sentry in <<utidc>> to implement secure compartment swi
 used to implement a trusted stack. Whenever a compartment switch happens, the trusted code can pass arguments between
 the caller and callee compartment avoid capability leaks between the two compartments.
 The trusted code can store capabilities on the trusted stack when calling out of a compartment and can install them
-when returning the same compartment.
+when returning to the same compartment.
 =====
 
 ==== Extended CSRs
@@ -609,7 +609,7 @@ In <<clen_access_summary_base>>, when there is no read or write width shown, the
 
 With {cheri_base_ext_name}, every memory access performed by a CHERI core must be authorized by a capability.
 
-Instruction fetches, branches, jumps, and data memory accesses may result in a fatal exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<AP-field,permissions>>. I.e.:
+Instruction fetches, branches, jumps, and data memory accesses may result in a fatal exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<AP-field,permissions>>. I.e.,:
 
 * all load instructions requires <<r_perm>>
 * all store instructions require <<w_perm>>
@@ -624,7 +624,7 @@ The authorizing capability is either named explicitly (the base register of a lo
 
 E.g., `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
 
-No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not except, but may set {ctag} of the resulting capability to zero if the operation is not permitted.
+ No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not raise an exception, but may set {ctag} of the resulting capability to zero if the operation is not permitted.
 
 NOTE: Branches and jumps may raise exceptions, reusing the Instruction Address Misaligned exception path.
 
@@ -763,7 +763,7 @@ All capability data memory access instructions require YLEN-aligned addresses, a
 take an access fault exception if this requirement is not met.
 They cannot be emulated.
 
-NOTE: An access fault is raised instead of a misaligned exceptions since these instructions cannot be emulated since there is one hidden {ctag} per YLEN-aligned memory region.
+NOTE: An access fault is raised instead of a misaligned exception since these instructions cannot be emulated since there is one hidden {ctag} per YLEN-aligned memory region.
 
 CAUTION: #This is a change in behavior relative to v0.9.5 (previously a misaligned exception was taken)#
 
@@ -796,7 +796,7 @@ include::insns/store_32bit_cap.adoc[]
 
 {cheri_base_ext_name} extend existing instructions that are used for handling addresses so that they manipulate a whole capability.
 
-* Whenever an input operand is used as an address (e.g. the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
+* Whenever an input operand is used as an address (e.g., the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
 * Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead of just XLEN bits.
   For all other results the high bits of the register are zeroed.
 * Whenever a capability with a new address is returned, the result is _always_ created using <<SCADDR>> semantics.
@@ -852,11 +852,11 @@ All store instructions, except for the {cheri_base_ext_name} <<SC>>, always writ
 
 Therefore, misaligned stores may clear up to two associated {ctag} bits.
 
-The changed interpretation of the base register also applies to all loads, stores and other memory operations defined in later chapters of this specification with a base operands of `rs1` unless stated otherwise.
+The changed interpretation of the base register also applies to all loads, stores and other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
 
 *Under {cheri_base_ext_name} _all_ loads and stores are authorized by `cs1`.*
 
-These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.,:
 
 * Floating-point loads and stores
 * <<section_cheri_vector_integration,Vector load and stores>>.
@@ -878,7 +878,7 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 * <<JALR_CHERI>> copies `cs1` into the <<pcc>>, and increments the address field with the offset.
   In this case, e.g., `new_pcc = SCADDR(cs1, offset)`
 
-These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.,:
 
 .Changed RISC-V base ISA PC relative instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
