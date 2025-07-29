@@ -11,7 +11,9 @@ ifdef::cbo_clean_flush[]
 endif::cbo_clean_flush[]
 
 ifdef::cbo_inval[]
-| {cheri_excep_name_st} | {cheri_excep_desc_perm} <<w_perm>>, <<r_perm>> and <<asr_perm>> are all required.
+| {cheri_excep_name_st} | {cheri_excep_desc_perm} <<w_perm>>, <<r_perm>> are both required.
+
+If the PMA is _CHERI Valid Tag_ and CBO.INVAL is not executing as CBO.FLUSH then <<asr_perm>> is required in the <<pcc>>.
 endif::[]
 ifdef::cbo_clean_flush[]
 | {cheri_excep_name_st} | None of the bytes accessed are within the bounds, or the bounds could not be decoded.
@@ -26,11 +28,15 @@ endif::cbo_inval[]
 ifdef::cbo_inval[]
 CSR state controls whether CBO.INVAL performs cache block flushes instead of invalidations for less privileged modes.
 
-NOTE: Invalidating a cache block can re-expose capabilities previously stored
+[NOTE]
+====
+Invalidating a cache block can re-expose capabilities previously stored
 to it after the most recent flush, not just secret values. As such, CBO.INVAL
 has stricter checks on its use than CBO.FLUSH, and should only be made available to,
-and used by, sufficiently-trusted software. Untrusted software should use CBO.FLUSH
-instead.
+and used by, sufficiently-trusted software.
+
+Untrusted software should use CBO.FLUSH instead as a minimum, and a sensible implementation choice for CHERI systems is to _always_ execute CBO.INVAL as CBO.FLUSH.
+====
 
 endif::cbo_inval[]
 
