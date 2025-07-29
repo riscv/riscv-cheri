@@ -359,7 +359,7 @@ endif::[]
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to all privileged CSRs, some unprivileged CSRs and some privileged instructions.
 In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing, but not for reading.
-ASR permission is used for additional permission checks by some instructions from other extensions such as <<cbo_inval_cheri>>.
+ASR permission is used for additional permission checks by some instructions from other extensions such as <<Zicbom>>.
 
 NOTE: This permission is important in privileged execution environments.
   Removing this permission allows constraining privileged software to a sandbox that cannot be subverted by changing privileged state.
@@ -374,8 +374,7 @@ The _Capability Level_ (CL) field allows enforcing invariants on capability prop
 For example, the _Capability Level_ can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g., the callee's stack frame but not the heap).
 It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
 
-NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to (#citation removed as it breaks the build#).
-//cite:[cheri-v9-spec].
+NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
 
 The _Capability Level_ can hold two values:
 
@@ -822,6 +821,7 @@ Using a single encoding for both is undesirable:
 The rules above apply to the <<rv32,base ISA>> instructions listed in the following subsections, but also apply to instructions added by other extensions.
 Any change to instruction semantics (or remapping of opcodes) for {cheri_base_ext_name} is called out in the chapter defining the extension.
 
+[#section_cheri_int_load_store_insns]
 ==== Changes to load/stores
 
 All load and store instructions behave as described in <<ldst>> with one fundamental difference:
@@ -866,8 +866,8 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 [#tab_cap_base_ldst_summary,%autowidth,options=header,align="center",cols="2,4"]
 |=======================
 |Mnemonic                   |Description
-|<<section_int_load_store_insns,LD, LW[U], LH[U], LB[U]>>|Integer loads (authorized by the capability in `cs1`)
-|<<section_int_load_store_insns,SD, SW, SH, SB>>|Integer stores (authorized by the capability in `cs1`)
+|<<section_cheri_int_load_store_insns,LD, LW[U], LH[U], LB[U]>>|Integer loads (authorized by the capability in `cs1`)
+|<<section_cheri_int_load_store_insns,SD, SW, SH, SB>>|Integer stores (authorized by the capability in `cs1`)
 |=======================
 
 ==== Changes to PC
