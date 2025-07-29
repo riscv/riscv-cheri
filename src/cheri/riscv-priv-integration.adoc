@@ -464,8 +464,7 @@ NOTE: On reset CHERI register access is disabled (<<mseccfg>>.CRE resets to zero
 
 The following occurs when executing code in a privilege mode that has CHERI register access disabled:
 
-* Instructions that access *c* registers (implicitly or explicitly)
-cause illegal instruction exceptions
+* Instructions that access full capability registers instead of only the XLEN subset (implicitly or explicitly) cause illegal instruction exceptions
 +
 NOTE: The only instruction added by {cheri_base_ext_name} that does not access capability state is <<CRAM>>, all others are disabled.
 * Executing CSR instructions accessing any CSR added by any CHERI extension ({cheri_default_ext_name}, {cheri_priv_m_ext}, {cheri_priv_s_ext}, {cheri_priv_h_ext}) causes an illegal instruction exception

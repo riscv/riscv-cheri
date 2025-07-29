@@ -199,8 +199,6 @@ The granularity constraints means that not all requested combinations of _top_ a
 
 // #some example usage here of CRAM+SCBNDSR would be good#
 
-// NOTE: Instructions like <<SCBNDS>> can be reused to reduce the bounds of an existing capability while retaining the {ctag}, or they can be used to construct a new capability which is then validated using <<CBLD>>.
-
 The bounds are encoded relative to the address field, sharing some upper bits of the address.
 The number of shared bits depends on the exponent, see xref:section_cap_bounds[xrefstyle=short].
 
@@ -216,6 +214,8 @@ If the interpretation of bounds _has_ changed, then the {ctag} is set to zero, s
 
 Software can create a new capability with an updated address using the <<SCADDR>> instruction.
 
+NOTE: <<SCADDR>> writes back a new capability with a modified address field and, if the {ctag} was previously set, sets the {ctag} of the output if the resulting capability still has the same bounds interpretation.
+
 NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only come back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
 
 NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to the default (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
@@ -228,7 +228,6 @@ E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding
 .Memory address bounds encoded within a capability
 image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
-NOTE: <<SCADDR>> updates the address field of a capability and, if the {ctag} was previously set, sets the {ctag} of the output if the updated capability is still valid.
 
 [#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
@@ -469,13 +468,12 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to 
 (draw-box "C" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
+#FIXME: need to avoid separate names#
 When referring to the extended registers, the `x` prefix is replaced with a `c`: i.e. the extended version of `x1` becomes `c1`.
 The register can be referred to either way - as `c1` accessing all CLEN bits or as `x1` accessing only the address field (i.e., the lower XLEN bits).
 For the ABI register names the `c` prefix is added, e.g., `csp` to refer to all CLEN bits, and so the assembler can refer to either `sp` or `csp`.
 
 The zero register is extended with zero metadata and a zero {ctag}: this is called the <<null-cap>> capability.
-
-NOTE: Instruction encodings refer to *c* registers when they use `cs1`, `cd`, etc. instead of `rs1`, `rd` (which reads/writes the XLEN-bit subset of the register).
 
 [#pcc,reftext="pcc"]
 ==== The Program Counter Capability (`pcc`)
@@ -632,10 +630,14 @@ No other exception paths are added by {cheri_base_ext_name}: in particular, capa
 
 NOTE: Branches and jumps may raise exceptions, reusing the Instruction Address Misaligned exception path.
 
+=== Added Instructions
+{cheri_base_ext_name} adds new instructions to operate on capabilities.
+To clarify whether an instruction accesses XLEN or CLEN bits of the register, the instruction listing uses `cd/cs1/cs2` for capability operands and `rd/rs1/rs2` for integer operands.
+
 === Instructions to Update The Capability Pointer
 
-Updating the value of the pointer (i.e., the address field) of a capability requires specific instructions instead of integer ADD/ADDI.
-They all include a check that the result can be <<section_cap_representable_check,represented exactly>>.
+ Creating a new capability with a different address (i.e., updating the pointer) requires specific instructions instead of integer ADD/ADDI.
+ These instructions all include a check that the resulting address can be <<section_cap_representable_check,represented exactly>> within the new capability.
 
 .Instructions which update the address field summary in {cheri_base_ext_name}
 [#tab_cap_ptr_summary,%autowidth,options=header,align="center",cols="1,4"]
@@ -651,12 +653,12 @@ include::insns/scaddr_32bit.adoc[]
 
 <<<
 
-=== Instructions to Manipulate Capability Data
+=== Instructions to Manipulate Capabilities
 
 For security, capabilities can only be modified in restricted ways.
-Special instructions are provided to copy capabilities or perform manipulations such as _shrinking_ the bounds (<<SCBNDS>>), _reducing_ the permissions (<<ACPERM>>) or _authorizing_ a capability with another one which has a superset (or identical) bounds and permissions (<<CBLD>>).
+Special instructions are provided to copy capabilities or derive a new capability using manipulations such as _shrinking_ the bounds (<<SCBNDS>>), _reducing_ the permissions (<<ACPERM>>) or _authorizing_ a capability with another one which has a superset (or identical) bounds and permissions (<<CBLD>>).
 
-.Other instructions which manipulate capability data summary in {cheri_base_ext_name}
+.Summary of {cheri_base_ext_name} instructions that create a modified capability
 [#tab_cap_manip_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic     |Description
