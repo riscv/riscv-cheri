@@ -8,7 +8,7 @@ endif::[]
 #ARC-COMMENT: A fundamental descriptive problem in this narrative is that capabilities are being viewed as variables not as values.  A capability is never modified in place - a new capability value is being created from an existing capability value by instructions.  This confusion makes it more difficult to understand instruction descriptions which operate on values and place them in variables (registers and memory locations).#
 
 This chapter describes the {cheri_base32_ext_name} and {cheri_base64_ext_name} base capability instruction sets, that extend the RV32I and RV64I (or RV32E/RV64E) integer instruction sets with CHERI.
-If the hart supports RV32E/RV64E instead of RV32I/RV64I, {cheri_base_ext_name} the restrictions from <<rv32e>> apply and 16 general purpose registers instead of 32 -- but all other {cheri_base_ext_name} changes are identical so the remainder of this chaper only refers to extending RV32I/RV64I behavior.
+If the hart supports RV32E/RV64E instead of RV32I/RV64I, {cheri_base_ext_name} the restrictions from <<rv32e>> apply and 16 general purpose registers instead of 32 -- but all other {cheri_base_ext_name} changes are identical so the remainder of this chapter only refers to extending RV32I/RV64I behavior.
 
 CHERI enhances the base ISA to add hardware memory access control.
 It has an additional memory access mechanism that protects _references to code and data_ (pointers), rather than the _location of code and data_ (integer addresses).
@@ -797,10 +797,10 @@ include::insns/store_32bit_cap.adoc[]
 
 {cheri_base_ext_name} extend existing instructions that are used for handling addresses so that they manipulate a whole capability.
 
-* The affected operands change type from *x* to *c* to represent this. #ARC-COMMENT: What does this actually mean?  What type is x versus c?#
-* Whenever the address field of any capability is modified, it is _always_ updated using <<SCADDR>> semantics. #ARC-COMMENT: Capabilities are not modified.  Capabilites are either input source operands or results from an instruction, they are not modified in place by an instruction.  This should be stated as a rule on results of operations.#
-* Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead.
- #ARC-COMMENT: Doesn't this rule apply to all instructions that operate on a capability?  Or are there instructions that will always convert result to a non-capability?  The rule should be stated more cleanly - the instructions don't know if values are addresses, and non-capability values can be addresses.#
+* Whenever an input operand is used as an address (e.g. the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
+* Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead of just XLEN bits.
+  For all other results the high bits of the register are zeroed.
+* Whenever a capability with a new address is returned, the result is _always_ created using <<SCADDR>> semantics.
 
 `ADD` and `ADDI` are not affected by the rule above.
 Even though they _are_ used for handling addresses, they also have other uses.
@@ -819,14 +819,8 @@ Using a single encoding for both is undesirable:
 
 ====
 
-The rules above the following <<rv32,base ISA>> instructions listed in the following subsections, and also apply to instructions added by other extensions.
-
-#ARC-COMMENT: Confusing to list these here as these are not base ISA instructions.#
-
-#TODO: Add another chapter listing the changes to other extensions?#
-
-* #Shift-and-add instructions from <<zba_cheri>>, such as <<SH3ADD_CHERI>>.#
-* #RVC encodings C.ADDI16SPN, C.ADDI4SP and C.MV change behavior, and encodings such as C.FSD, C.FLD are remapped to load/store capabilities.#
+The rules above apply to the <<rv32,base ISA>> instructions listed in the following subsections, but also apply to instructions added by other extensions.
+Any change to instruction semantics (or remapping of opcodes) for {cheri_base_ext_name} is called out in the chapter defining the extension.
 
 ==== Changes to load/stores
 
@@ -868,8 +862,6 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 * <<section_cheri_vector_integration,Vector load and stores>>.
 * Atomic memory accesses, see <<zaamo_cheri>> and <<zalrsc_cheri>>.
 
-Also note that the RVC encodings C.FSD, C.FLD, C.FSDSP, C.FLDSP are remapped to load/store capability data instead.#ARC-COMMENT: These are not part of the base.#
-
 .Changed RISC-V base ISA load/store instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_ldst_summary,%autowidth,options=header,align="center",cols="2,4"]
 |=======================
@@ -880,7 +872,7 @@ Also note that the RVC encodings C.FSD, C.FLD, C.FSDSP, C.FLDSP are remapped to 
 
 ==== Changes to PC
 
-* Whenever the address field of the <<pcc>> is modified, following the rule above, it is _always_ updated using <<SCADDR>> semantics.
+* Whenever the address field of the <<pcc>> is modified, it is _always_ updated using <<SCADDR>> semantics.
   This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
   In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
 * <<JALR_CHERI>> copies `cs1` into the <<pcc>>, and increments the address field with the offset.
