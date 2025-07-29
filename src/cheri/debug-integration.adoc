@@ -40,7 +40,7 @@ csrw   0xBF0, x2
 csrrw  c2, dscratch0c, c2
 ebreak
 
-# Read the valid tag into data0
+# Read the {ctag} into data0
 csrrw  c2, dscratch0c, c2
 gctag  x2, c1
 csrw   0xBF0, x2
@@ -54,7 +54,7 @@ schi   c1, c1, x2
 csrrw  c2, dscratch0c, c2
 ebreak
 
-# Write the valid tag (if nonzero)
+# Write the {ctag} (if nonzero)
 csrrw   c2, dscratch0c, c2
 csrr    c2, dinfc
 cbld    c1, c2, c1

@@ -21,7 +21,7 @@ least the same XLEN as lower privilege modes; these changes are present in the
 current draft and expected to be part of privileged architecture 1.13.
 
 {cheri_base_ext_name} defines capabilities of size CLEN corresponding to 2 *
-MXLEN without including the valid tag bit. The value of CLEN is always calculated
+MXLEN without including the {ctag} bit. The value of CLEN is always calculated
 based on MXLEN regardless of the effective XLEN value.
 
 NOTE: We briefly note that the capability encoding described in this section
@@ -45,10 +45,10 @@ NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the
 in-memory format, and also increase precision for RV32.
 endif::[]
 
-The components of a capability, except the valid tag, are encoded as shown in
+The components of a capability, except the {ctag}, are encoded as shown in
 xref:cap_encoding_xlen32[xrefstyle=short] for MXLEN=32 and
 xref:cap_encoding_xlen64[xrefstyle=short] for MXLEN=64. Each memory location
-or register able to hold a capability must also store the valid tag as _out of band_ or _hidden_
+or register able to hold a capability must also store the {ctag} as _out of band_ or _hidden_
 information that software cannot directly set or clear. The capability metadata
 is held in the most significant bits and the address is held in the least
 significant bits.
@@ -380,7 +380,7 @@ xref:exp_bit_width[xrefstyle=short].
 |==============================================================================
 
 NOTE: The address and bounds must be representable in valid capabilities i.e.
-when the valid tag is set (see xref:section_cap_malformed[xrefstyle=short]).
+when the {ctag} is set (see xref:section_cap_malformed[xrefstyle=short]).
 
 [#section_cap_bounds_decoding]
 ===== Decoding
@@ -569,7 +569,7 @@ malformed    =  !EF && (malformedMSB || malformedLSB)
 Capabilities with malformed bounds:
 
 . Return both base and top bounds as zero, which affects instructions like <<GCBASE>>.
-. Cause certain manipulation instructions like <<CADDI>> to always set the valid tag of the result to zero.
+. Cause certain manipulation instructions like <<CADDI>> to always set the {ctag} of the result to zero.
 
 [#section_cap_integrity]
 === Integrity of Capabilities
@@ -613,7 +613,7 @@ expanded base is 0 and top is 2^MXLEN^.
 [#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
 |==============================================================================
 | Field    | Value  | Comment
-| Valid Tag                | zero   | Capability is not valid
+| {ctag_title}             | zero   | Capability is not valid
 | <<SDP-field,SDP>>        | zeros  | Grants no permissions
 | <<AP-field,AP>>          | zeros  | Grants no permissions
 | <<M-bit,M>>              | zero   | No meaning since non-executable (MXLEN=64 and {cheri_default_ext_name} only)
@@ -643,7 +643,7 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
 [options=header,align=center,width="90%",cols="25,23,52"]
 |==============================================================================
 | Field         | Value | Comment
-| Tag           | one   | Capability is valid
+| {ctag_title}  | one   | Capability is valid
 | SDP           | ones  | Grants all permissions
 | AP (MXLEN=32) | 0x8/0x9^1^  (see xref:cap_perms_encoding32[xrefstyle=short])
                         | Grants all permissions
