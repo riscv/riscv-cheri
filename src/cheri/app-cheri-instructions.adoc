@@ -113,10 +113,10 @@ NOTE: Zcd and <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>> are incompatible
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
 |[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
-|111    |00    5+| C.SC
-|011    |00    5+| C.LC
-|111    |10    5+| C.SCSP
-|011    |10    5+| C.LCSP
+|111    |00    5+| <<C_STORE_CAP>>
+|011    |00    5+| <<C_LOAD_CAP>>
+|111    |10    5+| <<C_STORE_CAP_SP>>
+|011    |10    5+| <<C_LOAD_CAP_SP>>
 
 |101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
 |001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
@@ -157,10 +157,10 @@ NOTE: Zcd and <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>> are incompatible
 |111    |10      | C.SDSP | N/A     | N/A | N/A        | N/A
 |011    |10      | C.LDSP | N/A     | N/A | N/A        | N/A
 
-|101    |00    5+| C.SC
-|001    |00    5+| C.LC
-|101    |10    5+| C.SCSP
-|001    |10    5+| C.LCSP
+|101    |00    5+| <<C_STORE_CAP>>
+|001    |00    5+| <<C_LOAD_CAP>>
+|101    |10    5+| <<C_STORE_CAP_SP>>
+|001    |10    5+| <<C_LOAD_CAP_SP>>
 |==============================================================================
 
 include::insns/condbr_16bit.adoc[]
@@ -265,14 +265,14 @@ The double move instructions (<<CM_MVSA01_CHERI>>, <<CM_MVA01S_CHERI>>) are rede
 [width="100%",options=header, align="center"]
 |====================================
 | saved register specifier | xreg | integer ABI | CHERI ABI
-| 0                       | x8  | s0 | cs0
-| 1                       | x9  | s1 | cs1
-| 2                       | x18 | s2 | cs2
-| 3                       | x19 | s3 | cs3
-| 4                       | x20 | s4 | cs4
-| 5                       | x21 | s5 | cs5
-| 6                       | x22 | s6 | cs6
-| 7                       | x23 | s7 | cs7
+| 0                       | x8  | s0 | ys0
+| 1                       | x9  | s1 | ys1
+| 2                       | x18 | s2 | ys2
+| 3                       | x19 | s3 | ys3
+| 4                       | x20 | s4 | ys4
+| 5                       | x21 | s5 | ys5
+| 6                       | x22 | s6 | ys6
+| 7                       | x23 | s7 | ys7
 |====================================
 
 include::insns/zcmp_cmpush.adoc[]
@@ -312,7 +312,7 @@ The JVT CSR is extended to <<jvtc>>.
 [#jvtc,reftext="jvtc"]
 ==== Jump Vector Table CSR (jvtc)
 
-<<jvtc>> extends the Zcmt <<jvt_cheri>> CSR to be CLEN bits.
+<<jvtc>> extends the Zcmt <<jvt_cheri>> CSR to be YLEN bits.
 
 .Jump Vector Table Capability register
 include::img/jvtcreg.edn[]

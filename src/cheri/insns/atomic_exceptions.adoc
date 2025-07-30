@@ -6,12 +6,12 @@ Requires <<r_perm>> and <<w_perm>> in the authorizing capability.
 +
 If <<c_perm>> is not granted then store the memory tag as zero, and load `cd.tag` as zero.
 +
-If the authorizing capability does not grant <<lm_perm>>, and the {ctag} of `cd` is 1 and `cd` is not sealed, then an implicit <<ACPERM>> clearing <<w_perm>> and <<lm_perm>> is performed to obtain the intermediate permissions on `cd` (see <<LC>>).
+If the authorizing capability does not grant <<lm_perm>>, and the {ctag} of `cd` is 1 and `cd` is not sealed, then an implicit <<ACPERM>> clearing <<w_perm>> and <<lm_perm>> is performed to obtain the intermediate permissions on `cd` (see <<LOAD_CAP>>).
 +
 If the authorizing capability does not grant <<el_perm>>, and the {ctag} of `cd` is 1, then an implicit <<ACPERM>> restricting the <<section_cap_level>> to the level of the authorizing capability is performed.
-If `cd` is not sealed, this implicit <<ACPERM>> also clears <<el_perm>> to obtain the final permissions on `cd` (see <<cap_level_load_summary>> and <<LC>>).
+If `cd` is not sealed, this implicit <<ACPERM>> also clears <<el_perm>> to obtain the final permissions on `cd` (see <<cap_level_load_summary>> and <<LOAD_CAP>>).
 +
-The stored tag is also set to zero if the authorizing capability does not have <<sl_perm>> set but the stored data has a <<section_cap_level>> of 0 (see <<SC>>).
+The stored tag is also set to zero if the authorizing capability does not have <<sl_perm>> set but the stored data has a <<section_cap_level>> of 0 (see <<STORE_CAP>>).
 endif::[]
 ifndef::cap_atomic[]
 Requires <<r_perm>> and <<w_perm>> in the authorizing capability.
@@ -28,16 +28,10 @@ listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in t
 [%autowidth,options=header,align=center]
 |==============================================================================
 | Kind                        | Reason
-| {cheri_excep_name_st}       | {cheri_excep_desc_tag}
+| {cheri_excep_name_st}       | {cheri_excep_desc_ytag}
 | {cheri_excep_name_st}       | {cheri_excep_desc_seal}
 | {cheri_excep_name_st}       | {cheri_excep_desc_perm} <<w_perm>> and <<r_perm>> are both required.
-| {cheri_excep_name_st}       | {cheri_excep_desc_bounds}
+| {cheri_excep_name_st}       | {cheri_excep_desc_bnds}
 |==============================================================================
-+
-If virtual memory is enabled on an RV64 hart, then the state of <<section_priv_cheri_vmem,PTE>>.CW,
-and, if {cheri_priv_crg_ext} is implemented, <<section_cheri_priv_crg_ext,PTE.CRG>> from the current virtual memory page may
-cause a <<section_priv_cheri_vmem,CHERI PTE store/AMO page fault>> exception in addition to a normal RISC-V page fault
-when operating in user mode.
-See <<mtval2-page-fault>> for the exception reporting in this case.
 +
 :!cap_atomic:

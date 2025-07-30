@@ -11,10 +11,10 @@ Synopsis::
 Double precision floating point loads (C.FLD, C.FLDSP), 16-bit encodings
 
 {cheri_cap_mode_name} Mnemonic (RV32)::
-`c.fld frd', offset(cs1'/csp)`
+`c.fld frd', offset(cs1'/ysp)`
 
 {cheri_cap_mode_name} Expansion (RV32)::
-`fld frd', offset(csp)`
+`fld frd', offset(ysp)`
 
 {cheri_int_mode_name} Mnemonic::
 `c.fld fs2, offset(rs1'/sp)`
@@ -30,11 +30,11 @@ include::wavedrom/c-sp-load-css-dp-sprel.adoc[]
 Standard floating point stack pointer relative load instructions, authorized by the capability in <<ddc>>.
 
 NOTE: These instructions are available in RV64 {cheri_int_mode_name} only.
-In RV64 {cheri_cap_mode_name} they are remapped to <<C.LC>>/<<C.LCSP>>.
+In RV64 {cheri_cap_mode_name} they are remapped to <<C_LOAD_CAP>>/<<C_LOAD_CAP_SP>>.
 
 NOTE: These encodings may be remapped by future code-size Zcm standard extensions, similar to <<Zcmp>> and <<Zcmt>>.
 The rule is that in RV64 {cheri_cap_mode_name}
-they are *always* remapped to <<C.SC>>/<<C.SCSP>>.
+they are *always* remapped to <<C_STORE_CAP>>/<<C_STORE_CAP_SP>>.
 
 include::load_exceptions.adoc[]
 

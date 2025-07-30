@@ -1,39 +1,39 @@
 <<<
 
-[#C_SC,reftext="C.SC"]
-==== C.SC
+[#C_STORE_CAP,reftext="C.SY"]
+==== C.SY
 
-see <<C_SCSP>>.
+see <<C_STORE_CAP_SP>>.
 
-[#C_SCSP,reftext="C.SCSP"]
-==== C.SCSP
+[#C_STORE_CAP_SP,reftext="C.SYSP"]
+==== C.SYSP
 
 Synopsis::
-Capability stores (C.SC, C.SCSP), 16-bit encodings
+Capability stores (C.SY, C.SYSP), 16-bit encodings
 
 include::xlen_variable_warning.adoc[]
 
 {cheri_cap_mode_name} Mnemonics::
-`c.sc cs2', offset(cs1')` +
-`c.sc cs2', offset(csp)`
+`c.sy cs2', offset(cs1')` +
+`c.sy cs2', offset(ysp)`
 
 {cheri_cap_mode_name} Expansions::
-`sc cs2', offset(cs1')` +
-`sc cs2', offset(csp)`
+`sy cs2', offset(cs1')` +
+`sy cs2', offset(ysp)`
 
 Encoding::
 include::wavedrom/c-sp-store-cap.adoc[]
 
 {cheri_cap_mode_name} Description::
-Store the CLEN-bit value in `cs2'` to memory. The capability in `cs1/csp`
+Store the YLEN-bit value in `cs2'` to memory. The capability in `cs1/ysp`
 authorizes the operation. The effective address of the memory access is
-obtained by adding the address of `cs1/csp` to the zero-extended offset.
+obtained by adding the address of `cs1/ysp` to the zero-extended offset.
 
 NOTE: These mnemonics do not exist in {cheri_int_mode_name}.
 
 Tag of the written capability value::
 
-The capability written to memory has the {ctag} set to 0 if the {ctag} of `cs2'` is 0 or if the authorizing capability (`cs1/csp`) does not grant <<c_perm>>.
+The capability written to memory has the {ctag} set to 0 if the {ctag} of `cs2'` is 0 or if the authorizing capability (`cs1/ysp`) does not grant <<c_perm>>.
 +
 The stored tag is also set to zero if the authorizing capability does not have <<sl_perm>> set but the stored data has a <<section_cap_level>> of 0 (_local_).
 
@@ -46,4 +46,4 @@ Prerequisites::
 {c_cheri_base_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
- See <<SC>>
+ See <<STORE_CAP>>
