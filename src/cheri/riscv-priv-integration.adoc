@@ -13,13 +13,13 @@ This chapter describes integration of {cheri_base_ext_name} with the RISC-V priv
 otherwise add new functions. <<asr_perm>> in the <<pcc>> is typically required for access
 to the CSRs.
 
-[#mtvecc,reftext="mtvecc"]
-==== Machine Trap Vector Base Address Capability Register (mtvecc)
+[#mtvec_y,reftext="mtvec ({cheri_priv_m_ext})"]
+==== Machine Trap Vector Base Address Capability Register (mtvec)
 
-The <<mtvecc>> register extends <<mtvec>> to hold a code capability.
+The <<mtvec>> register is extended to hold a code capability.
 Its reset value is nominally the <<infinite-cap>> capability.
 
-NOTE: <<mtvecc>> exists in all CHERI implementations, and so may be used as a source of the <<infinite-cap>> capability after reset.
+NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of the <<infinite-cap>> capability after reset.
 
 .Machine-mode trap-vector base-capability register
 include::img/mtveccreg.edn[]
@@ -32,35 +32,35 @@ NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setti
 NOTE: Care must be taken however that an <<infinite-cap>> capability is available to software after reset if this CSR does not represent one.
 
 When traps are taken into machine mode, the pc is updated following the standard `mtvec` behavior.
-The {ctag} and metadata from <<mtvecc>> are also written to the <<pcc>>.
+The {ctag} and metadata from <<mtvec_y>> are also written to the <<pcc>>.
 
-Following the standard `mtvec` behavior, the value of `mtvecc.address` can be viewed with a range of different addresses:
+Following the standard `mtvec` behavior, the value of `mtvec.address` can be viewed with a range of different addresses:
 
-. The MODE field is included in `mtvecc.address[1:0]` but it does not form part of the trap vector address.
+. The MODE field is included in `mtvec.address[1:0]` but it does not form part of the trap vector address.
 . When MODE=Vectored, the trap vector address is incremented by four times the interrupt number.
-. CSR reads include MODE in `mtvecc.address[1:0]`.
+. CSR reads include MODE in `mtvec.address[1:0]`.
 
 `HICAUSE` is defined to be the largest interrupt cause value that the implementation can write
-to `Xcause` when an interrupt is taken.
+to `__x__cause` when an interrupt is taken.
 
-Therefore the minimum observable address is `mtvecc.address & ~3` and the maximum is `(mtvecc.address & ~3) + 4 x HICAUSE`.
+Therefore the minimum observable address is `mtvec.address & ~3` and the maximum is `(mtvec.address & ~3) + 4 x HICAUSE`.
 
 All possible observable values must be in the <<section_cap_representable_check>>.
-Software must ensure this is true when writing to <<mtvecc>>, and the hardware sets the {ctag} to zero if any values are out of the <<section_cap_representable_check>>.
+Software must ensure this is true when writing to <<mtvec_y>>, and the hardware sets the {ctag} to zero if any values are out of the <<section_cap_representable_check>>.
 
 NOTE: Modifying the address of any capability outside of the <<section_cap_representable_check>> without clearing the {ctag} causes a security hole as the interpretation of the bounds changes.
 Therefore requiring that all possible observable addresses are representable but not necessary in bounds is the minimum security requirement.
 
-<<mtvecc>> is always updated using <<SCADDR>> semantics and so writing a sealed capability will cause the {ctag} to be set to zero.
+<<mtvec_y>> is always updated using <<SCADDR>> semantics and so writing a sealed capability will cause the {ctag} to be set to zero.
 
-NOTE: The capability in <<mtvecc>> is _not_ unsealed when it is written to <<pcc>>, unlike other executing from other CSRs such as <<mepcc>>.
+NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other executing from other CSRs such as <<mepc_y>>.
 
-<<mtvecc>> follows the rule from `mtvec` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+<<mtvec_y>> follows the rule from `mtvec` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
-[#mscratchc, reftext="mscratchc"]
-==== Machine Scratch Capability Register (mscratchc)
+[#mscratch_y, reftext="mscratch ({cheri_priv_m_ext})"]
+==== Machine Scratch Capability Register (mscratch)
 
-The <<mscratchc>> register extends <<mscratch>> to hold a capability.
+The <<mscratch>> register is extended to hold a capability.
 
 {TAG_RESET_MCSR}
 
@@ -69,10 +69,10 @@ It is not WARL, all capability fields must be implemented.
 .Machine-mode scratch capability register
 include::img/mscratchcreg.edn[]
 
-[#mepcc,reftext="mepcc"]
-==== Machine Exception Program Counter Capability (mepcc)
+[#mepc_y,reftext="mepc ({cheri_priv_m_ext})"]
+==== Machine Exception Program Counter Capability (mepc)
 
-The <<mepcc>> register extends <<mepc>> to hold a capability.
+The <<mepc>> is extended to hold a capability.
 Its reset value is nominally the <<infinite-cap>> capability.
 
 .Machine exception program counter capability register
@@ -84,10 +84,10 @@ include::img/mepccreg.edn[]
 .  `mepcc.address[1]=0` when IALIGN is fixed to 32
 .  `mepcc.address[1]` reads as zero when IALIGN is programmable and is set to 32
 
-As listed above for <<mtvecc>>, this means that `mepcc.address` can represent multiple different values.
+As listed above for <<mtvec_y>>, this means that `mepcc.address` can represent multiple different values.
 Therefore software must ensure that all possible values are in the <<section_cap_representable_check>> on writing, otherwise the hardware sets the written {ctag} to zero.
 
-Sealed capabilities may be written to <<mepcc>>.
+Sealed capabilities may be written to <<mepc_y>>.
 The {ctag} is set to zero on writing if:
 
 .  `mepcc.address[0]=1`, or
@@ -95,17 +95,17 @@ The {ctag} is set to zero on writing if:
 
 In the following case the value of the {ctag} observable in the CSR depends on the value of IALIGN:
 
-. <<mepcc>> is sealed, the {ctag} is set, and
+. <<mepc_y>> is sealed, the {ctag} is set, and
 . `mepcc.address[1]=1` and IALIGN=16 when writing the CSR
 
 The {ctag} is zero then IALIGN=32 when reading the CSR, or executing <<MRET_CHERI>>, and the {ctag} is one when IALIGN=16.
 
 When a trap is taken into M-mode, the pc is written to `mepcc.address` following the standard behavior.
-The {ctag} and metadata of the <<pcc>> are also written to <<mepcc>>.
+The {ctag} and metadata of the <<pcc>> are also written to <<mepc_y>>.
 
-The capability in <<mepcc>> is unsealed when it is written to <<pcc>> on execution of an <<MRET_CHERI>> instruction.
+The capability in <<mepc_y>> is unsealed when it is written to <<pcc>> on execution of an <<MRET_CHERI>> instruction.
 
-<<mepcc>> follows the rule from `mepc` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+<<mepc_y>> follows the rule from `mepc` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
 [#mtidc,reftext="mtidc"]
 ==== Machine Thread Identifier Capability (mtidc)
@@ -186,13 +186,13 @@ Load/store/AMO address breakpoint
 | .>|4,6 .<|*Load/store/AMO capability address misaligned* +
 Optionally: +
 Load/store/AMO address misaligned
-| .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
+| .>|*{cheri_excep_cause_pte_ld}, {cheri_excep_cause_pte_st},* 13, 15, 5, 7 .<|During address translation for an explicit memory access: +
 First encountered *{cheri_excep_name_pte_ld}^2^, {cheri_excep_name_pte_st}*, page fault or access fault
 | .>|5,7 .<|With physical address for an explicit memory access: +
 Load/store/AMO access fault
 | .>|4,6 .<|If not higher priority: +
 Load/store/AMO address misaligned
-.>|_Lowest_ .>|13 .<|*If not higher priority: +
+.>|_Lowest_ .>|*{cheri_excep_cause_pte_ld}* .<|*If not higher priority: +
 *{cheri_excep_name_pte_ld}^3^*
 |===
 
@@ -254,21 +254,21 @@ The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
 hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is typically required for access to these CSRs.
 
-[#stvecc,reftext="stvecc"]
-==== Supervisor Trap Vector Base Address Capability Register (stvecc)
+[#stvec_y,reftext="stvec ({cheri_priv_s_ext})"]
+==== Supervisor Trap Vector Base Address Capability Register (stvec)
 
-The <<stvecc>> register extends <<stvec>> that is able to hold a capability.
+The <<stvec>> register is extended to hold a capability.
 When the S-mode execution environment starts, the value is nominally the <<infinite-cap>> capability.
 
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
 
-The handling of <<stvecc>> is otherwise identical to <<mtvecc>>, but in supervisor mode.
+The handling of <<stvec_y>> is otherwise identical to <<mtvec_y>>, but in supervisor mode.
 
-[#sscratchc, reftext="sscratchc"]
-==== Supervisor Scratch Capability Register (sscratchc)
+[#sscratch_y, reftext="sscratch ({cheri_priv_s_ext})"]
+==== Supervisor Scratch Capability Register (sscratch)
 
-The <<sscratchc>> register extends <<sscratch>> to hold a capability.
+The <<sscratch>> register is extended to hold a capability.
 
 {TAG_RESET_SCSR}
 
@@ -277,15 +277,15 @@ It is not WARL, all capability fields must be implemented.
 .Supervisor scratch capability register
 include::img/sscratchcreg.edn[]
 
-[#sepcc,reftext="sepcc"]
+[#sepc_y,reftext="sepc ({cheri_priv_s_ext})"]
 ==== Supervisor Exception Program Counter Capability (sepcc)
 
-The <<sepcc>> register extends <<sepc>> to hold a capability.
+The <<sepc>> register is extended to hold a capability.
 Its reset value is the <<infinite-cap>> capability.
 
-As shown in xref:CSR_exevectors[xrefstyle=short], <<sepcc>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
-Additionally, the capability in <<sepcc>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction.
-The handling of <<sepcc>> is otherwise identical to <<mepcc>>, but in supervisor mode.
+As shown in xref:CSR_exevectors[xrefstyle=short], <<sepc_y>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+Additionally, the capability in <<sepc_y>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction.
+The handling of <<sepc_y>> is otherwise identical to <<mepc_y>>, but in supervisor mode.
 
 .Supervisor exception program counter capability register
 include::img/sepccreg.edn[]
@@ -468,7 +468,7 @@ The following occurs when executing code in a privilege mode that has CHERI regi
 +
 NOTE: The only instruction added by {cheri_base_ext_name} that does not access capability state is <<CRAM>>, all others are disabled.
 * Executing CSR instructions accessing any CSR added by any CHERI extension ({cheri_default_ext_name}, {cheri_priv_m_ext}, {cheri_priv_s_ext}, {cheri_priv_h_ext}) causes an illegal instruction exception
-* Executing CSR instructions accessing any CSR extended to CLEN only allows XLEN access.
+* Executing CSR instructions accessing any CSR extended to YLEN only allows XLEN access.
 * All allowed instructions execute as if the CHERI execution mode is {cheri_int_mode_name}.
 // FIXME: there should be no way to observe the M bit, do we need to mentions this?
 // The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
@@ -496,8 +496,8 @@ in connection with the <<section_cheri_disable,CRE>> and the <<cheri_execution_m
 |==============================================================================
 | | CRE=0, M-bit=X^1^ | CRE=1, M-bit={int_mode_value} | CRE=1, M-bit={cap_mode_value}
 | Authorizing capability for memory accesses | <<ddc>> or <<pcc>> | <<ddc>> or <<pcc>> | Instruction's capability operand
-| New CHERI CSR Access Width                | ✘                 | CLEN                  | CLEN
-| Extended CHERI CSR Access Width      | XLEN              | XLEN                  | CLEN
+| New CHERI CSR Access Width                | ✘                 | YLEN                  | YLEN
+| Extended CHERI CSR Access Width      | XLEN              | XLEN                  | YLEN
 | CHERI Instructions Allowed           | ✘                 | ✔                    | ✔
 | Compressed Instructions Remapped     | No                | No                    | Yes^2^
 | Summary                              | **_Fully RISC-V compatible_**^3^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
@@ -506,7 +506,7 @@ in connection with the <<section_cheri_disable,CRE>> and the <<cheri_execution_m
 ^1^ M-bit is irrelevant when CRE=0. +
 ^2^ See xref:legacy_mnemonics[xrefstyle=short] for a list of remapped
 instructions. +
-^3^ The hart is fully compatible with standard RISC-V when CRE=0 provided that <<pcc>>, <<mtvecc>>, <<mepcc>>, <<stvecc>>, <<sepcc>>, <<vstvecc>>, <<vsepcc>> and <<ddc>> have not been changed from the default reset state (i.e., hold the <<infinite-cap>> capability).
+^3^ The hart is fully compatible with standard RISC-V when CRE=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold the <<infinite-cap>> capability).
 
 
 [#section_cheri_dyn_xlen]
@@ -528,7 +528,7 @@ Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it is
 The integer writing rule from CHERI is followed, so that every register write also zeroes the metadata and {ctag} of the
 destination register.
 +
-However, CHERI operations and security checks will continue using the entire hardware register (i.e., CLEN bits) to correctly decode capability bounds.
+However, CHERI operations and security checks will continue using the entire hardware register (i.e., YLEN bits) to correctly decode capability bounds.
 
 Changing endianness::
 Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
@@ -652,7 +652,7 @@ NOTE: Not requiring to the implementation to decode the bounds for invalid addre
 A CSR may be updated to hold a capability with an invalid address, due to:
 
 * executing instructions, such as <<CSRRW_CHERI>>
-* hardware updates to CSRs such as storing the <<pcc>> into  <<mepcc>>/<<sepcc>> etc. when taking an exception.
+* hardware updates to CSRs such as storing the <<pcc>> into  <<mepc_y>>/<<sepc_y>> etc. when taking an exception.
 
 To ensure that the bounds of a valid capability cannot be corrupted:
 
