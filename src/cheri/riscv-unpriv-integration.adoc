@@ -358,6 +358,8 @@ Access System Registers Permission (ASR, primarily used to authorize CSR accesse
 In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing, but not for reading.
 ASR permission is used for additional permission checks by some instructions from other extensions such as <<Zicbom>>.
 
+<<asr_perm>> permission checks always use the permission in the <<pcc>>.
+
 NOTE: This permission is important in privileged execution environments.
   Removing this permission allows constraining privileged software to a sandbox that cannot be subverted by changing privileged state.
 
