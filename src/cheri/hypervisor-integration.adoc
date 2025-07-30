@@ -135,7 +135,7 @@ for <<stidc>>, so that instructions that normally read or modify
 <<stidc>> actually access <<vstidc>> instead.
 When V=0, <<vstidc>> does not directly affect the
 behavior of the machine.
-On reset the valid tag of <<vstidc>> will be set to 0 and the remainder
+On reset the {ctag} of <<vstidc>> will be set to 0 and the remainder
 of the data is UNSPECIFIED.
 
 .Virtual supervisor thread identifier capability register
@@ -173,6 +173,4 @@ the instruction's encoding remains unchanged.
 When in {cheri_cap_mode_name}, the hypervisor
 load and store capability instructions behave as described in
 xref:section_existing_riscv_insns[xrefstyle=short]. In
-{cheri_int_mode_name}, the instructions behave as rely
-on an *x* register operand providing the effective address for the memory
-access and the capability authorizing the memory access is <<ddc>>.
+{cheri_int_mode_name}, the instructions use the low XLEN bits of the base register as the effective address for the memory access and the capability authorizing the memory access is <<ddc>>.

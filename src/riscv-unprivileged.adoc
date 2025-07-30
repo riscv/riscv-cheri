@@ -2,14 +2,14 @@
 = The RISC-V Instruction Set Manual Volume I: Unprivileged Architecture
 include::../docs-resources/global-config.adoc[]
 :description: Unprivileged Architecture
-:revnumber: 20240411
-//:revremark: Pre-release version
 :colophon:
 :preface-title: Preamble
 :appendix-caption: Appendix
 :imagesdir: ../docs-resources/images
 :title-logo-image: image:risc-v_logo.png["RISC-V International Logo",pdfwidth=3.25in,align=center]
+ifdef::draft-watermark[]
 :page-background-image: image:draft.png[opacity=20%]
+endif::[]
 //:title-page-background-image: none
 //:back-cover-image: image:backpage.png[opacity=25%]
 :back-cover-image: image:riscv-horizontal-color.svg[opacity=25%]
@@ -30,10 +30,7 @@ include::../docs-resources/global-config.adoc[]
 :sectnumlevels: 5
 :toc: left
 :toclevels: 5
-:source-highlighter: pygments
-ifdef::backend-pdf[]
 :source-highlighter: rouge
-endif::[]
 :table-caption: Table
 :figure-caption: Figure
 :xrefstyle: short
@@ -163,7 +160,6 @@ include::intro.adoc[]
 include::rv32.adoc[]
 include::rv32e.adoc[]
 include::rv64.adoc[]
-include::rv128.adoc[]
 include::zifencei.adoc[]
 include::zicsr.adoc[]
 include::cheri/riscv-unpriv-integration.adoc[]
@@ -199,28 +195,27 @@ include::c-st-ext.adoc[]
 ifndef::minimal_cheri_changes_doc[]
 include::zc.adoc[]
 include::b-st-ext.adoc[]
-include::p-st-ext.adoc[]
-include::cheri/zish4add.adoc[]
 include::v-st-ext.adoc[]
 include::scalar-crypto.adoc[]
 include::vector-crypto.adoc[]
 include::unpriv-cfi.adoc[]
 include::zilsd.adoc[]
 endif::[]
+include::cheri/zish4add.adoc[]
 include::cheri/riscv-hybrid-integration.adoc[]
 ifndef::minimal_cheri_changes_doc[]
 include::rv-32-64g.adoc[]
-include::extending.adoc[]
 include::naming.adoc[]
-include::history.adoc[]
 include::mm-eplan.adoc[]
 include::mm-formal.adoc[]
+
 //Appendices for Vector
 include::vector-examples.adoc[]
 include::calling-convention.adoc[]
 //include::fraclmul.adoc[]
 //End of Vector appendices
 endif::[]
+
 // CHERI appendices
 include::cheri/app-cap-description.adoc[]
 include::cheri/app-cheri-instructions.adoc[]

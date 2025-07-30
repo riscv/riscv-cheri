@@ -4,7 +4,7 @@ Store/AMO access fault exception when the effective address is not aligned to CL
 +
 CAUTION: #This is a change in behavior relative to v0.9.5 (previously a misaligned exception was raised)#
 +
-Store/AMO access fault if the stored valid tag is set to one and the PMA is _CHERI Valid Tag Fault_.
+Store/AMO access fault if the stored {ctag} is set to one and the PMA is _CHERI {ctag_title} Fault_.
 endif::[]
 ifndef::has_cap_data[]
 ifdef::store_cond[]
@@ -18,7 +18,10 @@ endif::[]
 | Kind                       | Reason
 | {cheri_excep_name_st}      | {cheri_excep_desc_ytag}
 | {cheri_excep_name_st}      | {cheri_excep_desc_seal}
-| {cheri_excep_name_st}      | {cheri_excep_desc_perm} Only <<w_perm>> is required.
+| {cheri_excep_name_st}      | {cheri_excep_desc_perm}
+ifndef::has_cap_data[]
+Only <<w_perm>> is required.
+endif::[]
 | {cheri_excep_name_st}      | {cheri_excep_desc_bnds}
 | {cheri_excep_name_st}      | {cheri_excep_desc_intg}
 |==============================================================================

@@ -72,25 +72,25 @@ NOTE: The behavior in this section isn't relevant if:
 . The authorizing capability doesn't have <<c_perm>>, for loads, stores and AMOs.
 . <<section_cap_level>> checks have cleared the stored tag, for stores and AMOs.
 
-The CW bit (defined by {cheri_priv_vmem_ext}) indicates whether reading or writing capabilities with the valid tag set to
+The CW bit (defined by {cheri_priv_vmem_ext}) indicates whether reading or writing capabilities with the {ctag} set to
 the virtual page is permitted. When the CW bit is set, capabilities are written
 as usual, and capability reads are controlled by the CRG bit.
 
-NOTE: The valid tag bit of the stored capability is checked _after_ it is potentially
+NOTE: The {ctag} bit of the stored capability is checked _after_ it is potentially
 cleared due to lack of <<c_perm>>.
 
 If the CW bit is clear then:
 
 * When a capability load or AMO instruction is executed, the implementation
- clears the valid tag bit of the capability read from the virtual page.
+ clears the {ctag} bit of the capability read from the virtual page.
 * When CRG is clear, the "no capability state", a {cheri_excep_name_pte_st}
- is raised when a capability store or AMO instruction is executed and the valid tag bit
+ is raised when a capability store or AMO instruction is executed and the {ctag} bit
  of the capability being written is set.
 * When CRG is set, the "pre-CW state", two schemes are permitted (also see <<section_hardware_pte_updates>>):
 ** The same behavior as when CRG is clear, allowing software interpretation
 of this state.
 ** When a capability store or AMO instruction is executed
-and the valid tag bit of the capability being written is set, the
+and the {ctag} bit of the capability being written is set, the
 implementation sets the CW bit and assigns the CRG bit equal to <<sstatusreg_pte,sstatus>>.UCRG.
 +
 The PTE update must be
@@ -131,12 +131,12 @@ and the capability read from memory has its tag set.
 |===
 
 ^1^ The choice here is whether to take data dependent exceptions on load data for loads or atomic operations.
- The default is to take the trap without checking the value of the loaded valid tag.
- Taking a trap when the valid tag is not set will introduce additional traps during revocation sweeps.
- If _{cheri_priv_crg_load_tag_ext}_ is implemented then the trap is only taken if the loaded valid tag is set, to reduce software overhead from revocation sweeps.
+ The default is to take the trap without checking the value of the loaded {ctag}.
+ Taking a trap when the {ctag} is not set will introduce additional traps during revocation sweeps.
+ If _{cheri_priv_crg_load_tag_ext}_ is implemented then the trap is only taken if the loaded {ctag} is set, to reduce software overhead from revocation sweeps.
  Checking the loaded tag affects the exception priority, see <<exception-priority>>.
 
-NOTE: _{cheri_priv_crg_load_tag_ext}_ is an optimization for software, and as such implementations are allowed to conservatively fault under certain conditions even if the valid tag is not set.
+NOTE: _{cheri_priv_crg_load_tag_ext}_ is an optimization for software, and as such implementations are allowed to conservatively fault under certain conditions even if the {ctag} is not set.
 
 _{cheri_priv_crg_load_tag_ext}_ implies _{cheri_priv_crg_ext}_.
 
@@ -155,7 +155,7 @@ _{cheri_priv_crg_load_tag_ext}_ implies _{cheri_priv_crg_ext}_.
 [#section_hardware_pte_updates]
 === Enabling Software or Hardware PTE updates
 
-The decision about whether to take exceptions on capability stores with the valid tag set to a page with PTE.CW=0 and PTE.CRG=1 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
+The decision about whether to take exceptions on capability stores with the {ctag} set to a page with PTE.CW=0 and PTE.CRG=1 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
 These cause PTE Accessed and Dirty updates to be done in software, via the exception handler, or by a hardware mechanism respectively.
 
 * If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a {cheri_excep_name_pte_st}.

@@ -119,7 +119,7 @@ assume the failure code will be non-zero.
 [NOTE]
 ====
 We reserve a failure code of 1 to mean ''unspecified'' so that simple
-implementations may return this value using the existing mux required
+implementations may return this value using the existing multiplexer required
 for the SLT/SLTU instructions. More specific failure codes might be
 defined in future versions or extensions to the ISA.
 ====
@@ -271,9 +271,9 @@ instructions placed sequentially in memory.
 instruction. The dynamic code executed between the LR and SC
 instructions can only contain instructions from the base ''I''
 instruction set, excluding loads, stores, backward jumps, taken backward
-branches, JALR, FENCE, and SYSTEM instructions. If the ''C'' extension
-is supported, then compressed forms of the aforementioned ''I''
-instructions are also permitted.
+branches, JALR, FENCE, and SYSTEM instructions.
+Compressed forms of the aforementioned ''I'' instructions in the Zca and Zcb
+extensions are also permitted.
 * The code to retry a failing LR/SC sequence can contain backwards jumps
 and/or branches to repeat the LR/SC sequence, but otherwise has the same
 constraint as the code between the LR and SC.
@@ -501,7 +501,7 @@ bits to be set in either or both the LR and AMOSWAP instructions.
 
 If the base architecture is {cheri_base_ext_name}, then an additional AMOSWAP encoding (<<AMOSWAP_C>>) is available to access capability types in memory.
 
-All atomic operations follow the rules in xref:section_int_load_store_insns[xrefstyle=short],
+All atomic operations follow the rules in xref:section_cheri_int_load_store_insns[xrefstyle=short],
 where the atomic operation is considered to be a load followed by a store for the
 capability rules.
 
