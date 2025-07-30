@@ -102,8 +102,8 @@ It will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} fo
 
 [source]
 ----
-auipc c1, 0
-gctag x1, c1
+auipc y1, 0
+gctag x1, y1
 ----
 
 #ARC question: should misa.Y be 1 when in {cheri_cap_mode_name} and 0 when in {cheri_int_mode_name}?#
@@ -113,14 +113,14 @@ NOTE: Implementations that support {cheri_default_ext_name} will typically boot 
 
 === Added State
 
-{cheri_default_ext_name} adds the CLEN-wide CSRs shown in
+{cheri_default_ext_name} adds the YLEN-wide CSRs shown in
 xref:default-csrnames-added[xrefstyle=short].
 
 [[default-csrnames-added]]
-.Unprivileged CLEN-wide CSRs added in {cheri_default_ext_name}
+.Unprivileged YLEN-wide CSRs added in {cheri_default_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|CLEN CSR|Address|Permissions|Description
+|YLEN CSR|Address|Permissions|Description
 |<<ddc>>|0x416|RW|User Default Data Capability
 |===
 
@@ -144,7 +144,7 @@ include::img/ddcreg.edn[]
 
 In {cheri_cap_mode_name} all memory accesses behave as defined by <<rv32y,{cheri_base_ext_name}>> and are authorised by the base register (`cs1`), from which the bounds and permissions are taken. For example:
 
-* `lw t0, 16(ca0)`
+* `lw t0, 16(ya0)`
 
 In {cheri_int_mode_name} the `lw` has the same behavior and assembly syntax as the RV32I/RV64I:
 
@@ -209,19 +209,19 @@ When in {cheri_int_mode_name}, there is a special rule for updating extended CSR
 For this purpose the assembly syntax will refer to <<jvt_cheri>>.
 Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN bits for compatibility, and so use <<SCADDR>> semantics to determine the final written value.
 
-.CLEN-bit CSR and Extended CSR access summary for {cheri_default_ext_name}
+.YLEN-bit CSR and Extended CSR access summary for {cheri_default_ext_name}
 [#clen_access_summary_default,%autowidth,options=header,align="center"]
 |=======================
-|                   2+| CLEN-bit CSR^1^           2+| Extended CSR^2^
+|                   2+| YLEN-bit CSR^1^           2+| Extended CSR^2^
 |Instruction          | Read Width  | Write Width   | Read Width  | Write Width
-|CSRRW       rd==x0   |             | CLEN          |             | XLEN
-|CSRRW       rd!=x0   |CLEN         | CLEN          |XLEN         | XLEN
-|CSRR[C\|S]  rs1==x0  |CLEN         |               |XLEN         |
-|CSRR[C\|S]  rs1!=x0  |CLEN         | XLEN          |XLEN         | XLEN
+|CSRRW       rd==x0   |             | YLEN          |             | XLEN
+|CSRRW       rd!=x0   |YLEN         | YLEN          |XLEN         | XLEN
+|CSRR[C\|S]  rs1==x0  |YLEN         |               |XLEN         |
+|CSRR[C\|S]  rs1!=x0  |YLEN         | XLEN          |XLEN         | XLEN
 |CSRRWI      rd==x0   |             | XLEN          |             | XLEN
-|CSRRWI      rd!=x0   |CLEN         | XLEN          |XLEN         | XLEN
-|CSRR[C\|S]I uimm==x0 |CLEN         |               |XLEN         |
-|CSRR[C\|S]I uimm!=x0 |CLEN         | XLEN          |XLEN         | XLEN
+|CSRRWI      rd!=x0   |YLEN         | XLEN          |XLEN         | XLEN
+|CSRR[C\|S]I uimm==x0 |YLEN         |               |XLEN         |
+|CSRR[C\|S]I uimm!=x0 |YLEN         | XLEN          |XLEN         | XLEN
 |=======================
 
 ^1^ e.g., <<utidc>>
