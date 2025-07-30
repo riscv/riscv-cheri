@@ -54,10 +54,8 @@ improve their security.
 [#sec_capability_registers]
 === Capability Registers and Format
 
-#ARC note - CLEN will become YLEN#
-
-{cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as CLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
-In addition to widening to CLEN, each register also gains one-bit {ctag} which is defined below.
+{cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+In addition to widening to YLEN, each register also gains one-bit {ctag} which is defined below.
 
 {cheri_base_ext_name} specify the fields which the capability format supports, and how those fields behave for XLEN=32 and XLEN=64.
 
@@ -95,13 +93,13 @@ NOTE: Future extensions may add 2*XLEN-bit operations to make use of the wide re
 [#cap_valid_tag,reftext="{ctag}"]
 ==== {ctag_title}
 
-The {ctag} is an additional bit added to addressable memory and all CLEN-bit registers.
+The {ctag} is an additional bit added to addressable memory and all YLEN-bit registers.
 It is stored separately and may be referred to as _out of band_ or _hidden_, and is _hardware managed_.
-It indicates whether a CLEN-bit register or CLEN-aligned memory location contains a valid capability.
+It indicates whether a YLEN-bit register or YLEN-aligned memory location contains a valid capability.
 If the {ctag} is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds_overview,bounds>>).
 
-All registers or memory locations able to hold a capability are CLEN bits wide with an additional hidden {ctag} bit.
-These are referred to as being _CLEN-bit_ in this specification.
+All registers or memory locations able to hold a capability are YLEN bits wide with an additional hidden {ctag} bit.
+These are referred to as being _YLEN-bit_ in this specification.
 
 The {ctag} cannot be directly set to one by software, it is _not_ a conventionally accessible bit of state.
 If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
@@ -130,14 +128,14 @@ NOTE: When the {ctag} is zero, the register or memory location may be used to st
 
 ==== Capability tags in registers
 
-Every CLEN-bit register has a one-bit {ctag}, indicating whether the capability in the register is valid to be dereferenced.
+Every YLEN-bit register has a one-bit {ctag}, indicating whether the capability in the register is valid to be dereferenced.
 This {ctag} is cleared whenever an invalid capability operation is performed.
 Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
 
 ==== Capability tags in memory
 
-Capability tags are tracked through the memory subsystem: every aligned CLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
-The {ctag} is set to zero if any byte in the CLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand which is permitted to set the {ctag} to one (see <<c_perm>>), and that the stored capability data has its {ctag} set.
+Capability tags are tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
+The {ctag} is set to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand which is permitted to set the {ctag} to one (see <<c_perm>>), and that the stored capability data has its {ctag} set.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
 
@@ -444,13 +442,13 @@ This capability grants no permissions and any dereference results in raising an 
 
 === Extended State
 
-As stated above, all state which can hold addresses are extended from XLEN to CLEN bits.
+As stated above, all state which can hold addresses are extended from XLEN to YLEN bits.
 
 ==== General Purpose Registers
 
 #ARC note C registers will become Y registers#
 
-The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to CLEN bits.
+The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to YLEN bits.
 
 .Extended registers in {cheri_base_ext_name}
 [#base_cap_registers]
@@ -460,7 +458,7 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to 
 (def row-height 100)
 (def row-header-fn nil)
 (def boxes-per-row 65)
-(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (CLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
+(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (YLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
 
 (draw-box "" [:box-first {:span 1}]) (draw-box "c0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
 (draw-box "" [:box-first {:span 1}]) (draw-box "c1" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
@@ -472,8 +470,8 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to 
 
 #FIXME: need to avoid separate names#
 When referring to the extended registers, the `x` prefix is replaced with a `c`: i.e., the extended version of `x1` becomes `c1`.
-The register can be referred to either way - as `c1` accessing all CLEN bits or as `x1` accessing only the address field (i.e., the lower XLEN bits).
-For the ABI register names the `c` prefix is added, e.g., `csp` to refer to all CLEN bits, and so the assembler can refer to either `sp` or `csp`.
+The register can be referred to either way - as `c1` accessing all YLEN bits or as `x1` accessing only the address field (i.e., the lower XLEN bits).
+For the ABI register names the `c` prefix is added, e.g., `csp` to refer to all YLEN bits, and so the assembler can refer to either `sp` or `csp`.
 
 The zero register is extended with zero metadata and a zero {ctag}: this is called the <<null-cap>> capability.
 
@@ -505,14 +503,14 @@ include::img/pccreg.edn[]
 
 ==== Added CSRs
 
-{cheri_base32_ext_name} and {cheri_base64_ext_name} add the CLEN-bit CSR shown in
+{cheri_base32_ext_name} and {cheri_base64_ext_name} add the YLEN-bit CSR shown in
 xref:utidc-csrnames-added[xrefstyle=short].
 
 [[utidc-csrnames-added]]
 .Unprivileged capability CSRs added in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|CLEN CSR|Permissions|Description
+|YLEN CSR|Permissions|Description
 |<<utidc>>|RW, <<asr_perm>> required for writes, not reads|User Thread ID Capability
 |===
 
@@ -566,44 +564,44 @@ when returning to the same compartment.
 
 ==== Extended CSRs
 
-All CSRs that can hold addresses are extended to CLEN bits.
+All CSRs that can hold addresses are extended to YLEN bits.
 
 {cheri_base_ext_name} has three classes of CSR:
 
 . XLEN-bit CSRs, which do not contain addresses
 .. e.g., _fcsr_ from the "F" extension
-. XLEN-bit CSRs extended to CLEN bits, which are able to contain addresses (referred to as _extended CSRs_)
+. XLEN-bit CSRs extended to YLEN bits, which are able to contain addresses (referred to as _extended CSRs_)
 .. e.g., _jvt_ from the "Zcmt" extension
-. CLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
+. YLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
 .. e.g., <<utidc>>
 
 When accessing CSRs these rules are followed:
 
 . Accesses to XLEN-bit CSRs are as specified by Zicsr
-. Accesses to CLEN-bit CSRs and extended CSRs, using CSRRW will:
-.. Read CLEN bits
-.. Write CLEN bits, and will write the {ctag} to zero if:
+. Accesses to YLEN-bit CSRs and extended CSRs, using CSRRW will:
+.. Read YLEN bits
+.. Write YLEN bits, and will write the {ctag} to zero if:
 ... any <<section_cap_integrity,integrity>> check fails
-. Accesses to CLEN-bit CSRs and extended CSRs, using encodings other than CSRRW will:
-.. Read CLEN bits
+. Accesses to YLEN-bit CSRs and extended CSRs, using encodings other than CSRRW will:
+.. Read YLEN bits
 .. Write an XLEN-bit value to the address field, and use <<SCADDR>> semantics to determine the final written value
 
-NOTE: Any CLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
+NOTE: Any YLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
 
 The assembler pseudoinstruction to read a capability CSR `csrr cd, csr`, is encoded as `csrrs cd, csr, c0`.
 
-.CLEN-bit CSR and Extended CSR access summary for {cheri_base_ext_name}
+.YLEN-bit CSR and Extended CSR access summary for {cheri_base_ext_name}
 [#clen_access_summary_base,%autowidth,options=header,align="center"]
 |=======================
 |Instruction          | Read Width  | Write Width
-|CSRRW       rd==x0   |             | CLEN
-|CSRRW       rd!=x0   |CLEN         | CLEN
-|CSRR[C\|S]  rs1==x0  |CLEN         |
-|CSRR[C\|S]  rs1!=x0  |CLEN         | XLEN
+|CSRRW       rd==x0   |             | YLEN
+|CSRRW       rd!=x0   |YLEN         | YLEN
+|CSRR[C\|S]  rs1==x0  |YLEN         |
+|CSRR[C\|S]  rs1!=x0  |YLEN         | XLEN
 |CSRRWI      rd==x0   |             | XLEN
-|CSRRWI      rd!=x0   |CLEN         | XLEN
-|CSRR[C\|S]I uimm==x0 |CLEN         |
-|CSRR[C\|S]I uimm!=x0 |CLEN         | XLEN
+|CSRRWI      rd!=x0   |YLEN         | XLEN
+|CSRR[C\|S]I uimm==x0 |YLEN         |
+|CSRR[C\|S]I uimm!=x0 |YLEN         | XLEN
 |=======================
 
 In <<clen_access_summary_base>>, when there is no read or write width shown, the CSR access is _not_ made and there are no side-effects following standard Zicsr rules.
@@ -632,7 +630,7 @@ E.g., `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, an
 
 === Added Instructions
 {cheri_base_ext_name} adds new instructions to operate on capabilities.
-To clarify whether an instruction accesses XLEN or CLEN bits of the register, the instruction listing uses `cd/cs1/cs2` for capability operands and `rd/rs1/rs2` for integer operands.
+To clarify whether an instruction accesses XLEN or YLEN bits of the register, the instruction listing uses `cd/cs1/cs2` for capability operands and `rd/rs1/rs2` for integer operands.
 
 === Instructions to Update The Capability Pointer
 
@@ -742,30 +740,30 @@ include::insns/cram_32bit.adoc[]
 === Instructions to Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LC>> and <<SC>>.
-They atomically access CLEN bits of data and the associated {ctag}.
+They atomically access YLEN bits of data and the associated {ctag}.
 
 All capability memory accesses check for <<c_perm>> in the authorizing capability in `cs1`.
 
 If <<c_perm>> is granted then:
 
 #ARC-NOTE: SC has name clash with "store conditional" in A extension. Suggest LY, SY.#
-* <<LC>> reads CLEN bits of data from memory, and returns the associated {ctag}.
-* <<SC>> writes CLEN bits of data to memory, and writes the associated {ctag}.
+* <<LC>> reads YLEN bits of data from memory, and returns the associated {ctag}.
+* <<SC>> writes YLEN bits of data to memory, and writes the associated {ctag}.
 
 If <<c_perm>> is not granted then:
 
-* <<LC>> reads CLEN bits from memory, but does not return the associated {ctag}, instead zero is returned.
-* <<SC>> writes CLEN bits to memory, and writes zero to the associated {ctag}.
+* <<LC>> reads YLEN bits from memory, but does not return the associated {ctag}, instead zero is returned.
+* <<SC>> writes YLEN bits to memory, and writes zero to the associated {ctag}.
 
 //NOTE: Future extensions to {cheri_base_ext_name} may add mechanisms that cause
 //stores of capabilities to raise exceptions when the authorizing capability does not grant both
 //<<w_perm>> and <<c_perm>> and the stored capability has the {ctag} set.
 
-All capability data memory access instructions require CLEN-aligned addresses, and will
+All capability data memory access instructions require YLEN-aligned addresses, and will
 take an access fault exception if this requirement is not met.
 They cannot be emulated.
 
-NOTE: An access fault is raised instead of a misaligned exception since these instructions cannot be emulated since there is one hidden {ctag} per CLEN-aligned memory region.
+NOTE: An access fault is raised instead of a misaligned exception since these instructions cannot be emulated since there is one hidden {ctag} per YLEN-aligned memory region.
 
 CAUTION: #This is a change in behavior relative to v0.9.5 (previously a misaligned exception was taken)#
 
@@ -775,7 +773,7 @@ All memory accesses, of any type, require permission from the authorizing capabi
 * All stores require <<w_perm>>, otherwise they raise an exception
 
 //NOTE: Misaligned capability memory accesses cannot be emulated.
-//  To transfer CLEN misaligned bits without a {ctag}, use integer loads and stores.
+//  To transfer YLEN misaligned bits without a {ctag}, use integer loads and stores.
 
 Under some circumstances <<LC>> will _modify_ the data loaded from memory before writing it back to the destination register.
 See <<LC>> for details.

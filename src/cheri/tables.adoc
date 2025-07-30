@@ -65,30 +65,30 @@ include::generated/csr_alias_action_table_body.adoc[]
  is within bounds of the capability written to `Xtvecc`. The check on writing
  must include the lowest (0 offset) and highest possible offset (e.g., 64 * MXLEN bits where HICAUSE=16).
 
-XLEN bits of extended CLEN-wide CSRs are written when executing
+XLEN bits of extended YLEN-wide CSRs are written when executing
 <<CSRRWI_CHERI>>, <<CSRRC_CHERI>>, <<CSRRS_CHERI>>, <<CSRRCI_CHERI>> or <<CSRRSI_CHERI>> regardless of the
-CHERI execution mode. When using <<CSRRW_CHERI>>, CLEN bits are written when the
+CHERI execution mode. When using <<CSRRW_CHERI>>, YLEN bits are written when the
 CHERI execution mode is {cheri_cap_mode_name} and XLEN bits are written when
 the mode is {cheri_int_mode_name}; therefore, writing XLEN bits with <<CSRRW_CHERI>>
 is only possible when {cheri_default_ext_name} is implemented.
 
-.Action taken on writing to CLEN-wide CSRs
+.Action taken on writing to YLEN-wide CSRs
 [#new_cap_CSR_writing]
 [width="100%",options=header,cols="1,2,2"]
 |==============================================================================
 include::generated/new_csr_write_action_table_body.adoc[]
 |==============================================================================
 
-XLEN bits of CLEN-wide CSRs added in {cheri_default_ext_name} are
+XLEN bits of YLEN-wide CSRs added in {cheri_default_ext_name} are
 written when executing <<CSRRWI_CHERI>>, <<CSRRC_CHERI>>, <<CSRRS_CHERI>>, <<CSRRCI_CHERI>> or
-<<CSRRSI_CHERI>> regardless of the CHERI execution mode. CLEN bits are always written
+<<CSRRSI_CHERI>> regardless of the CHERI execution mode. YLEN bits are always written
 when using <<CSRRW_CHERI>> regardless of the CHERI execution mode.
 
 NOTE: Implementations which allow misa.C to be writable need to legalize *Xepcc*
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.
 
-.CLEN-wide CSRs storing code pointers or data pointers
+.YLEN-wide CSRs storing code pointers or data pointers
 [#CSR_exevectors]
 [width="100%",options=header,cols="1,1,1,1"]
 |==============================================================================
@@ -102,9 +102,9 @@ the address must be converted to another invalid address that the CSR is capable
 CSRs that store fewer address bits are also subject to the invalid address
 check in <<section_invalid_addr_conv>> on writing.
 
-xref:all_capability_CSRs[xrefstyle=short] shows all CLEN-wide CSRs.
+xref:all_capability_CSRs[xrefstyle=short] shows all YLEN-wide CSRs.
 
-.All CLEN-wide CSRs.
+.All YLEN-wide CSRs.
 [#all_capability_CSRs]
 [width="100%",options=header,cols="2,1,1,2,2,4"]
 |==============================================================================
