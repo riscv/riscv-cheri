@@ -468,7 +468,7 @@ The following occurs when executing code in a privilege mode that has CHERI regi
 +
 NOTE: The only instruction added by {cheri_base_ext_name} that does not access capability state is <<CRAM>>, all others are disabled.
 * Executing CSR instructions accessing any CSR added by any CHERI extension ({cheri_default_ext_name}, {cheri_priv_m_ext}, {cheri_priv_s_ext}, {cheri_priv_h_ext}) causes an illegal instruction exception
-* Executing CSR instructions accessing any CSR extended to YLEN only allows XLEN access.
+* Executing CSR instructions accessing any CSR extended to CLEN only allows XLEN access.
 * All allowed instructions execute as if the CHERI execution mode is {cheri_int_mode_name}.
 // FIXME: there should be no way to observe the M bit, do we need to mentions this?
 // The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
@@ -496,8 +496,8 @@ in connection with the <<section_cheri_disable,CRE>> and the <<cheri_execution_m
 |==============================================================================
 | | CRE=0, M-bit=X^1^ | CRE=1, M-bit={int_mode_value} | CRE=1, M-bit={cap_mode_value}
 | Authorizing capability for memory accesses | <<ddc>> or <<pcc>> | <<ddc>> or <<pcc>> | Instruction's capability operand
-| New CHERI CSR Access Width                | ✘                 | YLEN                  | YLEN
-| Extended CHERI CSR Access Width      | XLEN              | XLEN                  | YLEN
+| New CHERI CSR Access Width                | ✘                 | CLEN                  | CLEN
+| Extended CHERI CSR Access Width      | XLEN              | XLEN                  | CLEN
 | CHERI Instructions Allowed           | ✘                 | ✔                    | ✔
 | Compressed Instructions Remapped     | No                | No                    | Yes^2^
 | Summary                              | **_Fully RISC-V compatible_**^3^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
@@ -528,7 +528,7 @@ Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it is
 The integer writing rule from CHERI is followed, so that every register write also zeroes the metadata and {ctag} of the
 destination register.
 +
-However, CHERI operations and security checks will continue using the entire hardware register (i.e., YLEN bits) to correctly decode capability bounds.
+However, CHERI operations and security checks will continue using the entire hardware register (i.e., CLEN bits) to correctly decode capability bounds.
 
 Changing endianness::
 Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
