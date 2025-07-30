@@ -12,7 +12,7 @@ endif::[]
 The hypervisor extension is
 generally orthogonal to CHERI; the main requirements, when integrating with
 {cheri_base_ext_name} and {cheri_default_ext_name}, is that address CSRs added
-for hypervisors are extended to CLEN size.
+for hypervisors are extended to YLEN size.
 The remainder of this chapter describes these changes in detail.
 
 [#hstatus,reftext="hstatus"]
@@ -166,7 +166,7 @@ The new TID bit controls access to the <<vstidc>> CSR.
 === Hypervisor Load and Store Instructions For Capability Data
 
 Hypervisor virtual-machine load (<<HLV_C>>) and store (<<HSV_C>>)
-instructions read or write CLEN bits from memory as though V=1. These
+instructions read or write YLEN bits from memory as though V=1. These
 instructions change behavior depending on the CHERI execution mode although
 the instruction's encoding remains unchanged.
 
