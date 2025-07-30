@@ -188,12 +188,12 @@ All smaller capabilities are derived from this.
 
 The ISA does not allow the bounds (and permissions) of a capability with its {ctag} set to be increased (_monotonicity_).
 
-Bounds can be programmed using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs1` or `imm`) value.
+Bounds can be programmed using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs2` or `imm`) value.
 The granularity constraints means that not all requested combinations of _top_ and _base_ bounds can be encoded exactly.
 
-* <<SCBNDS>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. Set the {ctag} to zero if the bounds cannot be encoded exactly.
+* <<SCBNDS>> sets the _base_ to `cs1.address`, and the _length_ to `rs2`. Set the {ctag} to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSI>> sets the _base_ to `cs1.address`, and the _length_ to the immediate value. Set the {ctag} to zero if the bounds cannot be encoded exactly.
-* <<SCBNDSR>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. The bounds may be rounded up if they cannot be encoded exactly.
+* <<SCBNDSR>> sets the _base_ to `cs1.address`, and the _length_ to `rs2`. The bounds may be rounded up if they cannot be encoded exactly.
 ** If <<SCBNDSR>> rounds up the requested bounds, they must still be no larger than the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
