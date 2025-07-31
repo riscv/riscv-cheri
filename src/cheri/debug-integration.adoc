@@ -37,7 +37,7 @@ in `c1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
 
 `csrrw  c2, dscratch0c, c2`
 
-`gchi   x2, c1`
+`{gchi_lc}   x2, c1`
 
 `csrw   0xBF0, x2`
 
@@ -232,11 +232,9 @@ The current mode can be read from <<dinfc>>.
 
 The following sequence executed from the program buffer will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
 
-[source]
-----
-csrr   c1, dinfc
-gcmode x1, c1
-----
+`csrr   c1, dinfc`
+
+`{gcmode_lc} x1, c1`
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The mode change instructions <<MODESW_CAP>> and <<MODESW_INT>> are new
