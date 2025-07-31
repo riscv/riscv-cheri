@@ -1,13 +1,13 @@
 <<<
 
-[#SH4ADD_UW,reftext="SH4ADD.UW"]
-==== SH4ADD.UW
+[#SH4ADD_UW_CHERI,reftext="{SH4ADD_UW_CHERI}"]
+==== {SH4ADD_UW_CHERI}, SH4ADD.UW
 
 Synopsis::
-Shift by 4 and add unsigned words for address generation (SH4ADD.UW)
+Shift by 4 and add unsigned words for address generation ({SH4ADD_UW_CHERI}, SH4ADD.UW)
 
 Mnemonic ({cheri_base64_ext_name})::
-`sh4add.uw cd, rs1, cs2`
+`{SH4ADD_UW_CHERI_LC} cd, rs1, cs2`
 
 Mnemonic (RV64I)::
 `sh4add.uw rd, rs1, rs2`
@@ -18,12 +18,14 @@ Encoding::
 {reg:[
     { bits:  7, name: 0x3b, attr: ['OP-32'] },
     { bits:  5, name: 'cd' },
-    { bits:  3, name: 0x7, attr: ['rv64: SH4ADD.UW'] },
+    { bits:  3, name: 0x7, attr: ['rv64: {SH4ADD_UW_CHERI}'] },
     { bits:  5, name: 'rs1' },
     { bits:  5, name: 'cs2' },
-    { bits:  7, name: 16, attr: ['rv64: SH4ADD.UW'] },
+    { bits:  7, name: 16, attr: ['rv64: {SH4ADD_UW_CHERI}'] },
 ]}
 ....
+
+NOTE: This encoding is shared with integer `sh4add.uw`.
 
 include::cheri_mode_dependent.adoc[]
 
@@ -42,13 +44,10 @@ RV64I Description::
 Increment `rs2` by the unsigned word in `rs1` shifted left by 4 bit positions
 and write the result to `rd`.
 
-//Exceptions::
-//None
-
-Prerequisites for {cheri_base64_ext_name}::
+Prerequisites for {cheri_base64_ext_name} ({SH4ADD_UW_CHERI})::
 {cheri_base64_ext_name}, {sh4add_ext_name}
 
-Prerequisites for RV64I::
+Prerequisites for RV64I (sh4add.uw)::
 RV64, {sh4add_ext_name}
 
 {cheri_base64_ext_name}} Operation::
