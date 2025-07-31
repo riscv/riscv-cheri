@@ -267,7 +267,13 @@ Upper 32 bits of `hpmcounter31`, RV32 only.
 |`ddc` +
 |#Default Data Capability (<<asr_perm>> not required).# +
 
-4+^|#Unprivileged {cheri_base_ext_name} CSRs#
+4+^|#Unprivileged CSRs extended to YLEN width by {cheri_base_ext_name}#
+|`0x017` +
+|URW +
+|`jvtc` +
+|#Jump Vector Table Capability (extends `jvt`).# +
+
+4+^|#Unprivileged CSRs#
 |`0x480` +
 |URW +
 |`utidc` +
@@ -421,7 +427,21 @@ Upper 32 bits of `stimecmp`, RV32 only.
  Supervisor Control Transfer Records Status Register. +
  Supervisor Control Transfer Records Depth Register.
 
-4+^|#Supervisor {cheri_base_ext_name} CSRs#
+4+^| #{cheri_priv_s_ext} Supervisor YLEN-extended CSRs#
+|`0x105` +
+`0x140` +
+`0x141`
+|SRW +
+SRW +
+SRW
+|`stvecc` +
+`sscratchc` +
+`sepcc`
+|#Supervisor Trap Vector Base Address Capability Register (extends `stvec`).# +
+#Supervisor Scratch Capability Register (extends `sscratch`).# +
+#Supervisor Exception Program Counter Capability (extends `sepc`).# +
+
+4+^|#Supervisor CSRs#
 |`0x580` +
 |SRW +
 |`stidc` +
@@ -641,7 +661,21 @@ Upper 32 bits of `vstimecmp`, RV32 only.
 |`vsctrctl`
 |Virtual Supervisor Control Transfer Records Control Register.
 
-4+^|#Virtual Supervisor {cheri_base_ext_name} CSRs#
+4+^| #{cheri_priv_h_ext} Virtual Supervisor YLEN-extended CSRs#
+|`0x205` +
+`0x240` +
+`0x241`
+|HRW +
+HRW +
+HRW
+|`vstvecc` +
+`vsscratchc` +
+`vsepcc`
+|#Virtual Supervisor Trap Vector Base Address Capability Register (extends `vstvec`).# +
+#Virtual Supervisor Scratch Capability Register (extends `vsscratch`).# +
+#Virtual Supervisor Exception Program Counter Capability (extends `vsepc`).#
+
+4+^|#Virtual Supervisor CSRs#
 |`0xA80` +
 |HRW +
 |`vstidc` +
@@ -1022,8 +1056,21 @@ Upper 32 bits of `mhpmevent31`, RV32 only.
 |MRW
 |`mctrctl`
 |Machine Control Transfer Records Control Register.
+4+^|#{cheri_priv_m_ext} Machine YLEN-extended CSRs#
+|`0x305` +
+`0x340` +
+`0x341`
+|MRW +
+MRW +
+MRW
+|`mtvecc` +
+`mscratchc` +
+`mepcc`
+|#Machine Trap Vector Base Address Capability Register (extends `mtvec`).# +
+#Machine Scratch Capability Register (extends `mscratch`).# +
+#Machine Exception Program Counter Capability (extends `mepc`).# +
 
-4+^|#Machine {cheri_base_ext_name} CSRs#
+4+^|#Machine CSRs#
 |`0x780` +
 |MRW +
 |`mtidc` +
@@ -1071,6 +1118,20 @@ DRW +
 Debug program counter. +
 Debug scratch register 0. +
 Debug scratch register 1. +
+
+4+^|#{cheri_priv_debug_ext} Debug Mode YLEN-extended CSRs#
+|`0x7B1` +
+`0x7B2` +
+`0x7B3`
+|DRW +
+DRW +
+DRW
+|`dpcc` +
+`dscratch0c` +
+`dscratch1c`
+|#Debug Program Counter Capability (extends `dpc`).# +
+#Debug Scratch Capability 0 (extends `dscratch0`).# +
+#Debug Scratch Capability 1 (extends `dscratch1`).# +
 
 4+^|#{cheri_priv_debug_ext} Debug Mode added YLEN CSRs#
 |`0x7BD`
