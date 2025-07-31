@@ -61,8 +61,9 @@ include::generated/csr_aliases_table_body.adoc[]
 include::generated/csr_alias_action_table_body.adoc[]
 |==============================================================================
 
-^*^ The vector range check is to ensure that vectored entry to the handler is within bounds of the capability written to `__x__tvec`.
-  The check on writing must include the lowest (0 offset) and highest possible offset (e.g., 64 * MXLEN bits where HICAUSE=16).
+^*^ The vector range check is to ensure that vectored entry to the handler
+ is within bounds of the capability written to `Xtvecc`. The check on writing
+ must include the lowest (0 offset) and highest possible offset (e.g., 64 * MXLEN bits where HICAUSE=16).
 
 XLEN bits of extended YLEN-wide CSRs are written when executing
 <<CSRRWI_CHERI>>, <<CSRRC_CHERI>>, <<CSRRS_CHERI>>, <<CSRRCI_CHERI>> or <<CSRRSI_CHERI>> regardless of the
@@ -157,10 +158,3 @@ include::generated/xlen_dependent_encoding_insns_table_body.adoc[]
 NOTE: <<MODESW_CAP>>, <<MODESW_INT>> and <<SCMODE>> only exist in {cheri_cap_mode_name} if
 {cheri_int_mode_name} is _also_ present. A hart does not support the <<m_bit>>
 if it does not implement the {cheri_default_ext_name} extension.
-
-.Conditions for detecting illegal CHERI instructions
-[#cheri_illegals]
-[width="100%",options=header,cols="17,27,27,27"]
-|==============================================================================
-include::generated/illegal_insns_table_body.adoc[]
-|==============================================================================

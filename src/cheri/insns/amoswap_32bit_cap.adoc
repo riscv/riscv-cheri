@@ -9,7 +9,7 @@ Atomic Operation ({AMOSWAP_CAP_NAME}), 32-bit encoding
 Mnemonic::
 `{AMOSWAP_CAP_NAME_LC} cd, cs2, 0(cs1)`
 
-include::load_store_y0.adoc[]
+include::load_store_c0.adoc[]
 
 Encoding::
 include::wavedrom/amoswap_cap.adoc[]
@@ -19,9 +19,9 @@ Atomic swap of capability type, authorized by the capability in `cs1`.
 +
 The operation is equivalent to an atomically executed sequence of:
 +
-`ly cd, 0(cs1)`
+`{LOAD_CAP_NAME_LC} cd, 0(cs1)`
 +
-`sy cs2, 0(cs1)`
+`{STORE_CAP_NAME_LC} cs2, 0(cs1)`
 +
 With the proviso that `cd` is only updated if no exceptions are raised.
 

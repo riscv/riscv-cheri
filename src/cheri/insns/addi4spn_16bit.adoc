@@ -10,7 +10,7 @@ Mnemonic::
 `c.addi4spn cd', nzuimm`
 
 Expansion::
-`caddi cd', ysp, nzuimm`
+`caddi cd', csp, nzuimm`
 
 NOTE: The suggested assembly syntax distinguishes from integer `c.addi4spn` by operand type.
 
@@ -27,13 +27,13 @@ include::cheri_mode_dependent.adoc[]
 
 Description::
 
-Copy `ysp` to `cd'`. Add a zero-extended non-zero immediate, scaled by 4, to `cd'.address`.
+Copy `csp` to `cd'`. Add a zero-extended non-zero immediate, scaled by 4, to `cd'.address`.
 +
-Set `cd'.tag=0` if `ysp` is sealed.
+Set `cd'.tag=0` if `csp` is sealed.
 +
 Set `cd'.tag=0` if the resulting capability cannot be <<section_cap_representable_check,represented exactly>>.
 +
-Set `cd'.tag=0` if `ysp` 's bounds are <<section_cap_malformed,malformed>>, or if any of the reserved fields are set.
+Set `cd'.tag=0` if `csp` 's bounds are <<section_cap_malformed,malformed>>, or if any of the reserved fields are set.
 
 {cheri_int_mode_name} Description::
 
