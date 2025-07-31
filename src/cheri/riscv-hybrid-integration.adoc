@@ -201,12 +201,11 @@ In {cheri_int_mode_name}, the capability authorizing the memory access is <<ddc>
 [#zicsr-section-default]
 === Changes to Zicsr Instructions
 
-When in {cheri_int_mode_name}, there is a special rule for updating extended CSRs (e.g., <<jvtc>>/<<jvt_cheri>>)
+When in {cheri_int_mode_name}, there is a special rule for updating extended CSRs (e.g., <<jvt_y>>)
 
 * Writing an extended CSR writes the address field (XLEN bits) only, and the full CSR is updated using <<SCADDR>> semantics.
 * Reading an extended CSR reads the address field (XLEN bits) only
 
-For this purpose the assembly syntax will refer to <<jvt_cheri>>.
 Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN bits for compatibility, and so use <<SCADDR>> semantics to determine the final written value.
 
 .YLEN-bit CSR and Extended CSR access summary for {cheri_default_ext_name}
@@ -225,7 +224,7 @@ Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN bits fo
 |=======================
 
 ^1^ e.g., <<utidc>>
-^2^ e.g., <<jvt_cheri>>
+^2^ e.g., <<jvt_y>>
 
 include::insns/csrr_32bit.adoc[]
 include::insns/csrrw_32bit.adoc[]
