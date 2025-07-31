@@ -14,7 +14,7 @@ use with {cheri_base_ext_name}:
 
 * The `hartinfo` register must be implemented.
 * All harts which support {cheri_base_ext_name} must provide
-  `hartinfo.nscratch` of at least 1 and implement the <<dscratch0c>> register.
+  `hartinfo.nscratch` of at least 1 and implement the <<dscratch0_y>> register.
 * All harts which support {cheri_base_ext_name} must provide
   `hartinfo.datasize` of at least 1 and `hartinfo.dataaccess` of 0.
 * The program buffer must be implemented, with `abstractcs.progbufsize` of at
@@ -34,36 +34,36 @@ in `c1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
 
 ----
 # Read the high MXLEN bits into data0-data1
-csrrw  c2, dscratch0c, c2
+csrrw  c2, dscratch0, c2
 gchi   x2, c1
 csrw   0xBF0, x2
-csrrw  c2, dscratch0c, c2
+csrrw  c2, dscratch0, c2
 ebreak
 
 # Read the {ctag} into data0
-csrrw  c2, dscratch0c, c2
+csrrw  c2, dscratch0, c2
 gctag  x2, c1
 csrw   0xBF0, x2
-csrrw  c2, dscratch0c, c2
+csrrw  c2, dscratch0, c2
 ebreak
 
 # Write the high MXLEN bits from data0-data1
-csrrw  c2, dscratch0c, c2
+csrrw  c2, dscratch0, c2
 csrr   x2, 0xBF0
 schi   c1, c1, x2
-csrrw  c2, dscratch0c, c2
+csrrw  c2, dscratch0, c2
 ebreak
 
 # Write the {ctag} (if nonzero)
-csrrw   c2, dscratch0c, c2
+csrrw   c2, dscratch0, c2
 csrr    c2, dinfc
 cbld    c1, c2, c1
-csrrw   c2, dscratch0c, c2
+csrrw   c2, dscratch0, c2
 ebreak
 ----
 
 The low `MXLEN` bits of a capability are read and written using normal Access
-Register abstract commands.  If <<dscratch0c>> were known to be preserved
+Register abstract commands.  If <<dscratch0_y>> were known to be preserved
 between abstract commands, it would be possible to remove the requirements on
 `hartinfo.datasize`, `hartinfo.dataaccess`, and `abstractcs.progbufsize`,
 however there is no way to discover the former property.
@@ -83,25 +83,38 @@ listed in xref:dcsrnames-renamed[xrefstyle=short].
 
 The <<pcc>> must grant <<asr_perm>> to access debug CSRs. This permission is
 automatically provided when the hart enters debug mode as described
-in the <<dpcc>> section. The <<pcc>> metadata can only be changed if the
+in the <<dpc_y>> section. The <<pcc>> metadata can only be changed if the
 implementation supports executing control transfer instructions from the
 program buffer -- this is an optional feature according to
 the _RISC-V Debug Specification_.
 
+This specification extends the following registers from the _RISC-V Debug Specification_.
+
 [#dpc,reftext="dpc"]
-==== Debug Program Counter (dpc)
-
-The <<dpc>> register is as defined in the _RISC-V Debug Specification_. It is a
-DXLEN-bit register used as the PC saved when entering debug mode. <<dpc>> is
-extended into <<dpcc>>.
-
+Debug Program Counter (dpc)::
+<<dpc>> is a DXLEN-bit register used as the PC saved when entering debug mode.
++
 .Debug program counter
 include::img/dpcreg.edn[]
 
-[#dpcc,reftext="dpcc"]
-==== Debug Program Counter Capability (dpcc)
+[#dscratch0,reftext="dscratch1"]
+Debug Scratch Register 1 (dscratch1)::
+<<dscratch0>> is an optional DXLEN-bit scratch register that can be used by implementations which need it.
++
+.Debug scratch 0 register
+include::img/dscratch0reg.edn[]
 
-The <<dpcc>> register extends <<dpc>> to hold a capability.
+[#dscratch1,reftext="dscratch1"]
+Debug Scratch Register 1 (dscratch1)::
+<<dscratch1>> is an optional DXLEN-bit scratch register that can be used by implementations which need it.
++
+.Debug scratch 1 register
+include::img/dscratch1reg.edn[]
+
+[#dpc_y,reftext="dpc ({cheri_priv_debug_ext})"]
+==== Debug Program Counter Capability (dpc)
+
+The <<dpc>> register is extended to hold a capability.
 
 {TAG_RESET_DCSR}
 
@@ -120,50 +133,30 @@ to this specification. The <<pcc>> metadata has no architectural effect in debug
 mode. Therefore <<asr_perm>> is implicitly granted for access to all CSRs for
 instruction execution.
 
-On debug mode entry <<dpcc>> (and consequently <<dpc>>) are updated with the
+On debug mode entry <<dpc_y>> is updated with the
 capability in <<pcc>> whose address field is set to the address of the next
 instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
 
-When leaving debug mode, the capability in <<dpcc>> is unsealed and written
-into <<pcc>>.  A debugger may write <<dpcc>> to change where the hart resumes
+When leaving debug mode, the capability in <<dpc_y>> is unsealed and written
+into <<pcc>>.  A debugger may write <<dpc_y>> to change where the hart resumes
 and its mode, permissions, sealing or bounds.
 
-The legalization of <<dpcc>> follows the same rules described for <<mepcc>>.
+The legalization of <<dpc_y>> follows the same rules described for <<mepc_y>>.
 
-[#dscratch0,reftext="dscratch0"]
+[#dscratch0_y,reftext="dscratch0 ({cheri_priv_debug_ext})"]
 ==== Debug Scratch Register 0 (dscratch0)
 
-The <<dscratch0>> register is as defined in the _RISC-V Debug Specification_. It is an
-optional DXLEN-bit scratch register that can be used by implementations which
-need it. <<dscratch0>> is extended into <<dscratch0c>>.
-
-.Debug scratch 0 register
-include::img/dscratch0reg.edn[]
-
-[#dscratch0c,reftext="dscratch0c"]
-==== Debug Scratch Register 0 Capability (dscratch0c)
-
-The <<dscratch0c>> register extends <<dscratch0>> to hold a capability.
+The <<dscratch0>> register is extended to hold a capability.
 
 {TAG_RESET_DCSR}
 
 .Debug scratch 0 capability register
 include::img/dscratch0creg.edn[]
 
-[#dscratch1,reftext="dscratch1"]
+[#dscratch1_y,reftext="dscratch1 ({cheri_priv_debug_ext})"]
 ==== Debug Scratch Register 1 (dscratch1)
 
-The <<dscratch1>> register is as defined in the _RISC-V Debug Specification_. It is an
-optional DXLEN-bit scratch register that can be used by implementations which
-need it. <<dscratch1>> is extended into <<dscratch1c>>.
-
-.Debug scratch 1 register
-include::img/dscratch1reg.edn[]
-
-[#dscratch1c,reftext="dscratch1c"]
-==== Debug Scratch Register 1 Capability (dscratch1c)
-
-The <<dscratch1c>> register extends <<dscratch1>> to hold a capability.
+The <<dscratch1>> register is extended to hold a capability.
 
 {TAG_RESET_DCSR}
 

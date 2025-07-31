@@ -27,16 +27,16 @@ Encoding::
 include::cheri_mode_dependent.adoc[]
 
 Description ({cheri_base32_ext_name})::
-Redirect instruction fetch via the jump table defined by the indexing via `jvtc.address+ index*XLEN/8`, checking every byte of the jump table access against <<jvtc>> bounds (not against <<pcc>>) and requiring <<x_perm>>.
+Redirect instruction fetch via the jump table defined by the indexing via `jvt.address+ index*XLEN/8`, checking every byte of the jump table access against <<jvt_y>> bounds (not against <<pcc>>) and requiring <<x_perm>>.
 +
 The target <<pcc>> is calculated by replacing the current <<pcc>> address with the value read from the jump table, and is updated using <<SCADDR>> semantics.
 +
-If the <<jvtc>> check fails, then clear the tag of the target <<pcc>>.
+If the <<jvt_y>> check fails, then clear the tag of the target <<pcc>>.
 
 include::zcm_common.adoc[]
 
 Permissions ({cheri_base32_ext_name})::
-Requires <<jvtc>> to have its {ctag} set, not be sealed, have <<x_perm>> and for the full XLEN-wide table access to be in <<jvtc>> bounds.
+Requires <<jvt_y>> to have its {ctag} set, not be sealed, have <<x_perm>> and for the full XLEN-wide table access to be in <<jvt_y>> bounds.
 
 include::pcrel_debug_warning.adoc[]
 

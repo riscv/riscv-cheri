@@ -296,28 +296,23 @@ The table jump instructions (<<CM_JT_CHERI>>, <<CM_JALT_CHERI>>) are _not_ redef
 
 In the future, new jump table modes or new encodings can be added to have capabilities in the jump table.
 
-The jump vector table CSR <<jvt_cheri>> has a capability alias <<jvtc>> so that it can only be configured to point to accessible memory.
-All accesses to the jump table are checked against <<jvtc>> in {cheri_cap_mode_name}, and against <<pcc>> bounds in {cheri_int_mode_name}.
+The jump vector table CSR <<jvt_y>> is a full capability so that it can only be configured to point to accessible memory.
+All accesses to the jump table are checked against <<jvt_y>> in {cheri_cap_mode_name}, and against <<pcc>> bounds in {cheri_int_mode_name}.
 This allows the jump table to be accessed when the <<pcc>> bounds are set narrowly to the local function only in {cheri_cap_mode_name}.
 
-NOTE: In {cheri_cap_mode_name} the instruction fetch bounds check is authorized by two different capabilities - <<jvtc>> for the table access and <<pcc>> for the <<CM_JALT_CHERI>>/<<CM_JT_CHERI>> instruction, and target instruction.
+NOTE: In {cheri_cap_mode_name} the instruction fetch bounds check is authorized by two different capabilities - <<jvt_y>> for the table access and <<pcc>> for the <<CM_JALT_CHERI>>/<<CM_JT_CHERI>> instruction, and target instruction.
 
-NOTE: In {cheri_cap_mode_name} the implementation doesn't need to expand and bounds check against <<jvtc>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvtc>>, and then check that the accessed entry is in that range.
+NOTE: In {cheri_cap_mode_name} the implementation doesn't need to expand and bounds check against <<jvt_y>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvt_y>>, and then check that the accessed entry is in that range.
 
-[#jvt_cheri,reftext="jvt ({cheri_base_ext_name})"]
-==== Jump Vector Table CSR (jvt) ({cheri_base_ext_name})
+[#jvt_y,reftext="jvt ({cheri_base_ext_name})"]
+==== Jump Vector Table CSR (jvt)
 
-The JVT CSR is extended to <<jvtc>>.
-
-[#jvtc,reftext="jvtc"]
-==== Jump Vector Table CSR (jvtc)
-
-<<jvtc>> extends the Zcmt <<jvt_cheri>> CSR to be YLEN bits.
+The Zcmt <<jvt>> CSR is extended to be a full capability.
 
 .Jump Vector Table Capability register
 include::img/jvtcreg.edn[]
 
-All instruction fetches from the jump vector table are checked against <<jvtc>> in {cheri_cap_mode_name}.
+All instruction fetches from the jump vector table are checked against <<jvt_y>> in {cheri_cap_mode_name}.
 In {cheri_int_mode_name} the address field gives the base address of the table, and the access is checked against <<pcc>> bounds.
 
 See <<CM_JALT_CHERI>>, <<CM_JT_CHERI>>.
