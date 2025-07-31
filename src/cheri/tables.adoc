@@ -83,7 +83,7 @@ written when executing <<CSRRWI_CHERI>>, <<CSRRC_CHERI>>, <<CSRRS_CHERI>>, <<CSR
 <<CSRRSI_CHERI>> regardless of the CHERI execution mode. YLEN bits are always written
 when using <<CSRRW_CHERI>> regardless of the CHERI execution mode.
 
-NOTE: Implementations which allow misa.C to be writable need to legalize *Xepcc*
+NOTE: Implementations which allow misa.C to be writable need to legalize `__x__epc`
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.
 
@@ -157,10 +157,3 @@ include::generated/xlen_dependent_encoding_insns_table_body.adoc[]
 NOTE: <<MODESW_CAP>>, <<MODESW_INT>> and <<SCMODE>> only exist in {cheri_cap_mode_name} if
 {cheri_int_mode_name} is _also_ present. A hart does not support the <<m_bit>>
 if it does not implement the {cheri_default_ext_name} extension.
-
-.Conditions for detecting illegal CHERI instructions
-[#cheri_illegals]
-[width="100%",options=header,cols="17,27,27,27"]
-|==============================================================================
-include::generated/illegal_insns_table_body.adoc[]
-|==============================================================================
