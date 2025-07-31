@@ -186,14 +186,14 @@ Load/store/AMO address breakpoint
 | .>|4,6 .<|*Load/store/AMO capability address misaligned* +
 Optionally: +
 Load/store/AMO address misaligned
-| .>|13, 15, 5, 7 .<|During address translation for an explicit memory access: +
+| .>|*{cheri_excep_cause_pte_ld}, {cheri_excep_cause_pte_st},* 13, 15, 5, 7 .<|During address translation for an explicit memory access: +
 First encountered *{cheri_excep_name_pte_ld}^2^, {cheri_excep_name_pte_st}*, page fault or access fault
 | .>|5,7 .<|With physical address for an explicit memory access: +
 Load/store/AMO access fault
 | .>|4,6 .<|If not higher priority: +
 Load/store/AMO address misaligned
-.>|_Lowest_ .>|13 .<|*If not higher priority: +
-*{cheri_excep_name_pte_ld}^3^*
+.>|_Lowest_ .>|*{cheri_excep_cause_pte_ld}* .<|*If not higher priority: +
+{cheri_excep_name_pte_ld}^3^*
 |===
 
 ^1^ PCC bounds are checked against all bytes of fetched instructions.
@@ -349,24 +349,22 @@ NOTE: `auth_cap` is `cs1`, unless in {cheri_int_mode_name} when it is <<ddc>> (i
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of current instruction out of <<pcc>> bounds^1^
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> failed any <<section_cap_integrity,integrity>> check.
 4+| *CSR/Xret additional exception check*
-| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>           | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not have <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>/<<SRET_CHERI>>
+| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | Illegal instruction | {cheri_excep_name_pc} | <<pcc>> does not have <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>> or <<CBO_INVAL_CHERI>>
 4+| *Load additional exception checks*
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` {ctag} is zero
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not have <<r_perm>>
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^1^
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
-| capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
+| Capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` {ctag} is zero
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
-| All atomics, CBO.INVAL*                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<r_perm>>
-| All stores, all atomics, CBO.INVAL*, CBO.ZERO* | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<w_perm>>
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have both <<r_perm>> and <<w_perm>>
+| All stores,  CBO.ZERO                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<w_perm>>
+| All atomics, CBO.CLEAN, CBO.FLUSH, CBO.INVAL   | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have both <<r_perm>> and <<w_perm>>
 | All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^1^
-| CBO.ZERO*, CBO.INVAL*                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^1^
-| CBO.CLEAN*, CBO.FLUSH*                         | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^1^
-| CBO.INVAL*                                     | {cheri_excep_cause_st}     | {cheri_excep_name_st} | <<pcc>> does not have <<asr_perm>>
+| CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^1^
+| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^1^
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
 | Capability stores                              | 7^2^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
