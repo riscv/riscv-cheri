@@ -73,7 +73,7 @@ NOTE: Future extensions may redefine the capability format providing they follow
 (def boxes-per-row 32)
 (draw-column-headers {:height 50 :font-size 18 :labels (reverse (concat ["0"] (repeat 28 "") ["XLEN-1" "" ""]))})
 
-(draw-box "C"    {:span 1})
+(draw-box "V"    {:span 1})
 (draw-box "" {:span 1 :borders {}})
 (draw-box "Metadata (bounds, permissions, etc.)"    {:span 30})
 (draw-box "" {:span 2 :borders {}})
@@ -186,12 +186,12 @@ All smaller capabilities are derived from this.
 
 The ISA does not allow the bounds (and permissions) of a capability with its {ctag} set to be increased (_monotonicity_).
 
-Bounds can be programmed using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs1` or `imm`) value.
+Bounds can be programmed using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs2` or `imm`) value.
 The granularity constraints means that not all requested combinations of _top_ and _base_ bounds can be encoded exactly.
 
-* <<SCBNDS>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. Set the {ctag} to zero if the bounds cannot be encoded exactly.
+* <<SCBNDS>> sets the _base_ to `cs1.address`, and the _length_ to `rs2`. Set the {ctag} to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSI>> sets the _base_ to `cs1.address`, and the _length_ to the immediate value. Set the {ctag} to zero if the bounds cannot be encoded exactly.
-* <<SCBNDSR>> sets the _base_ to `cs1.address`, and the _length_ to `rs1`. The bounds may be rounded up if they cannot be encoded exactly.
+* <<SCBNDSR>> sets the _base_ to `cs1.address`, and the _length_ to `rs2`. The bounds may be rounded up if they cannot be encoded exactly.
 ** If <<SCBNDSR>> rounds up the requested bounds, they must still be no larger than the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
@@ -358,6 +358,8 @@ Access System Registers Permission (ASR, primarily used to authorize CSR accesse
 In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing, but not for reading.
 ASR permission is used for additional permission checks by some instructions from other extensions such as <<Zicbom>>.
 
+<<asr_perm>> permission checks always use the permission in the <<pcc>>.
+
 NOTE: This permission is important in privileged execution environments.
   Removing this permission allows constraining privileged software to a sandbox that cannot be subverted by changing privileged state.
 
@@ -444,8 +446,6 @@ As stated above, all state which can hold addresses are extended from XLEN to YL
 
 ==== General Purpose Registers
 
-#ARC note C registers will become Y registers#
-
 The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to YLEN bits.
 
 .Extended registers in {cheri_base_ext_name}
@@ -463,7 +463,7 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to 
 (draw-gap "Same layout for c2-c30 (extending x2-x30)" {:height 100})
 (draw-box "" [:box-first {:span 1}]) (draw-box "c31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
 (draw-box nil [:box-first {:span 1}]) (draw-box "pcc" [:box-related {:span 32}]) (draw-box "pc" [:box-last {:span 32 }])
-(draw-box "C" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
+(draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
 #FIXME: need to avoid separate names#
@@ -625,8 +625,6 @@ The authorizing capability is either named explicitly (the base register of a lo
 E.g., `lw t0, 16(csp)` loads a word from memory, getting the address, bounds, and permissions from the `csp` (capability stack pointer) register.
 
  No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not raise an exception, but may set {ctag} of the resulting capability to zero if the operation is not permitted.
-
-NOTE: Branches and jumps may raise exceptions, reusing the Instruction Address Misaligned exception path.
 
 === Added Instructions
 {cheri_base_ext_name} adds new instructions to operate on capabilities.
