@@ -737,21 +737,20 @@ include::insns/cram_32bit.adoc[]
 [#sec_cap_load_store]
 === Instructions to Load and Store Capability Data
 
-New loads and stores are introduced to handle capability data, <<LC>> and <<SC>>.
+New loads and stores are introduced to handle capability data, <<LOAD_CAP>> and <<STORE_CAP>>.
 They atomically access YLEN bits of data and the associated {ctag}.
 
 All capability memory accesses check for <<c_perm>> in the authorizing capability in `cs1`.
 
 If <<c_perm>> is granted then:
 
-#ARC-NOTE: SC has name clash with "store conditional" in A extension. Suggest LY, SY.#
-* <<LC>> reads YLEN bits of data from memory, and returns the associated {ctag}.
-* <<SC>> writes YLEN bits of data to memory, and writes the associated {ctag}.
+* <<LOAD_CAP>> reads YLEN bits of data from memory, and returns the associated {ctag}.
+* <<STORE_CAP>> writes YLEN bits of data to memory, and writes the associated {ctag}.
 
 If <<c_perm>> is not granted then:
 
-* <<LC>> reads YLEN bits from memory, but does not return the associated {ctag}, instead zero is returned.
-* <<SC>> writes YLEN bits to memory, and writes zero to the associated {ctag}.
+* <<LOAD_CAP>> reads YLEN bits from memory, but does not return the associated {ctag}, instead zero is returned.
+* <<STORE_CAP>> writes YLEN bits to memory, and writes zero to the associated {ctag}.
 
 //NOTE: Future extensions to {cheri_base_ext_name} may add mechanisms that cause
 //stores of capabilities to raise exceptions when the authorizing capability does not grant both
@@ -773,15 +772,15 @@ All memory accesses, of any type, require permission from the authorizing capabi
 //NOTE: Misaligned capability memory accesses cannot be emulated.
 //  To transfer YLEN misaligned bits without a {ctag}, use integer loads and stores.
 
-Under some circumstances <<LC>> will _modify_ the data loaded from memory before writing it back to the destination register.
-See <<LC>> for details.
+Under some circumstances <<LOAD_CAP>> will _modify_ the data loaded from memory before writing it back to the destination register.
+See <<LOAD_CAP>> for details.
 
 .Capability load/store instruction summary in {cheri_base_ext_name}
 [#tab_cap_ldst_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic   |Description
-|<<LC>>     |Load capability
-|<<SC>>     |Store capability
+|<<LOAD_CAP>>     |Load capability
+|<<STORE_CAP>>     |Store capability
 |=======================
 
 include::insns/load_32bit_cap.adoc[]
@@ -844,9 +843,9 @@ endif::[]
 
 ^1^ All load/store encodings are _reserved_ if `cs1=c0` (since dereferencing <<null-cap>> always faults).
 
-All load instructions, except for the {cheri_base_ext_name} <<LC>>, always zero the {ctag} and metadata of the result register.
+All load instructions, except for the {cheri_base_ext_name} <<LOAD_CAP>>, always zero the {ctag} and metadata of the result register.
 
-All store instructions, except for the {cheri_base_ext_name} <<SC>>, always write zero to the {ctag} or tags associated with the memory locations that are written to.
+All store instructions, except for the {cheri_base_ext_name} <<STORE_CAP>>, always write zero to the {ctag} or tags associated with the memory locations that are written to.
 
 Therefore, misaligned stores may clear up to two associated {ctag} bits.
 
