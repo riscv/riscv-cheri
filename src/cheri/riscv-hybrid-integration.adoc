@@ -100,9 +100,11 @@ The effective CHERI execution mode cannot be determined just by reading the <<m_
 The following code sequence demonstrate how a program can observe the current, effective CHERI execution mode.
 It will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
 
-`auipc c1, 0`
-
-`{gctag_lc} x1, c1`
+[source,subs=attributes+]
+----
+auipc c1, 0
+{gctag_lc} x1, c1
+----
 
 #ARC question: should misa.Y be 1 when in {cheri_cap_mode_name} and 0 when in {cheri_int_mode_name}?#
 

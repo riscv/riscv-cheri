@@ -21,7 +21,7 @@ use with {cheri_base_ext_name}:
   least 4 if `dmstatus.impebreak` is 1, or at least 5 if `dmstatus.impebreak`
   is 0.
 
-[NOTE,subs="verbatim,attributes"]
+[NOTE]
 ====
 These requirements allow a debugger to read and write capabilities in integer
 registers without disturbing other registers.  These requirements may be
@@ -32,6 +32,7 @@ in `c1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
 0xBF0, `hartinfo.datasize` is 1, `dmstatus.impebreak` is 0, and
 `abstractcs.progbufsize` is 5:
 
+[source,subs=attributes+]
 ----
 # Read the high MXLEN bits into data0-data1
 csrrw  c2, dscratch0, c2
@@ -203,9 +204,11 @@ The current mode can be read from <<dinfc>>.
 
 The following sequence executed from the program buffer will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
 
-`csrr   c1, dinfc`
-
-`{gcmode_lc} x1, c1`
+[source,subs=attributes+]
+----
+csrr   c1, dinfc
+{gcmode_lc} x1, c1
+----
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The mode change instructions <<MODESW_CAP>> and <<MODESW_INT>> are new
