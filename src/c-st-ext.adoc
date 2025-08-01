@@ -774,15 +774,15 @@ the value in register _rd′_ then writes the result to
 _rd′_. The shift amount is encoded in the _shamt_ field.
 C.SRLI expands into `srli rd′, rd′, shamt`.
 
-The C.SRLI code points with _shamt_=0 are HINTs if the
-base architecture is _not_ {cheri_base_ext_name}.
-
 For RV32C, _shamt[5]_ must be zero; the code points with _shamt[5]_=1
 are designated for custom extensions.
 
 C.SRAI is defined analogously to C.SRLI, but instead performs an
 arithmetic right shift. C.SRAI expands to
 `srai rd′, rd′, shamt`.
+
+The C.SRLI and C.SRAI code points with _shamt_=0 are HINTs if the
+base architecture is _not_ {cheri_base_ext_name}.
 
 [NOTE]
 ====
