@@ -721,8 +721,8 @@ adjust the stack pointer in procedure prologues and epilogues. It
 expands into `addi x2, x2, nzimm[9:4]`. C.ADDI16SP is valid only when
 _nzimm_≠0; the code point with _nzimm_=0 is reserved.
 
-For {cheri_base_ext_name}, C.ADDI16SP updates `c2` (the capability stack
-pointer) and the expansion is `caddi, c2, c2, nzim[9:4]`.
+For {cheri_base_ext_name}, {C_ADDI16SP_CAP} adds the scaled immediate to `c2`
+(the capability stack pointer), and the expansion is `{caddi_lc}, c2, c2, nzim[9:4]`.
 
 [NOTE]
 ====
@@ -743,9 +743,8 @@ pointers to stack-allocated variables, and expands to
 _nzuimm_≠0; the code points with _nzuimm_=0 are
 reserved.
 
-For {cheri_base_ext_name}, C.ADDI4SPN adds the immediate to `c2`,
-(the capability stack pointer) and the expansion is
-`{caddi_lc} cd′, c2, nzuimm[9:2]`
+For {cheri_base_ext_name}, {C_ADDI4SPN_CAP} adds the scaled immediate to `c2`
+(the capability stack pointer), and the expansion is `{caddi_lc} cd′, c2, nzuimm[9:2]`.
 
 [[c-ci]]
 include::images/wavedrom/c-ci.edn[]
@@ -822,7 +821,7 @@ convenient to expand C.MV to MV instead of ADD, at slight additional
 hardware cost._
 ====
 
-For {cheri_base_ext_name} C.MV moves a whole capability register.
+For {cheri_base_ext_name} {C_MV_CAP} moves a whole capability register.
 The expansion is `cmv cd, rs2`.
 
 C.ADD adds the values in registers _rd_ and _rs2_ and writes the result
