@@ -28,38 +28,38 @@ registers without disturbing other registers.  These requirements may be
 relaxed if some other means of accessing capabilities in integer registers,
 such as an extension of the Access Register abstract command, is added.  The
 following sequences demonstrate how a debugger can read and write a capability
-in `c1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
+in `{creg}1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
 0xBF0, `hartinfo.datasize` is 1, `dmstatus.impebreak` is 0, and
 `abstractcs.progbufsize` is 5:
 
 [source,subs=attributes+]
 ----
 # Read the high MXLEN bits into data0-data1
-csrrw  c2, dscratch0, c2
-{gchi_lc}   x2, c1
+csrrw  {creg}2, dscratch0, {creg}2
+{gchi_lc}   x2, {creg}1
 csrw   0xBF0, x2
-csrrw  c2, dscratch0, c2
+csrrw  {creg}2, dscratch0, {creg}2
 ebreak
 
 # Read the {ctag} into data0
-csrrw  c2, dscratch0, c2
-{gctag_lc}  x2, c1
+csrrw  {creg}2, dscratch0, {creg}2
+{gctag_lc}  x2, {creg}1
 csrw   0xBF0, x2
-csrrw  c2, dscratch0, c2
+csrrw  {creg}2, dscratch0, {creg}2
 ebreak
 
 # Write the high MXLEN bits from data0-data1
-csrrw  c2, dscratch0, c2
+csrrw  {creg}2, dscratch0, {creg}2
 csrr   x2, 0xBF0
-{schi_lc}   c1, c1, x2
-csrrw  c2, dscratch0, c2
+{schi_lc}   {creg}1, {creg}1, x2
+csrrw  {creg}2, dscratch0, {creg}2
 ebreak
 
 # Write the {ctag} (if nonzero)
-csrrw   c2, dscratch0, c2
-csrr    c2, dinfc
-{cbld_lc}    c1, c2, c1
-csrrw   c2, dscratch0, c2
+csrrw   {creg}2, dscratch0, {creg}2
+csrr    {creg}2, dinfc
+{cbld_lc}    {creg}1, {creg}2, {creg}1
+csrrw   {creg}2, dscratch0, {creg}2
 ebreak
 ----
 
@@ -206,8 +206,8 @@ The following sequence executed from the program buffer will write {CAP_MODE_VAL
 
 [source,subs=attributes+]
 ----
-csrr   c1, dinfc
-{gcmode_lc} x1, c1
+csrr   {creg}1, dinfc
+{gcmode_lc} x1, {creg}1
 ----
 
 ifdef::cheri_v9_annotations[]
