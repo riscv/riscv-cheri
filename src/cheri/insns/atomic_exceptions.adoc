@@ -20,7 +20,16 @@ endif::[]
 Requires all bytes of the access to be in capability bounds.
 
 Exceptions::
-All misaligned atomics cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a store/AMO access fault exception.
+ifdef::cap_atomic[]
+Store/AMO access fault exception when the effective address is not aligned to YLEN/8.
++
+CAUTION: #This is a change in behavior relative to v0.9.5 (previously a misaligned exception was raised)#
++
+Store/AMO access fault if the stored {ctag} is set to one and the PMA is _CHERI {ctag_title} Fault_.
+endif::[]
+ifndef::cap_atomic[]
+If the address is not naturally aligned raise a _Store/AMO address misaligned_ exception or a _Store/AMO access fault_ exception. See <<sec:amo,"Zaamo">> for details on which one is raised.
+endif::[]
 +
 _CHERI data fault_ exceptions occur when the authorizing capability fails one of the checks
 listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
