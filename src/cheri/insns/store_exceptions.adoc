@@ -8,7 +8,7 @@ Store/AMO access fault if the stored {ctag} is set to one and the PMA is _CHERI 
 endif::[]
 ifndef::has_cap_data[]
 ifdef::store_cond[]
-All misaligned store conditionals cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported), otherwise they take a store/AMO access fault exception.
+If the address is not naturally aligned raise a _Store/AMO address misaligned_ exception or a _Store/AMO access fault_ exception. See <<sec:amo,"Zaamo">> for details on which one is raised.
 +
 endif::[]
 endif::[]
@@ -27,4 +27,5 @@ endif::[]
 |==============================================================================
 +
 :!store_cond:
++
 :!has_cap_data:
