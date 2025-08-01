@@ -1,27 +1,21 @@
 <<<
 
-[#C_ADDI4SPN_CHERI,reftext="C.ADDI4SPN ({cheri_base_ext_name})"]
-==== C.ADDI4SPN ({cheri_base_ext_name})
+[#C_ADDI4SPN_CAP,reftext="{C_ADDI4SPN_CAP}"]
+==== {C_ADDI4SPN_CAP}
 
 Synopsis::
-Stack pointer increment in blocks of 4 (C.ADDI4SPN), 16-bit encoding
+Stack pointer increment in blocks of 4 ({C_ADDI4SPN_CAP}), 16-bit encoding
 
 Mnemonic::
-`c.addi4spn cd', nzuimm`
+`{C_ADDI4SPN_CAP_LC} cd', nzuimm`
 
 Expansion::
-`caddi cd', csp, nzuimm`
-
-NOTE: The suggested assembly syntax distinguishes from integer `c.addi4spn` by operand type.
-
-//{cheri_int_mode_name} Mnemonic::
-//`c.addi4spn rd', nzuimm`
-
-//{cheri_int_mode_name} Expansion::
-//`addi rd', sp, nzuimm`
+`{caddi_lc} cd', csp, nzuimm`
 
 Encoding::
 include::wavedrom/c-ciw.adoc[]
+
+NOTE: This encoding is shared with integer `c.addi4spn`.
 
 include::cheri_mode_dependent.adoc[]
 
@@ -39,10 +33,7 @@ Set `cd'.tag=0` if `csp` 's bounds are <<section_cap_malformed,malformed>>, or i
 
 Add a zero-extended non-zero immediate, scaled by 4, to the stack pointer, `sp`, and writes the result to `rd'`. This instruction is used to generate pointers to stack-allocated variables.
 
-Prerequisites for C.ADDI4SPN::
-{c_cheri_base_ext_names}
-
-Prerequisites for C.ADDI4SPN::
+Prerequisites::
 {c_cheri_default_ext_names}
 
 {cheri_cap_mode_name} Operation::

@@ -871,9 +871,9 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 
 * Whenever the address field of the <<pcc>> is modified, it is _always_ updated using <<SCADDR>> semantics.
   This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
-  In this case, e.g., `new_pcc = SCADDR(old_pcc, offset)`
+  In this case, e.g., `new_pcc = {SCADDR}(old_pcc, offset)`
 * <<JALR_CHERI>> copies `cs1` into the <<pcc>>, and increments the address field with the offset.
-  In this case, e.g., `new_pcc = SCADDR(cs1, offset)`
+  In this case, e.g., `new_pcc = {SCADDR}(cs1, offset)`
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.,:
 

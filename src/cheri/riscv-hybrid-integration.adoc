@@ -87,8 +87,8 @@ The <<m_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cher
 |=======================
 |Mnemonic        | From mode          | Description
 | <<JALR_CHERI>> |{cheri_cap_mode_name}| Install `cs1` in the <<pcc>> and so update `pcc.M`
-| <<MODESW.INT>> |{cheri_cap_mode_name}| Switch to {cheri_int_mode_name}.
-| <<MODESW.CAP>> |{cheri_int_mode_name}| Switch to {cheri_cap_mode_name}.
+| <<MODESW_INT>> |{cheri_cap_mode_name}| Switch to {cheri_int_mode_name}.
+| <<MODESW_CAP>> |{cheri_int_mode_name}| Switch to {cheri_cap_mode_name}.
 |=======================
 
 NOTE: The mode can also be updated by setting the <<m_bit>> of a target capability using <<SCMODE>> followed by a <<JALR_CHERI>>.
@@ -100,10 +100,10 @@ The effective CHERI execution mode cannot be determined just by reading the <<m_
 The following code sequence demonstrate how a program can observe the current, effective CHERI execution mode.
 It will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
 
-[source]
+[source,subs=attributes+]
 ----
 auipc c1, 0
-gctag x1, c1
+{gctag_lc} x1, c1
 ----
 
 #ARC question: should misa.Y be 1 when in {cheri_cap_mode_name} and 0 when in {cheri_int_mode_name}?#
