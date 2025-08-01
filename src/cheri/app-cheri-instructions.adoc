@@ -16,8 +16,7 @@ For existing RISC-V instructions, note that:
 NOTE: Not all RISC-V extensions have been checked against CHERI. Compatible
 extensions will eventually be listed in a CHERI profile.
 
-//these are unnecessary as they just follow the stated rules
-ifdef::cheri_standalone_spec[]
+// NOTE: these are technically unnecessary as they just follow the stated rules
 <<<
 === RV32I/E and RV64I/E Base Integer Instruction Sets
 
@@ -27,8 +26,8 @@ include::insns/load_32bit.adoc[]
 
 include::insns/store_32bit.adoc[]
 
-endif::[]
-
+ifdef::cheri_standalone_spec[]
+// FIXME: needs to be in privileged chapter
 <<<
 === RV32I/E and RV64I/E Privileged Instruction Sets
 
@@ -38,41 +37,39 @@ include::insns/mret_sret.adoc[]
 
 include::insns/dret.adoc[]
 
-//these are merged into the atomics chapter in unpriv
-ifdef::cheri_standalone_spec[]
+endif::[]
+
 <<<
 === "A" Standard Extension for Atomic Instructions
 
 Atomic instructions and their interactions with CHERI.
+// NOTE: these are technically unnecessary since they just follow the default rules
 
 include::insns/amo_32bit.adoc[]
 
-include::insns/amoswap_32bit_cap.adoc[]
-
 include::insns/load_res_32bit.adoc[]
+
+include::insns/store_cond_32bit.adoc[]
+
+ifdef::cheri_standalone_spec[]
+// Already in A chapter for non-standalone
 
 include::insns/load_res_cap_32bit.adoc[]
 
-include::insns/store_cond_32bit.adoc[]
+include::insns/amoswap_32bit_cap.adoc[]
 
 include::insns/store_cond_cap_32bit.adoc[]
 endif::[]
 
-//these are unnecessary as they just follow the stated rules
-ifdef::cheri_standalone_spec[]
-
 <<<
 === "Zfh", "Zfhmin", "F" and "D" Standard Extension for Floating-Point
-
+// NOTE: these are technically  unnecessary as they just follow the stated rules
 Floating point instructions and how CHERI affects them.
 
 include::insns/load_32bit_fp.adoc[]
 
 include::insns/store_32bit_fp.adoc[]
-endif::[]
 
-//this has all been integrated into the relevant chapter
-ifdef::cheri_standalone_spec[]
 <<<
 === "C" Standard Extension for Compressed Instructions
 
@@ -85,7 +82,8 @@ NOTE: Zcf and Zclsd are incompatible
 
 NOTE: Zcd and <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>> are incompatible
 
-
+//this has all been integrated into the relevant chapter
+ifdef::cheri_standalone_spec[]
 ==== RV32 / {cheri_base32_ext_name}
 
 .16-bit instruction remapping in {cheri_int_mode_name}
@@ -163,6 +161,8 @@ NOTE: Zcd and <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>> are incompatible
 |001    |10    5+| <<C_LOAD_CAP_SP>>
 |==============================================================================
 
+endif::[]
+
 include::insns/condbr_16bit.adoc[]
 
 include::insns/cmv_16bit.adoc[]
@@ -198,10 +198,8 @@ include::insns/store_16bit_fp_sp.adoc[]
 include::insns/store_16bit_fp_dp.adoc[]
 
 include::insns/store_16bit_cap_sprel.adoc[]
-endif::[]
 
-//integrated into the CBO chapter
-ifdef::cheri_standalone_spec[]
+// NOTE: integrated into the CBO chapter
 <<<
 === "Zicbom", "Zicbop", "Zicboz" Standard Extensions for Base Cache Management Operations
 
@@ -221,6 +219,8 @@ include::insns/prefetch.r.adoc[]
 
 include::insns/prefetch.w.adoc[]
 
+//this has all been integrated into the relevant chapter
+ifdef::cheri_standalone_spec[]
 <<<
 === "Zba" Extension for Bit Manipulation Instructions
 
@@ -241,16 +241,16 @@ include::insns/sh4add_32bit.adoc[]
 
 include::insns/sh4adduw_32bit.adoc[]
 
-//these all follow the standard rules
-//<<<
-//[#Zcb,reftext="Zcb"]
-//=== "Zcb" Standard Extension For Code-Size Reduction
-//
-//Code-size reduction instructions and how they interact with CHERI.
-//
-//include::insns/load_16bit_Zcb.adoc[]
-//
-//include::insns/store_16bit_Zcb.adoc[]
+// NOTE: these all follow the standard rules
+<<<
+[#Zcb,reftext="Zcb"]
+=== "Zcb" Standard Extension For Code-Size Reduction
+
+Code-size reduction instructions and how they interact with CHERI.
+
+include::insns/load_16bit_Zcb.adoc[]
+
+include::insns/store_16bit_Zcb.adoc[]
 
 <<<
 [#Zcmp_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
