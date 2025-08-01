@@ -1,17 +1,17 @@
 <<<
 
-[#SCBNDSI,reftext="SCBNDSI"]
-==== SCBNDSI
+[#SCBNDSI,reftext="{SCBNDSI}"]
+==== {SCBNDSI}
 
 See <<SCBNDS>>.
 
-[#SCBNDS,reftext="SCBNDS"]
-==== SCBNDS
+[#SCBNDS,reftext="{SCBNDS}"]
+==== {SCBNDS}
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* SCBNDS was called CSETBOUNDSEXACT.
+NOTE: *CHERI v9 Note:* {SCBNDS} was called CSETBOUNDSEXACT.
 
-NOTE: *CHERI v9 Note:* SCBNDSI would have been CSETBOUNDSEXACTIMM if it had existed.
+NOTE: *CHERI v9 Note:* {SCBNDSI} would have been CSETBOUNDSEXACTIMM if it had existed.
 endif::[]
 
 include::new_encoding_note.adoc[]
@@ -21,11 +21,11 @@ NOTE: *CHERI v9 Note:* the immediate format has changed
 endif::[]
 
 Synopsis::
-Capability set bounds
+Capability write bounds
 
 Mnemonics::
-`scbnds cd, cs1, rs2` +
-`scbndsi cd, cs1, uimm`
+`{scbnds_lc} cd, cs1, rs2` +
+`{scbndsi_lc} cd, cs1, uimm`
 
 Encoding::
 include::wavedrom/scbnds_32bit.adoc[]
@@ -48,10 +48,10 @@ include::malformed_cs1_clear_tag.adoc[]
 NOTE: The <<SCBNDSI>> encoding with `s=1` and `uimm ≤ 1` is RESERVED since these immediates can also be encoded with `s=0`.
 
 
-Operation for SCBNDS::
+Operation for {SCBNDS}::
 +
 sail::execute[clause="SCBNDS(_, _, _)",part=body,unindent]
 
-Operation for SCBNDSI::
+Operation for {SCBNDSI}::
 +
 sail::execute[clause="SCBNDSI(_, _, _, _)",part=body,unindent]

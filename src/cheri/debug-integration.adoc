@@ -1,4 +1,4 @@
-[#section_debug_integration]
+[#section_debug_integration_ext]
 === "{cheri_priv_debug_ext}", Integrating {cheri_base_ext_name} with Sdext
 
 ifdef::cheri_standalone_spec[]
@@ -32,17 +32,18 @@ in `c1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
 0xBF0, `hartinfo.datasize` is 1, `dmstatus.impebreak` is 0, and
 `abstractcs.progbufsize` is 5:
 
+[source,subs=attributes+]
 ----
 # Read the high MXLEN bits into data0-data1
 csrrw  c2, dscratch0, c2
-gchi   x2, c1
+{gchi_lc}   x2, c1
 csrw   0xBF0, x2
 csrrw  c2, dscratch0, c2
 ebreak
 
 # Read the {ctag} into data0
 csrrw  c2, dscratch0, c2
-gctag  x2, c1
+{gctag_lc}  x2, c1
 csrw   0xBF0, x2
 csrrw  c2, dscratch0, c2
 ebreak
@@ -50,14 +51,14 @@ ebreak
 # Write the high MXLEN bits from data0-data1
 csrrw  c2, dscratch0, c2
 csrr   x2, 0xBF0
-schi   c1, c1, x2
+{schi_lc}   c1, c1, x2
 csrrw  c2, dscratch0, c2
 ebreak
 
 # Write the {ctag} (if nonzero)
 csrrw   c2, dscratch0, c2
 csrr    c2, dinfc
-cbld    c1, c2, c1
+{cbld_lc}    c1, c2, c1
 csrrw   c2, dscratch0, c2
 ebreak
 ----
@@ -203,10 +204,10 @@ The current mode can be read from <<dinfc>>.
 
 The following sequence executed from the program buffer will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
 
-[source]
+[source,subs=attributes+]
 ----
 csrr   c1, dinfc
-gcmode x1, c1
+{gcmode_lc} x1, c1
 ----
 
 ifdef::cheri_v9_annotations[]
