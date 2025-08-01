@@ -10,8 +10,6 @@ remapped_isns = {
     'CBO.INVAL': 'CBO_INVAL_CHERI',
     'CBO.CLEAN': 'CBO_CLEAN_CHERI',
     'CBO.FLUSH': 'CBO_FLUSH_CHERI',
-    'HLV.C': 'HLV_C',
-    'HSV.C': 'HSV_C',
     'PREFETCH.R': 'PREFETCH_R_CHERI',
     'PREFETCH.W': 'PREFETCH_W_CHERI',
     'PREFETCH.I': 'PREFETCH_I_CHERI',

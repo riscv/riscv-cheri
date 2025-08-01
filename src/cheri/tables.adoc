@@ -61,9 +61,8 @@ include::generated/csr_aliases_table_body.adoc[]
 include::generated/csr_alias_action_table_body.adoc[]
 |==============================================================================
 
-^*^ The vector range check is to ensure that vectored entry to the handler
- is within bounds of the capability written to `Xtvecc`. The check on writing
- must include the lowest (0 offset) and highest possible offset (e.g., 64 * MXLEN bits where HICAUSE=16).
+^*^ The vector range check is to ensure that vectored entry to the handler is within bounds of the capability written to `__x__tvec`.
+  The check on writing must include the lowest (0 offset) and highest possible offset (e.g., 64 * MXLEN bits where HICAUSE=16).
 
 XLEN bits of extended YLEN-wide CSRs are written when executing
 <<CSRRWI_CHERI>>, <<CSRRC_CHERI>>, <<CSRRS_CHERI>>, <<CSRRCI_CHERI>> or <<CSRRSI_CHERI>> regardless of the
@@ -84,7 +83,7 @@ written when executing <<CSRRWI_CHERI>>, <<CSRRC_CHERI>>, <<CSRRS_CHERI>>, <<CSR
 <<CSRRSI_CHERI>> regardless of the CHERI execution mode. YLEN bits are always written
 when using <<CSRRW_CHERI>> regardless of the CHERI execution mode.
 
-NOTE: Implementations which allow misa.C to be writable need to legalize *Xepcc*
+NOTE: Implementations which allow misa.C to be writable need to legalize `__x__epc`
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.
 

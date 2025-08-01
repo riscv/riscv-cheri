@@ -6,12 +6,12 @@ Requires <<r_perm>> and <<w_perm>> in the authorizing capability.
 +
 If <<c_perm>> is not granted then store the memory tag as zero, and load `cd.tag` as zero.
 +
-If the authorizing capability does not grant <<lm_perm>>, and the {ctag} of `cd` is 1 and `cd` is not sealed, then an implicit <<ACPERM>> clearing <<w_perm>> and <<lm_perm>> is performed to obtain the intermediate permissions on `cd` (see <<LC>>).
+If the authorizing capability does not grant <<lm_perm>>, and the {ctag} of `cd` is 1 and `cd` is not sealed, then an implicit <<ACPERM>> clearing <<w_perm>> and <<lm_perm>> is performed to obtain the intermediate permissions on `cd` (see <<LOAD_CAP>>).
 +
 If the authorizing capability does not grant <<el_perm>>, and the {ctag} of `cd` is 1, then an implicit <<ACPERM>> restricting the <<section_cap_level>> to the level of the authorizing capability is performed.
-If `cd` is not sealed, this implicit <<ACPERM>> also clears <<el_perm>> to obtain the final permissions on `cd` (see <<cap_level_load_summary>> and <<LC>>).
+If `cd` is not sealed, this implicit <<ACPERM>> also clears <<el_perm>> to obtain the final permissions on `cd` (see <<cap_level_load_summary>> and <<LOAD_CAP>>).
 +
-The stored tag is also set to zero if the authorizing capability does not have <<sl_perm>> set but the stored data has a <<section_cap_level>> of 0 (see <<SC>>).
+The stored tag is also set to zero if the authorizing capability does not have <<sl_perm>> set but the stored data has a <<section_cap_level>> of 0 (see <<STORE_CAP>>).
 endif::[]
 ifndef::cap_atomic[]
 Requires <<r_perm>> and <<w_perm>> in the authorizing capability.
@@ -20,7 +20,16 @@ endif::[]
 Requires all bytes of the access to be in capability bounds.
 
 Exceptions::
-All misaligned atomics cause a store/AMO address misaligned exception to allow software emulation (if the Zam extension is supported, see cite:[riscv-unpriv-spec]), otherwise they take a store/AMO access fault exception.
+ifdef::cap_atomic[]
+Store/AMO access fault exception when the effective address is not aligned to YLEN/8.
++
+CAUTION: #This is a change in behavior relative to v0.9.5 (previously a misaligned exception was raised)#
++
+Store/AMO access fault if the stored {ctag} is set to one and the PMA is _CHERI {ctag_title} Fault_.
+endif::[]
+ifndef::cap_atomic[]
+If the address is not naturally aligned raise a _Store/AMO address misaligned_ exception or a _Store/AMO access fault_ exception. See <<sec:amo,"Zaamo">> for details on which one is raised.
+endif::[]
 +
 _CHERI data fault_ exceptions occur when the authorizing capability fails one of the checks
 listed below (see <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details):
