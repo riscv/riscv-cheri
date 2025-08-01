@@ -297,7 +297,7 @@ If the base architecture is {cheri_base_ext_name}, then the address operand
 always refers to the capability version of the register. For example C.LSWP
 (below) expands to:
 
-* `lw rd, offset(y2)` for {cheri_base_ext_name}
+* `lw rd, offset({creg}2)` for {cheri_base_ext_name}
 * `lw rd, offset(x2)` for other base architectures
 
 ==== Stack-Pointer-Based Loads and Stores
@@ -336,8 +336,8 @@ expands to `fld rd, offset(x2)`.
 capability from memory into capability register
 register _cd_. It computes its effective address by adding the
 _zero_-extended offset, scaled by 8 (for {cheri_base32_ext_name}),
-or 16 (for {cheri_base64_ext_name}) to the capability stack pointer, `y2`. It
-expands to `lc cd, offset(y2)`.
+or 16 (for {cheri_base64_ext_name}) to the capability stack pointer, `{creg}2`. It
+expands to `lc cd, offset({creg}2)`.
 
 include::images/wavedrom/c-sp-load-store-css.edn[]
 [[c-sp-load-store-css]]
@@ -370,8 +370,8 @@ expands to `fsd rs2, offset(x2)`.
 capability in capability register _cs2_
 to memory. It computes an effective address by adding the
 _zero_-extended offset, scaled by 8 (for {cheri_base32_ext_name}),
-or 16 (for {cheri_base64_ext_name}), to the stack pointer, `y2`. It
-expands to `sc cs2, offset(y2)`.
+or 16 (for {cheri_base64_ext_name}), to the stack pointer, `{creg}2`. It
+expands to `sc cs2, offset({creg}2)`.
 
 [NOTE]
 ====
@@ -602,12 +602,12 @@ These instructions use the CJ format.
 C.J performs an unconditional control transfer. The offset is
 sign-extended and added to the `pc` to form the jump target address. C.J
 can therefore target a &#177;2 KiB range. C.J expands to
-`jal x0, offset`, or `jal y0, offset` for {cheri_base_ext_name}.
+`jal x0, offset`, or `jal {creg}0, offset` for {cheri_base_ext_name}.
 
 C.JAL is an RV32C-only instruction that performs the same operation as
 C.J, but additionally writes the address of the instruction following
 the jump (`pc+2`) to the link register, `x1`. C.JAL expands to
-`jal x1, offset`, or `jal y1, offset` for {cheri_base_ext_name}.
+`jal x1, offset`, or `jal {creg}1, offset` for {cheri_base_ext_name}.
 
 [[c-cr-format-ls]]
 include::images/wavedrom/c-cr-format-ls.edn[]
@@ -618,14 +618,14 @@ These instructions use the CR format.
 
 C.JR (jump register) performs an unconditional control transfer to the
 address in register _rs1/cs1_. C.JR expands to `jalr x0, 0(rs1)`, or
-`jalr y0, 0(cs1)` for {cheri_base_ext_name}.
+`jalr {creg}0, 0(cs1)` for {cheri_base_ext_name}.
 C.JR is valid only when _rs1/cs1_≠`x0`; the code
 point with _rs1/cs1_=`x0` is reserved.
 
 C.JALR (jump and link register) performs the same operation as C.JR, but
 additionally writes the address of the instruction following the jump
-(`pc`+2) to the link register, `x1/y1`. C.JALR expands to
-`jalr x1, 0(rs1)`, or `jalr y1, 0(cs1)` for {cheri_base_ext_name}.
+(`pc`+2) to the link register, `x1/{creg}1`. C.JALR expands to
+`jalr x1, 0(rs1)`, or `jalr {creg}1, 0(cs1)` for {cheri_base_ext_name}.
 C.JALR is valid only when
 _rs1/cs1_≠`x0`; the code point with
 _rs1/cs1_=`x0` corresponds to the C.EBREAK
@@ -721,8 +721,8 @@ adjust the stack pointer in procedure prologues and epilogues. It
 expands into `addi x2, x2, nzimm[9:4]`. C.ADDI16SP is valid only when
 _nzimm_≠0; the code point with _nzimm_=0 is reserved.
 
-For {cheri_base_ext_name}, C.ADDI16SP updates `y2` (the capability stack
-pointer) and the expansion is `caddi, y2, y2, nzim[9:4]`.
+For {cheri_base_ext_name}, {C_ADDI16SP_CAP} adds the scaled immediate to `{creg}2`
+(the capability stack pointer), and the expansion is `{caddi_lc}, {creg}2, {creg}2, nzim[9:4]`.
 
 [NOTE]
 ====
@@ -743,9 +743,8 @@ pointers to stack-allocated variables, and expands to
 _nzuimm_≠0; the code points with _nzuimm_=0 are
 reserved.
 
-For {cheri_base_ext_name}, C.ADDI4SPN adds the immediate to `y2`,
-(the capability stack pointer) and the expansion is
-`caddi cd′, c2, nzuimm[9:2]`
+For {cheri_base_ext_name}, {C_ADDI4SPN_CAP} adds the scaled immediate to `{creg}2`
+(the capability stack pointer), and the expansion is `{caddi_lc} cd′, c2, nzuimm[9:2]`.
 
 [[c-ci]]
 include::images/wavedrom/c-ci.edn[]
@@ -757,7 +756,8 @@ the value in register _rd_ then writes the result to _rd_. The shift
 amount is encoded in the _shamt_ field.
 C.SLLI expands into `slli rd, rd, shamt[5:0]`.
 
-The C.SLLI code points with _shamt_=0 or with _rd_=`x0` are HINTs.
+The C.SLLI code points with _shamt_=0 or with _rd_=`x0` are HINTs if the
+base architecture is _not_ {cheri_base_ext_name}.
 
 For RV32C, _shamt[5]_ must be zero; the code points with _shamt[5]_=1
 are designated for custom extensions.
@@ -773,14 +773,15 @@ the value in register _rd′_ then writes the result to
 _rd′_. The shift amount is encoded in the _shamt_ field.
 C.SRLI expands into `srli rd′, rd′, shamt`.
 
-The C.SRLI code points with _shamt_=0 are HINTs.
-
 For RV32C, _shamt[5]_ must be zero; the code points with _shamt[5]_=1
 are designated for custom extensions.
 
 C.SRAI is defined analogously to C.SRLI, but instead performs an
 arithmetic right shift. C.SRAI expands to
 `srai rd′, rd′, shamt`.
+
+The C.SRLI and C.SRAI code points with _shamt_=0 are HINTs if the
+base architecture is _not_ {cheri_base_ext_name}.
 
 [NOTE]
 ====
@@ -820,8 +821,8 @@ convenient to expand C.MV to MV instead of ADD, at slight additional
 hardware cost._
 ====
 
-For {cheri_base_ext_name} C.MV moves a whole capability register.
-The expansion is `cmv cd, rs2`.
+For {cheri_base_ext_name} {C_MV_CAP} copies a whole capability register.
+The expansion is `{C_MV_CAP_LC} cd, rs2`.
 
 C.ADD adds the values in registers _rd_ and _rs2_ and writes the result
 to register _rd_. C.ADD expands into `add rd, rd, rs2`. C.ADD is only

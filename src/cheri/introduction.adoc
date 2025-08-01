@@ -44,21 +44,27 @@ RISC-V.
 
 The following two extensions are useful independent of CHERI:
 
-<<sh4add_ext,{sh4add_ext_name}>>:: Addition of <<SH4ADD>> and <<SH4ADD_UW>> for RV64 only, as CHERI capabilities are 16 bytes when XLEN=64
+<<sh4add_ext,{sh4add_ext_name}>>:: Addition of <<SH4ADD_CHERI>> and <<SH4ADD_UW_CHERI>> for RV64 only, as CHERI capabilities are 16 bytes when XLEN=64
 <<abhlrsc_ext,{lr_sc_bh_ext_name}>>:: Addition of <<LR_B>>, <<LR_H>>, <<SC_B>>, <<SC_H>> for more accurate atomic locking as the memory ranges are restricted by using bounds, therefore precise locking is needed.
 
 ==== Extensions to the privileged specification
-The following extensions are added to the privleged specification
 
-<<section_priv_cheri,{cheri_priv_m_ext}>>:: Machine-Level Privileged extension to support CHERI.
-<<section_priv_cheri,{cheri_priv_s_ext}>>:: Supervisor-Level Privileged extension to support CHERI.
-<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>>:: Privileged extension for integrating CHERI with virtual memory.
-<<section_debug_integration,{cheri_priv_debug_ext}>>:: Privileged extension for integrating CHERI with debug mode.
+#ARC-QUESTION: do we need to declare extensions for RVY+<ext> or is just having RVY+<ext> enough?#
+
+The following extensions are added to the privileged specification for {cheri_base_ext_name}:
+
+<<section_priv_cheri,{cheri_priv_m_ext}>>:: Machine-Level Privileged extension to support CHERI (implies Machine ISA).
+<<section_priv_cheri,{cheri_priv_s_ext}>>:: Supervisor-Level Privileged extension to support CHERI (implies Supervisor ISA).
+<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>>:: Privileged extension for integrating CHERI with virtual memory (implies Sv39).
+<<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>:: CHERI extension for capability revocation on RISC-V harts supporting page-based virtual-memory (implies {cheri_priv_vmem_ext}).
+<<section_debug_integration_ext,{cheri_priv_debug_ext}>>:: Privileged extension for integrating CHERI with external debug mode (implies Sdext).
+<<section_debug_integration_trig,{cheri_priv_debug_trig}>>:: Privileged extension for integrating CHERI with debug triggers (implies Sdtrig).
+<<section_priv_cheri,{cheri_priv_h_ext}>>:: Privileged extension to integrate CHERI with the Hypervisor extensions (implies H).
+
+If {cheri_default_ext_name} is implemented, then these extensions are available. All imply {cheri_base_ext_name}.
+
 <<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>>:: Privileged extension to disable explicit access to CHERI registers and instructions.
 <<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>>:: Privileged extension to allow dynamic XLEN and endianness changes.
-<<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>:: CHERI extension for capability revocation on RISC-V harts supporting page-based
-virtual-memory.
-<<section_priv_cheri,{cheri_priv_h_ext}>>:: Privileged extension to integrate CHERI with the Hypervisor extensions.
 
 CAUTION: The extension names are provisional and subject to change.
 
@@ -76,7 +82,8 @@ CAUTION: The extension names are provisional and subject to change.
 |<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>> | Stable        | This extension is a candidate for freezing
 |<<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>> | Stable        | This extension is a candidate for freezing
 |<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>> | Stable        | This extension is a candidate for freezing
-|<<section_debug_integration,{cheri_priv_debug_ext}>> | Stable        | This extension is a candidate for freezing
+|<<section_debug_integration_ext,{cheri_priv_debug_ext}>> | Stable        | This extension is a candidate for freezing
+|<<section_debug_integration_trig,{cheri_priv_debug_trig}>> | Stable        | This extension is a candidate for freezing
 |<<section_priv_cheri,{cheri_priv_h_ext}>>          | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
 |<<section_cheri_priv_crg_ext,    {cheri_priv_crg_ext}>>         | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
 |==============================================================================
