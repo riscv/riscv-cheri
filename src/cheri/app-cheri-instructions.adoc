@@ -86,80 +86,12 @@ NOTE: Zcd and <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>> are incompatible
 ifdef::cheri_standalone_spec[]
 ==== RV32 / {cheri_base32_ext_name}
 
-.16-bit instruction remapping in {cheri_int_mode_name}
-[#insn_remapping_16bit_rv32_a]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
-|111    |00      | N/A    | C.FSW   | N/A | N/A        |   C.SD
-|011    |00      | N/A    | C.FLW   | N/A | N/A        |   C.LD
-|111    |10      | N/A    | C.FSWSP | N/A | N/A        |   C.SDSP
-|011    |10      | N/A    | C.FLWSP | N/A | N/A        |   C.LDSP
-
-|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
-|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp,Zcmp>>/<<Zcmt,Zcmp>> | N/A
-|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
-|==============================================================================
-
-^1^ reserved for future standard Zcm extensions
-
-.16-bit instruction remapping in {cheri_cap_mode_name}
-[#insn_remapping_16bit_rv32_b]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
-|111    |00    5+| <<C_STORE_CAP>>
-|011    |00    5+| <<C_LOAD_CAP>>
-|111    |10    5+| <<C_STORE_CAP_SP>>
-|011    |10    5+| <<C_LOAD_CAP_SP>>
-
-|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
-|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp,Zcmp>>/<<Zcmt,Zcmp>> | N/A
-|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
-|==============================================================================
-
-^1^ reserved for future standard Zcm extensions
+include::rv32c_mapping_table.adoc[]
 
 <<<
 ==== RV64 / {cheri_base64_ext_name}
 
-.16-bit instruction remapping in {cheri_int_mode_name}
-[#insn_remapping_16bit_rv64_a]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
-|111    |00      | C.SD   | N/A     | N/A | N/A        | N/A
-|011    |00      | C.LD   | N/A     | N/A | N/A        | N/A
-|111    |10      | C.SDSP | N/A     | N/A | N/A        | N/A
-|011    |10      | C.LDSP | N/A     | N/A | N/A        | N/A
-
-|101    |00      | N/A    | N/A     | C.FSD    | reserved^1^       | N/A
-|001    |00      | N/A    | N/A     | C.FLD    | reserved^1^       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp,Zcmp>>/<<Zcmt,Zcmp>> | N/A
-|001    |10      | N/A    | N/A     | C.FLDSP  | reserved^1^       | N/A
-|==============================================================================
-
-.16-bit instruction remapping in {cheri_cap_mode_name}
-[#insn_remapping_16bit_rv64_b]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcf     | Zcd | Zcmp/ Zcmt | Zclsd
-|111    |00      | C.SD   | N/A     | N/A | N/A        | N/A
-|011    |00      | C.LD   | N/A     | N/A | N/A        | N/A
-|111    |10      | C.SDSP | N/A     | N/A | N/A        | N/A
-|011    |10      | C.LDSP | N/A     | N/A | N/A        | N/A
-
-|101    |00    5+| <<C_STORE_CAP>>
-|001    |00    5+| <<C_LOAD_CAP>>
-|101    |10    5+| <<C_STORE_CAP_SP>>
-|001    |10    5+| <<C_LOAD_CAP_SP>>
-|==============================================================================
+include::rv64c_mapping_table.adoc[]
 
 endif::[]
 
