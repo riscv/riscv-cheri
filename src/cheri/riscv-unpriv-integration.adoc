@@ -163,10 +163,10 @@ In a typical load/store unit, the expansion of the bounds from `{cs1}` and bound
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 
-The bounds encoding format is defined in <<section_cap_bounds>>.
+The {cheri_base_ext_name} bounds encoding format is defined in <<section_cap_bounds>>.
 
-NOTE: Future extensions may redefine the bounds encoding format.
-  #ARC-COMMENT: if they redefine, then they wouldn't be a straightforward extension, but an incompatible alternative?#
+NOTE: Future extensions may use alternative bounds encoding formats.
+Software can query the capability format by reading the <<ycfg>> CSR.
 
 Software can query the capability bounds:
 
@@ -452,14 +452,23 @@ include::img/pccreg.edn[]
 ==== Added CSRs
 
 {cheri_base32_ext_name} and {cheri_base64_ext_name} add the YLEN-bit CSR shown in
-xref:utidc-csrnames-added[xrefstyle=short].
+xref:csrnames-added-y[xrefstyle=short] and the XLEN-bit CSR shown in
+xref:csrnames-added-x[xrefstyle=short].
 
-[[utidc-csrnames-added]]
+[[csrnames-added-y]]
 .Unprivileged capability CSRs added in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
 |YLEN CSR|Permissions|Description
 |<<utidc>>|RW, <<asr_perm>> required for writes, not reads|User Thread ID Capability
+|===
+
+[[csrnames-added-x]]
+.Unprivileged integer CSRs added in {cheri_base_ext_name}
+[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
+|===
+|XLEN CSR|Permissions|Description
+|<<ycfg>>|WARL; see section for details|Capability encoding version
 |===
 
 [#utidc,reftext="utidc"]
@@ -508,6 +517,45 @@ used to implement a trusted stack. Whenever a compartment switch happens, the tr
 the caller and callee compartment avoid capability leaks between the two compartments.
 The trusted code can store capabilities on the trusted stack when calling out of a compartment and can install them
 when returning to the same compartment.
+=====
+
+[#ycfg,reftext="__x__ycfg"]
+===== CHERI Capability Encoding (__x__ycfg)
+
+The <<ycfg>> register is used to identify which CHERI capability encoding is used by the platform.
+The capability encoding both determines the in-memory representation of a CHERI capability
+and entails a set of extensions present atop {cheri_base_ext_name}.
+The CSR exists in the _writable_ namespace and all bits are defined to be WARL,
+but, absent any future extensions, it is expected that each implementation has exactly one legal value.
+This CSR is always present in the machine mode read/write CSR space;
+if the hart supports user mode, a `uycfg` register exists,
+if the hart supports supervisor mode, an `sycfg` register exists, and
+if the hart supports hypervisor mode, a `vsycfg` register exists.
+`sycfg` is always read-only, as is `vsycfg`, if it exists.
+`uycfg` is a read-only alias of `sycfg`, if it exists, or of `mycfg` otherwise.
+If the hypervisor extension is enabled, then `vsycfg` is WARL,
+updatable from M-mode or HS-mode with <<pcc>> granting <<asr_perm>>.
+
+The base specification defines the following values for `mycfg`, `sycfg`, and `uycfg`:
+|===
+|Version value|Encoding
+|0|Reserved (unspecified capability encoding)
+|0x001|<<app_cap_description>> capabilities, without <<section_zylevels1>> features
+|0x101|<<app_cap_description>> capabilities, with <<section_zylevels1>> features
+|0x002|Reserved for CHERIoT's (RV32-only) encoding
+|===
+
+Future extensions that change capability encoding are expected to define new values.
+Extensions that define encodings derived from <<app_cap_description>>
+are encouraged to preserve the bottom 8 bits as `0x01`.
+
+[NOTE]
+=====
+We suggest that only low-level, system software query this value directly.
+Operating systems and/or runtime environments should provide a mechanism for software
+to determine if the platform's capability encoding is backwards-compatible with a given, presumed encoding.
+Among other things, such a facility should be used as part of the platform executable loader
+to reject executables that expect unknown or known-incompatible CHERI features or capability encodings.
 =====
 
 ==== Extended CSRs
