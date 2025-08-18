@@ -25,7 +25,7 @@ include::wavedrom/acperm.adoc[]
 Description::
 <<ACPERM>> performs the following operations:
 
-. Convert the <<AP-field>>, <<section_cap_level,CL-field>> and <<SDP-field>> of capability `cs1` into a bit field with the
+. Convert the <<AP-field>>, <<SDP-field>>, and any other extension-defined permission-like fields of capability `cs1` into a bit field with the
 format shown in xref:acperm_bit_field[xrefstyle=short].
 . Calculate the bitwise AND of the bit field with the mask in `rs2`.
 +
@@ -35,10 +35,10 @@ NOTE: Future extensions may include hardwired permission bits, in which case the
 IMPORTANT: Depending on the base ISA and supported extensions, some combinations of permissions cannot be encoded or are not useful.
 In these cases, <<ACPERM>> will return a minimal sets of permissions, which may be no permissions.
 Therefore, it is possible that requesting to clear a permission also clears others, but <<ACPERM>> will never _add_ new permissions.
-. Copy `cs1` to `cd`, and update the <<AP-field>>, <<section_cap_level,CL-field>> and <<SDP-field>> with the newly calculated versions.
-. Set `cd.tag=0` if `cs1` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<ACPERM>>.
+. Copy `cs1` to `cd`, and update the <<AP-field>>, <<SDP-field>>, and any others therein with the newly calculated versions.
+. Set `cd.tag=0` if `cs1` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<ACPERM>>;
+  extensions must describe whether such changes to their bits also necessitate tag clearing.
 . Set `cd.tag=0` if any <<section_cap_integrity,integrity>> checks fail.
-.. Do _not_ set the {ctag} to zero on a sealed capability if _only_ the <<section_cap_level,CL-field>> changed.
 
 .Capability permissions bit field
 [#acperm_bit_field]
@@ -47,11 +47,14 @@ include::../img/acperm_bit_field.edn[]
 NOTE: If a future extension adds a new permission that overlaps with an existing permission (e.g., finer-grained <<asr_perm>>), then clearing the original must also clear the new permission.
 This ensures software forward-compatibility: for example, a kernel that does not know about finer-grained <<asr_perm>> subsets must still be able to prevent all access to privileged instructions and CSRs by clearing <<asr_perm>>.
 
-[#section_cap_level_change]
+NOTE: Any future extension that defines new permissions that are a refinement of existing permissions (e.g., finer-grained <<asr_perm>> or those of <<section_zylevels1>>) must be allocated to the bits that are currently reported as 1 to ensure forward-compatibility.
+Completely new permissions (e.g., sealing) should use the bits that are reported as zero in the current specification.
+
 [NOTE]
 ====
-While <<section_cap_level,capability levels (CL)>> are conceptually a label on the capability rather than a permission granted by the capability, they are still adjusted using the <<ACPERM>> instruction.
-This avoids the need for a dedicated instruction and allows reducing the level and removing <<el_perm>> in a single instruction.
+Extensions like <<section_zylevels1>> introduce bits that are, conceptually, _labels_ on a capability rather than a permission granted by the capability.
+These bits are, nevertheless, still adjusted using the <<ACPERM>> instruction.
+This avoids the need for a dedicated instruction and allows simultaneous changes of these labels and permissions.
 ====
 
 Operation::

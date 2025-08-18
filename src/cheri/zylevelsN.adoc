@@ -1,0 +1,143 @@
+[#section_zylevelsN,reftext="ZylevelsN"]
+== "ZylevelsN" Extension for CHERI Multi-level Information Flow Control
+
+WARNING: Someone more versed in this proposal should review.
+This chapter is presently a dumping ground of prose removed from elsewhere in the specification draft
+before it was trimmed for Zylevels1.
+
+ZylevelsN introduces a multi-level _Information Flow Control_ mechanism to CHERI.
+It is mutually exclusive with the less general Zylevels1.
+
+=== Parameters
+
+This extension is parametric in the number of bits used to encode capability "level", `LVLBITS`.
+`LVLBITS` must not be 0 (which would be equivalent to not supporting the extension).
+
+
+Implementations of ZylevelsN may choose how many <<zylevelsN_cl_field>> bits (`LVLBITS`) to support.
+
+=== Added Architectural Permissions (AP) Bits
+
+[#ap_field_summary,width="100%",options=header,halign=center,cols="2,2,5"]
+|==============================================================================
+| Permission   | Type | Comment
+| <<zylevelsN_el_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
+| <<zylevelsN_sl_perm>>  | Data memory permission         | Used to filter the permissions of loaded capabilities.
+|==============================================================================
+
+[#zylevelsN_sl_perm,reftext="SL-permission"]
+Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic:
++
+Capabilities with a <<zylevelsN_cl_field>> (see below) less than the inverse of the authorizing capability's <<zylevelsN_sl_perm>> will be stored with a zero valid tag.
++
+In the base ISA this is a single bit comparison, behaving as follows:
+
+* If this field (as well as <<c_perm>> and <<w_perm>>) is set to one then capabilities may be stored via this capability regardless of their associated <<zylevelsN_cl_field>>.
+* If this field is zero, then any capability with a <<zylevelsN_cl_field>> of zero (i.e., _local_), will be stored with the valid tag cleared.
+
+NOTE: Future extensions may make this field wider to enable more use cases.
+
+ifdef::cheri_v9_annotations[]
+NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9, Morello and CHERIoT.
+endif::[]
+
+[#zylevelsN_el_perm,reftext="EL-permission"]
+Elevate Level Permission (EL):: Any unsealed capability with its valid tag set to one that is loaded from memory has its <<zylevelsN_el_perm>> cleared and its <<zylevelsN_cl_field>> restricted to the authorizing capability's <<zylevelsN_cl_field>> if the authorizing capability does not grant <<zylevelsN_el_perm>>.
++
+If sealed, then only <<zylevelsN_cl_field,CL>> is modified, <<zylevelsN_el_perm>> is unchanged.
++
+This permission is similar to the existing <<lm_perm>>, but instead of applying to the <<w_perm>> on the loaded capability it restricts the <<zylevelsN_cl_field,CL>> field.
+
+[#zylevelsN_cl_field,reftext="Capability Level (CL)"]
+=== The Capability Level (CL) Field
+
+The _Capability Level_ (CL) field allows enforcing invariants on capability propagation. It affects data memory accesses.
+
+For example, the _Capability Level_ can be used to ensure that a callee can only write a copy of the passed-in argument capability to specific locations in memory (e.g., the callee's stack frame but not the heap).
+It can also be used to avoid sharing of compartment-local data (such as pointers to a stack object) between compartments.
+
+NOTE: This specification only defines the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
+
+The _Capability Level_ can hold two values:
+
+* 1: the capability is _global_, in general allowing it to be stored using any authorizing capability.
+* 0: the capability is _local_, and can only be stored by authorizing capabilities with the <<zylevelsN_sl_perm>> set.
+
+Furthermore, the <<zylevelsN_el_perm>> can be used to restrict loading of _global_ capabilities -- causing the hardware to automatically set the level of loaded capabilities to _local_ instead.
+
+As with permissions, the _Capability Level_ of a valid capability can only be decreased but never increased (without deriving from a capability with a higher level).
+But unlike architectural permissions, the _Capability Level_ can be reduced even if the capability is sealed.
+
+=== Modifications to ACPERM and GCPERM
+
+TODO
+
+=== Interaction with <<LC>> and <<zalrsc_cheri>>
+
+TODO
+
+If `cd.tag=1`, `cd` is not sealed and `cs1` does not grant <<el_perm>>, then an implicit <<ACPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1` and to remove <<el_perm>>.
++
+If `cd.tag=1`, `cd` is sealed and `cs1` does not grant <<el_perm>>, then an implicit <<ACPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1`
++
+NOTE: Missing <<el_perm>> also affects the level of sealed capabilities since notionally the <<section_cap_level>> of a capability is not a permission but rather a data flow label attached to the loaded value.
+
+=== Interaction with <<SC>> and <<zalrsc_cheri>>
+
+TODO
+
+=== Interaction with <<CBLD>>
+
+TODO
+
+=== Summary Of System Behavior
+
+.<<zylevelsN_sl_perm>> effects for stored capabilities
+[#cap_level_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
+|==============================================================================
+   3+|Auth cap field       | Data cap field |
+    h|*W*    h|*C* h|*SL* h|*CL* h| Notes
+.3+.^|1  .3+.^| 1   | 1    | X    | Store data capability unmodified
+               .2+.^| 0    | 1    | Store data capability unmodified (`CL ≥ ~SL`)
+                           | 0    | Store data capability with valid tag cleared (`CL < ~SL`)
+|==============================================================================
+
+NOTE: if W=0 or C=0 then SL is irrelevant
+
+.<<zylevelsN_el_perm>> effects for loading capabilities
+[#cap_level_load_summary,width="100%",options=header,align=center,cols="1,1,1,1,1,1,6"]
+|==============================================================================
+   4+|Auth cap field                  2+| Data cap field |
+    h|*R*   h|*C* h|*EL*      h|*CL*   h| Tag h| Sealed h|Action
+.2+.^|1 .2+.^| 1 .2+.^| 0 .2+.^| X .2+.^| 1    | Yes     |Load data capability with `CL=min(auth.CL, data.CL)`, EL unchanged
+                                               | No      |Load data capability with `EL=0, CL=min(auth.CL, data.CL)`
+   6+| All other cases                                   |Load data capability with EL, CL unmodified
+|==============================================================================
+
+ifdef::cheri_v9_annotations[]
+NOTE: The current specification only defines up to two levels, equivalent to _local_ and _global_ capabilities from CHERI v9, Morello and CHERIoT.
+endif::[]
+
+=== Encoding material (TODO)
+
+[#section_ext_cheri_multiple_levels]
+=== Extending {cheri_1levels_ext_name} to more than two levels
+When `<<cheri_lvlbits>> > 1`, the behavior of <<ACPERM>> can no longer use masking to adjust the <<section_cap_level>> or <<sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
+The <<section_cap_level,CL>> field of the resulting capability is set to `min(rs2[CL], cs1[CL])`  (equivalent to `rs2[CL] & cs1[CL]` for `<<cheri_lvlbits>>=1`).
+Similarly, <<sl_perm>> is set to `min(rs2[SL], cs1[SL])` (equivalent to `rs2[SL] & cs1[SL]` for `<<cheri_lvlbits>>=1`).
+
+When storing capabilities, the <<sl_perm>> checks need to perform a `<<cheri_lvlbits>>`-wide integer comparison instead of just testing a single bit.
+Considering for an example `<<cheri_lvlbits>>=2`:
+
+[options=header,grid=rows,cols="2,3,6"]
+|===
+|<<sl_perm>> | Permitted for levels| Resulting semantics
+|3 | As low as `~0b11=0` | Authorizes stores of capabilities with any level
+|2 | As low as `~0b10=1` | Strip tag for level 0 (most _local_), keep for 1,2,3
+|1 | As low as `~0b01=2` | Strip tag for level 0&1, keep for 2&3
+|0 | As low as `~0b00=3` | Strip tag for level 0,1,2, i.e., only the most _global_ can be stored
+|===
+
+NOTE: While this extra negation is non-intuitive, it is required such that <<ACPERM>> can use a monotonically decreasing operation for both <<section_cap_level,CL>> <<sl_perm>>.
+
+NOTE: The layout of the <<ACPERM>> input / <<GCPERM>> result is not yet defined, but existing bits will not be moved around so the <<sl_perm,SL>>/<<section_cap_level,CL>> fields will be non-contiguous.
