@@ -30,7 +30,7 @@ The distinction refines the behavior of capability store and load instructions:
 [#zylevels1_sl_perm,reftext="SL-permission"]
 Store Local Permission (SL):: This field allows limiting the propagation of _local_ capabilities.
 +
-A capabilty without <<zylevels1_gl_perm>> set stored through an authorizing capability lacking <<zylevels1_sl_perm>> will be stored with a zero valid tag.
+A capability without <<zylevels1_gl_perm>> set stored through an authorizing capability lacking <<zylevels1_sl_perm>> will be stored with a zero valid tag.
 +
 <<zylevels1_sl_perm>> is a _refinement of_ <<c_perm>> and <<w_perm>>.
 That is, if either of the latter are clear, then <<zylevels1_sl_perm>> has no effect.
@@ -53,7 +53,7 @@ The _Capability Global_ (GL) flag is a permission-like single-bit field which al
 
 NOTE: For example, the software TCB may enforce that software has access to capabilities with <<zylevels1_sl_perm>> only to (subsets of) its runtime stack,
 and may ensure that all stack pointers lack <<zylevels1_gl_perm>>.
-In such a system, capabilties without <<zylevels1_gl_perm>>, including all those derived from the stack, are confined to registers and stack memory.
+In such a system, capabilities without <<zylevels1_gl_perm>>, including all those derived from the stack, are confined to registers and stack memory.
 Global capabilities, say, into heap memory, may be _attenuated_ to being local before being passed across a call;
 the callee will be unable to capture this pointer outside its stack.
 This specification defines only the architectural mechanics of this feature, for further information on how this can be used by software please refer to cite:[cheri-v9-spec].
@@ -83,9 +83,7 @@ as shown in <<zylevels1_acperm_bit_field>>.
 
 .ACPERM and the Capability Global (GL) Flag
 
-<<ACPERM>> is permitted to clear the _Capability Global_ flag can be cleared,
-even if the capability is sealed,
-unlike architectural and software permissions.
+<<ACPERM>> is permitted to clear the _Capability Global_ flag, even if the capability is sealed, unlike architectural and software permissions.
 This applies to both "implicit <<ACPERM>>s" in loads from memory and explicit <<ACPERM>> instructions.
 
 Implementations _are permitted but not mandated_ to require that an explicit <<ACPERM>> instruction wishing to clear <<zylevels1_gl_perm>>
