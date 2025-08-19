@@ -73,26 +73,6 @@ in addition to distinguishing (un)sealed capabilities.
 
 =====
 
-[NOTE]
-=====
-If software wishes to permit conditional reconstructions of sentries,
-it suffices to conditionally execute a <<SENTRY>> instruction
-on the result of a <<CBLD>>
-depending on the result of <<GCTYPE>> on the input to said <<CBLD>>.
-For example, to rebuild bits from `x3` into `x1`
-using the superset in `x2` with scratch `x4`, software could use:
-
-[subs="+attributes"]
-----
-  {CBLD_LC} x1, x2, x3
-  {GCTYPE_LC} x4, x3
-  beqz x4, 1f
-  {SENTRY_LC} x1, x1
-1:
-----
-
-=====
-
 Included in::
 <<rvy_insn_table>>
 

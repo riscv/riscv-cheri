@@ -76,6 +76,12 @@ The base definition of capabilities in {cheri_base_ext_name} does not have capab
 However, we anticipate that extensions may introduce such schemes;
 see <<section_zylevels1>> for one possibility.
 
+==== Capability Type (CT) Encoding
+
+ifdef::cheri_v9_annotations[]
+WARNING: *CHERI v9:* There is now a 1-bit otype (sealed or not) and the old CHERI v9 otype no longer exists.
+endif::[]
+
 [#AP-field-encoding, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
@@ -285,16 +291,6 @@ The value of the <<SDP-field>> bits of the <<GCPERM>> result maps 1:1 to the <<S
 |==============================================================================
 
 NOTE: Software is completely free to define the usage of these bits.
-
-[#section_cap_sealed]
-==== Capability Type (CT) Encoding
-
-ifdef::cheri_v9_annotations[]
-WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
-The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
-endif::[]
-
-For {cheri_base_ext_name} the CT field is one bit wide and maps 1:1 to the capability types listed in <<tab_cap_types>>: it is a sentry capability if the bit is 1 or unsealed if it is 0.
 
 [#section_cap_bounds]
 ==== Bounds (EF, T, TE, B, BE) Encoding

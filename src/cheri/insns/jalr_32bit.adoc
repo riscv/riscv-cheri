@@ -19,14 +19,11 @@ Indirect jump to the target capability in `{cs1}` with an address offset.
 +
 Copy `{cs1}` to the target <<pcc>>
 +
-. If the target <<pcc>> is a sentry, and the `offset` is zero, then unseal the target <<pcc>>.
-Otherwise, increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`.
+. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`.
 . Set bit zero of the target address to zero and update <<pcc>> with the new target address using the semantics of the <<SCADDR>> instruction
 . Jump to the target <<pcc>>
 +
-The <<pcc>> of the next instruction is calculated using the semantics of the <<SCADDR>> instruction, and written to `{cd}` as a sentry.
-+
-NOTE: Because of the unsealing and <<SCADDR>> behavior, it is not possible for the target <<pcc>> to be sealed.
+The <<pcc>> of the next instruction is calculated using the semantics of the <<SCADDR>> instruction.
 +
 NOTE: A future extension may raise an exception on the JALR instruction itself if the target <<pcc>> will raise a CHERI exception at the target.
 
