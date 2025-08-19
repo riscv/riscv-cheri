@@ -76,6 +76,55 @@ The base definition of capabilities in {cheri_base_ext_name} does not have capab
 However, we anticipate that extensions may introduce such schemes;
 see <<section_zylevels1>> for one possibility.
 
+==== Capability Type (CT) Encoding
+
+ifdef::cheri_v9_annotations[]
+WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
+The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
+endif::[]
+
+[NOTE]
+=====
+These are sketches and subject to revision before this PR is merged.
+=====
+
+This encoding may be instantiated with "minimal, implicit sealing support".
+This entails the presence of <<section_zyseal>> and <<section_zysentry>>
+and it specifies a one bit wide CT field.
+This field encodes <<sec_cap_type>> `0` (unsealed capabilities) with value `0`
+and type `1` with value `1`.
+_All_ capabilities are presumed to bear <<zyseal_se_perm>>;
+it is not possible to clear this permission without clearing the tag.
+_No_ capability grants <<zyseal_us_perm>>,
+even the <<root-cap>> capability of <<section_infinite_cap_encoding>>;
+the sole mechanisms available for unsealing are <<JALR_CHERI>> and <<CBLD>>.
+<<JALR_CHERI>> is defined to seal its return capabilities as sentries at type 1
+and to accept (and unseal) input sentry capabilities sealed at type 1;
+no further conditioning on its behavior is imposed
+(so sentries are accepted from any register
+and jumps to sentries may themselves give rise to return capabilities).
+
+This encoding may be instantiated with "minimal, explicit sealing support".
+This too entails the presence of <<section_zyseal>> and <<section_zysentry>>
+and shares the same one bit wide CT field,
+designation of <<sec_cap_type>> `1`,
+and <<JALR_CHERI>> behavior
+with the "minimal, ambient sealing support" above.
+However, in this case, <<zyseal_se_perm>> is manifest in the (encoded) AP field.
+
+Other instantiations of <<section_zyseal>> and <<section_zysentry>>
+are certainly possible and are left for future versions of this encoding.
+
+[NOTE]
+=====
+The CHERIoT encoding (to be defined in a separate section!) will instantiate
+<<section_zyseal>> and <<section_zysentry>> with a 3-bit CT field with
+<<x_perm>>-dependent encoding, explicit <<zyseal_se_perm>> and
+<<zyseal_us_perm>> bits in a separate root, and a plethora of sentry types with
+additional semantics.  All of this should be compatible with the extensions as
+defined.
+=====
+
 [#AP-field-encoding, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
@@ -294,16 +343,6 @@ The value of the <<SDP-field>> bits of the <<GCPERM>> result maps 1:1 to the <<S
 |==============================================================================
 
 NOTE: Software is completely free to define the usage of these bits.
-
-[#section_cap_sealed]
-==== Capability Type (CT) Encoding
-
-ifdef::cheri_v9_annotations[]
-WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
-The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
-endif::[]
-
-For {cheri_base_ext_name} the CT field is one bit wide and maps 1:1 to the capability types listed in <<tab_cap_types>>: it is a sentry capability if the bit is 1 or unsealed if it is 0.
 
 [#section_cap_bounds]
 ==== Bounds (EF, T, TE, B, BE) Encoding
