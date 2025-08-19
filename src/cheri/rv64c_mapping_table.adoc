@@ -1,6 +1,6 @@
 .16-bit instruction remapping in RV64I
 [#insn_remapping_16bit_rv64_a]
-[width="100%",options=header]
+[width="100%",options=header,cols="1,1,2,2,2"]
 |==============================================================================
 2+|Encoding    3+| Supported Extensions
 |[15:13]|[1:0]   | Zca    | Zcd     | Zcmp/ Zcmt
@@ -17,7 +17,7 @@
 
 .16-bit instruction remapping in {cheri_base64_ext_name}
 [#insn_remapping_16bit_rv64_b]
-[width="100%",options=header]
+[width="100%",options=header,cols="1,1,2,2"]
 |==============================================================================
 2+|Encoding    2+| Supported Extensions
 |[15:13]|[1:0]   | Zca    | Zcmp/ Zcmt
@@ -28,8 +28,12 @@
 
 |101    |00    2+| <<C_STORE_CAP>>
 |001    |00    2+| <<C_LOAD_CAP>>
-|101    |10      | N/A    | <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>>
-|001    |10      | N/A    | reserved
+|101    |10      | N/A    | Reserved for <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>>^1^
+|001    |10      | N/A    | N/A
 |==============================================================================
 
-NOTE: Zcd is incompatible with {cheri_base_ext_name}.
+^1^ Encoding space for future {cheri_base64_ext_name} versions of <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>> and other future Zcm extensions is retained.
+
+NOTE: Zcd is incompatible with {cheri_base64_ext_name}.
+
+NOTE: The {cheri_base_ext_name} encodings <<C_LOAD_CAP_SP>> and <<C_STORE_CAP_SP>> replace C.LDSP, C.SDSP encodings which are infrequently used for {cheri_base_ext_name} code as they do not access the whole register on the stack. C.LD, C.SD are supported as they useful for code which does not handle capabilities.
