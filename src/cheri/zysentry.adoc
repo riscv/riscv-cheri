@@ -58,3 +58,13 @@ The callee can return exactly to the instruction after the caller's call,
 but cannot apply an offset or displacement to a return sentry.
 Moreover, a return sentry does not grant the callee access to the
 memory pointed at by the caller's <<pcc>>.
+
+[NOTE]
+=====
+If a capability encoding also entails the presence of <<section_zyseal>>,
+it will be possible for software (bearing suitably permissive capabilities)
+to seal and unseal the sentry types that that encoding defines.
+This is deliberate.
+Software should ensure that the capabilities requisite for such operations are
+attenuated, confined to sufficiently trusted components, and/or destroyed.
+=====
