@@ -435,54 +435,56 @@ endif::[]
 
 CAUTION: #ARC-QUESTION: The CBZE, CBIE etc. bits are specified by Zicbo*, can this be defined by {cheri_priv_m_ext}/{cheri_priv_s_ext}+{cheri_default_ext_name} instead of adding a new priv extension?#
 
-When using a system with {cheri_default_ext_name}, it may be desirable to disabling CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
+When using a system with {cheri_default_ext_name}, it may be desirable to disable CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
 {cheri_priv_m_reg_enable_ext} includes functions to disable explicit access to CHERI
-registers and instructions.
-The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa>>, <<menvcfg>>, and <<senvcfg>> writable.
+registers and instructions (hereafter referred to _disabling CHERI_).
+
+NOTE: When _CHERI is disabled_ for a specific privilege level, <<pcc>> and <<ddc>> bounds are _still_ enforced.
+
+The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
 
 IMPORTANT: If {cheri_base_ext_name} is supported and {cheri_default_ext_name} is not supported, then {cheri_priv_m_reg_enable_ext} must also not be supported.
-In this case all {CRE} bits are hardwired to 1 and access to CHERI registers is always permitted.
+In this case all {CRE} bits are hardwired to 1 and CHERI is always enabled.
 This allows implementing a hart that always runs in {cheri_cap_mode_name}.
 
-CHERI register access is disabled if
+CHERI is disabled if
 
 * XLEN in the current mode is less than MXLEN, or
 * the endianness in the current mode is not the reset value of <<mstatus_cheri>>.MBE, or
-* the effective {CRE}-enable for the current privilege is 0.
+* the effective CHERI-enable for the current privilege is 0.
 
-The effective {CRE}-enable for the current privilege is:
+The effective CHERI-enable for the current privilege is:
 
 * Machine: `<<misa>>.{CRE}`
 * Supervisor: `<<misa>>.{CRE} & <<menvcfg>>.{CRE}`
 * User: `<<misa>>.{CRE} & <<menvcfg>>.{CRE} & <<senvcfg>>.{CRE}`
 
-NOTE: The effective {CRE}-enable is always 1 in debug mode.
+NOTE: The effective CHERI-enable is always 1 in debug mode.
 
-NOTE: On reset {CRE} access is disabled (<<misa>>.{CRE} resets to zero).
+NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are infinite).
 
-The following occurs when executing code in a privilege mode that has CHERI register access disabled:
+The following occurs when executing code in a privilege mode that has CHERI disabled:
 
-* Instructions that access full capability registers instead of only the XLEN subset (implicitly or explicitly) cause illegal instruction exceptions
+* Instructions that access full capability registers instead of only the XLEN subset (implicitly or explicitly) cause illegal instruction exceptions.
 +
-NOTE: The only instruction added by {cheri_base_ext_name} that does not access capability state is <<CRAM>>, all others are disabled.
 * Executing CSR instructions accessing any CSR added by any CHERI extension ({cheri_default_ext_name}, {cheri_priv_m_ext}, {cheri_priv_s_ext}, {cheri_priv_h_ext}) causes an illegal instruction exception
 * Executing CSR instructions accessing any CSR extended to YLEN only allows XLEN access.
 * All allowed instructions execute as if the CHERI execution mode is {cheri_int_mode_name}.
-// FIXME: there should be no way to observe the M bit, do we need to mentions this?
+// FIXME: there should be no way to observe the M bit, do we need to mention this?
 // The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
 
-Disabling CHERI register access has no effect on implicit accesses or security checks.
-The last capability written to <<pcc>> and <<ddc>> before disabling CHERI register access will be used to authorize instruction execution and data memory accesses.
+Disabling CHERI has no effect on implicit accesses or security checks.
+The last capability written to <<pcc>> and <<ddc>> before disabling CHERI will be used to authorize instruction execution and data memory accesses.
 
 [NOTE]
 ====
-Disabling CHERI register access prevents low-privileged {cheri_int_mode_name} software
+Disabling CHERI prevents low-privileged {cheri_int_mode_name} software
 from interfering with the correct operation of higher-privileged {cheri_int_mode_name} software
 that do not perform <<ddc>> switches on trap entry and return.
 
-Disabling {CRE} access allows harts supporting CHERI to be fully
+Disabling CHERI allows harts supporting CHERI to be fully
 compatible with standard RISC-V, so CHERI instructions, such as <<CRAM>>, that
-do not change the state of CHERI CSRs raise exceptions when {CRE}=0.
+do not change the state of CHERI CSRs raise exceptions.
 This is the default behavior on reset.
 ====
 
@@ -518,7 +520,7 @@ CAUTION: #ARC-QUESTION: Should this extension be folded into the {cheri_priv_m_r
 Changing XLEN::
 Setting the SXL or UXL field to a value that is not MXLEN disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
 +
-NOTE: If CHERI register access must be disabled in a mode for security reasons, software should set {CRE} to 0 regardless of the SXL and UXL fields.
+NOTE: If CHERI must be disabled in a mode for security reasons, software should set {CRE} to 0 regardless of the SXL and UXL fields.
 +
 Whenever XLEN in any mode is set to a value less than MXLEN, standard RISC-V rules are followed.
 This means that all operations must ignore source operand register bits above the configured XLEN, and must sign-extend results to fill all MXLEN bits in the destination register.
