@@ -95,61 +95,107 @@ endif::[]
 //ISA naming
 :CADD:         ADDY
 :CADD_LC:      addy
+:CADD_DESC:    Capability pointer increment
+
 :CADDI:        ADDIY
 :CADDI_LC:     addiy
-:SCADDR:       YWADDR
-:SCADDR_LC:    ywaddr
-:SCBNDS:       YWBNDS
-:SCBNDS_LC:    ywbnds
-:SCBNDSI:      YWBNDSI
-:SCBNDSI_LC:   ywbndsi
-:SCBNDSR:      YWBNDSR
-:SCBNDSR_LC:   ywbndsr
-:GCTAG:        YRTAG
-:GCTAG_LC:     yrtag
-:GCPERM:       YRPERM
-:GCPERM_LC:    yrperm
-:GCHI:         YRHI
-:GCHI_LC:      yrhi
-:GCBASE:       YRBASE
-:GCBASE_LC:    yrbase
-:GCTYPE:       YRTYPE
-:GCTYPE_LC:    yrtype
-:GCMODE:       YRMODE
-:GCMODE_LC:    yrmode
-:GCLEN:        YRLEN
-:GCLEN_LC:     yrlen
-:SCHI:         YWHI
-:SCHI_LC:      ywhi
+:CADDI_DESC:   Capability pointer increment by immediate
+
+:SCADDR:       YADDRW
+:SCADDR_LC:    yaddrw
+:SCADDR_DESC:  Write capability address
+
+:SCBNDS:       YBNDSW
+:SCBNDS_LC:    ybndsw
+:SCBNDS_DESC:  Write capability bounds
+
+:SCBNDSI:      YBNDSIW
+:SCBNDSI_LC:   ybndsiw
+:SCBNDSI_DESC: Write capability bounds by immediate
+
+:SCBNDSR:      YBNDSRW
+:SCBNDSR_LC:   ybndsrw
+:SCBNDSR_DESC: Write capability bounds, rounding up if required
+
+:GCTAG:        YTAGR
+:GCTAG_LC:     ytagr
+:GCTAG_DESC:   Read {ctag}
+
+:GCPERM:       YPERMR
+:GCPERM_LC:    ypermr
+:GCPERM_DESC:  Read capability permissions
+
+:GCHI:         YHIR
+:GCHI_LC:      yhir
+:GCHI_DESC:    Read capability metadata
+
+:GCBASE:       YBASER
+:GCBASE_LC:    ybaser
+:GCBASE_DESC:  Read capability base address
+
+:GCTYPE:       YTYPER
+:GCTYPE_LC:    ytyper
+:GCTYPE_DESC:  Read capability type
+
+:GCMODE:       YMODER
+:GCMODE_LC:    ymoder
+:GCMODE_DESC:  Read capability mode
+
+:GCLEN:        YLENR
+:GCLEN_LC:     ylenr
+:GCLEN_DESC:   Read capability length
+
+:SCHI:         YHIR
+:SCHI_LC:      yhiw
+:SCHI_DESC:    Write capability metadata and clear {ctag}
+
 :SCEQ:         SYEQ
 :SCEQ_LC:      syeq
+:SCEQ_DESC:    Capability equality comparison including {ctag}
+
 :SCSS:         YLT
 :SCSS_LC:      ylt
-:SCMODE:       YWMODE
-:SCMODE_LC:    ywmode
+:SCSS_DESC:    Capability less than comparison including {ctag}
 
-:C_MV_CAP:    C.YMV
-:C_MV_CAP_LC: c.ymv
+:SCMODE:       YMODEW
+:SCMODE_LC:    ymodew
+:SCMODE_DESC:  Set capability execution mode
+
+:C_MV_CAP:     C.MV
+:C_MV_CAP_LC:  c.mv
+:C_MV_CAP_DESC: Capability register copy, 16-bit encoding
+
 :CMV:           YMV
 :CMV_LC:        ymv
+:CMV_DESC:      Capability register copy
 
-:CBLD:          YWTAG
-:CBLD_LC:       ywtag
-:ACPERM:        YWPERM
-:ACPERM_LC:     ywperm
+:CBLD:          YBLD
+:CBLD_LC:       ybld
+:CBLD_DESC:     Build capability
 
-:CRAM:          YRAM
-:CRAM_LC:       yram
+:ACPERM:        YPERMC
+:ACPERM_LC:     ypermc
+:ACPERM_DESC:   Clear capability permissions
 
-:C_ADDI16SP_CAP:    C.ADDYI16SP
-:C_ADDI16SP_CAP_LC: c.addyi16sp
-:C_ADDI4SPN_CAP:    C.ADDYI4SPN
-:C_ADDI4SPN_CAP_LC: c.addyi4spn
+:CRAM:          YAMASK
+:CRAM_LC:       yamask
+:CRAM_DESC:     Capability alignment mask
 
-:MODESW_CAP:    YMODESWY
-:MODESW_CAP_LC: ymodeswy
-:MODESW_INT:    YMODESWI
-:MODESW_INT_LC: ymodeswi
+:C_ADDI16SP_CAP:      C.ADDI16SP
+:C_ADDI16SP_CAP_LC:   c.addi16sp
+:C_ADDI16SP_CAP_DESC: Stack pointer increment in blocks of 16, 16-bit encoding
+
+:C_ADDI4SPN_CAP:      C.ADDI4SPN
+:C_ADDI4SPN_CAP_LC:   c.addi4spn
+:C_ADDI4SPN_CAP_DESC: Stack pointer increment in blocks of 4, 16-bit encoding
+
+:MODESW_CAP:      YMODESWY
+:MODESW_CAP_LC:   ymodeswy
+:MODESW_CAP_DESC: Switch execution to {cheri_cap_mode_name}
+
+:MODESW_INT:      YMODESWI
+:MODESW_INT_LC:   ymodeswi
+:MODESW_INT_DESC: Switch execution to {cheri_int_mode_name}
 
 :SH1ADD_CHERI:    SH1ADDY
 :SH1ADD_CHERI_LC: sh1addy
@@ -171,25 +217,50 @@ endif::[]
 :SH4ADD_UW_CHERI:    SH4ADDY.UW
 :SH4ADD_UW_CHERI_LC: sh4addy.uw
 
-:SENTRY:    YSENTRY
-:SENTRY_LC: ysentry
+:SENTRY:                  YSENTRY
+:SENTRY_LC:               ysentry
+:SENTRY_DESC:             Seal capability as a sentry
 
-:LD_ST_DOT_CAP:         .Y
-:ld_st_dot_cap_lc:      .y
+:LD_ST_DOT_CAP:           .Y
+:ld_st_dot_cap_lc:        .y
 
-:LOAD_CAP_NAME:          LY
-:load_cap_name_lc:       ly
+:LOAD_CAP_NAME:           LY
+:load_cap_name_lc:        ly
+:LOAD_CAP_DESC:           Load capability
+
+:LOAD_RES_CAP_DESC:       Load Reserved capability
+:STORE_COND_CAP_DESC:     Store Conditional capability
+:AMOSWAP_CAP_DESC:        Atomic swap of capabilities
+
 :C_LOAD_CAP_NAME:        C.LY
 :c_load_cap_name_lc:     c.ly
-:C_LOAD_CAP_SP_NAME:     C.LYSP
-:c_load_cap_sp_name_lc:  c.lysp
+:C_LOAD_CAP_NAME_DESC:   Load capability, 16-bit encoding
 
-:STORE_CAP_NAME:         SY
-:store_cap_name_lc:      sy
-:C_STORE_CAP_NAME:       C.SY
-:c_store_cap_name_lc:    c.sy
-:C_STORE_CAP_SP_NAME:    C.SYSP
-:c_store_cap_sp_name_lc: c.sysp
+:C_STORE_CAP_NAME:        C.SY
+:c_store_cap_name_lc:     c.sy
+:C_STORE_CAP_NAME_DESC:   Store capability, 16-bit encoding
+
+:C_LOAD_CAP_SP_NAME:      C.LYSP
+:c_load_cap_sp_name_lc:   c.lysp
+:C_LOAD_CAP_SP_NAME_DESC: Load capability stack pointer relative, 16-bit encoding
+
+:STORE_CAP_NAME:           SY
+:store_cap_name_lc:        sy
+:STORE_CAP_DESC:           Store capability
+:C_STORE_CAP_SP_NAME:      C.SYSP
+:c_store_cap_sp_name_lc:   c.sysp
+:C_STORE_CAP_SP_NAME_DESC: Store capability stack pointer relative, 16-bit encoding
+
+//these don't have vars for names as they haven't (recently) been renamed
+:AUIPC_CHERI_DESC:         Add upper immediate to <pcc>>
+:JAL_CHERI_DESC:           Immediate offset jump, and link and seal to capability register
+:JALR_CHERI_DESC:          Jump to capability register, and link and seal to capability register
+
+:C_J_CHERI_DESC:  `        Immediate offset jump, 16-bit encoding
+:C_JAL_CHERI_DESC:  `      {JAL_CHERI_DESC}, 16-bit encoding
+:C_JALR_CHERI_DESC:        {JALR_CHERI_DESC}, 16-bit encoding
+:C_JR_CHERI_DESC:          Jump to capability register, 16-bit encoding
+
 
 // Variables for register names
 // Prefix for numbered registers
