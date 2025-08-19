@@ -19,9 +19,19 @@ Indirect jump to the target capability in `{cs1}` with an address offset.
 +
 Copy `{cs1}` to the target <<pcc>>
 +
+. If the capability encoding entails the presence of <<section_zysentry>>,
+  then impose any conditional behavior specified and,
+  if the target <<pcc>> is a sentry (that is, sealed at an acceptable type),
+  ensure that the offset is zero and unseal the target <<pcc>>.
 . Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`.
 . Set bit zero of the target address to zero and update <<pcc>> with the new target address using the semantics of the <<SCADDR>> instruction
+. If `rd` is not `null`, add the width of this instruction
+  to the current <<pcc>> and store the result into `rd`.
+. If the capability encoding entails the presence of <<section_zysentry>>
+  and return capabilities are to be sealed, do so as specified.
 . Jump to the target <<pcc>>
+  and, if the capability encoding entails the presence of <<section_zysentry>>
+  with additional architectural semantics for the type of `cs1`, apply those.
 +
 The <<pcc>> of the next instruction is calculated using the semantics of the <<SCADDR>> instruction.
 +
