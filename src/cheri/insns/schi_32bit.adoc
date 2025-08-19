@@ -3,12 +3,6 @@
 [#SCHI_BASE,reftext="{SCHI_BASE}"]
 ==== {SCHI_BASE}
 
-include::new_encoding_note.adoc[]
-
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* this instruction was called CSETHIGH.
-endif::[]
-
 Synopsis::
 {SCHI_BASE_DESC}
 
@@ -21,12 +15,14 @@ include::wavedrom/schi.adoc[]
 Description::
 The {SCHI_BASE} instruction packs the least-significant XLEN-bits of `rs1` and `rs2` into the YLEN least-significant bits of rd, zero extending the rest of `rd` and setting `rd.tag=0`.
 
-Operation::
-+
-sail::execute[clause="SCHI(_, _, _)",part=body,unindent]
-
 [#SCHI,reftext="{SCHI}"]
 ==== {SCHI}
+
+include::new_encoding_note.adoc[]
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* this instruction was called CSETHIGH.
+endif::[]
 
 Synopsis::
 Capability set metadata
@@ -43,3 +39,7 @@ Copy `cs1`  to `cd`.
 Replace the capability metadata of `cs1` (i.e., bits [YLEN-1:XLEN]) with `rs2` and set `cd.tag` to 0.
 +
 include::no_tag_affect.adoc[]
+
+Operation::
++
+sail::execute[clause="SCHI(_, _, _)",part=body,unindent]
