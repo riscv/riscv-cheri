@@ -23,11 +23,13 @@ include::wavedrom/cbld.adoc[]
 Description::
 Copy `cs2` to `cd`.
 +
+Set `cd.ct=0` (that is, <<CBLD>> always builds _unsealed_ capabilities).
++
 Set `cd.tag=1` if:
 +
 . `cs1.tag` is set, and
 . `cs1` passes all <<section_cap_integrity,integrity>> checks, and
-. `cs1` is not sealed, and
+. `cs1` is not sealed (that is, `cs1.ct=0`), and
 . `cs2` 's permissions and bounds are equal to or a subset of `cs1` 's, and
 . `cs2` passes all <<section_cap_integrity,integrity>> checks, and
 . any extension-specific constraints on <<CBLD>> hold.
@@ -37,9 +39,20 @@ Otherwise, set `cd.tag=0`
 NOTE: <<CBLD>> is typically used alongside <<SCHI>> to build
 capabilities from integer values.
 
-NOTE: When `cs1` is `{creg}0` <<CBLD>> will copy `cs2` to `cd` and clear `cd.tag`.
-However future extensions may add additional behavior to update currently reserved fields,
-and so software should not assume `cs1==0` to be a pseudo-instruction for tag clearing.
+NOTE: When `cs1` is `{creg}0`, <<CBLD>> will copy `cs2` to `cd` and clear `cd.ct` and `cd.tag`.
+Future extensions may add additional behavior to update currently reserved fields,
+and so software should not assume `cs1==0` to be a pseudo-instruction for tag and type clearing.
+
+NOTE: <<CBLD>> can be used for "superset unsealing",
+wherein software, given a capability `c`
+and having checked for a set tag and an expected <<sec_cap_type>> field value,
+can present, in `cs1`,
+a capability to a superset of the authority borne by an unsealed `c`,
+and thereby reconstruct, into `cd`, a modified copy of `c`, presented in `cs2`,
+with a zeroed <<sec_cap_type>> field and a set tag.
+However, the use of explicit unsealing permission,
+if afforded by the extensions implied by the capability encoding,
+is a more flexible mechanism and is generally encouraged.
 
 Operation::
 +
