@@ -392,7 +392,7 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to 
 (draw-box "" [:box-first {:span 1}]) (draw-box "{creg}1" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
 (draw-gap "Same layout for {creg}2-{creg}30 (extending x2-x30)" {:height 100})
 (draw-box "" [:box-first {:span 1}]) (draw-box "{creg}31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
-(draw-box nil [:box-first {:span 1}]) (draw-box "pcc" [:box-related {:span 32}]) (draw-box "pc" [:box-last {:span 32 }])
+(draw-box nil [:box-first {:span 1}]) (draw-box "{pcc}" [:box-related {:span 32}]) (draw-box "{pcc}" [:box-last {:span 32 }])
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
@@ -402,10 +402,10 @@ For the ABI register names the `y` prefix is added, e.g., `{abi_creg}sp` to refe
 
 The zero register is extended with zero metadata and a zero {ctag}: this is called the <<null-cap>> capability.
 
-[#pcc,reftext="pcc"]
-==== The Program Counter Capability (`pcc`)
+[#pcc,reftext="{pcc}"]
+==== The Program Counter Capability (`{pcc}`)
 
-The `pc` is extended to be the Program Counter Capability.
+The `pc` is extended to be a capability.
 Extending the `pc` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
 The <<pcc>> address field is the `pc` in the base RISC-V ISA so that the
 hardware automatically updates it as instructions are executed.
@@ -818,9 +818,9 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 
 * Whenever the address field of the <<pcc>> is modified, it is _always_ updated using <<SCADDR>> semantics.
   This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
-  In this case, e.g., `new_pcc = {SCADDR}(old_pcc, offset)`
+  In this case, e.g., `new_{pcc} = {SCADDR}(old_{pcc}, offset)`
 * <<JALR_CHERI>> copies `cs1` into the <<pcc>>, and increments the address field with the offset.
-  In this case, e.g., `new_pcc = {SCADDR}(cs1, offset)`
+  In this case, e.g., `new_{pcc} = {SCADDR}(cs1, offset)`
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.,:
 

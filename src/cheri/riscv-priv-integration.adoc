@@ -161,7 +161,7 @@ The behavior and usage of <<mcause>> otherwise remains as described in xref:mcau
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
 | .>|*{cheri_excep_cause_pc}* .<|*Prior to instruction address translation:* +
-*CHERI fault due to PCC checks (tag, execute permission, bounds^1^)*
+*CHERI fault due to {pcc} checks (tag, execute permission, bounds^1^)*
 | .>|12, 1 .<|During instruction address translation: +
 First encountered page fault or access fault
 | .>|1 .<|With physical address for instruction: +
@@ -178,7 +178,7 @@ Environment break +
 Load/store/AMO address breakpoint
 
 | .>| *{cheri_excep_cause_pc}* .<| *CHERI faults due to:* +
-*PCC <<asr_perm>> clear* +
+*{pcc} <<asr_perm>> clear* +
 *Branch/jump target address checks (tag, execute permissions, bounds)*
 
 | .>|*{cheri_excep_cause_ls_list}* .<|*Prior to address translation for an explicit memory access:* +
@@ -196,7 +196,7 @@ Load/store/AMO address misaligned
 {cheri_excep_name_pte_ld}^3^*
 |===
 
-^1^ PCC bounds are checked against all bytes of fetched instructions.
+^1^ {pcc} bounds are checked against all bytes of fetched instructions.
  If the instructions could not be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
 ^2^ The higher priority {cheri_excep_name_pte_ld} covers capability loads or atomics where the loaded {ctag} _is not_ checked ({cheri_priv_crg_ext} is implemented) .
