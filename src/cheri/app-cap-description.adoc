@@ -175,22 +175,20 @@ orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 | 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | 1   | ✔ |     | Mode^1^  | Execute + Data & Cap RW
 | 6-7   | ✔ | ✔ |   |    |    | 0^2^| ✔ |     | Mode^1^  | Execute + Data RW
 11+| *Quadrant 2: Restricted capability data read/write*
-11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted, LM dependent on W permission.
+11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted, LM dependent on W permission.
 |Encoding[2:0]| R | W | C | LM | LG | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
-| 3       | ✔ |   | ✔ |    |    | 0^1^  |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
-| 4       | ✔ | ✔ | ✔ | ✔  |    | _(3)_ |   |     | N/A | _Reserved_^3^
-| 5       | ✔ | ✔ | ✔ | ✔  |    | _(2)_ |   |     | N/A | _Reserved_^3^
+| 3       | ✔ |   | ✔ |    |    | 0^2^  |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
+| 4-5  10+| reserved
 | 6       | ✔ | ✔ | ✔ | ✔  |    | 1     |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
 | 7       | ✔ | ✔ | ✔ | ✔  |    | 0     |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
 11+| *Quadrant 3: Capability data read/write*
-11+| bit[2] = write, bit[1:0] = store level. R and C implicitly granted.
+11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted.
 11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
 |Encoding[2:0]| R | W | C | LM | LG | SL    | X | ASR | Mode^1^ |
 | 0-2   10+| reserved
 | 3       | ✔ |   | ✔ | ✔  | ✔  | 0^2^  |   |     | N/A | Data & Cap R0
-| 4       | ✔ | ✔ | ✔ | ✔  | ✔  | _(3)_ |   |     | N/A | _Reserved_^3^
-| 5       | ✔ | ✔ | ✔ | ✔  | ✔  | _(2)_ |   |     | N/A | _Reserved_^3^
+| 4-6   10+| reserved
 | 6       | ✔ | ✔ | ✔ | ✔  | ✔  | 1     |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>)
 | 7       | ✔ | ✔ | ✔ | ✔  | ✔  | 0     |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>)
 |==============================================================================
@@ -198,7 +196,6 @@ orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 ^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
 is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._ +
 ^2^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<CLRPERM>> +
-^3^ These entries are reserved for adding additional levels in a future extension
 
 When MXLEN=32, this compressed permission format introduces
 new dependencies between permisison bits.
