@@ -1,5 +1,20 @@
 <<<
 
+[#SCHI_BASE,reftext="{SCHI_BASE}"]
+==== {SCHI_BASE}
+
+Synopsis::
+{SCHI_BASE_DESC}
+
+Mnemonic::
+`{schi_base_lc} rd, rs1, rs2`
+
+Encoding::
+include::wavedrom/schi.adoc[]
+
+Description::
+The {SCHI_BASE} instruction packs the least-significant XLEN-bits of `rs1` and `rs2` into `rd`, and sets `rd.tag=0`.
+
 [#SCHI,reftext="{SCHI}"]
 ==== {SCHI}
 
@@ -10,20 +25,18 @@ NOTE: *CHERI v9 Note:* this instruction was called CSETHIGH.
 endif::[]
 
 Synopsis::
-{SCHI_DESC}
+Capability set metadata
 
 Mnemonic::
 `{schi_lc} cd, cs1, rs2`
 
-NOTE: #needs to be encoded as 2xXLEN PACK with this as a pseudo-op#
-
 Encoding::
-include::wavedrom/schi.adoc[]
+{SCHI} is a pseudoinstruction for {SCHI_BASE}
 
 Description::
 Copy `cs1`  to `cd`.
 +
-Replace the capability metadata (i.e., bits [YLEN-1:MXLEN]) with `rs2` and set `cd.tag` to 0.
+Replace the capability metadata of `cs1` (i.e., bits [YLEN-1:XLEN]) with `rs2` and set `cd.tag` to 0.
 +
 include::no_tag_affect.adoc[]
 

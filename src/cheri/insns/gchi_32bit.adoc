@@ -1,5 +1,28 @@
 <<<
 
+[#GCHI_BASE,reftext="{GCHI_BASE}"]
+==== {GCHI_BASE}
+
+Synopsis::
+{GCHI_BASE_DESC}
+
+Mnemonic::
+`{gchi_base_lc} rd, rs1, shamt`
+
+Encoding::
+include::wavedrom/gchi.adoc[]
+
+Description::
+Logical right shift of Y register `rs1`, writing the lower YLEN bits of the result to `rd`.
+
+NOTE: Currently the only valid shift distance is XLEN places, a future extension may add an arbitrary shift distance.
+
+NOTE: For {cheri_base32_ext_name}, `{gchi_base_lc} rd, rs1, 32` has an identical encoding and operation to the RV64 instruction `srli rd, rs1, 32`.
+
+Operation::
++
+TODO
+
 [#GCHI,reftext="{GCHI}"]
 ==== {GCHI}
 
@@ -10,18 +33,16 @@ NOTE: *CHERI v9 Note:* this instruction was called CGETHIGH.
 endif::[]
 
 Synopsis::
-{GCHI_DESC}}
+{GCHI_DESC}
 
 Mnemonic::
 `{gchi_lc} rd, cs1`
 
 Encoding::
-include::wavedrom/gchi.adoc[]
-
-NOTE: #needs to be encoded as an XLEN right shift with this as a pseudo-op#
+`{gchi_lc} rd, cs1` is a pseudoinstruction for `{gchi_base_lc} rd, rs1, XLEN`
 
 Description::
-Copy the metadata (bits [YLEN-1:MXLEN]) of capability `cs1` into `rd`.
+Copy the metadata (bits [YLEN-1:XLEN]) of capability `cs1` into `rd`.
 +
 include::no_tag_affect.adoc[]
 

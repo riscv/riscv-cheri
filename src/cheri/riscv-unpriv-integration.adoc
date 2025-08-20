@@ -601,13 +601,16 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 |Mnemonic     |Description
 |<<ACPERM>>   |AND capability permissions (expand to 1-bit per permission before ANDing)
 |<<CMV>>      |Move capability register
-|<<SCHI>>     |Set metadata and clear {ctag}
+|<<SCHI>>^1^  |Set metadata and clear {ctag}
 |<<SCBNDSI>>  |Set immediate bounds on capability with rounding, clear {ctag} if rounding is required
 |<<SCBNDS>>   |Set register bounds on capability with rounding, clear {ctag} if rounding is required
 |<<SCBNDSR>>  |Set bounds on capability with rounding up as required
 |<<SENTRY>>   |Seal capability
 |<<CBLD>>     |Set cd to cs2 with its tag set after checking that cs2 is a subset of cs1
 |=======================
+
+^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
+
 
 include::insns/acperm_32bit.adoc[]
 include::insns/cmv_32bit.adoc[]
@@ -648,8 +651,11 @@ These instructions either directly read bit fields from the metadata or {ctag}, 
 |<<GCTAG>>  |Get {ctag}
 |<<GCPERM>> |Get capability architectural and software permissions
 |<<GCTYPE>> |Get capability type
-|<<GCHI>>   |Get capability metadata
+|<<GCHI>>^1^|Get capability metadata
 |=======================
+
+^1^ <<GCHI>> is a pseudoinstruction for <<GCHI_BASE>>
+
 
 include::insns/gctag_32bit.adoc[]
 include::insns/gcperm_32bit.adoc[]
