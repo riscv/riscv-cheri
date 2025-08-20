@@ -37,7 +37,7 @@ be read-only and equal to MBE when the implementation only supports
 {cheri_base_ext_name}. VSBE is optionally writeable when
 {cheri_default_ext_name} is also supported.
 
-[#henvcfg_cheri,reftext="henvcfg {cheri_base_ext_name}"]
+[#henvcfg_cheri,reftext="henvcfg({cheri_base_ext_name})"]
 === Hypervisor Environment Configuration Register (henvcfg)
 
 The <<henvcfg_cheri>> register operates as described in the RISC-V Privileged
@@ -48,10 +48,10 @@ supports {cheri_default_ext_name} as shown in xref:henvcfgreg[xrefstyle=short].
 [#henvcfgreg]
 include::img/henvcfgreg.edn[]
 
-The CHERI Register Enable (CRE) bit controls whether explicit access to CHERI
+The {CRE} bit controls whether explicit access to CHERI
 registers is permitted when V=1. When <<henvcfg_cheri>>.CRE=1 and <<menvcfg>>.CRE=1
-and <<mseccfg>>.CRE=1, CHERI registers can be read and written by VS-mode and
-VU-mode. When <<henvcfg_cheri>>.CRE=0, CHERI registers are disabled in VS-mode and
+and <<misa>>.{CRE}=1, CHERI can be enabled by VS-mode and
+VU-mode. When <<henvcfg_cheri>>.{CRE}=0, CHERI is disabled in VS-mode and
 VU-mode as described in xref:section_cheri_disable[xrefstyle=short].
 
 The reset value is 0.
