@@ -528,12 +528,12 @@ These instructions use the CJ format.
 C.J performs an unconditional control transfer. The offset is
 sign-extended and added to the `pc` to form the jump target address. C.J
 can therefore target a &#177;2 KiB range. C.J expands to
-`jal x0, offset`, or `jal {creg}0, offset` for {cheri_base_ext_name}.
+`jal x0, offset`.
 
 C.JAL is an RV32C-only instruction that performs the same operation as
 C.J, but additionally writes the address of the instruction following
 the jump (`pc+2`) to the link register, `x1`. C.JAL expands to
-`jal x1, offset`, or `jal {creg}1, offset` for {cheri_base_ext_name}.
+`jal x1, offset`.
 
 [[c-cr-format-ls]]
 include::images/wavedrom/c-cr-format-ls.edn[]
@@ -543,18 +543,17 @@ include::images/wavedrom/c-cr-format-ls.edn[]
 These instructions use the CR format.
 
 C.JR (jump register) performs an unconditional control transfer to the
-address in register _rs1/cs1_. C.JR expands to `jalr x0, 0(rs1)`, or
-`jalr {creg}0, 0({creg_pref}s1)` for {cheri_base_ext_name}.
-C.JR is valid only when _rs1/cs1_≠`x0`; the code
-point with _rs1/cs1_=`x0` is reserved.
+address in register _rs1_. C.JR expands to `jalr x0, 0(rs1)`.
+C.JR is valid only when _rs1_≠`x0`; the code
+point with _rs1_=`x0` is reserved.
 
 C.JALR (jump and link register) performs the same operation as C.JR, but
 additionally writes the address of the instruction following the jump
 (`pc`+2) to the link register, `x1/{creg}1`. C.JALR expands to
-`jalr x1, 0(rs1)`, or `jalr {creg}1, 0({creg_pref}s1)` for {cheri_base_ext_name}.
+`jalr x1, 0(rs1)`.
 C.JALR is valid only when
-_rs1/cs1_≠`x0`; the code point with
-_rs1/cs1_=`x0` corresponds to the C.EBREAK
+_rs1_≠`x0`; the code point with
+_rs1_=`x0` corresponds to the C.EBREAK
 instruction.
 
 [NOTE]
@@ -748,7 +747,7 @@ hardware cost._
 ====
 
 For {cheri_base_ext_name} {C_MV_CAP} copies a whole capability register.
-The expansion is `{C_MV_CAP_LC} {creg_pref}d, rs2`.
+The expansion is `{C_MV_CAP_LC} {creg_pref}d, {creg_pref}s2`.
 
 C.ADD adds the values in registers _rd_ and _rs2_ and writes the result
 to register _rd_. C.ADD expands into `add rd, rd, rs2`. C.ADD is only
