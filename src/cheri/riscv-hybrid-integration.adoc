@@ -46,7 +46,7 @@ In {cheri_cap_mode_name}, the authorizing capability is supplied as an explicit 
 // * The set of instructions that is available for execution. Some instructions are available in {cheri_int_mode_name} but not {cheri_cap_mode_name} and vice-versa (see xref:app_cheri_instructions[xrefstyle=short]).
 
 // NOTE: The _<<cheri_execution_mode>>_ is effectively an extension to some RISC-V instruction encodings.
-//   For example, the encoding of an instruction like <<LW>> remains unchanged, but the mode indicates whether the capability authorizing the load is the register operand `cs1` ({cheri_cap_mode_name}).
+//   For example, the encoding of an instruction like <<LW>> remains unchanged, but the mode indicates whether the capability authorizing the load is the register operand `{creg_pref}s1` ({cheri_cap_mode_name}).
 // The mode is shown in the assembly syntax.
 
 The _<<cheri_execution_mode>>_ is key in providing backwards compatibility with the base RV32I/RV64I ISA.
@@ -86,7 +86,7 @@ The <<m_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cher
 [#tab_cheri_mode_sw_summary,%autowidth,options=header,align="center",cols="2,2,4"]
 |=======================
 |Mnemonic        | From mode          | Description
-| <<JALR_CHERI>> |{cheri_cap_mode_name}| Install `cs1` in the <<pcc>> and so update `{pcc}.M`
+| <<JALR_CHERI>> |{cheri_cap_mode_name}| Install `{creg_pref}s1` in the <<pcc>> and so update `{pcc}.M`
 | <<MODESW_INT>> |{cheri_cap_mode_name}| Switch to {cheri_int_mode_name}.
 | <<MODESW_CAP>> |{cheri_int_mode_name}| Switch to {cheri_cap_mode_name}.
 |=======================
@@ -142,7 +142,7 @@ include::img/ddcreg.edn[]
 
 === {cheri_default_ext_name} Memory Accesses
 
-In {cheri_cap_mode_name} all memory accesses behave as defined by <<rv32y,{cheri_base_ext_name}>> and are authorised by the base register (`cs1`), from which the bounds and permissions are taken. For example:
+In {cheri_cap_mode_name} all memory accesses behave as defined by <<rv32y,{cheri_base_ext_name}>> and are authorised by the base register (`{creg_pref}s1`), from which the bounds and permissions are taken. For example:
 
 * `lw t0, 16({abi_creg}a0)`
 
@@ -156,7 +156,7 @@ All memory accesses must still be checked, but now they are authorized by the ca
 
 The rules from xref:section_existing_riscv_insns[xrefstyle=short] are applied, so that all branch and jump targets are checked against <<pcc>>.
 
-NOTE: In {cheri_int_mode_name} JALR does _not_ copy the target capability register `cs1` into <<pcc>>, instead it updates the address of <<pcc>> with the target value.
+NOTE: In {cheri_int_mode_name} JALR does _not_ copy the target capability register `{creg_pref}s1` into <<pcc>>, instead it updates the address of <<pcc>> with the target value.
 The only difference to RV32I/RV64I without {cheri_default_ext_name}, is that the target address is checked against the bounds of <<pcc>>.
 
 [#section_hybrid_ext_instructions]

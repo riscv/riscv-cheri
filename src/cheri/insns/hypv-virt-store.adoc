@@ -21,10 +21,10 @@ Synopsis::
 Hypervisor virtual-machine store
 
 {cheri_cap_mode_name} Mnemonics (RV64)::
-`hsv.b rs2, cs1` +
-`hsv.h rs2, cs1` +
-`hsv.w rs2, cs1` +
-`hsv.d rs2, cs1`
+`hsv.b rs2, {creg_pref}s1` +
+`hsv.h rs2, {creg_pref}s1` +
+`hsv.w rs2, {creg_pref}s1` +
+`hsv.d rs2, {creg_pref}s1`
 
 {cheri_int_mode_name} Mnemonics (RV64)::
 `hsv.b rs2, rs1` +
@@ -33,9 +33,9 @@ Hypervisor virtual-machine store
 `hsv.d rs2, rs1`
 
 {cheri_cap_mode_name} Mnemonics (RV32)::
-`hsv.b rs2, cs1` +
-`hsv.h rs2, cs1` +
-`hsv.w rs2, cs1`
+`hsv.b rs2, {creg_pref}s1` +
+`hsv.h rs2, {creg_pref}s1` +
+`hsv.w rs2, {creg_pref}s1`
 
 {cheri_int_mode_name} Mnemonics (RV32)::
 `hsv.b rs2, rs1` +
@@ -48,8 +48,8 @@ include::wavedrom/hypv-virt-store.adoc[]
 {cheri_cap_mode_name} Description::
 Performs a store as though V=1; i.e., with the address translation and
 protection, and endianness, that apply to memory accesses in either VS-mode or
-VU-mode. The effective address is `cs1.address`. The authorizing
-capability for the operation is `cs1`. A copy of `rs2` is written to memory at
+VU-mode. The effective address is `{creg_pref}s1.address`. The authorizing
+capability for the operation is `{creg_pref}s1`. A copy of `rs2` is written to memory at
 the location indicated by the effective address and the {ctag} bit of each block
 of memory naturally aligned to YLEN/8 is cleared.
 +

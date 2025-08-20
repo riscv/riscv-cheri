@@ -17,7 +17,7 @@ Synopsis::
 {CLRPERM_DESC}
 
 Mnemonics::
-`{clrperm_lc} cd, cs1, rs2`
+`{clrperm_lc} {creg_pref}d, {creg_pref}s1, rs2`
 
 Encoding::
 include::wavedrom/acperm.adoc[]
@@ -25,7 +25,7 @@ include::wavedrom/acperm.adoc[]
 Description::
 <<CLRPERM>> performs the following operations:
 
-. Convert the <<AP-field>>, <<SDP-field>>, and any other extension-defined permission-like fields of capability `cs1` into a bit field with the
+. Convert the <<AP-field>>, <<SDP-field>>, and any other extension-defined permission-like fields of capability `{creg_pref}s1` into a bit field with the
 format shown in xref:acperm_bit_field[xrefstyle=short].
 . The initial value in integer register `rs2` is treated as a bit mask that specifies bit positions to be cleared in the bit field. Any bit that is high in `rs2` will cause the corresponding bit to be cleared in the bit field.
 +
@@ -35,10 +35,10 @@ NOTE: Future extensions may include hardwired permission bits, in which case the
 IMPORTANT: Depending on the base ISA and supported extensions, some combinations of permissions cannot be encoded or are not useful.
 In these cases, <<CLRPERM>> will return a minimal sets of permissions, which may be no permissions.
 Therefore, it is possible that requesting to clear a permission also clears others, but <<CLRPERM>> will never _add_ new permissions.
-. Copy `cs1` to `cd`, and update the <<AP-field>>, <<SDP-field>>, and any others therein with the newly calculated versions.
-. Set `cd.tag=0` if `cs1` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<CLRPERM>>;
+. Copy `{creg_pref}s1` to `{creg_pref}d`, and update the <<AP-field>>, <<SDP-field>>, and any others therein with the newly calculated versions.
+. Set `{creg_pref}d.tag=0` if `{creg_pref}s1` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<CLRPERM>>;
   extensions must describe whether such changes to their bits also necessitate tag clearing.
-. Set `cd.tag=0` if any <<section_cap_integrity,integrity>> checks fail.
+. Set `{creg_pref}d.tag=0` if any <<section_cap_integrity,integrity>> checks fail.
 
 .Capability permissions bit field
 [#acperm_bit_field]

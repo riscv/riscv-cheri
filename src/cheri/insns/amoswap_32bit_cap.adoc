@@ -7,7 +7,7 @@ Synopsis::
 {AMOSWAP_CAP_DESC}
 
 Mnemonic::
-`amoswap{ld_st_dot_cap_lc} cd, cs2, 0(cs1)`
+`amoswap{ld_st_dot_cap_lc} {creg_pref}d, {creg_pref}s2, 0({creg_pref}s1)`
 
 Encoding::
 include::wavedrom/amoswap_cap.adoc[]
@@ -18,15 +18,15 @@ include::load_store_creg0.adoc[]
 include::atomic_exceptions.adoc[]
 
 Description::
-Atomic swap of capability type, authorized by the capability in `cs1`.
+Atomic swap of capability type, authorized by the capability in `{creg_pref}s1`.
 +
 The operation is equivalent to an atomically executed sequence of:
 +
-`{load_cap_name_lc} cd, 0(cs1)`
+`{load_cap_name_lc} {creg_pref}d, 0({creg_pref}s1)`
 +
-`{store_cap_name_lc} cs2, 0(cs1)`
+`{store_cap_name_lc} {creg_pref}s2, 0({creg_pref}s1)`
 +
-With the proviso that `cd` is only updated if no exceptions are raised.
+With the proviso that `{creg_pref}d` is only updated if no exceptions are raised.
 
 Prerequisites::
 {cheri_base_ext_name}, and A or Zaamo

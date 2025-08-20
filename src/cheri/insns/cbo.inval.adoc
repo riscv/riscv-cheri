@@ -7,7 +7,7 @@ Synopsis::
 Perform an invalidate operation on a cache block
 
 Mnemonic::
-`cbo.inval 0(cs1)`
+`cbo.inval 0({creg_pref}s1)`
 
 //{cheri_int_mode_name} Mnemonic::
 //`cbo.inval 0(rs1)`
@@ -19,14 +19,14 @@ Encoding::
   {bits: 7,  name: 'opcode',    attr: ['7','MISC-MEM=0001111'],  type: 8},
   {bits: 5,  name: 'funct5',    attr: ['5','CBO=00000'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','CBO=010'],  type: 8},
-  {bits: 5,  name: 'cs1≠0',     attr: ['5','base'],     type: 4},
+  {bits: 5,  name: '{creg_pref}s1',  attr: ['5','base'],     type: 4},
   {bits: 12, name: 'funct12',   attr: ['12','CBO.INVAL=00.0000'],   type: 3},
 ]}
 ....
 
 Description::
-A CBO.INVAL instruction performs an invalidate operation on the cache block whose effective address is the base address specified in `cs1`.
-The authorizing capability for this instruction is `cs1`.
+A CBO.INVAL instruction performs an invalidate operation on the cache block whose effective address is the base address specified in `{creg_pref}s1`.
+The authorizing capability for this instruction is `{creg_pref}s1`.
 
 include::int_mode_remapping_ddc.adoc[]
 
