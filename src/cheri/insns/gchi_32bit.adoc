@@ -17,7 +17,7 @@ Logical right shift of Y register `rs1`, writing the lower YLEN bits of the resu
 
 NOTE: Currently the only valid shift distance is XLEN places, a future extension may add an arbitrary shift distance.
 
-NOTE: For {cheri_base32_ext_name}, `{gchi_base_lc} rd, rs1, #32` has an identical encoding and operation to the RV64 instruction `srli rd, rs1, #32`.
+NOTE: For {cheri_base32_ext_name}, `{gchi_base_lc} rd, rs1, 32` has an identical encoding and operation to the RV64 instruction `srli rd, rs1, 32`.
 
 Operation::
 +
@@ -33,16 +33,13 @@ NOTE: *CHERI v9 Note:* this instruction was called CGETHIGH.
 endif::[]
 
 Synopsis::
-{GCHI_DESC}}
+{GCHI_DESC}
 
 Mnemonic::
 `{gchi_lc} rd, cs1`
 
 Encoding::
-{cheri_base64_ext_name}: {gchi_lc} rd, cs1` is a pseudoinstruction for `{gchi_base_lc} rd, rs1, 64` +
-{cheri_base32_ext_name}: {gchi_lc} rd, cs1` is a pseudoinstruction for `{gchi_base_lc} rd, rs1, 32`
-
-NOTE: #needs to be encoded as an XLEN right shift with this as a pseudo-op#
+`{gchi_lc} rd, cs1` is a pseudoinstruction for `{gchi_base_lc} rd, rs1, XLEN`
 
 Description::
 Copy the metadata (bits [YLEN-1:XLEN]) of capability `cs1` into `rd`.
