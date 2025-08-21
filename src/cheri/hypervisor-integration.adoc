@@ -80,7 +80,7 @@ xref:mstatus_cheri[xrefstyle=short] for mstatus.UXL.
 === Virtual Supervisor Trap Vector Base Address Capability Register (vstvec)
 
 The <<vstvec>> register is extended to hold a capability.
-Its reset value is the <<infinite-cap>> capability.
+Its reset value is a <<root-rx-cap>> capability.
 
 .Virtual supervisor trap vector base address capability register
 include::img/vstveccreg.edn[]
@@ -104,7 +104,7 @@ include::img/vsscratchcreg.edn[]
 === Virtual Supervisor Exception Program Counter Capability (vsepc)
 
 The <<vsepc>> register is extended to hold a capability.
-Its reset value is the <<infinite-cap>> capability.
+Its reset value is a <<root-rx-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<vsepc_y>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 Additionally, the capability in <<vsepc_y>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction when V=1.
