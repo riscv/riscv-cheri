@@ -783,8 +783,8 @@ if __name__ == "__main__":
 
         #same for rv32/rv64
         tables.append(Zabhlrsc_insns               (os.path.join(args.output_dir, "Zabhlrsc_insns_table_body.adoc"), header))
-        tables.append(rvyalrsc_ext_name_insns          (os.path.join(args.output_dir, "RVYALRSC_insns_table_body.adoc"), header))
-        tables.append(rvyaamo_ext_name_insns          (os.path.join(args.output_dir, "RVYAAMO_insns_table_body.adoc"), header))
+        tables.append(rvyalrsc_ext_name_insns      (os.path.join(args.output_dir, "RVYALRSC_insns_table_body.adoc"), header))
+        tables.append(rvyaamo_ext_name_insns       (os.path.join(args.output_dir, "RVYAAMO_insns_table_body.adoc"), header))
         tables.append(rvyh_ext_name_insns          (os.path.join(args.output_dir, "RVYH_insns_table_body.adoc"), header))
         tables.append(rvyi_ext_name_insns          (os.path.join(args.output_dir, "RVYI_insns_table_body.adoc"), header))
         tables.append(rvyi_mod_ext_name_insns      (os.path.join(args.output_dir, "RVYIM_insns_table_body.adoc"), header))
