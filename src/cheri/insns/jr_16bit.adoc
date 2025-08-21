@@ -4,19 +4,13 @@
 ==== C.JR
 
 Synopsis::
-Jump register without link, 16-bit encodings
+{C_JR_CHERI_DESC}}
 
-{cheri_cap_mode_name} Mnemonic::
+Mnemonic::
 `c.jr {cs1}`
 
-{cheri_cap_mode_name} Expansion::
+Expansion::
 `jalr {creg}0, 0({cs1})`
-
-{cheri_int_mode_name} Mnemonic::
-`c.jr rs1`
-
-{cheri_int_mode_name} Expansion::
-`jalr x0, 0(rs1)`
 
 Encoding::
 include::wavedrom/c-cr-format-ls.adoc[]
@@ -25,20 +19,10 @@ include::wavedrom/c-cr-format-ls.adoc[]
 See <<JALR_CHERI>> for execution of the expanded instruction as shown above.
 Note that the `offset` is zero in the expansion.
 
-{cheri_int_mode_name} Description::
-See <<JALR_CHERI>> for execution of the expanded instruction as shown above.
-Note that the `offset` is zero in the expansion.
-
-Exceptions::
-See <<JALR_CHERI>>
-
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {c_cheri_base_ext_names}
-
-Prerequisites for {cheri_int_mode_name}::
-{c_cheri_default_ext_names}
 
 Operation (after expansion to 32-bit encodings)::
  See <<JALR_CHERI>>
