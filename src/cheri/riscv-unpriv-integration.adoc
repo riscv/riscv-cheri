@@ -282,7 +282,7 @@ Permissions grant access subject to the <<cap_valid_tag>> being set, the capabil
 Any operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP and PMAs, even if the capability grants sufficient permissions.
 The permissions currently defined in {cheri_base_ext_name} are listed below.
 
-Permissions can only be removed using <<ACPERM>> on valid capabilities, they cannot be added.
+Permissions can only be removed using <<CLRPERM>> on valid capabilities, they cannot be added.
 
 NOTE: The encoding of permissions varies with MXLEN and is described in xref:AP-field-encoding[xrefstyle=full].
 
@@ -344,7 +344,7 @@ NOTE: Extensions may add additional non-privileged CSRs that require <<asr_perm>
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
 They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.).
-They can be cleared by <<ACPERM>> but are not interpreted by the CPU otherwise.
+They can be cleared by <<CLRPERM>> but are not interpreted by the CPU otherwise.
 
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set on valid capabilities.
 
@@ -593,13 +593,13 @@ include::insns/sh1234add_uw_32bit.adoc[]
 === Instructions to Manipulate Capabilities
 
 For security, capabilities can only be modified in restricted ways.
-Special instructions are provided to copy capabilities or derive a new capability using manipulations such as _shrinking_ the bounds (<<SCBNDS>>), _reducing_ the permissions (<<ACPERM>>) or _authorizing_ a capability with another one which has a superset (or identical) bounds and permissions (<<CBLD>>).
+Special instructions are provided to copy capabilities or derive a new capability using manipulations such as _shrinking_ the bounds (<<SCBNDS>>), _reducing_ the permissions (<<CLRPERM>>) or _authorizing_ a capability with another one which has a superset (or identical) bounds and permissions (<<CBLD>>).
 
 .Summary of {cheri_base_ext_name} instructions that create a modified capability
 [#tab_cap_manip_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic     |Description
-|<<ACPERM>>   |AND capability permissions (expand to 1-bit per permission before ANDing)
+|<<CLRPERM>>   |AND capability permissions (expand to 1-bit per permission before ANDing)
 |<<CMV>>      |Move capability register
 |<<SCHI>>^1^  |Set metadata and clear {ctag}
 |<<SCBNDSI>>  |Set immediate bounds on capability with rounding, clear {ctag} if rounding is required

@@ -1,7 +1,7 @@
 <<<
 
-[#ACPERM,reftext="{ACPERM}"]
-==== {ACPERM}
+[#CLRPERM,reftext="{CLRPERM}"]
+==== {CLRPERM}
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The implementation of this instruction changes
@@ -14,31 +14,29 @@ endif::[]
 include::new_encoding_note.adoc[]
 
 Synopsis::
-{ACPERM_DESC}
-
-NOTE: #this needs the semantics changing to invert the mask to CLEAR permissions instead of ANDing"
+{CLRPERM_DESC}
 
 Mnemonics::
-`{acperm_lc} cd, cs1, rs2`
+`{clrperm_lc} cd, cs1, rs2`
 
 Encoding::
 include::wavedrom/acperm.adoc[]
 
 Description::
-<<ACPERM>> performs the following operations:
+<<CLRPERM>> performs the following operations:
 
 . Convert the <<AP-field>>, <<SDP-field>>, and any other extension-defined permission-like fields of capability `cs1` into a bit field with the
 format shown in xref:acperm_bit_field[xrefstyle=short].
-. Calculate the bitwise AND of the bit field with the mask in `rs2`.
+. The initial value in integer register `rs2` is treated as a bit mask that specifies bit positions to be cleared in the bit field. Any bit that is high in `rs2` will cause the corresponding bit to be cleared in the bit field.
 +
-NOTE: Future extensions may include hardwired permission bits, in which case they are not included in this bitwise AND.
+NOTE: Future extensions may include hardwired permission bits, in which case they are not cleared by set bits in `rs2`.
 . Encode the resulting architectural permissions following the rules in <<sec_permission_transitions>>.
 +
 IMPORTANT: Depending on the base ISA and supported extensions, some combinations of permissions cannot be encoded or are not useful.
-In these cases, <<ACPERM>> will return a minimal sets of permissions, which may be no permissions.
-Therefore, it is possible that requesting to clear a permission also clears others, but <<ACPERM>> will never _add_ new permissions.
+In these cases, <<CLRPERM>> will return a minimal sets of permissions, which may be no permissions.
+Therefore, it is possible that requesting to clear a permission also clears others, but <<CLRPERM>> will never _add_ new permissions.
 . Copy `cs1` to `cd`, and update the <<AP-field>>, <<SDP-field>>, and any others therein with the newly calculated versions.
-. Set `cd.tag=0` if `cs1` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<ACPERM>>;
+. Set `cd.tag=0` if `cs1` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<CLRPERM>>;
   extensions must describe whether such changes to their bits also necessitate tag clearing.
 . Set `cd.tag=0` if any <<section_cap_integrity,integrity>> checks fail.
 
@@ -55,7 +53,7 @@ Completely new permissions (e.g., sealing) should use the bits that are reported
 [NOTE]
 ====
 Extensions like <<section_zylevels1>> introduce bits that are, conceptually, _labels_ on a capability rather than a permission granted by the capability.
-These bits are, nevertheless, still adjusted using the <<ACPERM>> instruction.
+These bits are, nevertheless, still adjusted using the <<CLRPERM>> instruction.
 This avoids the need for a dedicated instruction and allows simultaneous changes of these labels and permissions.
 ====
 

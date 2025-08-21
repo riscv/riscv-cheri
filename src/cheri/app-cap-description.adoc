@@ -145,7 +145,7 @@ is supported. Despite being encoded here it is *not* an architectural permission
 
 NOTE: When MXLEN=32 there are many reserved permission encodings (see
 xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a valid
-capability to have one of these values since <<ACPERM>> will never create it. It is
+capability to have one of these values since <<CLRPERM>> will never create it. It is
 possible for invalid capabilities to have reserved values. <<GCPERM>> will interpret
 reserved values as if it were 0b00000 (no permissions). Future extensions may assign
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
@@ -197,7 +197,7 @@ orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 
 ^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
 is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._ +
-^2^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<ACPERM>> +
+^2^ SL isn't applicable in these cases, but this value is reported by <<GCPERM>> to simplify the rules followed by <<CLRPERM>> +
 ^3^ These entries are reserved for adding additional levels in a future extension
 
 When MXLEN=32, this compressed permission format introduces
@@ -252,17 +252,17 @@ implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
 [#sec_permission_transitions]
 ===== Permission Transitions
 
-Executing <<ACPERM>> can result in sets of permissions which cannot be represented when MXLEN=32
+Executing <<CLRPERM>> can result in sets of permissions which cannot be represented when MXLEN=32
 (see <<cap_perms_encoding32>>) or permission combinations which are not useful for MXLEN=64, such as
 <<asr_perm>> set without <<x_perm>>.
 These cases are defined to return useful minimal sets of permissions.
 
-When removing permissions with <<ACPERM>> the following rules,
+When removing permissions with <<CLRPERM>> the following rules,
 along with any added by extensions,
 are iterated to fixed-point:
 
 [#acperm_rules]
-.<<ACPERM>> common rules
+.<<CLRPERM>> common rules
 [float="center",align="center",cols="2,2,4",options="header"]
 |===
 | Rule            | Permission   | Valid only if
@@ -587,7 +587,7 @@ CHERI enforces the following rules for all valid capabilities:
 
 . The bounds are not <<section_cap_malformed,malformed>>.
 . No reserved bit in the capability encoding is set.
-. The permissions can be legally produced by <<ACPERM>>.
+. The permissions can be legally produced by <<CLRPERM>>.
 
 In all cases the capability could not have been legally created, and so either:
 
