@@ -68,7 +68,7 @@ Furthermore, the <<zylevelsN_el_perm>> can be used to restrict loading of _globa
 As with permissions, the _Capability Level_ of a valid capability can only be decreased but never increased (without deriving from a capability with a higher level).
 But unlike architectural permissions, the _Capability Level_ can be reduced even if the capability is sealed.
 
-=== Modifications to ACPERM and GCPERM
+=== Modifications to CLRPERM and GCPERM
 
 TODO
 
@@ -76,9 +76,9 @@ TODO
 
 TODO
 
-If `cd.tag=1`, `cd` is not sealed and `cs1` does not grant <<el_perm>>, then an implicit <<ACPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1` and to remove <<el_perm>>.
+If `cd.tag=1`, `cd` is not sealed and `cs1` does not grant <<el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1` and to remove <<el_perm>>.
 +
-If `cd.tag=1`, `cd` is sealed and `cs1` does not grant <<el_perm>>, then an implicit <<ACPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1`
+If `cd.tag=1`, `cd` is sealed and `cs1` does not grant <<el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<section_cap_level>> of `cd` to the level of `cs1`
 +
 NOTE: Missing <<el_perm>> also affects the level of sealed capabilities since notionally the <<section_cap_level>> of a capability is not a permission but rather a data flow label attached to the loaded value.
 
@@ -122,7 +122,7 @@ endif::[]
 
 [#section_ext_cheri_multiple_levels]
 === Extending {cheri_1levels_ext_name} to more than two levels
-When `<<cheri_lvlbits>> > 1`, the behavior of <<ACPERM>> can no longer use masking to adjust the <<section_cap_level>> or <<sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
+When `<<cheri_lvlbits>> > 1`, the behavior of <<CLRPERM>> can no longer use masking to adjust the <<section_cap_level>> or <<sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
 The <<section_cap_level,CL>> field of the resulting capability is set to `min(rs2[CL], cs1[CL])`  (equivalent to `rs2[CL] & cs1[CL]` for `<<cheri_lvlbits>>=1`).
 Similarly, <<sl_perm>> is set to `min(rs2[SL], cs1[SL])` (equivalent to `rs2[SL] & cs1[SL]` for `<<cheri_lvlbits>>=1`).
 
@@ -138,6 +138,6 @@ Considering for an example `<<cheri_lvlbits>>=2`:
 |0 | As low as `~0b00=3` | Strip tag for level 0,1,2, i.e., only the most _global_ can be stored
 |===
 
-NOTE: While this extra negation is non-intuitive, it is required such that <<ACPERM>> can use a monotonically decreasing operation for both <<section_cap_level,CL>> <<sl_perm>>.
+NOTE: While this extra negation is non-intuitive, it is required such that <<CLRPERM>> can use a monotonically decreasing operation for both <<section_cap_level,CL>> <<sl_perm>>.
 
-NOTE: The layout of the <<ACPERM>> input / <<GCPERM>> result is not yet defined, but existing bits will not be moved around so the <<sl_perm,SL>>/<<section_cap_level,CL>> fields will be non-contiguous.
+NOTE: The layout of the <<CLRPERM>> input / <<GCPERM>> result is not yet defined, but existing bits will not be moved around so the <<sl_perm,SL>>/<<section_cap_level,CL>> fields will be non-contiguous.

@@ -1,10 +1,10 @@
 Determining the final value of `cd`::
 If the {ctag} is zero, or the authorizing capability (`cs1`) does not grant <<c_perm>> then set `cd.tag=0`. In this case the steps below do not apply.
 +
-If `cd.tag=1`, `cd` is not sealed and `cs1` does not grant <<lm_perm>>, then an implicit <<ACPERM>> is performed to clear <<w_perm>> and <<lm_perm>> from `cd`.
+If `cd.tag=1`, `cd` is not sealed and `cs1` does not grant <<lm_perm>>, then an implicit <<CLRPERM>> is performed to clear <<w_perm>> and <<lm_perm>> from `cd`.
 +
-Extensions may define further circumstances under which implict <<ACPERM>>-s or other mutation of loaded capabilities may take place.
+Extensions may define further circumstances under which implict <<CLRPERM>>-s or other mutation of loaded capabilities may take place.
 +
-NOTE: While the implicit <<ACPERM>> introduces a dependency on the loaded data, implementations can avoid this by deferring the actual masking of permissions until the loaded capability is dereferenced or the metadata bits are inspected using <<GCPERM>> or <<GCHI>>. Additionally, metadata modifications  are on naturally aligned data, and so on the read path from a data cache, the modification typically happens in parallel with data alignment multiplexers.
+NOTE: While the implicit <<CLRPERM>> introduces a dependency on the loaded data, implementations can avoid this by deferring the actual masking of permissions until the loaded capability is dereferenced or the metadata bits are inspected using <<GCPERM>> or <<GCHI>>. Additionally, metadata modifications  are on naturally aligned data, and so on the read path from a data cache, the modification typically happens in parallel with data alignment multiplexers.
 +
 When sending load data to a trace interface, implementations trace the final value written to `cd` which may not match the value in memory.

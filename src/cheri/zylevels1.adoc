@@ -70,7 +70,7 @@ As with permissions, the _Capability Global_ flag of a valid capability can be c
 As expected, <<infinite-cap,Infinite capabilities>> have both new permissions, <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>> set.
 Further, Infinite caps have <<zylevels1_gl_perm>> set to _global_.
 
-=== Interaction with <<ACPERM>> and <<GCPERM>>
+=== Interaction with <<CLRPERM>> and <<GCPERM>>
 
 .Extended capability permissions bit field (see <<acperm_bit_field>>)
 [#zylevels1_acperm_bit_field]
@@ -78,23 +78,27 @@ include::./img/zylevels1-acperm_bit_field.edn[]
 
 The <<zylevels1_gl_perm>>, <<zylevels1_sl_perm>>, and <<zylevels1_lg_perm>> fields
 are mapped into the <<acperm_bit_field,capability permissions bitfield>> (<<acperm_bit_field>>),
-used by <<ACPERM>> and <<GCPERM>>,
+used by <<CLRPERM>> and <<GCPERM>>,
 as shown in <<zylevels1_acperm_bit_field>>.
 
-.<<ACPERM>> and the Capability Global (GL) Flag
+.<<CLRPERM>> and the Capability Global (GL) Flag
 
-<<ACPERM>> is permitted to clear the _Capability Global_ flag, even if the capability is sealed, unlike architectural and software permissions.
-This applies to both "implicit <<ACPERM>>s" in loads from memory and explicit <<ACPERM>> instructions.
+<<CLRPERM>> is permitted to clear the _Capability Global_ flag, even if the capability is sealed, unlike architectural and software permissions.
+This applies to both "implicit <<CLRPERM>>s" in loads from memory and explicit <<CLRPERM>> instructions.
 
-Implementations _are permitted but not mandated_ to require that an explicit <<ACPERM>> instruction wishing to clear <<zylevels1_gl_perm>>
+Implementations _are permitted but not mandated_ to require that an explicit <<CLRPERM>> instruction wishing to clear <<zylevels1_gl_perm>>
 has an input mask that is _entirely 1s_ except for <<zylevels1_gl_perm>>
 (or else clear the tag of the resulting capability).
 
+<<<<<<< HEAD
 .Additional <<ACPERM>> rules (see <<acperm_rules>>)
+=======
+.Additional CLRPERM rules (see <<acperm_rules>>)
+>>>>>>> 0f004e45 (rename ACPERM macro to CLRPERM)
 
 As mentioned, the <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>> permissions
 are dependent on (refinements of) base permissions.
-<<ACPERM>> (including "implicit <<ACPERM>>" operations) and/or the capability encoding
+<<CLRPERM>> (including "implicit <<CLRPERM>>" operations) and/or the capability encoding
 therefore clear these permissions when their dependencies clear.
 Specifically, we add the following rules to <<acperm_rules>>:
 
@@ -110,13 +114,13 @@ Specifically, we add the following rules to <<acperm_rules>>:
 As outlined above, {cheri_levels1_ext_name} introduces two new constraints on capabilities loaded from memory,
 as part of a <<LOAD_CAP>> instruction `{load_cap_name_lc} cd, offset(cs1)`
 or <<LOAD_RES_CAP>> instruction `lr{ld_st_dot_cap_lc} cd, offset(cs1)`.
-These may be phrased as "implicit <<ACPERM>>-s" performed on the loaded capability thus:
+These may be phrased as "implicit <<CLRPERM>>-s" performed on the loaded capability thus:
 
 * If `cd.tag=1`, `cd` *is not* sealed, and `cs1` does not grant <<zylevels1_lg_perm>>,
-  then an implicit <<ACPERM>> is performed, clearing both <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>> of `cd`.
+  then an implicit <<CLRPERM>> is performed, clearing both <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>> of `cd`.
 
 * If `cd.tag=1`, `cd` *is* sealed, and `cs1` does not grant <<zylevels1_lg_perm>>,
-  then an implicit <<ACPERM>> is performed, clearing <<zylevels1_gl_perm>> of `cd`.
+  then an implicit <<CLRPERM>> is performed, clearing <<zylevels1_gl_perm>> of `cd`.
 
 NOTE: Missing <<zylevels1_lg_perm>> also affects the <<zylevels1_gl_perm>> of sealed capabilities,
 since notionally the latter is not a permission but rather a data flow label attached to the loaded value.
