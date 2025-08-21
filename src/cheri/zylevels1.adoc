@@ -65,10 +65,16 @@ The _Capability Global_ flag holds one of two values:
 
 As with permissions, the _Capability Global_ flag of a valid capability can be cleared but never set (without reconstruction from a global superset capability).
 
-=== Interaction with <<infinite-cap,Infinite Capabilities>>
+=== Interaction with <<root-cap>> Capabilities
 
-As expected, <<infinite-cap,Infinite capabilities>> have both new permissions, <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>> set.
-Further, Infinite caps have <<zylevels1_gl_perm>> set to _global_.
+The <<root-cap>> capabilities used in the system are extended thus:
+
+* The definitions of <<root-rx-cap>> and <<root-rw-cap>> capabilities are
+  both augmented to require <<zylevels1_gl_perm>> be set to _global_.
+
+* A <<root-rx-cap>> capability is required to bear <<zylevels1_lg_perm>>.
+
+* A <<root-rw-cap>> capability is required to bear both <<zylevels1_lg_perm>>, and <<zylevels1_sl_perm>>.
 
 === Interaction with <<CLRPERM>> and <<GCPERM>>
 

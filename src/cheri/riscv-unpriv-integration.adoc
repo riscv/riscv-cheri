@@ -181,8 +181,9 @@ NOTE: A future extension may add an instruction to directly read the _top_ if ne
 
 ==== Updating the Bounds
 
-On system initialization the <<infinite-cap>> capability is available which has bounds which cover all of memory, and maximum permissions set.
-All smaller capabilities are derived from this.
+On system initialization, one or more <<root-cap>> capabilities are available;
+typically, these have bounds which cover all of memory and the maximum permissions set.
+All smaller capabilities are derived from these.
 
 The ISA does not allow the bounds (and permissions) of a capability with its {ctag} set to be increased (_monotonicity_).
 
@@ -353,17 +354,39 @@ NOTE: This property is required to ensure restricted programs cannot forge capab
 [#section_special_caps]
 ==== Special Capabilities
 
-[#infinite-cap,reftext="Infinite"]
-===== Infinite Capability
+[#root-cap,reftext="Root"]
+===== Root Capabilities
 
-The _Infinite_ capability grants all permissions and its bounds cover the whole 2^MXLEN^ address space.
-Extensions that introduce new capability metadata must describe their metadata's state in Infinite capabilities.
-The address field can hold any value.
+_Root_ (sometimes also _primordial_, _initial_) capabilities are those provided by the system at reset.
+In some systems (and capability encodings), there is a single "Infinite" capability value,
+which grants all permissions and has bounds covering the whole 2^MXLEN^ address space;
+in such systems, root capabilities are often Infinite.
+More generally, the _set_ of root capabilities often collectively grant all permissions to all addresses.
+By way of example, an encoding may prohibit one capability from authorizing both write and execute;
+a system using such an encoding would typically make available maximally permissive
+read-write and read-execute capabilities as part of their root set.
 
-All capability checks pass when performed against a valid <<infinite-cap>> capability.
-The encoding of the _Infinite_ capability is described in <<section_infinite_cap_encoding>>.
+[NOTE]
+=====
+How unprivileged software receives its root capabilities is largely an ABI question;
+the privileged specification will detail requirements of capability registers' reset state
+(and so on the root capabilities held therein).
+=====
 
-NOTE: The _Infinite_ capability is also known as 'default', 'almighty', or 'root' capability in other CHERI documentation.
+Because particular sets of requirements recur throughout the specification,
+we define some useful short-hand terminology.
+
+[#root-rx-cap,reftext="Root Executable"]
+Root Executable Capability::
+A capability that has bounds covering all addresses
+and bears at least all of <<x_perm>>, <<r_perm>>, <<c_perm>>, <<lm_perm>>, and <<asr_perm>>.
+Extensions introducing new permissions may require these to be provided by root executable capabilities.
+
+[#root-rw-cap,reftext="Root Data"]
+Root Data Capability::
+A capability that has bounds covering all addresses
+and bears at least all of <<r_perm>>, <<w_perm>>, <<c_perm>>, and <<lm_perm>>.
+Extensions introducing new permissions may require these to be provided by root data capabilities.
 
 [#null-cap,reftext="NULL"]
 ===== NULL Capability
@@ -420,7 +443,7 @@ A failing check raises a CHERI exception.
 * All bytes of the instruction must be in bounds
 * All <<section_cap_integrity,integrity>> checks passed.
 
-On system initialization the `pc` bounds and permissions must be set such that the program can run successfully (e.g., by setting it to <<infinite-cap>> to ensure _all_ instructions are in bounds).
+On system initialization the `pc` bounds and permissions must be set such that the program can run successfully (e.g., by setting it to a <<root-rx-cap>> capability to ensure _all_ instructions are in bounds).
 
 NOTE: Future ISA extensions should respect these rules so that the checked bits do not need storing in all copies of the <<pcc>> in the implementation.
 
