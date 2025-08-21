@@ -97,6 +97,30 @@ class rvyi_ext_name_insns(table):
     def check(self,row):
         return row[self.header.index("{rvyi_ext_name}")] == "✔"
 
+class rvyi_sentry_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyi_sentry_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("{rvyi_sentry_ext_name}")] == "✔"
+
 class rvyi_mod_ext_name_insns(table):
     cols = ["Mnemonic", "{rvyi_mod_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
     indices = []
@@ -787,6 +811,7 @@ if __name__ == "__main__":
         tables.append(rvyaamo_ext_name_insns       (os.path.join(args.output_dir, "RVYAAMO_insns_table_body.adoc"), header))
         tables.append(rvyh_ext_name_insns          (os.path.join(args.output_dir, "RVYH_insns_table_body.adoc"), header))
         tables.append(rvyi_ext_name_insns          (os.path.join(args.output_dir, "RVYI_insns_table_body.adoc"), header))
+        tables.append(rvyi_sentry_ext_name_insns   (os.path.join(args.output_dir, "RVYI_SENTRY_insns_table_body.adoc"), header))
         tables.append(rvyi_mod_ext_name_insns      (os.path.join(args.output_dir, "RVYIM_insns_table_body.adoc"), header))
         tables.append(rvyc_ext_name_insns          (os.path.join(args.output_dir, "RVYC_insns_table_body.adoc"), header))
         tables.append(rvyc_mod_ext_name_insns      (os.path.join(args.output_dir, "RVYCM_insns_table_body.adoc"), header))
