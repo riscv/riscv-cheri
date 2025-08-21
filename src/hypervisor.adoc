@@ -2612,3 +2612,19 @@ SIE=SPIE, and SPIE=1, and lastly sets `pc`=`vsepc`.
 If the Ssdbltrp extension is implemented, when `SRET` is executed in HS-mode,
 if the new privilege mode is VU, the `SRET` instruction sets `vsstatus.SDT`
 to 0. When executed in VS-mode, `vsstatus.SDT` is set to 0.
+
+=== "H" Extension for {cheri_base_ext_name}
+
+An {cheri_base_ext_name} core which supports the "H" extension must also support {rvyh_ext_name}.
+
+While HLVX.* only requires execute permission in the PTE, the authorizing CHERI capability must grant <<r_perm>>.
+
+.{rvyh_ext_name} instruction extension
+[#{rvyh_ext_name}_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyh_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+include::insns/hypv-virt-load-cap.adoc[]
+include::insns/hypv-virt-store-cap.adoc[]

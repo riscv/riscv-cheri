@@ -39,6 +39,7 @@ include::insns/dret.adoc[]
 
 endif::[]
 
+ifdef::cheri_standalone_spec[]
 <<<
 === "A" Standard Extension for Atomic Instructions
 
@@ -51,7 +52,6 @@ include::insns/load_res_32bit.adoc[]
 
 include::insns/store_cond_32bit.adoc[]
 
-ifdef::cheri_standalone_spec[]
 // Already in A chapter for non-standalone
 
 include::insns/load_res_cap_32bit.adoc[]
@@ -61,6 +61,7 @@ include::insns/amoswap_32bit_cap.adoc[]
 include::insns/store_cond_cap_32bit.adoc[]
 endif::[]
 
+ifdef::cheri_standalone_spec[]
 <<<
 === "Zfh", "Zfhmin", "F" and "D" Standard Extension for Floating-Point
 // NOTE: these are technically  unnecessary as they just follow the stated rules
@@ -69,6 +70,7 @@ Floating point instructions and how CHERI affects them.
 include::insns/load_32bit_fp.adoc[]
 
 include::insns/store_32bit_fp.adoc[]
+endif::[]
 
 <<<
 === "C" Standard Extension for Compressed Instructions
@@ -134,6 +136,8 @@ include::insns/store_16bit_cap_sprel.adoc[]
 
 // NOTE: integrated into the CBO chapter
 <<<
+ifdef::cheri_standalone_spec[]
+
 === "Zicbom", "Zicbop", "Zicboz" Standard Extensions for Base Cache Management Operations
 
 Cache-related instructions and how CHERI affects them.
@@ -154,12 +158,14 @@ include::insns/prefetch.w.adoc[]
 
 [#Zcb,reftext="Zcb"]
 === "Zcb" Standard Extension For Code-Size Reduction
-
+//no effect
 Code-size reduction instructions and how they interact with CHERI.
 
 include::insns/load_16bit_Zcb.adoc[]
 
 include::insns/store_16bit_Zcb.adoc[]
+
+endif::[]
 
 <<<
 [#Zcmp_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
@@ -239,11 +245,21 @@ include::insns/zcmt_cmjt.adoc[]
 
 <<<
 
+ifdef::cheri_standalone_spec[]
 === "H" Extension for Hypervisor Support
 
-Hypervisor load and store instructions and the {cheri_base_ext_name} extensions.
+An {cheri_base_ext_name} core which supports the "H" extension must also support {rvyh_ext_name}.
 
 While HLVX.* only requires execute permission in the PTE, the authorizing CHERI capability must grant <<r_perm>>.
 
+.{rvyh_ext_name} instruction extension
+[#{rvyh_ext_name}_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyh_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
 include::insns/hypv-virt-load-cap.adoc[]
 include::insns/hypv-virt-store-cap.adoc[]
+
+endif::[]

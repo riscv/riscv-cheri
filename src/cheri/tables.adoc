@@ -15,33 +15,167 @@ These instructions are not controlled by the {CRE} bits in <<misa>>, <<menvcfg>>
 include::generated/Zabhlrsc_insns_table_body.adoc[]
 |==============================================================================
 
-[#cheri_base_ext]
-=== {cheri_base_ext_name}
+[#rvyi_ext_name, reftext="{rvyi_ext_name}"]
+=== {rvyi_ext_name}
 
-{cheri_base_ext_name} defines the set of instructions supported by a core when in {cheri_cap_mode_name}.
+An {cheri_base_ext_name} core imports all instructions from RV32I/RV64I as required.
+{rvyi_ext_name} is a mandatory extension which adds new instructions for CHERI functionality.
 
-Some instructions depend on the presence of other extensions, as listed in xref:Zcheri_purecap_instruction_extension[xrefstyle=short].
-
-.{cheri_base_ext_name} instruction extension - Pure {cheri_cap_mode_name} instructions
-[#Zcheri_purecap_instruction_extension]
-[width="100%",options=header,cols="3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4"]
+.{rvyi_ext_name} instruction extension
+[#{rvyi_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
 |==============================================================================
-include::generated/Zcheri_purecap_insns_table_body.adoc[]
+include::generated/{rvyi_ext_name}_insns_table_body.adoc[]
 |==============================================================================
 
-[#cheri_default_ext]
-=== {cheri_default_ext_name}
+[#rvyi_mod_ext_name, reftext="{rvyi_mod_ext_name}"]
+=== {rvyi_mod_ext_name}
 
-{cheri_default_ext_name} defines the set of instructions added by the {cheri_int_mode_name}, in addition to {cheri_base_ext_name}.
+An {cheri_base_ext_name} core imports all instructions from RV32I/RV64I as required.
+{rvyi_mod_ext_name} is a mandatory extension which _modifies_ existing instructions for CHERI functionality.
 
-NOTE: {cheri_default_ext_name} implies {cheri_base_ext_name}
-
-.{cheri_default_ext_name} instruction extension - {cheri_int_mode_name} instructions
-[#Zcheri_hybrid_instruction_extension]
-[width="100%",options=header,cols="3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4"]
+.{rvyi_mod_ext_name} instruction extension
+[#{rvyi_mod_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
 |==============================================================================
-include::generated/Zcheri_hybrid_insns_table_body.adoc[]
+include::generated/{rvyi_mod_ext_name}_insns_table_body.adoc[]
 |==============================================================================
+
+[#rvyc_ext_name, reftext="{rvyc_ext_name}"]
+=== {rvyc_ext_name}
+
+An {cheri_base_ext_name} core which supports Zca should also support {rvyc_ext_name}.
+{rvyc_ext_name} is incompatible with Zcf (RV32) and Zcd (RV64).
+
+.{rvyc_ext_name} instruction extension
+[#{rvyc_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyc_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+[#rvyc_mod_ext_name, reftext="{rvyc_mod_ext_name}"]
+=== {rvyc_mod_ext_name}
+
+An {cheri_base_ext_name} core which supports Zca must also support {rvyc_mod_ext_name} which _modifies_ the behavior of some instructions.
+
+.{rvyc_mod_ext_name} instruction extension
+[#{rvyc_mod_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyc_mod_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+[#rvyalrsc_ext_name, reftext="{rvyalrsc_ext_name}"]
+=== {rvyalrsc_ext_name}
+
+An {cheri_base_ext_name} core which supports Zalrsc must also support {rvyalrsc_ext_name}.
+
+.{rvyalrsc_ext_name} instruction extension
+[#{rvyalrsc_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyalrsc_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+[#rvyaamo_ext_name, reftext="{rvyaamo_ext_name}"]
+=== {rvyaamo_ext_name}
+
+An {cheri_base_ext_name} core which supports Zaamo must also support {rvyaamo_ext_name}.
+
+.{rvyaamo_ext_name} instruction extension
+[#{rvyaamo_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyaamo_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+[#rvyh_ext_name, reftext="{rvyh_ext_name}"]
+=== {rvyh_ext_name}
+
+An {cheri_base_ext_name} core which supports the "H" extension must also support {rvyh_ext_name}.
+
+.{rvyh_ext_name} instruction extension
+[#{rvyh_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyh_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+[#rvyba_ext_name, reftext="{rvyba_ext_name}"]
+=== {rvyba_ext_name}
+
+An {cheri_base_ext_name} core which supports Zba must also support {rvyba_ext_name}.
+
+.{rvyba_ext_name} instruction extension
+[#{rvyba_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyba_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+[#rvycbom_ext_name, reftext="{rvycbom_ext_name}"]
+=== {rvycbom_ext_name}
+
+Zicbom for an {cheri_base_ext_name} core is replaced by {rvycbom_ext_name}.
+
+.{rvycbom_ext_name} instruction extension
+[#{rvycbom_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvycbom_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+[#rvycboz_ext_name, reftext="{rvycboz_ext_name}"]
+=== {rvycboz_ext_name}
+
+Zicboz for an {cheri_base_ext_name} core is replaced by {rvycboz_ext_name}.
+
+.{rvycboz_ext_name} instruction extension
+[#{rvycboz_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvycbom_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+[#rvycbop_ext_name, reftext="{rvycbop_ext_name}"]
+=== {rvycbop_ext_name}
+
+Zicbop for an {cheri_base_ext_name} core is replaced by {rvycbop_ext_name}.
+
+.{rvycbop_ext_name} instruction extension
+[#{rvycbop_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvycbop_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+[#rvyi_default_ext_name, reftext="{rvyi_default_ext_name}"]
+=== {rvyi_default_ext_name}
+
+An {cheri_base_ext_name} core which supports {rvyi_default_ext_name} adds the instructions in <<{rvyi_default_ext_name}_summary_table>>.
+
+.{rvyi_default_ext_name} instruction extension
+[#{rvyi_default_ext_name}_summary_table]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyi_default_ext_name}_insns_table_body.adoc[]
+|==============================================================================
+
+
+//[#cheri_default_ext]
+//=== {cheri_default_ext_name}
+//
+//{cheri_default_ext_name} defines the set of instructions added by the {cheri_int_mode_name}, in addition to {cheri_base_ext_name}.
+//
+//NOTE: {cheri_default_ext_name} implies {cheri_base_ext_name}
+//
+//.{cheri_default_ext_name} instruction extension - {cheri_int_mode_name} instructions
+//[#Zcheri_hybrid_instruction_extension]
+//[width="100%",options=header,cols="3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4"]
+//|==============================================================================
+//include::generated/Zcheri_hybrid_insns_table_body.adoc[]
+//|==============================================================================
 
 [appendix]
 [#clen_csr_summary]
@@ -114,46 +248,46 @@ include::generated/csr_permission_table_body.adoc[]
 [#instruction-modes]
 == Instructions and CHERI Execution Mode
 
-xref:cap_mode_insns[xrefstyle=short], xref:legacy_mode_insns[xrefstyle=short]
-and xref:both_mode_insns[xrefstyle=short] summarize on which
-<<cheri_execution_mode>> each instruction may be
-executed in.
+//xref:cap_mode_insns[xrefstyle=short], xref:legacy_mode_insns[xrefstyle=short]
+//and xref:both_mode_insns[xrefstyle=short] summarize on which
+//<<cheri_execution_mode>> each instruction may be
+//executed in.
 
-.Instructions valid for execution in {cheri_cap_mode_name} only
-[#cap_mode_insns]
-[width="100%",options=header,cols="17,15,17,51"]
-|==============================================================================
-include::generated/cap_mode_insns_table_body.adoc[]
-|==============================================================================
-
-.Instructions valid for execution in {cheri_int_mode_name} only
-[#legacy_mode_insns]
-[width="100%",options=header,cols="17,15,17,51"]
-|==============================================================================
-include::generated/legacy_mode_insns_table_body.adoc[]
-|==============================================================================
-
-.Instructions valid for execution in both {cheri_int_mode_name} and {cheri_cap_mode_name}
-[#both_mode_insns]
-[width="100%",options=header,cols="17,15,17,51"]
-|==============================================================================
-include::generated/both_mode_insns_table_body.adoc[]
-|==============================================================================
-
-.Mnemonics with the same encoding but mapped to different instructions in {cheri_int_mode_name} and {cheri_cap_mode_name}
-[#legacy_mnemonics]
-[width="100%",options=header,cols="20,40,40"]
-|==============================================================================
-include::generated/legacy_mnemonic_insns_table_body.adoc[]
-|==============================================================================
-
-.Instruction encodings which vary depending on the current XLEN
-[#xlen_dependent_encodings]
-[width="100%",options=header,cols="1,3"]
-|==============================================================================
-include::generated/xlen_dependent_encoding_insns_table_body.adoc[]
-|==============================================================================
-
-NOTE: <<MODESW_CAP>>, <<MODESW_INT>> and <<SCMODE>> only exist in {cheri_cap_mode_name} if
-{cheri_int_mode_name} is _also_ present. A hart does not support the <<m_bit>>
-if it does not implement the {cheri_default_ext_name} extension.
+//.Instructions valid for execution in {cheri_cap_mode_name} only
+//[#cap_mode_insns]
+//[width="100%",options=header,cols="17,15,17,51"]
+//|==============================================================================
+//include::generated/cap_mode_insns_table_body.adoc[]
+//|==============================================================================
+//
+//.Instructions valid for execution in {cheri_int_mode_name} only
+//[#legacy_mode_insns]
+//[width="100%",options=header,cols="17,15,17,51"]
+//|==============================================================================
+//include::generated/legacy_mode_insns_table_body.adoc[]
+//|==============================================================================
+//
+//.Instructions valid for execution in both {cheri_int_mode_name} and {cheri_cap_mode_name}
+//[#both_mode_insns]
+//[width="100%",options=header,cols="17,15,17,51"]
+//|==============================================================================
+//include::generated/both_mode_insns_table_body.adoc[]
+//|==============================================================================
+//
+//.Mnemonics with the same encoding but mapped to different instructions in {cheri_int_mode_name} and {cheri_cap_mode_name}
+//[#legacy_mnemonics]
+//[width="100%",options=header,cols="20,40,40"]
+//|==============================================================================
+//include::generated/legacy_mnemonic_insns_table_body.adoc[]
+//|==============================================================================
+//
+//.Instruction encodings which vary depending on the current XLEN
+//[#xlen_dependent_encodings]
+//[width="100%",options=header,cols="1,3"]
+//|==============================================================================
+//include::generated/xlen_dependent_encoding_insns_table_body.adoc[]
+//|==============================================================================
+//
+//NOTE: <<MODESW_CAP>>, <<MODESW_INT>> and <<SCMODE>> only exist in {cheri_cap_mode_name} if
+//{cheri_int_mode_name} is _also_ present. A hart does not support the <<m_bit>>
+//if it does not implement the {cheri_default_ext_name} extension.

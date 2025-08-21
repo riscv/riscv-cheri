@@ -73,8 +73,8 @@ class Zabhlrsc_insns(table):
     def check(self,row):
         return row[self.header.index("Zabhlrsc")] == "✔"
 
-class Zish4add_insns(table):
-    cols = ["Mnemonic", "Zish4add", "Function"]
+class rvyi_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyi_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -95,10 +95,10 @@ class Zish4add_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Zish4add")] == "✔"
+        return row[self.header.index("{rvyi_ext_name}")] == "✔"
 
-class Zcheri_hybrid_insns(table):
-    cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
+class rvyi_mod_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyi_mod_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -119,40 +119,10 @@ class Zcheri_hybrid_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        # Don't print instructions already listed by {cheri_base_ext_name}
-        return row[self.header.index("{cheri_default_ext_name}")] == "✔" and row[self.header.index("{cheri_base_ext_name}")] != "✔"
+        return row[self.header.index("{rvyi_mod_ext_name}")] == "✔"
 
-class Zcheri_purecap_insns(table):
-    cols = ["Mnemonic", "RV32", "RV64", "A", "Zabhlrsc", "Zicbo[mpz]", "C or Zca", "Zba", "Zcb", "Zcmp", "Zcmt", "Zfh", "F", "D", "V", "Function"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        self.function_idx = self.header.index("Function")
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            out_str = ""
-            for i in self.indices:
-                cell_value = row[i]
-                if i == 0:
-                    cell_value = insn_xref(cell_value)
-                elif i == self.function_idx:
-                    # Drop references to DDC authorization in the purecap table.
-                    cell_value = cell_value.replace(" via int pointer", " via capability register")
-                    cell_value = cell_value.replace(", authorize with DDC", "")
-                out_str += '|' + cell_value
-            self.file.write(out_str + '\n')
-
-    def check(self,row):
-        return row[self.header.index("{cheri_base_ext_name}")] == "✔"
-
-class cap_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
+class rvyc_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyc_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -173,10 +143,10 @@ class cap_mode_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Valid Modes")] == "{cheri_cap_mode_name}"
+        return row[self.header.index("{rvyc_ext_name}")] == "✔"
 
-class legacy_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
+class rvyc_mod_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyc_mod_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -197,10 +167,10 @@ class legacy_mode_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Valid Modes")] == "{cheri_int_mode_name}"
+        return row[self.header.index("{rvyc_mod_ext_name}")] == "✔"
 
-class both_mode_insns(table):
-    cols = ["Mnemonic", "{cheri_default_ext_name}", "{cheri_base_ext_name}", "Function"]
+class rvyba_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyba_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -221,10 +191,10 @@ class both_mode_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Valid Modes")] == "Both"
+        return row[self.header.index("{rvyba_ext_name}")] == "✔"
 
-class xlen_dependent_encoding_insns(table):
-    cols = ["Mnemonic", "Function"]
+class rvya_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvya_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
     indices = []
 
     def __init__(self, filename, header):
@@ -245,7 +215,175 @@ class xlen_dependent_encoding_insns(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("XLEN dependent encoding")] == "✔"
+        return row[self.header.index("{rvya_ext_name}")] == "✔"
+
+class rvyalrsc_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyalrsc_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("{rvyalrsc_ext_name}")] == "✔"
+
+class rvyaamo_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyaamo_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("{rvyaamo_ext_name}")] == "✔"
+
+class rvyh_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyh_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("{rvyh_ext_name}")] == "✔"
+
+class rvycbom_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvycbom_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("{rvycbom_ext_name}")] == "✔"
+
+class rvycboz_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvycboz_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("{rvycboz_ext_name}")] == "✔"
+
+class rvycbop_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvycbop_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("{rvycbop_ext_name}")] == "✔"
+
+class hybrid_ext_name_insns(table):
+    cols = ["Mnemonic", "{rvyi_default_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("{rvyi_default_ext_name}")] == "✔"
 
 class illegal_insns(table):
     cols = ["Mnemonic", "illegal insn if (1)", "OR illegal insn if (2)", "OR illegal insn if (3)"]
@@ -270,27 +408,6 @@ class illegal_insns(table):
 
     def check(self,row):
         return row[self.header.index("illegal insn if (1)")] != ""
-
-class legacy_mnemonic_insns(table):
-    cols = ["Mnemonic", "{cheri_int_mode_name} mnemonic RV32", "{cheri_int_mode_name} mnemonic RV64"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                outStr += '|' + insn_xref(row[i])
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("{cheri_int_mode_name} mnemonic RV32")] != "" and row[self.header.index("{cheri_int_mode_name} mnemonic RV64")] != ""
 
 class csr_aliases(table):
     cols = ["YLEN CSR", "Alias", "Prerequisites"]
@@ -666,15 +783,19 @@ if __name__ == "__main__":
 
         #same for rv32/rv64
         tables.append(Zabhlrsc_insns               (os.path.join(args.output_dir, "Zabhlrsc_insns_table_body.adoc"), header))
-        tables.append(Zish4add_insns               (os.path.join(args.output_dir, "Zish4add_insns_table_body.adoc"), header))
-        tables.append(Zcheri_hybrid_insns          (os.path.join(args.output_dir, "Zcheri_hybrid_insns_table_body.adoc"), header))
-        tables.append(Zcheri_purecap_insns         (os.path.join(args.output_dir, "Zcheri_purecap_insns_table_body.adoc"), header))
-        tables.append(xlen_dependent_encoding_insns(os.path.join(args.output_dir, "xlen_dependent_encoding_insns_table_body.adoc"), header))
-        tables.append(legacy_mnemonic_insns        (os.path.join(args.output_dir, "legacy_mnemonic_insns_table_body.adoc"), header))
+        tables.append(rvyalrsc_ext_name_insns          (os.path.join(args.output_dir, "RVYALRSC_insns_table_body.adoc"), header))
+        tables.append(rvyaamo_ext_name_insns          (os.path.join(args.output_dir, "RVYAAMO_insns_table_body.adoc"), header))
+        tables.append(rvyh_ext_name_insns          (os.path.join(args.output_dir, "RVYH_insns_table_body.adoc"), header))
+        tables.append(rvyi_ext_name_insns          (os.path.join(args.output_dir, "RVYI_insns_table_body.adoc"), header))
+        tables.append(rvyi_mod_ext_name_insns      (os.path.join(args.output_dir, "RVYIM_insns_table_body.adoc"), header))
+        tables.append(rvyc_ext_name_insns          (os.path.join(args.output_dir, "RVYC_insns_table_body.adoc"), header))
+        tables.append(rvyc_mod_ext_name_insns      (os.path.join(args.output_dir, "RVYCM_insns_table_body.adoc"), header))
+        tables.append(rvyba_ext_name_insns         (os.path.join(args.output_dir, "RVYBA_insns_table_body.adoc"), header))
+        tables.append(rvycbom_ext_name_insns       (os.path.join(args.output_dir, "RVYCBOM_insns_table_body.adoc"), header))
+        tables.append(rvycboz_ext_name_insns       (os.path.join(args.output_dir, "RVYCBOZ_insns_table_body.adoc"), header))
+        tables.append(rvycbop_ext_name_insns       (os.path.join(args.output_dir, "RVYCBOP_insns_table_body.adoc"), header))
+        tables.append(hybrid_ext_name_insns        (os.path.join(args.output_dir, "ZyhybridI_insns_table_body.adoc"), header))
         tables.append(illegal_insns                (os.path.join(args.output_dir, "illegal_insns_table_body.adoc"), header))
-        tables.append(cap_mode_insns               (os.path.join(args.output_dir, "cap_mode_insns_table_body.adoc"), header))
-        tables.append(legacy_mode_insns            (os.path.join(args.output_dir, "legacy_mode_insns_table_body.adoc"), header))
-        tables.append(both_mode_insns              (os.path.join(args.output_dir, "both_mode_insns_table_body.adoc"), header))
 
         for row in reader:
             for t in tables:
