@@ -51,7 +51,7 @@ Software must ensure this is true when writing to <<mtvec_y>>, and the hardware 
 NOTE: Modifying the address of any capability outside of the <<section_cap_representable_check>> without clearing the {ctag} causes a security hole as the interpretation of the bounds changes.
 Therefore requiring that all possible observable addresses are representable but not necessary in bounds is the minimum security requirement.
 
-<<mtvec_y>> is always updated using <<SCADDR>> semantics and so writing a sealed capability will cause the {ctag} to be set to zero.
+<<mtvec_y>> is always updated using semantics of the <<SCADDR>> instruction and so writing a sealed capability will cause the {ctag} to be set to zero.
 
 NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other executing from other CSRs such as <<mepc_y>>.
 

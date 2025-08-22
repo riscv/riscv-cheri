@@ -511,7 +511,7 @@ When accessing CSRs these rules are followed:
 ... any <<section_cap_integrity,integrity>> check fails
 . Accesses to YLEN-bit CSRs and extended CSRs, using instructions other than CSRRW will:
 .. Read YLEN bits
-.. Write an XLEN-bit value to the address field, and use <<SCADDR>> semantics to determine the final written value
+.. Write an XLEN-bit value to the address field, and use semantics of the <<SCADDR>> instruction to determine the final written value
 
 NOTE: Any YLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
 
@@ -742,7 +742,7 @@ include::insns/store_32bit_cap.adoc[]
 * Whenever an input operand is used as an address (e.g., the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
 * Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead of just XLEN bits.
   For all other results the high bits of the register are zeroed.
-* Whenever a capability with a new address is returned, the result is _always_ created using <<SCADDR>> semantics.
+* Whenever a capability with a new address is returned, the result is _always_ created using semantics of the <<SCADDR>> instruction.
 
 `ADD` and `ADDI` are not affected by the rule above.
 Even though they _are_ used for handling addresses, they also have other uses.
@@ -815,7 +815,7 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 
 ==== Changes to PC
 
-* Whenever the address field of the <<pcc>> is modified, it is _always_ updated using <<SCADDR>> semantics.
+* Whenever the address field of the <<pcc>> is modified, it is _always_ updated using semantics of the <<SCADDR>> instruction.
   This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
   In this case, e.g., `new_{pcc} = {SCADDR}(old_{pcc}, offset)`
 * <<JALR_CHERI>> copies `{cs1}` into the <<pcc>>, and increments the address field with the offset.

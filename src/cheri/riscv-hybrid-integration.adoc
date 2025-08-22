@@ -1,21 +1,22 @@
 [#section_cheri_hybrid_ext]
 == "{cheri_default_ext_name}" Extension for CHERI {cheri_int_mode_name}
 
-#ARC-QUESTION: Should the name be something like Zyhybrid/Zycompat/Zyi?#
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the unpriv spec somewhere after the Zicsr chapter (since it depends on Zicsr).
 endif::[]
 
 {cheri_default_ext_name} is an optional extension to the {cheri_base_ext_name} base architectures.
-{cheri_default_ext_name} adds the ability to dynamically change the base ISA between using capability pointers for all memory references ({cheri_base_ext_name}) and using integer pointers (RV32I/RV64I).
+{cheri_default_ext_name} adds the ability to dynamically change the base ISA between using capability pointers for all memory references ({cheri_base_ext_name}) and using standard RISC-V integer pointers (RV32I/RV64I).
 The ability to choose between these two behaviors (referred to as _CHERI Execution Modes_) ensures CHERI can be fully compatible with the base RISC-V integers ISAs while saving instruction encoding space.
 
 Additionally, {cheri_default_ext_name} adds a new unprivileged CSR: the default data capability, <<ddc>>, that is used to authorize all data memory accesses when treating pointers as integers.
 
 NOTE: Together with <<pcc>>, <<ddc>> allows confining code runs to a compartment (also called a _sandbox_), where all data memory and instruction memory accesses are bounded to fixed memory regions.
 
-
 The remainder of this section describes these features in detail as well as their integration with the primary base integer variants of the base RISC-V ISA.
+
+The additional instructions added by implementing {cheri_default_ext_name} are shown in <<{rvyi_default_ext_name}_summary_table, {rvyi_default_ext_name}>>.
+.
 
 IMPORTANT: Implementations that support both {cheri_base_ext_name} and {cheri_default_ext_name} have full binary compatibility with all existing ratified RISC-V base architectures and extensions.
 
@@ -86,9 +87,9 @@ The <<m_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cher
 [#tab_cheri_mode_sw_summary,%autowidth,options=header,align="center",cols="2,2,4"]
 |=======================
 |Mnemonic        | From mode          | Description
-| <<JALR_CHERI>> |{cheri_cap_mode_name}| Install `{cs1}` in the <<pcc>> and so update `{pcc}.M`
-| <<MODESW_INT>> |{cheri_cap_mode_name}| Switch to {cheri_int_mode_name}.
-| <<MODESW_CAP>> |{cheri_int_mode_name}| Switch to {cheri_cap_mode_name}.
+| <<JALR_CHERI>> |{cheri_cap_mode_name}| {JALR_CHERI_DESC}
+| <<MODESW_INT>> |{cheri_cap_mode_name}| {MODESW_INT_DESC}
+| <<MODESW_CAP>> |{cheri_int_mode_name}| {MODESW_CAP_DESC}
 |=======================
 
 NOTE: The mode can also be updated by setting the <<m_bit>> of a target capability using <<SCMODE>> followed by a <<JALR_CHERI>>.
@@ -105,8 +106,6 @@ It will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} fo
 auipc {creg}1, 0
 {gctag_lc} x1, {creg}1
 ----
-
-#ARC question: should misa.Y be 1 when in {cheri_cap_mode_name} and 0 when in {cheri_int_mode_name}?#
 
 NOTE: Implementations that support {cheri_default_ext_name} will typically boot into {cheri_int_mode_name} so that non-CHERI aware software can run unmodified.
  CHERI aware software can observe and switch the mode as required.
@@ -142,45 +141,20 @@ include::img/ddcreg.edn[]
 
 === {cheri_default_ext_name} Memory Accesses
 
-In {cheri_cap_mode_name} all memory accesses behave as defined by <<rv32y,{cheri_base_ext_name}>> and are authorised by the base register (`{cs1}`), from which the bounds and permissions are taken. For example:
-
-* `lw t0, 16({abi_creg}a0)`
-
-In {cheri_int_mode_name} the `lw` has the same behavior and assembly syntax as the RV32I/RV64I:
-
-* `lw t0, 16(a0)`
-
-All memory accesses must still be checked, but now they are authorized by the capability in <<ddc>> instead.
+In {cheri_cap_mode_name} all memory accesses behave as defined by <<rv32y,{cheri_base_ext_name}>> and are authorized by the base capability register (`{cs1}`), from which the bounds and permissions are taken.
+In {cheri_int_mode_name} all memory accesses must still be checked, but now they are authorized by the capability in <<ddc>> instead.
 
 === {cheri_default_ext_name} Branches and Jumps
 
-The rules from xref:section_existing_riscv_insns[xrefstyle=short] are applied, so that all branch and jump targets are checked against <<pcc>>.
-
-NOTE: In {cheri_int_mode_name} JALR does _not_ copy the target capability register `{cs1}` into <<pcc>>, instead it updates the address of <<pcc>> with the target value.
-The only difference to RV32I/RV64I without {cheri_default_ext_name}, is that the target address is checked against the bounds of <<pcc>>.
+In {cheri_int_mode_name} <<JALR_CHERI>> does _not_ copy the target capability register `{cs1}` into <<pcc>>, instead it updates the address of the <<pcc>> with the target value, using the semantics of the <<SCADDR>> instruction.
+The only difference to RV32I/RV64I without {cheri_default_ext_name}, is that the target address is checked against the bounds of the <<pcc>>.
 
 [#section_hybrid_ext_instructions]
 === {cheri_default_ext_name} Instructions
 
-{cheri_default_ext_name} introduces new instructions to switch CHERI execution modes.
-Additionally, {cheri_default_ext_name} makes all instructions defined by {cheri_default_ext_name} available.
+{cheri_default_ext_name} introduces new instructions to switch CHERI execution modes, and to query the current CHERI execution mode from a capability.
 
-.Instructions summary for {cheri_default_ext_name}
-[#tab_hybrid_summary,%autowidth,options=header,align="center",cols="1,4"]
-|=======================
-|Mnemonic     |Description
-|<<SCMODE>>    |Set capability CHERI execution mode (<<m_bit>>)
-// The output is written to an unprivileged general purpose register, not <<pcc>>.
-|<<GCMODE>>    |Get capability CHERI execution mode (<<m_bit>>)
-|<<MODESW_CAP>>|Set current CHERI execution mode to {cheri_cap_mode_name}
-|<<MODESW_INT>>|Set current CHERI execution mode to {cheri_int_mode_name}
-|=======================
-
-include::insns/scmode_32bit.adoc[]
-
-include::insns/gcmode_32bit.adoc[]
-
-include::insns/modesw_32bit.adoc[]
+<<{rvyi_default_ext_name}_summary_table, {rvyi_default_ext_name}>>.
 
 <<<
 
@@ -203,10 +177,10 @@ In {cheri_int_mode_name}, the capability authorizing the memory access is <<ddc>
 
 When in {cheri_int_mode_name}, there is a special rule for updating extended CSRs (e.g., <<jvt_y>>)
 
-* Writing an extended CSR writes the address field (XLEN bits) only, and the full CSR is updated using <<SCADDR>> semantics.
+* Writing an extended CSR writes the address field (XLEN bits) only, and the full CSR is updated using semantics of the <<SCADDR>> instruction.
 * Reading an extended CSR reads the address field (XLEN bits) only
 
-Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN bits for compatibility, and so use <<SCADDR>> semantics to determine the final written value.
+Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN bits for compatibility, and so use semantics of the <<SCADDR>> instruction to determine the final written value.
 
 .YLEN-bit CSR and Extended CSR access summary for {cheri_default_ext_name}
 [#clen_access_summary_default,%autowidth,options=header,align="center"]
