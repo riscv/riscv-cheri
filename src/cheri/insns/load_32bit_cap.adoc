@@ -7,7 +7,7 @@ Synopsis::
 {LOAD_CAP_DESC}
 
 Mnemonic::
-`{load_cap_name_lc} cd, offset(cs1)`
+`{load_cap_name_lc} {cd}, offset({cs1})`
 
 Encoding::
 include::wavedrom/loadcap.adoc[]
@@ -16,15 +16,15 @@ include::load_store_creg0.adoc[]
 
 
 Description::
-Calculate the effective address of the memory access by adding `cs1.address` to the sign-extended 12-bit offset.
+Calculate the effective address of the memory access by adding `{cs1}.address` to the sign-extended 12-bit offset.
 +
-Authorize the memory access with the capability in `cs1`.
+Authorize the memory access with the capability in `{cs1}`.
 +
 Load a naturally aligned YLEN-bit data value from memory.
 +
 If the PMA is _CHERI {ctag_title}_ then load the associated {ctag}, otherwise set the {ctag} to zero.
 +
-Use the YLEN-bit data and the {ctag} to determine the value of `cd` as specified below.
+Use the YLEN-bit data and the {ctag} to determine the value of `{cd}` as specified below.
 +
 include::malformed_no_check.adoc[]
 //+ remove as this is in the base ISA chapter

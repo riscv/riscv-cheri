@@ -6,7 +6,7 @@
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* this instruction was called CTESTSUBSET.
 
-NOTE: *CHERI v9 Note:* this instruction does not use ddc if cs1==0
+NOTE: *CHERI v9 Note:* this instruction does not use ddc if {cs1}==0
 
 
 endif::[]
@@ -17,16 +17,16 @@ Synopsis::
 Set Capability Subset
 
 Mnemonic::
-`{scss_lc} rd, cs1, cs2`
+`{scss_lc} rd, {cs1}, {cs2}`
 
 Encoding::
 include::wavedrom/scss.adoc[]
 
 Description::
 `rd` is set to 1 if:
-. the {ctag} of capabilities `cs1` and `cs2` are equal, and
-. the bounds and permissions of `cs2` are a subset of those of `cs1`, and
-. neither `cs1` nor `cs2` fail any <<section_cap_integrity,integrity>> checks
+. the {ctag} of capabilities `{cs1}` and `{cs2}` are equal, and
+. the bounds and permissions of `{cs2}` are a subset of those of `{cs1}`, and
+. neither `{cs1}` nor `{cs2}` fail any <<section_cap_integrity,integrity>> checks
 . any extension-specific constraints capability subset relationships hold.
 
 Otherwise set `rd` to 0.

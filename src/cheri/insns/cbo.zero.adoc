@@ -7,7 +7,7 @@ Synopsis::
 Store zeros to the full set of bytes corresponding to a cache block
 
 Mnemonic::
-`cbo.zero 0(cs1)`
+`cbo.zero 0({cs1})`
 
 //{cheri_int_mode_name} Mnemonic::
 //`cbo.zero 0(rs1)`
@@ -19,7 +19,7 @@ Encoding::
   {bits: 7,  name: 'opcode',    attr: ['7','MISC-MEM=0001111'],  type: 8},
   {bits: 5,  name: 'funct5',    attr: ['5','CBO=00000'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','CBO=010'],  type: 8},
-  {bits: 5,  name: 'cs1≠0',     attr: ['5','base'],     type: 4},
+  {bits: 5,  name: '{cs1}≠0',     attr: ['5','base'],     type: 4},
   {bits: 12, name: 'funct12',   attr: ['12','CBO.ZERO=00.0100'],   type: 3},
 ]}
 ....
@@ -27,10 +27,10 @@ Encoding::
 Description::
 A `cbo.zero` instruction performs stores of zeros to the full set of bytes
 corresponding to the cache block whose effective address is the base address
-specified in `cs1`. An implementation may or may not update the entire set of
+specified in `{cs1}`. An implementation may or may not update the entire set of
 bytes atomically although each individual write must atomically clear the {ctag}
 bit of the corresponding aligned YLEN-bit location. The authorizing capability
-for this instruction is `cs1`.
+for this instruction is `{cs1}`.
 
 include::int_mode_remapping_ddc.adoc[]
 

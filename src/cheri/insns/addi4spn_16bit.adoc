@@ -7,10 +7,10 @@ Synopsis::
 {C_ADDI4SPN_CAP_DESC}
 
 Mnemonic::
-`{C_ADDI4SPN_CAP_LC} cd', nzuimm`
+`{C_ADDI4SPN_CAP_LC} {cd}', nzuimm`
 
 Expansion::
-`{caddi_lc} cd', {abi_creg}sp, nzuimm`
+`{caddi_lc} {cd}', {abi_creg}sp, nzuimm`
 
 Encoding::
 include::wavedrom/c-ciw.adoc[]
@@ -19,13 +19,13 @@ include::cheri_mode_dependent.adoc[]
 
 Description::
 
-Copy `{abi_creg}sp` to `cd'`. Add a zero-extended non-zero immediate, scaled by 4, to `cd'.address`.
+Copy `{abi_creg}sp` to `{cd}'`. Add a zero-extended non-zero immediate, scaled by 4, to `{cd}'.address`.
 +
-Set `cd'.tag=0` if `{abi_creg}sp` is sealed.
+Set `{cd}'.tag=0` if `{abi_creg}sp` is sealed.
 +
-Set `cd'.tag=0` if the resulting capability cannot be <<section_cap_representable_check,represented exactly>>.
+Set `{cd}'.tag=0` if the resulting capability cannot be <<section_cap_representable_check,represented exactly>>.
 +
-Set `cd'.tag=0` if `{abi_creg}sp` 's bounds are <<section_cap_malformed,malformed>>, or if any of the reserved fields are set.
+Set `{cd}'.tag=0` if `{abi_creg}sp` 's bounds are <<section_cap_malformed,malformed>>, or if any of the reserved fields are set.
 
 {cheri_int_mode_name} Description::
 

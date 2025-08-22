@@ -7,7 +7,7 @@ Synopsis::
 {JAL_CHERI_DESC}
 
 Mnemonic::
-`jalr cd, cs1, offset`
+`jalr {cd}, {cs1}, offset`
 
 ifdef::cheri_standalone_spec[]
 {cheri_int_mode_name} Mnemonic::
@@ -20,16 +20,16 @@ include::wavedrom/ct-unconditional-2.adoc[]
 include::base_isa_extension.adoc[]
 
 Description::
-Indirect jump to the target capability in `cs1` with an address offset.
+Indirect jump to the target capability in `{cs1}` with an address offset.
 +
-Copy `cs1` to the target <<pcc>>
+Copy `{cs1}` to the target <<pcc>>
 +
 . If the target <<pcc>> is a sentry, and the `offset` is zero, then unseal the target <<pcc>>.
 Otherwise, increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`.
 . Set bit zero of the target address to zero and update <<pcc>> with the new target address using <<SCADDR>> semantics
 . Jump to the target <<pcc>>
 +
-The <<pcc>> of the next instruction is calculated using <<SCADDR>> semantics, and written to `cd` as a sentry.
+The <<pcc>> of the next instruction is calculated using <<SCADDR>> semantics, and written to `{cd}` as a sentry.
 +
 NOTE: Because of the unsealing and <<SCADDR>> behavior, it is not possible for the target <<pcc>> to be sealed.
 +
