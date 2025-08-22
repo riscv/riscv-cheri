@@ -128,7 +128,7 @@ SAIL_ASCIIDOC_JSON_URL_FILE = riscv_RV64.json.url
 CHERI_GEN_DIR = $(SRC_DIR)/cheri/generated
 SAIL_ASCIIDOC_JSON = $(CHERI_GEN_DIR)/riscv_RV64.json
 
-.PHONY: all build clean build-pdf build-html build-epub docker-pull-latest generate
+.PHONY: all build clean build-pdf build-html build-epub docker-pull-latest generate generate-cheri-tables
 
 all: build
 
@@ -140,6 +140,15 @@ $(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE) | $(CHERI_GEN_DIR)
 	@curl --location '$(shell cat $<)' --output $@
 
 generate: $(SAIL_ASCIIDOC_JSON)
+
+# Rule to generate all the src/generated/*.adoc from the CSVs using a Python script.
+CHERI_CSV_DIR = $(SRC_DIR)/cheri/csv
+GEN_SCRIPT    = $(SRC_DIR)/cheri/scripts/generate_tables.py
+# There is no need to declare all generated inputs as dependencies of the pdf
+# targets since the outputs only change if either the CSV or python changes.
+generate-cheri-tables: $(CHERI_CSV_DIR)/CHERI_CSR.csv $(CHERI_CSV_DIR)/CHERI_ISA.csv $(GEN_SCRIPT) | $(CHERI_GEN_DIR)
+	@echo "  GEN $@"
+	@$(GEN_SCRIPT) -o $(CHERI_GEN_DIR) --csr $(CHERI_CSV_DIR)/CHERI_CSR.csv --isa $(CHERI_CSV_DIR)/CHERI_ISA.csv
 
 # Check if the docs-resources/global-config.adoc file exists. If not, the user forgot to check out submodules.
 ifeq ("$(wildcard docs-resources/global-config.adoc)","")
@@ -154,7 +163,7 @@ build-epub: $(DOCS_EPUB)
 
 build: build-pdf build-html build-epub
 
-ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON)
+ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON) generate-cheri-tables
 
 $(BUILD_DIR)/%.pdf: $(SRC_DIR)/%.adoc $(ALL_SRCS)
 	$(WORKDIR_SETUP)
