@@ -511,7 +511,7 @@ When accessing CSRs these rules are followed:
 ... any <<section_cap_integrity,integrity>> check fails
 . Accesses to YLEN-bit CSRs and extended CSRs, using instructions other than CSRRW will:
 .. Read YLEN bits
-.. Write an XLEN-bit value to the address field, and use <<SCADDR>> semantics to determine the final written value
+.. Write an XLEN-bit value to the address field, and use semantics of the <<SCADDR>> instruction to determine the final written value
 
 NOTE: Any YLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
 
@@ -710,8 +710,6 @@ They cannot be emulated.
 
 NOTE: An access fault is raised instead of a misaligned exception since these instructions cannot be emulated since there is one hidden {ctag} per YLEN-aligned memory region.
 
-CAUTION: #This is a change in behavior relative to v0.9.5 (previously a misaligned exception was taken)#
-
 All memory accesses, of any type, require permission from the authorizing capability in `{cs1}`.
 
 * All loads require <<r_perm>>, otherwise they raise an exception
@@ -744,7 +742,7 @@ include::insns/store_32bit_cap.adoc[]
 * Whenever an input operand is used as an address (e.g., the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
 * Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead of just XLEN bits.
   For all other results the high bits of the register are zeroed.
-* Whenever a capability with a new address is returned, the result is _always_ created using <<SCADDR>> semantics.
+* Whenever a capability with a new address is returned, the result is _always_ created using semantics of the <<SCADDR>> instruction.
 
 `ADD` and `ADDI` are not affected by the rule above.
 Even though they _are_ used for handling addresses, they also have other uses.
@@ -771,7 +769,7 @@ Any change to instruction semantics (or remapping of opcodes) for {cheri_base_ex
 
 All load and store instructions behave as described in <<ldst>> with one fundamental difference:
 
-* Any memory instruction that has `rs1` as a base address register reads the full capability register (`{cs1}`) instead.
+* Any memory instruction that has `rs1` as a base address register reads the full capability register instead.
   The base address is unchanged, i.e., using the value from `rs1`.
   The metadata and {ctag} are used to <<sec_cap_checks,authorize the access>>.
 
@@ -797,7 +795,7 @@ All store instructions, except for the {cheri_base_ext_name} <<STORE_CAP>>, alwa
 
 Therefore, misaligned stores may clear up to two associated {ctag} bits.
 
-The changed interpretation of the base register also applies to all loads, stores and other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
+The changed interpretation of the base register also applies to all loads, stores and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
 
 *Under {cheri_base_ext_name} _all_ loads and stores are authorized by `{cs1}`.*
 
@@ -817,7 +815,7 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 
 ==== Changes to PC
 
-* Whenever the address field of the <<pcc>> is modified, it is _always_ updated using <<SCADDR>> semantics.
+* Whenever the address field of the <<pcc>> is modified, it is _always_ updated using semantics of the <<SCADDR>> instruction.
   This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
   In this case, e.g., `new_{pcc} = {SCADDR}(old_{pcc}, offset)`
 * <<JALR_CHERI>> copies `{cs1}` into the <<pcc>>, and increments the address field with the offset.
@@ -832,10 +830,14 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 |<<AUIPC_CHERI>>            |Add immediate to <<pcc>> address, return capability.
 |<<JAL_CHERI>>              |Jump to <<pcc>>+offset, link and seal capability to {cd}.
 |<<JALR_CHERI>>             |Indirect jump, link and seal capability to {cd}.
-|<<insns-conbr-32bit_CHERI,BEQ, BNE, BLT[U], BGE[U]>>|Conditional branches
 |=======================
 
 include::insns/auipc_32bit.adoc[]
 include::insns/jal_32bit.adoc[]
 include::insns/jalr_32bit.adoc[]
-include::insns/condbr_32bit.adoc[]
+
+==== Changes to BEQ, BNE
+
+For `beq` and `bne` only, if `rs1≥rs2` then the encoding is RESERVED. These encodings are redundant and may be used by future extensions.
+
+NOTE: Future branch behavior may include branching on {ctag} values only, or YLEN-bit compares.
