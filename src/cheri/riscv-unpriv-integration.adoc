@@ -769,7 +769,7 @@ Any change to instruction semantics (or remapping of opcodes) for {cheri_base_ex
 
 All load and store instructions behave as described in <<ldst>> with one fundamental difference:
 
-* Any memory instruction that has `rs1` as a base address register reads the full capability register (`{cs1}`) instead.
+* Any memory instruction that has `rs1` as a base address register reads the full capability register instead.
   The base address is unchanged, i.e., using the value from `rs1`.
   The metadata and {ctag} are used to <<sec_cap_checks,authorize the access>>.
 
@@ -795,7 +795,7 @@ All store instructions, except for the {cheri_base_ext_name} <<STORE_CAP>>, alwa
 
 Therefore, misaligned stores may clear up to two associated {ctag} bits.
 
-The changed interpretation of the base register also applies to all loads, stores and other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
+The changed interpretation of the base register also applies to all loads, stores and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
 
 *Under {cheri_base_ext_name} _all_ loads and stores are authorized by `{cs1}`.*
 
@@ -830,10 +830,14 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 |<<AUIPC_CHERI>>            |Add immediate to <<pcc>> address, return capability.
 |<<JAL_CHERI>>              |Jump to <<pcc>>+offset, link and seal capability to {cd}.
 |<<JALR_CHERI>>             |Indirect jump, link and seal capability to {cd}.
-|<<insns-conbr-32bit_CHERI,BEQ, BNE, BLT[U], BGE[U]>>|Conditional branches
 |=======================
 
 include::insns/auipc_32bit.adoc[]
 include::insns/jal_32bit.adoc[]
 include::insns/jalr_32bit.adoc[]
-include::insns/condbr_32bit.adoc[]
+
+==== Changes to BEQ, BNE
+
+For `beq` and `bne` only, if `rs1≥rs2` then the encoding is RESERVED. These encodings are redundant and may be used by future extensions.
+
+NOTE: Future branch behavior may include branching on {ctag} values only, or YLEN-bit compares.
