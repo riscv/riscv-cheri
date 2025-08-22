@@ -28,13 +28,27 @@ Description::
 A CBO.INVAL instruction performs an invalidate operation on the cache block whose effective address is the base address specified in `{cs1}`.
 The authorizing capability for this instruction is `{cs1}`.
 
-include::int_mode_remapping_ddc.adoc[]
-
 :cbo_inval:
 include::cbo_exceptions.adoc[]
 
+
+[NOTE]
+====
+CSR state controls whether CBO.INVAL performs cache block flushes instead of invalidations for less privileged modes.
+
+Invalidating a cache block can re-expose capabilities previously stored
+to it after the most recent flush, not just secret values. As such, CBO.INVAL
+has stricter checks on its use than CBO.FLUSH, and should only be made available to,
+and used by, sufficiently-trusted software.
+
+Untrusted software should use CBO.FLUSH instead as a minimum, and a sensible implementation choice for CHERI systems is to _always_ execute CBO.INVAL as CBO.FLUSH.
+====
+
 Prerequisites::
 Zicbom, {cheri_base_ext_name}
+
+Included in::
+<<{rvycbom_ext_name}_summary_table, {rvycbom_ext_name}>>
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]
