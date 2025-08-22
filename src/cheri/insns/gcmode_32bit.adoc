@@ -7,20 +7,20 @@ Synopsis::
 {GCMODE_DESC}
 
 Mnemonic::
-`{gcmode_lc} rd, {creg_pref}s1`
+`{gcmode_lc} rd, {cs1}`
 
 Encoding::
 include::wavedrom/gcmode.adoc[]
 
 Description::
-Decode the CHERI execution mode from the capability in `{creg_pref}s1` and write the
+Decode the CHERI execution mode from the capability in `{cs1}` and write the
 result to `rd`.
 +
-Set `rd` to 0 if `{creg_pref}s1` does not grant <<x_perm>>
+Set `rd` to 0 if `{cs1}` does not grant <<x_perm>>
 +
 Set `rd` to 0 if any <<section_cap_integrity,integrity>> checks failed.
 +
-Otherwise set `rd` according to `{creg_pref}s1` 's CHERI execution mode (<<m_bit>>):
+Otherwise set `rd` according to `{cs1}` 's CHERI execution mode (<<m_bit>>):
 +
 1. Set `rd` to {CAP_MODE_VALUE} for {cheri_cap_mode_name}, or,
 +

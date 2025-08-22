@@ -76,9 +76,9 @@ TODO
 
 TODO
 
-If `{creg_pref}d.tag=1`, `{creg_pref}d` is not sealed and `{creg_pref}s1` does not grant <<el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<section_cap_level>> of `{creg_pref}d` to the level of `{creg_pref}s1` and to remove <<el_perm>>.
+If `{cd}.tag=1`, `{cd}` is not sealed and `{cs1}` does not grant <<el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<section_cap_level>> of `{cd}` to the level of `{cs1}` and to remove <<el_perm>>.
 +
-If `{creg_pref}d.tag=1`, `{creg_pref}d` is sealed and `{creg_pref}s1` does not grant <<el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<section_cap_level>> of `{creg_pref}d` to the level of `{creg_pref}s1`
+If `{cd}.tag=1`, `{cd}` is sealed and `{cs1}` does not grant <<el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<section_cap_level>> of `{cd}` to the level of `{cs1}`
 +
 NOTE: Missing <<el_perm>> also affects the level of sealed capabilities since notionally the <<section_cap_level>> of a capability is not a permission but rather a data flow label attached to the loaded value.
 
@@ -123,8 +123,8 @@ endif::[]
 [#section_ext_cheri_multiple_levels]
 === Extending {cheri_1levels_ext_name} to more than two levels
 When `<<cheri_lvlbits>> > 1`, the behavior of <<CLRPERM>> can no longer use masking to adjust the <<section_cap_level>> or <<sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
-The <<section_cap_level,CL>> field of the resulting capability is set to `min(rs2[CL], {creg_pref}s1[CL])`  (equivalent to `rs2[CL] & {creg_pref}s1[CL]` for `<<cheri_lvlbits>>=1`).
-Similarly, <<sl_perm>> is set to `min(rs2[SL], {creg_pref}s1[SL])` (equivalent to `rs2[SL] & {creg_pref}s1[SL]` for `<<cheri_lvlbits>>=1`).
+The <<section_cap_level,CL>> field of the resulting capability is set to `min(rs2[CL], {cs1}[CL])`  (equivalent to `rs2[CL] & {cs1}[CL]` for `<<cheri_lvlbits>>=1`).
+Similarly, <<sl_perm>> is set to `min(rs2[SL], {cs1}[SL])` (equivalent to `rs2[SL] & {cs1}[SL]` for `<<cheri_lvlbits>>=1`).
 
 When storing capabilities, the <<sl_perm>> checks need to perform a `<<cheri_lvlbits>>`-wide integer comparison instead of just testing a single bit.
 Considering for an example `<<cheri_lvlbits>>=2`:

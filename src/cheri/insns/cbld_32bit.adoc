@@ -4,7 +4,7 @@
 ==== {CBLD}
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* {CBLD} does not use ddc if {creg_pref}s1==0
+NOTE: *CHERI v9 Note:* {CBLD} does not use ddc if {cs1}==0
 
 NOTE: *CHERI v9 Note:* this instruction was called CBUILDCAP.
 endif::[]
@@ -15,31 +15,31 @@ Synopsis::
 {CBLD_DESC}
 
 Mnemonic::
-`{cbld_lc} {creg_pref}d, {creg_pref}s1, {creg_pref}s2`
+`{cbld_lc} {cd}, {cs1}, {cs2}`
 
 Encoding::
 include::wavedrom/cbld.adoc[]
 
 Description::
-Copy `{creg_pref}s2` to `{creg_pref}d`.
+Copy `{cs2}` to `{cd}`.
 +
-Set `{creg_pref}d.tag=1` if:
+Set `{cd}.tag=1` if:
 +
-. `{creg_pref}s1.tag` is set, and
-. `{creg_pref}s1` passes all <<section_cap_integrity,integrity>> checks, and
-. `{creg_pref}s1` is not sealed, and
-. `{creg_pref}s2` 's permissions and bounds are equal to or a subset of `{creg_pref}s1` 's, and
-. `{creg_pref}s2` passes all <<section_cap_integrity,integrity>> checks, and
+. `{cs1}.tag` is set, and
+. `{cs1}` passes all <<section_cap_integrity,integrity>> checks, and
+. `{cs1}` is not sealed, and
+. `{cs2}` 's permissions and bounds are equal to or a subset of `{cs1}` 's, and
+. `{cs2}` passes all <<section_cap_integrity,integrity>> checks, and
 . any extension-specific constraints on <<CBLD>> hold.
 +
-Otherwise, set `{creg_pref}d.tag=0`
+Otherwise, set `{cd}.tag=0`
 
 NOTE: <<CBLD>> is typically used alongside <<SCHI>> to build
 capabilities from integer values.
 
-NOTE: When `{creg_pref}s1` is `{creg}0` <<CBLD>> will copy `{creg_pref}s2` to `{creg_pref}d` and clear `{creg_pref}d.tag`.
+NOTE: When `{cs1}` is `{creg}0` <<CBLD>> will copy `{cs2}` to `{cd}` and clear `{cd}.tag`.
 However future extensions may add additional behavior to update currently reserved fields,
-and so software should not assume `{creg_pref}s1==0` to be a pseudo-instruction for tag clearing.
+and so software should not assume `{cs1}==0` to be a pseudo-instruction for tag clearing.
 
 Operation::
 +

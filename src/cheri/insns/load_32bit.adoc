@@ -18,10 +18,10 @@ Synopsis::
 Integer Load (LD, LW[U], LH[U], LB[U])
 
 {cheri_cap_mode_name} Mnemonics::
-`ld    rd, offset({creg_pref}s1)` +
-`lw[u] rd, offset({creg_pref}s1)` +
-`lh[u] rd, offset({creg_pref}s1)` +
-`lb[u] rd, offset({creg_pref}s1)`
+`ld    rd, offset({cs1})` +
+`lw[u] rd, offset({cs1})` +
+`lh[u] rd, offset({cs1})` +
+`lb[u] rd, offset({cs1})`
 
 Encoding::
 include::wavedrom/load.adoc[]
@@ -29,8 +29,8 @@ include::wavedrom/load.adoc[]
 Description::
 Load data of the indicated size (byte, halfword, word, double-word)
 from memory. The effective address of the load is obtained by adding the
-sign-extended 12-bit offset to `{creg_pref}s1.address`. The authorizing capability
-for the operation is `{creg_pref}s1`. A copy of the loaded value is written to `rd`.
+sign-extended 12-bit offset to `{cs1}.address`. The authorizing capability
+for the operation is `{cs1}`. A copy of the loaded value is written to `rd`.
 +
 include::load_store_creg0.adoc[]
 

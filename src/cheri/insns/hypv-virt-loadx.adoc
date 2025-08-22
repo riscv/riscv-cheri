@@ -12,8 +12,8 @@ Synopsis::
 Hypervisor virtual machine load from executable memory
 
 {cheri_cap_mode_name} Mnemonics::
-`hlvx.hu rd, {creg_pref}s1` +
-`hlvx.wu rd, {creg_pref}s1`
+`hlvx.hu rd, {cs1}` +
+`hlvx.wu rd, {cs1}`
 
 {cheri_int_mode_name} Mnemonics::
 `hlvx.hu rd, rs1` +
@@ -26,8 +26,8 @@ include::wavedrom/hypv-virt-loadx.adoc[]
 Performs a load with the *execute* permission taking the place of *read*
 permission during address translation and as though V=1; i.e., with the address
 translation and protection, and endianness, that apply to memory access in
-either VS-mode or VU-mode. The effective address is `{creg_pref}s1.address`. The
-authorizing capability for the operation is `{creg_pref}s1`. A copy of the loaded value
+either VS-mode or VU-mode. The effective address is `{cs1}.address`. The
+authorizing capability for the operation is `{cs1}`. A copy of the loaded value
 is written to `rd`.
 +
 include::load_store_creg0.adoc[]

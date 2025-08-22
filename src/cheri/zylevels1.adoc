@@ -108,52 +108,52 @@ Specifically, we add the following rules to <<acperm_rules>>:
 === Interaction with <<LOAD_CAP>> and <<LOAD_RES_CAP,LR{LD_ST_DOT_CAP}>>
 
 As outlined above, {cheri_levels1_ext_name} introduces two new constraints on capabilities loaded from memory,
-as part of a <<LOAD_CAP>> instruction `{load_cap_name_lc} {creg_pref}d, offset({creg_pref}s1)`
-or <<LOAD_RES_CAP>> instruction `lr{ld_st_dot_cap_lc} {creg_pref}d, offset({creg_pref}s1)`.
+as part of a <<LOAD_CAP>> instruction `{load_cap_name_lc} {cd}, offset({cs1})`
+or <<LOAD_RES_CAP>> instruction `lr{ld_st_dot_cap_lc} {cd}, offset({cs1})`.
 These may be phrased as "implicit <<CLRPERM>>-s" performed on the loaded capability thus:
 
-* If `{creg_pref}d.tag=1`, `{creg_pref}d` *is not* sealed, and `{creg_pref}s1` does not grant <<zylevels1_lg_perm>>,
-  then an implicit <<CLRPERM>> is performed, clearing both <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>> of `{creg_pref}d`.
+* If `{cd}.tag=1`, `{cd}` *is not* sealed, and `{cs1}` does not grant <<zylevels1_lg_perm>>,
+  then an implicit <<CLRPERM>> is performed, clearing both <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>> of `{cd}`.
 
-* If `{creg_pref}d.tag=1`, `{creg_pref}d` *is* sealed, and `{creg_pref}s1` does not grant <<zylevels1_lg_perm>>,
-  then an implicit <<CLRPERM>> is performed, clearing <<zylevels1_gl_perm>> of `{creg_pref}d`.
+* If `{cd}.tag=1`, `{cd}` *is* sealed, and `{cs1}` does not grant <<zylevels1_lg_perm>>,
+  then an implicit <<CLRPERM>> is performed, clearing <<zylevels1_gl_perm>> of `{cd}`.
 
 NOTE: Missing <<zylevels1_lg_perm>> also affects the <<zylevels1_gl_perm>> of sealed capabilities,
 since notionally the latter is not a permission but rather a data flow label attached to the loaded value.
 
 NOTE: Because <<zylevels1_sl_perm>> is relevant only to capabilities bearing <<w_perm>>,
-the attenuation performed by a load whose authority (`{creg_pref}s1`) does not convey <<lm_perm>>
+the attenuation performed by a load whose authority (`{cs1}`) does not convey <<lm_perm>>
 will necessarily also clear <<zylevels1_sl_perm>>.
 
 === Interaction with <<STORE_CAP>> and <<STORE_COND_CAP,SC{LD_ST_DOT_CAP}>>
 
 As outlined above, {cheri_levels1_ext_name} introduces a new constraint on capabilities stored to memory,
-as part of a <<STORE_CAP>> instruction `{store_cap_name_lc} {creg_pref}s2, offset({creg_pref}s1)`
-or <<STORE_COND_CAP>> instruction `sc{ld_st_dot_cap_lc} {creg_pref}s2, offset({creg_pref}s1)`:
+as part of a <<STORE_CAP>> instruction `{store_cap_name_lc} {cs2}, offset({cs1})`
+or <<STORE_COND_CAP>> instruction `sc{ld_st_dot_cap_lc} {cs2}, offset({cs1})`:
 the written valid tag may be set _only if_ either
 
-* `{creg_pref}s2` 's <<zylevels1_gl_perm>> is set or
-* `{creg_pref}s1` 's <<zylevels1_sl_perm>> is set.
+* `{cs2}` 's <<zylevels1_gl_perm>> is set or
+* `{cs1}` 's <<zylevels1_sl_perm>> is set.
 
 NOTE: While <<zylevels1_lg_perm>> attenuates by reducing <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>>,
 <<zylevels1_sl_perm>> attenuates by clearing valid tags.
 
 === Interaction with <<SCSS>>
 
-Implementations of {cheri_levels1_ext_name} must ensure that a <<SCSS>> instruction `{SCSS_LC} rd, {creg_pref}s1, {creg_pref}s2`
-indicates that `{creg_pref}s1` is a subset of `{creg_pref}s2` (that is, sets `rd` to 1) only if either
+Implementations of {cheri_levels1_ext_name} must ensure that a <<SCSS>> instruction `{SCSS_LC} rd, {cs1}, {cs2}`
+indicates that `{cs1}` is a subset of `{cs2}` (that is, sets `rd` to 1) only if either
 
-* `{creg_pref}s2` 's <<zylevels1_gl_perm>> is clear or
-* `{creg_pref}s1` 's <<zylevels1_gl_perm>> is set.
+* `{cs2}` 's <<zylevels1_gl_perm>> is clear or
+* `{cs1}` 's <<zylevels1_gl_perm>> is set.
 
 The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>>.
 
 === Interaction with <<CBLD>>
 
-A <<CBLD>> instruction `{CBLD_LC} {creg_pref}d, {creg_pref}s1, {creg_pref}s2` may yield `{creg_pref}d.tag=1` only if either
+A <<CBLD>> instruction `{CBLD_LC} {cd}, {cs1}, {cs2}` may yield `{cd}.tag=1` only if either
 
-* `{creg_pref}s2` 's <<zylevels1_gl_perm>> is clear or
-* `{creg_pref}s1` 's <<zylevels1_gl_perm>> is set.
+* `{cs2}` 's <<zylevels1_gl_perm>> is clear or
+* `{cs1}` 's <<zylevels1_gl_perm>> is set.
 
 The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>>.
 

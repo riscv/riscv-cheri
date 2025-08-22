@@ -19,33 +19,33 @@ Synopsis::
 Shift by _n_ and add for address generation ({SH1ADD_CHERI}, {SH2ADD_CHERI}, {SH3ADD_CHERI}, {SH4ADD_CHERI})
 
 Mnemonics ({cheri_base_ext_name})::
-`{sh1add_cheri_lc} {creg_pref}d, rs1, {creg_pref}s2` +
-`{sh2add_cheri_lc} {creg_pref}d, rs1, {creg_pref}s2` +
-`{sh3add_cheri_lc} {creg_pref}d, rs1, {creg_pref}s2` +
-`{sh4add_cheri_lc} {creg_pref}d, rs1, {creg_pref}s2`
+`{sh1add_cheri_lc} {cd}, rs1, {cs2}` +
+`{sh2add_cheri_lc} {cd}, rs1, {cs2}` +
+`{sh3add_cheri_lc} {cd}, rs1, {cs2}` +
+`{sh4add_cheri_lc} {cd}, rs1, {cs2}`
 
 Mnemonics ({cheri_base64_ext_name})::
-`{sh4add_cheri_lc} {creg_pref}d, rs1, {creg_pref}s2`
+`{sh4add_cheri_lc} {cd}, rs1, {cs2}`
 
 Encoding::
 [wavedrom, , svg,subs=attributes+]
 ....
 {reg:[
     { bits:  7, name: 0x33, attr: ['OP'] },
-    { bits:  5, name: '{creg_pref}d' },
+    { bits:  5, name: '{cd}' },
     { bits:  3, name: 'func3', attr: ['{SH1ADD_CHERI}=011', '{SH2ADD_CHERI}=101', '{SH3ADD_CHERI}=000', 'rv64: {SH4ADD_CHERI}=111'] },
     { bits:  5, name: 'rs1' },
-    { bits:  5, name: '{creg_pref}s2' },
+    { bits:  5, name: '{cs2}' },
     { bits:  7, name: 0x10 },
 ]}
 ....
 
 Description::
-Copy the capability in `{creg_pref}s2` to `{creg_pref}d`.
+Copy the capability in `{cs2}` to `{cd}`.
 +
-Increment `{creg_pref}d.address` by `rs1` shifted left by _n_ bit positions.
+Increment `{cd}.address` by `rs1` shifted left by _n_ bit positions.
 +
-Set `{creg_pref}d.tag=0` if `{creg_pref}s2` is sealed.
+Set `{cd}.tag=0` if `{cs2}` is sealed.
 +
 include::rep_range_check.adoc[]
 +

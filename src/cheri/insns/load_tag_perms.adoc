@@ -1,10 +1,10 @@
-Determining the final value of `{creg_pref}d`::
-If the {ctag} is zero, or the authorizing capability (`{creg_pref}s1`) does not grant <<c_perm>> then set `{creg_pref}d.tag=0`. In this case the steps below do not apply.
+Determining the final value of `{cd}`::
+If the {ctag} is zero, or the authorizing capability (`{cs1}`) does not grant <<c_perm>> then set `{cd}.tag=0`. In this case the steps below do not apply.
 +
-If `{creg_pref}d.tag=1`, `{creg_pref}d` is not sealed and `{creg_pref}s1` does not grant <<lm_perm>>, then an implicit <<CLRPERM>> is performed to clear <<w_perm>> and <<lm_perm>> from `{creg_pref}d`.
+If `{cd}.tag=1`, `{cd}` is not sealed and `{cs1}` does not grant <<lm_perm>>, then an implicit <<CLRPERM>> is performed to clear <<w_perm>> and <<lm_perm>> from `{cd}`.
 +
 Extensions may define further circumstances under which implict <<CLRPERM>>-s or other mutation of loaded capabilities may take place.
 +
 NOTE: While the implicit <<CLRPERM>> introduces a dependency on the loaded data, implementations can avoid this by deferring the actual masking of permissions until the loaded capability is dereferenced or the metadata bits are inspected using <<GCPERM>> or <<GCHI>>. Additionally, metadata modifications  are on naturally aligned data, and so on the read path from a data cache, the modification typically happens in parallel with data alignment multiplexers.
 +
-When sending load data to a trace interface, implementations trace the final value written to `{creg_pref}d` which may not match the value in memory.
+When sending load data to a trace interface, implementations trace the final value written to `{cd}` which may not match the value in memory.

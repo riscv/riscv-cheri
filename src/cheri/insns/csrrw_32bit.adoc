@@ -12,10 +12,10 @@ Synopsis::
 CSR access (CSRRW) 32-bit encodings for ({cheri_base_ext_name})
 
 Mnemonic for accessing YLEN-wide CSRs::
-`csrrw {creg_pref}d, csr, {creg_pref}s1`
+`csrrw {cd}, csr, {cs1}`
 
 Mnemonic for accessing extended CSRs in {cheri_cap_mode_name}::
-`csrrw {creg_pref}d, csr, {creg_pref}s1`
+`csrrw {cd}, csr, {cs1}`
 
 Mnemonic for accessing extended CSRs in {cheri_int_mode_name}::
 `csrrw rd, csr, rs1`
@@ -28,14 +28,14 @@ CSRRW has extended functionality for accessing YLEN-bit CSRs, and XLEN-bit CSRs 
 +
 Access to XLEN-bit CSRs is as defined in Zicsr.
 +
-CSRRW accesses to YLEN-bit CSRs read YLEN bits into `{creg_pref}d` and write `{creg_pref}s1` into the CSR.
+CSRRW accesses to YLEN-bit CSRs read YLEN bits into `{cd}` and write `{cs1}` into the CSR.
 +
-CSRRW accesses to extended CSRs in {cheri_cap_mode_name} read YLEN bits into `{creg_pref}d` and write `{creg_pref}s1` into the CSR.
+CSRRW accesses to extended CSRs in {cheri_cap_mode_name} read YLEN bits into `{cd}` and write `{cs1}` into the CSR.
 +
 CSRRW accesses to extended CSRs in {cheri_int_mode_name} read XLEN bits into `rd` and write `rs1` into the CSR.
 The final write data is determined using <<SCADDR>> semantics.
 +
-In all cases, when writing `{creg_pref}s1`, if any <<section_cap_integrity,integrity>> check fails then set the {ctag} to zero before writing to the CSR.
+In all cases, when writing `{cs1}`, if any <<section_cap_integrity,integrity>> check fails then set the {ctag} to zero before writing to the CSR.
 
 Permissions::
 Accessing CSRs may require <<asr_perm>>.

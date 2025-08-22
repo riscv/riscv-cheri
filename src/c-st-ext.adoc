@@ -330,7 +330,7 @@ expands to `fld rd, offset(x2)`.
 
 <<C_LOAD_CAP_SP>> is an {cheri_base_ext_name}-only instruction that loads a
 capability from memory into capability
-register _{creg_pref}d_. It computes its effective address by adding the
+register _{cd}_. It computes its effective address by adding the
 _zero_-extended offset, scaled by 8 (for {cheri_base32_ext_name}),
 or 16 (for {cheri_base64_ext_name}) to the capability stack pointer, `{creg}2`. It
 expands to `{load_cap_name_lc} {creg_ref}d, offset({creg}2)`.
@@ -363,11 +363,11 @@ _zero_-extended offset, scaled by 8, to the stack pointer, `x2`. It
 expands to `fsd rs2, offset(x2)`.
 
 <<C_STORE_CAP_SP>> is an {cheri_base_ext_name}-only instruction that stores a
-capability in capability register _{creg_pref}s2_
+capability in capability register _{cs2}_
 to memory. It computes an effective address by adding the
 _zero_-extended offset, scaled by 8 (for {cheri_base32_ext_name}),
 or 16 (for {cheri_base64_ext_name}), to the stack pointer, `{creg}2`. It
-expands to `{store_cap_name_lc} {creg_pref}s2, offset({creg}2)`.
+expands to `{store_cap_name_lc} {cs2}, offset({creg}2)`.
 
 [NOTE]
 ====
@@ -444,12 +444,12 @@ _zero_-extended offset, scaled by 8, to the base address in register
 `fld rd′, offset(rs1′)`.
 
 <<C_LOAD_CAP>> is an {cheri_base_ext_name} only instruction that loads a
-capability from memory into register `_{creg_pref}d′_`
+capability from memory into register `_{cd}′_`
 It computes an effective address by adding the
 _zero_-extended offset, scaled by 8 ({cheri_base32_ext_name})
 or 16 ({cheri_base64_ext_name}),
-to the base address in register `_{creg_pref}s1′_`. It expands to
-`{c_load_cap_lc} {creg_pref}d′, offset({creg_pref}s1′)`.
+to the base address in register `_{cs1}′_`. It expands to
+`{c_load_cap_lc} {cd}′, offset({cs1}′)`.
 
 [[c-cs-format-ls]]
 include::images/wavedrom/c-cs-format-ls.edn[]
@@ -484,12 +484,12 @@ register `_rs1′_`. It expands to
 `fsd rs2′, offset(rs1′)`.
 
 <<C_STORE_CAP>> is an {cheri_base_ext_name} only instruction that stores a
-capability in register `_{creg_pref}s2′_` to memory.
+capability in register `_{cs2}′_` to memory.
 It computes an effective address by adding the
 _zero_-extended offset, scaled by 8 ({cheri_base32_ext_name})
 or 16 ({cheri_base64_ext_name}),
-to the base address in register `_{creg_pref}s1′_`. It expands to
-`{c_store_cap_lc} {creg_pref}s2′, offset({creg_pref}s1′)`
+to the base address in register `_{cs1}′_`. It expands to
+`{c_store_cap_lc} {cs2}′, offset({cs1}′)`
 
 ==== Compressed Load and Store summary
 
@@ -747,7 +747,7 @@ hardware cost._
 ====
 
 For {cheri_base_ext_name} {C_MV_CAP} copies a whole capability register.
-The expansion is `{C_MV_CAP_LC} {creg_pref}d, {creg_pref}s2`.
+The expansion is `{C_MV_CAP_LC} {cd}, {cs2}`.
 
 C.ADD adds the values in registers _rd_ and _rs2_ and writes the result
 to register _rd_. C.ADD expands into `add rd, rd, rs2`. C.ADD is only

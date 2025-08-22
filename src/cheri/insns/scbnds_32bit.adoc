@@ -24,20 +24,20 @@ Synopsis::
 {SCBNDS_DESC}
 
 Mnemonics::
-`{scbnds_lc} {creg_pref}d, {creg_pref}s1, rs2` +
-`{scbndsi_lc} {creg_pref}d, {creg_pref}s1, uimm`
+`{scbnds_lc} {cd}, {cs1}, rs2` +
+`{scbndsi_lc} {cd}, {cs1}, uimm`
 
 Encoding::
 include::wavedrom/scbnds_32bit.adoc[]
 
 Description::
-Capability register `{creg_pref}d`  is set to capability register `{creg_pref}s1`  with the base
-address of its bounds replaced with the value of `{creg_pref}s1.address` and
+Capability register `{cd}`  is set to capability register `{cs1}`  with the base
+address of its bounds replaced with the value of `{cs1}.address` and
 the length of its bounds set to `rs2` for <<SCBNDS>>, or `imm` for <<SCBNDSI>>.
 +
-Set `{creg_pref}d.tag=0` if `{creg_pref}s1.tag=0`, `{creg_pref}s1` is sealed or if `{creg_pref}d` 's bounds exceed `{creg_pref}s1` 's bounds.
+Set `{cd}.tag=0` if `{cs1}.tag=0`, `{cs1}` is sealed or if `{cd}` 's bounds exceed `{cs1}` 's bounds.
 +
-Set `{creg_pref}d.tag=0` if the requested bounds cannot be encoded exactly.
+Set `{cd}.tag=0` if the requested bounds cannot be encoded exactly.
 +
 include::malformed_cs1_clear_tag.adoc[]
 +
