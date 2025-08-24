@@ -120,7 +120,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 | 6-7   8+| reserved
 9+| *Quadrant 1: Executable capabilities*
 9+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
-| 0-1   | ✔ | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
+| 0-1   | ✔ | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + Data & Cap RW + ASR
 | 2-3   | ✔ |   | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
 | 6-7   | ✔ | ✔ |   |   | ✔ |     | Mode^1^  | Execute + Data RW
@@ -170,7 +170,7 @@ orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 11+| *Quadrant 1: Executable capabilities*
 11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
 |Encoding[2:0]| R | W | C | LM | LG | SL  | X | ASR | Mode^1^ |
-| 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | 1   | ✔ |  ✔  | Mode^1^  | Execute + ASR (see <<infinite-cap>>)
+| 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | 1   | ✔ |  ✔  | Mode^1^  | Execute + Data & Cap RW + ASR
 | 2-3   | ✔ |   | ✔ | ✔  | ✔  | 1^2^| ✔ |     | Mode^1^  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | 1   | ✔ |     | Mode^1^  | Execute + Data & Cap RW
 | 6-7   | ✔ | ✔ |   |    |    | 0^2^| ✔ |     | Mode^1^  | Execute + Data RW
@@ -642,8 +642,10 @@ Permissions added by extensions (such as those of <<section_zylevels1>>) are pre
 [#section_infinite_cap_encoding]
 ==== Infinite Capability Encoding
 
-The <<infinite-cap>> capability grants all permissions while its bounds also cover the whole address space.
+The encoding herein admits an _Infinite_ capability value, which
+grants all permissions while its bounds also cover the whole address space.
 It includes <<x_perm>> and so includes the <<m_bit>> if {cheri_default_ext_name} is supported.
+This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capability.
 
 // Added note here for CHERIoT which enforces W xor X.
 NOTE: Future extension to the capability format may use a "multi-root" format where the infinite capability does not exist and instead have multiple roots with different permissions (e.g., one for code and one for data).
@@ -670,14 +672,14 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-^1^If {cheri_default_ext_name} is supported, then the <<infinite-cap>> capability must represent
+^1^If {cheri_default_ext_name} is supported, then the infinite capability must represent
 {cheri_int_mode_name} for compatibility with standard RISC-V code. Therefore:
 
 * For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the <<AP-field>>, giving the value 0x9
 * For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
 
-^2^If an <<infinite-cap>> capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
- If the address field is non-zero then it is still referred to as an <<infinite-cap>> capability, and it still has the authority to authorize all memory accesses.
+^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
+ If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
 
 Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities.
 
@@ -697,7 +699,7 @@ also circular, so address 0 is within the <<section_cap_representable_check>> of
 where address 2^MXLEN^ - 1 is within the bounds.
 However, the decoded top field of a capability is MXLEN + 1 bits wide and does *not* wrap, so
 a capability with base 2^MXLEN^ - 1 and top 2^MXLEN^ + 1 is not a subset of the
-<<infinite-cap>> capability and does not authorize access to the byte at address 0.
+infinite capability and does not authorize access to the byte at address 0.
 Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
 a CHERI core to generate a valid capability with top > 2^MXLEN^.
 If such a capability exists then it must have been caused by a logic or memory fault.
