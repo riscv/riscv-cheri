@@ -153,7 +153,7 @@ generate-cheri-tables: $(CHERI_CSV_DIR)/CHERI_CSR.csv $(CHERI_CSV_DIR)/CHERI_ISA
 # Check if the docs-resources/global-config.adoc file exists. If not, the user forgot to check out submodules.
 ifeq ("$(wildcard docs-resources/global-config.adoc)","")
   $(warning You must clone with --recurse-submodules to automatically populate the submodule 'docs-resources'.")
-  $(warning Checking out submodules for you via 'git submodule update --init --recurse'...)
+  $(warning Checking out submodules for you via 'git submodule update --init --recursive'...)
   $(shell git submodule update --init --recursive)
 endif
 
