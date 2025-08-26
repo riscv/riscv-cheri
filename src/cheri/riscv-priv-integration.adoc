@@ -125,20 +125,17 @@ include::img/mtidcreg.edn[]
 The *mstatus* and *mstatush* registers operate as described in
 <<mstatus_cheri>> with two restrictions:
 
-* The <<xlen-control, SXL and UXL>> fields that control the
-value of XLEN for S-mode and U-mode must be read-only in implementations supporting {cheri_base_ext_name}.
-  Only 1 and 2 are supported values for SXL and UXL
+* The <<xlen-control, MXL, SXL and UXL>> fields that control the
+value of XLEN for S-mode and U-mode must be read-only and equal to MXL in{cheri_base_ext_name} implementations.
+  Only 1 and 2 are supported values.
 
-* The <<endianness-control,MBE, SBE, and UBE>> fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in implementations supporting {cheri_base_ext_name}.
+* The <<endianness-control,MBE, SBE, and UBE>> fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in {cheri_base_ext_name} implementations.
    SBE and UBE must be read only and equal to MBE, if S-mode or
 U-mode, respectively, is implemented, or read-only zero otherwise.
 
 Changing XLEN or endianness would change the interpretation of all in-memory capabilities, so allowing these fields to change at runtime is prohibited.
 
-NOTE: These restrictions are relaxed if a further privileged CHERI extension, {cheri_priv_m_dyn_xlen_ext}, optionally makes SXL,
-UXL, MBE, SBE, and UBE writeable, to support CHERI on implementations that support dynamic XLEN or endianness changes.
-
-CAUTION:: #ARC-QUESTION: Does {cheri_priv_m_dyn_xlen_ext} need to be a separate extension or just a "if xME,xXL bits are writable, then this behavior is followed" note in {cheri_priv_m_ext}#
+NOTE: These restrictions may be relaxed by a future extension. Such an extension is likely to enforce the constraint that any privilege level with XLEN less than MXLEN has CHERI disabled.
 
 <<mstatus_cheri>>.MXR has no effect on the CHERI permission checking.
 
@@ -509,7 +506,7 @@ in connection with the <<section_cheri_disable,{CRE}>> and the <<cheri_execution
 instructions. +
 ^3^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
 
-
+ifdef::support_varxlen[]
 [#section_cheri_dyn_xlen]
 == "{cheri_priv_m_dyn_xlen_ext}" Extension, Version 1.0
 
@@ -534,6 +531,7 @@ However, CHERI operations and security checks will continue using the entire har
 Changing endianness::
 Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
 
+endif::support_varxlen[]
 
 [#section_priv_cheri_vmem]
 == "{cheri_priv_vmem_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
