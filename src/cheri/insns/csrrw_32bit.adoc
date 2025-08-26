@@ -11,14 +11,14 @@ endif::[]
 Synopsis::
 CSR access (CSRRW) 32-bit encodings for ({cheri_base_ext_name})
 
-Mnemonic for accessing YLEN-wide CSRs::
+Mnemonic::
 `csrrw {cd}, csr, {cs1}`
 
-Mnemonic for accessing extended CSRs in {cheri_cap_mode_name}::
-`csrrw {cd}, csr, {cs1}`
-
-Mnemonic for accessing extended CSRs in {cheri_int_mode_name}::
-`csrrw rd, csr, rs1`
+//Mnemonic for accessing extended CSRs in {cheri_cap_mode_name}::
+//`csrrw {cd}, csr, {cs1}`
+//
+//Mnemonic for accessing extended CSRs in {cheri_int_mode_name}::
+//`csrrw rd, csr, rs1`
 
 Encoding::
 include::wavedrom/csrw-instr.adoc[]
@@ -26,25 +26,19 @@ include::wavedrom/csrw-instr.adoc[]
 Description::
 CSRRW has extended functionality for accessing YLEN-bit CSRs, and XLEN-bit CSRs extended to YLEN bits (_Extended CSRs_).
 +
-Access to XLEN-bit CSRs is as defined in Zicsr.
+Access to XLEN bit CSRs is as defined in Zicsr.
 +
-CSRRW accesses to YLEN-bit CSRs read YLEN bits into `{cd}` and write `{cs1}` into the CSR.
+CSRRW accesses to YLEN bit CSRs read YLEN bits into `{cd}` and write YLEN bits of `{cs1}` into the CSR.
 +
-CSRRW accesses to extended CSRs in {cheri_cap_mode_name} read YLEN bits into `{cd}` and write `{cs1}` into the CSR.
+CSRRW accesses to extended CSRs read YLEN bits into `{cd}` and write YLEN bits of `{cs1}` into the CSR, or if {cheri_default_ext_name} is supported, XLEN bit accesses are made in {cheri_int_mode_name}. The final write data is determined using semantics of the <<SCADDR>> instruction.
 +
-CSRRW accesses to extended CSRs in {cheri_int_mode_name} read XLEN bits into `rd` and write `rs1` into the CSR.
-The final write data is determined using the semantics of the <<SCADDR>> instruction.
-+
-In all cases, when writing `{cs1}`, if any <<section_cap_integrity,integrity>> check fails then set the {ctag} to zero before writing to the CSR.
+In all cases, when writing YLEN bits of `{cs1}`, if any <<section_cap_integrity,integrity>> check fails then set the {ctag} to zero before writing to the CSR.
 
 Permissions::
 Accessing CSRs may require <<asr_perm>>.
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {cheri_base_ext_name}, Zicsr
-
-Prerequisites for {cheri_int_mode_name}::
-{cheri_default_ext_name}, Zicsr
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

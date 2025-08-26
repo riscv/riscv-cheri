@@ -27,7 +27,7 @@ Description::
 
 . Convert the <<AP-field>>, <<SDP-field>>, and any other extension-defined permission-like fields of capability `{cs1}` into a bit field with the
 format shown in xref:acperm_bit_field[xrefstyle=short].
-. The initial value in integer register `rs2` is treated as a bit mask that specifies bit positions to be cleared in the bit field. Any bit that is high in `rs2` will cause the corresponding bit to be cleared in the bit field.
+. The initial value in register `rs2[XLEN-1:0]` is treated as a bit mask that specifies bit positions to be cleared in the bit field. Any bit that is high in `rs2` will cause the corresponding bit to be cleared in the bit field.
 +
 NOTE: Future extensions may include hardwired permission bits, in which case they are not cleared by set bits in `rs2`.
 . Encode the resulting architectural permissions following the rules in <<sec_permission_transitions>>.
