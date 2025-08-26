@@ -457,17 +457,16 @@ The effective CHERI-enable for the current privilege is:
 
 NOTE: The effective CHERI-enable is always 1 in debug mode.
 
-NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are infinite).
+NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally infinite).
 
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
+//this next line is fixed in PR 730
+
 * Instructions that access full capability registers instead of only the XLEN subset (implicitly or explicitly) cause illegal instruction exceptions.
 +
-* Executing CSR instructions accessing any CSR added by any CHERI extension ({cheri_default_ext_name}, {cheri_priv_m_ext}, {cheri_priv_s_ext}, {cheri_priv_h_ext}) causes an illegal instruction exception
-* Executing CSR instructions accessing any CSR extended to YLEN only allows XLEN access.
-* All allowed instructions execute as if the CHERI execution mode is {cheri_int_mode_name}.
-// FIXME: there should be no way to observe the M bit, do we need to mention this?
-// The mode bit in <<pcc>> is treated as if it was zero while CHERI register access is disabled.
+* Executing CSR instructions accessing any natively YLEN CSR causes an illegal instruction exception.
+* Executing CSR instructions accessing any CSR extended to YLEN only allows XLEN access (this is identical to {cheri_int_mode_name} access).
 
 Disabling CHERI has no effect on implicit accesses or security checks.
 The last capability written to <<pcc>> and <<ddc>> before disabling CHERI will be used to authorize instruction execution and data memory accesses.
@@ -480,7 +479,7 @@ that do not perform <<ddc>> switches on trap entry and return.
 
 Disabling CHERI allows harts supporting CHERI to be fully
 compatible with standard RISC-V, so CHERI instructions, such as <<CRAM>>, that
-do not change the state of CHERI CSRs raise exceptions.
+do not change any CHERI state, raise exceptions.
 This is the default behavior on reset.
 ====
 
@@ -490,19 +489,15 @@ in connection with the <<section_cheri_disable,{CRE}>> and the <<cheri_execution
 .Hart's behavior depending on the effective <<section_cheri_disable,CHERI enable>> and <<cheri_execution_mode>>
 [#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
 |==============================================================================
-| | {CRE}=0, M-bit=X^1^ | {CRE}=1, M-bit={int_mode_value} | {CRE}=1, M-bit={cap_mode_value}
-| Authorizing capability for memory accesses | <<ddc>> or <<pcc>> | <<ddc>> or <<pcc>> | Instruction's capability operand
-| New CHERI CSR Access Width           | ✘                 | YLEN                  | YLEN
-| Extended CHERI CSR Access Width      | XLEN              | XLEN                  | YLEN
+| | {CRE}=0                            | {CRE}=1, M-bit={int_mode_value} | {CRE}=1, M-bit={cap_mode_value}
+| Authorizing capability for data memory accesses | <<ddc>> | <<ddc>> | capability in `rs1`
+| natively YLEN CSR Access Width       | ✘                 | YLEN                  | YLEN
+| Extended YLAN CSR Access Width       | XLEN              | XLEN                  | YLEN
 | CHERI Instructions Allowed           | ✘                 | ✔                     | ✔
-| Compressed Instructions Remapped     | No                | No                    | Yes^2^
-| Summary                              | **_Fully RISC-V compatible_**^3^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
+| Summary                              | **_Fully RISC-V compatible_**^1^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
 |==============================================================================
 
-^1^ M-bit is irrelevant when {CRE}=0. +
-^2^ See xref:legacy_mnemonics[xrefstyle=short] for a list of remapped
-instructions. +
-^3^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
+^1^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
 
 ifdef::support_varxlen[]
 [#section_cheri_dyn_xlen]
