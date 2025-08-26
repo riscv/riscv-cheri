@@ -1,42 +1,31 @@
+
 <<<
 
-[#C_JAL,reftext="C.JAL"]
-==== C.JAL
+[#C_JAL_CHERI,reftext="C.JAL ({cheri_base32_ext_name})"]
+==== C.JAL ({cheri_base32_ext_name})
 
 Synopsis::
-Jump with link, 16-bit encodings
+{C_JAL_CHERI_DESC}
 
-{cheri_cap_mode_name} Mnemonic (RV32)::
+Mnemonic ({cheri_base32_ext_name})::
 `c.jal {creg}1, offset`
 
-{cheri_cap_mode_name} Expansion (RV32)::
+Expansion ({cheri_base32_ext_name})::
 `jal {creg}1, offset`
 
-{cheri_int_mode_name} Mnemonic (RV32)::
-`c.jal x1, offset`
-
-{cheri_int_mode_name} Expansion (RV32)::
-`jal x1, offset`
-
-Encoding (RV32)::
+Encoding ({cheri_base32_ext_name})::
 include::wavedrom/c-jal-format-ls.adoc[]
 
-{cheri_cap_mode_name} Description::
+Description::
 Link the next linear <<pcc>> to `{cd}` and seal. Jump to <<pcc>>.address+offset.
-
-{cheri_int_mode_name} Description::
-Set the next PC and link to `rd` according to the standard <<JAL_CHERI>> definition.
-
-Exceptions::
-See <<JAL_CHERI>>
 
 include::pcrel_debug_warning.adoc[]
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {c_cheri_base_ext_names}
 
-Prerequisites for {cheri_int_mode_name}::
-{c_cheri_default_ext_names}
+Included in::
+{rvyc_mod_xref}
 
 Operation (after expansion to 32-bit encodings)::
  See <<JAL_CHERI>>

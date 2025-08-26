@@ -1,37 +1,35 @@
-.16-bit instruction remapping in RV64I
+.16-bit load/store instruction mapping in RV64I
 [#insn_remapping_16bit_rv64_a]
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    3+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcd     | Zcmp/ Zcmt
+|[15:13]|[1:0]   |*Zca*   |*Zcd*    |*Zcmp/ Zcmt*
 |111    |00      | C.SD   | N/A     | N/A
 |011    |00      | C.LD   | N/A     | N/A
 |111    |10      | C.SDSP | N/A     | N/A
 |011    |10      | C.LDSP | N/A     | N/A
 
-|101    |00      | N/A    | C.FSD    | reserved^1^
-|001    |00      | N/A    | C.FLD    | reserved^1^
-|101    |10      | N/A    | C.FSDSP  | <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>>
-|001    |10      | N/A    | C.FLDSP  | reserved^1^
+|101    |00      | N/A    | C.FSD    | reserved
+|001    |00      | N/A    | C.FLD    | reserved
+|101    |10      | N/A    | C.FSDSP  | <<Zcmp,Zcmp>>/ <<Zcmt,Zcmt>>
+|001    |10      | N/A    | C.FLDSP  | reserved
 |==============================================================================
 
-^1^ reserved for future standard Zcm extensions
-
-.16-bit instruction remapping in {cheri_base64_ext_name}
+.16-bit load/store instruction mapping in {cheri_base64_ext_name}
 [#insn_remapping_16bit_rv64_b]
 [width="100%",options=header]
 |==============================================================================
-2+|Encoding    2+| Supported Extensions
-|[15:13]|[1:0]   | Zca    | Zcmp/ Zcmt
-|111    |00      | C.SD   | N/A
-|011    |00      | C.LD   | N/A
-|111    |10    2+| <<C_STORE_CAP_SP>>
-|011    |10    2+| <<C_LOAD_CAP_SP>>
+2+|Encoding    | Supported Extensions
+|[15:13]|[1:0] |*Zca*
+|111    |00    | C.SD
+|011    |00    | C.LD
+|111    |10    | C.SDSP
+|011    |10    | C.LDSP
 
-|101    |00    2+| <<C_STORE_CAP>>
-|001    |00    2+| <<C_LOAD_CAP>>
-|101    |10      | N/A    | <<Zcmp,Zcmp>>/<<Zcmt,Zcmt>>
-|001    |10      | N/A    | reserved
+|101    |00    | <<C_STORE_CAP>>
+|001    |00    | <<C_LOAD_CAP>>
+|101    |10    | <<C_STORE_CAP_SP>>
+|001    |10    | <<C_LOAD_CAP_SP>>
 |==============================================================================
 
-NOTE: Zcd is incompatible with {cheri_base_ext_name}.
+NOTE: Zcd, Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.

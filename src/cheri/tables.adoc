@@ -1,47 +1,237 @@
 [appendix]
 == Extension summary
 
-[#lr_sc_bh_ext]
-=== {lr_sc_bh_ext_name}
+[#rvyi_ext_name, reftext="{rvyi_ext_name}"]
+=== {rvyi_ext_name}
 
-{lr_sc_bh_ext_name} is a separate extension independent of CHERI, but is required for CHERI software.
+An {cheri_base_ext_name} core imports _all_ instructions from RVI and also from
+{rvyi_ext_name} which adds new instructions for CHERI functionality.
 
-These instructions are not controlled by the {CRE} bits in <<misa>>, <<menvcfg>> or <<senvcfg>>.
+{cheri_base_ext_name} implies {rvyi_ext_name}.
 
-.{lr_sc_bh_ext_name} instruction extension
-[#Zabhlrsc_instruction_extension]
-[width="100%",options=header,cols="2,2,10"]
+.{rvyi_ext_name} instruction extension
+[#{rvyi_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
 |==============================================================================
-include::generated/Zabhlrsc_insns_table_body.adoc[]
-|==============================================================================
-
-[#cheri_base_ext]
-=== {cheri_base_ext_name}
-
-{cheri_base_ext_name} defines the set of instructions supported by a core when in {cheri_cap_mode_name}.
-
-Some instructions depend on the presence of other extensions, as listed in xref:Zcheri_purecap_instruction_extension[xrefstyle=short].
-
-.{cheri_base_ext_name} instruction extension - Pure {cheri_cap_mode_name} instructions
-[#Zcheri_purecap_instruction_extension]
-[width="100%",options=header,cols="3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4"]
-|==============================================================================
-include::generated/Zcheri_purecap_insns_table_body.adoc[]
+include::generated/{rvyi_file_name}.adoc[]
 |==============================================================================
 
-[#cheri_default_ext]
-=== {cheri_default_ext_name}
+[#rvyi_mod_ext_name, reftext="{rvyi_mod_ext_name}"]
+=== {rvyi_mod_ext_name}
 
-{cheri_default_ext_name} defines the set of instructions added by the {cheri_int_mode_name}, in addition to {cheri_base_ext_name}.
+{rvyi_mod_ext_name} is there list of instructions which are _modified_ by adding CHERI functionality.
 
-NOTE: {cheri_default_ext_name} implies {cheri_base_ext_name}
-
-.{cheri_default_ext_name} instruction extension - {cheri_int_mode_name} instructions
-[#Zcheri_hybrid_instruction_extension]
-[width="100%",options=header,cols="3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,4"]
+.{rvyi_mod_ext_name} instruction extension
+[#{{rvyi_mod_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
 |==============================================================================
-include::generated/Zcheri_hybrid_insns_table_body.adoc[]
+include::generated/{rvyi_mod_file_name}.adoc[]
 |==============================================================================
+
+[#rvyi_sentry_ext_name, reftext="{rvyi_sentry_ext_name}"]
+=== {rvyi_sentry_ext_name}
+
+{rvyi_sentry_ext_name} adds the sentry capability type.
+
+.{rvyi_sentry_ext_name} instruction extension
+[#{rvyi_sentry_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyi_sentry_file_name}.adoc[]
+|==============================================================================
+
+[#rvyc_ext_name, reftext="{rvyc_ext_name}"]
+=== {rvyc_ext_name}
+
+An {cheri_base_ext_name} core which supports Zca should also support {rvyc_ext_name}.
+
+{rvyc_ext_name} is incompatible with Zcf (RV32) and Zcd (RV64).
+
+.{rvyc_ext_name} instruction extension
+[#{rvyc_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyc_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+<<<
+//this has all been integrated into the relevant chapter
+=== RV32 / {cheri_base32_ext_name} RVC load/store mapping summary
+
+include::rv32c_mapping_table.adoc[]
+
+<<<
+=== RV64 / {cheri_base64_ext_name} RVC load/store mapping summary
+
+include::rv64c_mapping_table.adoc[]
+
+endif::[]
+
+include::insns/load_16bit_cap_sprel.adoc[]
+include::insns/store_16bit_cap_sprel.adoc[]
+
+<<<
+
+[#rvyc_mod_ext_name, reftext="{rvyc_mod_ext_name}"]
+=== {rvyc_mod_ext_name}
+
+An {cheri_base_ext_name} core which supports Zca must also support {rvyc_mod_ext_name} which _modifies_ the behavior of some instructions.
+
+NOTE: {C_MV_CAP_LC} is renamed from `c.mv` to avoid ambiguity in disassembly.
+
+.{rvyc_mod_ext_name} instruction extension
+[#{rvyc_mod_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyc_mod_file_name}.adoc[]
+|==============================================================================
+
+include::insns/addi16sp_16bit.adoc[]
+include::insns/addi4spn_16bit.adoc[]
+include::insns/cmv_16bit.adoc[]
+include::insns/jr_16bit.adoc[]
+include::insns/jal_16bit.adoc[]
+include::insns/jalr_16bit.adoc[]
+
+<<<
+
+[#rvyalrsc_ext_name, reftext="{rvyalrsc_ext_name}"]
+=== {rvyalrsc_ext_name}
+
+Specifying {cheri_base_ext_name} and Zalrsc gives {rvyalrsc_ext_name} functionality, which adds atomic capability load and store instructions.
+
+.{rvyalrsc_ext_name} instruction extension
+[#{rvyalrsc_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyalrsc_file_name}.adoc[]
+|==============================================================================
+
+include::insns/load_res_cap_32bit.adoc[]
+include::insns/store_cond_cap_32bit.adoc[]
+
+[#rvyaamo_ext_name, reftext="{rvyaamo_ext_name}"]
+=== {rvyaamo_ext_name}
+
+Specifying {cheri_base_ext_name} and Zaamo gives {rvyaamo_ext_name} functionality, which adds atomic capability swap.
+
+.{rvyaamo_ext_name} instruction extension
+[#{rvyaamo_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyaamo_file_name}.adoc[]
+|==============================================================================
+
+include::insns/amoswap_32bit_cap.adoc[]
+
+<<<
+
+[#rvyh_ext_name, reftext="{rvyh_ext_name}"]
+=== {rvyh_ext_name}
+
+Specifying {cheri_base_ext_name} and "H" gives {rvyh_ext_name} functionality, which adds virtualized capability load and store instructions.
+
+While HLVX.* only requires execute permission in the PTE, the authorizing CHERI capability must grant <<r_perm>>.
+
+.{rvyh_ext_name} instruction extension
+[#{rvyh_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyh_file_name}.adoc[]
+|==============================================================================
+
+include::insns/hypv-virt-load-cap.adoc[]
+include::insns/hypv-virt-store-cap.adoc[]
+
+<<<
+
+[#rvyba_ext_name, reftext="{rvyba_ext_name}"]
+=== {rvyba_ext_name}
+
+Specifying {cheri_base_ext_name} and Zba gives {rvyba_ext_name} functionality, which adds more instructions.
+
+.{rvyba_ext_name} instruction extension
+[#{rvyba_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyba_file_name}.adoc[]
+|==============================================================================
+
+NOTE: There is no {cheri_base_ext_name} equivalent for `add.uw` as only having the integer version is sufficient.
+
+[#rvycbom_ext_name, reftext="{rvycbom_ext_name}"]
+=== {rvycbom_ext_name}
+
+Specifying {cheri_base_ext_name} and Zicbom gives {rvycbom_ext_name} functionality, which extends the checking.
+
+.{rvycbom_ext_name} instruction extension
+[#{rvycbom_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvycbom_file_name}.adoc[]
+|==============================================================================
+
+include::insns/cbo.clean.adoc[]
+include::insns/cbo.flush.adoc[]
+include::insns/cbo.inval.adoc[]
+
+<<<
+
+[#rvycboz_ext_name, reftext="{rvycboz_ext_name}"]
+=== {rvycboz_ext_name}
+
+Specifying {cheri_base_ext_name} and Zicboz gives {rvycboz_ext_name} functionality, which extends the checking.
+
+.{rvycboz_ext_name} instruction extension
+[#{rvycboz_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvycboz_file_name}.adoc[]
+|==============================================================================
+
+include::insns/cbo.zero.adoc[]
+
+<<<
+
+[#rvycbop_ext_name, reftext="{rvycbop_ext_name}"]
+=== {rvycbop_ext_name}
+
+Specifying {cheri_base_ext_name} and Zicbop gives {rvycbop_ext_name} functionality, which extends the checking.
+
+.{rvycbop_ext_name} instruction extension
+[#{rvycbop_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvycbop_file_name}.adoc[]
+|==============================================================================
+
+include::insns/prefetch.i.adoc[]
+include::insns/prefetch.r.adoc[]
+include::insns/prefetch.w.adoc[]
+
+<<<
+
+[#rvyi_default_ext_name, reftext="{rvyi_default_ext_name}"]
+=== {rvyi_default_ext_name}
+
+An {cheri_base_ext_name} core which supports {rvyi_default_ext_name} adds the instructions in <<{rvyi_default_file_name}>>.
+
+.{rvyi_default_ext_name} instruction extension
+[#{rvyi_default_file_name}]
+[width="100%",options=header,cols="3,1,1,1,4"]
+|==============================================================================
+include::generated/{rvyi_default_file_name}.adoc[]
+|==============================================================================
+
+=== {cheri_base_ext_name} Privileged and Debug ISA
+
+#these need moving#
+
+include::insns/mret_sret.adoc[]
+include::insns/dret.adoc[]
+
+<<<
 
 [appendix]
 [#clen_csr_summary]
@@ -109,51 +299,3 @@ xref:all_capability_CSRs[xrefstyle=short] shows all YLEN-wide CSRs.
 |==============================================================================
 include::generated/csr_permission_table_body.adoc[]
 |==============================================================================
-
-[appendix]
-[#instruction-modes]
-== Instructions and CHERI Execution Mode
-
-xref:cap_mode_insns[xrefstyle=short], xref:legacy_mode_insns[xrefstyle=short]
-and xref:both_mode_insns[xrefstyle=short] summarize on which
-<<cheri_execution_mode>> each instruction may be
-executed in.
-
-.Instructions valid for execution in {cheri_cap_mode_name} only
-[#cap_mode_insns]
-[width="100%",options=header,cols="17,15,17,51"]
-|==============================================================================
-include::generated/cap_mode_insns_table_body.adoc[]
-|==============================================================================
-
-.Instructions valid for execution in {cheri_int_mode_name} only
-[#legacy_mode_insns]
-[width="100%",options=header,cols="17,15,17,51"]
-|==============================================================================
-include::generated/legacy_mode_insns_table_body.adoc[]
-|==============================================================================
-
-.Instructions valid for execution in both {cheri_int_mode_name} and {cheri_cap_mode_name}
-[#both_mode_insns]
-[width="100%",options=header,cols="17,15,17,51"]
-|==============================================================================
-include::generated/both_mode_insns_table_body.adoc[]
-|==============================================================================
-
-.Mnemonics with the same encoding but mapped to different instructions in {cheri_int_mode_name} and {cheri_cap_mode_name}
-[#legacy_mnemonics]
-[width="100%",options=header,cols="20,40,40"]
-|==============================================================================
-include::generated/legacy_mnemonic_insns_table_body.adoc[]
-|==============================================================================
-
-.Instruction encodings which vary depending on the current XLEN
-[#xlen_dependent_encodings]
-[width="100%",options=header,cols="1,3"]
-|==============================================================================
-include::generated/xlen_dependent_encoding_insns_table_body.adoc[]
-|==============================================================================
-
-NOTE: <<MODESW_CAP>>, <<MODESW_INT>> and <<SCMODE>> only exist in {cheri_cap_mode_name} if
-{cheri_int_mode_name} is _also_ present. A hart does not support the <<m_bit>>
-if it does not implement the {cheri_default_ext_name} extension.

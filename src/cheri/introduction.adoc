@@ -35,16 +35,9 @@ extensions to support CHERI alongside RISC-V
 
 ==== Extensions to the unprivileged specification
 
-<<cheri_base_ext,{cheri_base_ext_name}>>:: Introduces key, minimal CHERI concepts and features to
-the RISC-V ISA. The resulting extended ISA is not
-backwards-compatible with RISC-V.
-<<cheri_default_ext,{cheri_default_ext_name}>>:: Extends {cheri_base_ext_name} with features to ensure
-that the ISA extended with CHERI allows backwards binary compatibility with
-RISC-V.
-
 The following extension is useful independently of CHERI:
 
-<<abhlrsc_ext,{lr_sc_bh_ext_name}>>:: Addition of <<LR_B>>, <<LR_H>>, <<SC_B>>, <<SC_H>> for more accurate atomic locking as the memory ranges are restricted by using bounds, therefore precise locking is needed.
+<<abhlrsc_ext,{lr_sc_bh_ext_name}>>:: Addition of LR.B, LR.H, SC.B, SC.H for more accurate atomic locking as the memory ranges are restricted by using bounds, therefore precise locking is needed.
 
 ==== Extensions to the privileged specification
 
@@ -69,26 +62,59 @@ endif::support_varxlen[]
 
 CAUTION: The extension names are provisional and subject to change.
 
-.Extension status and summary
-[#extension-status,reftext="Extension Status and Summary"]
+.Unprivileged {cheri_base_ext_name} extension status and summary
+[#unpriv-extension-status,reftext="Extension Status and Summary"]
 [options=header,align=center,width="90%",cols="25,23,52"]
-|==============================================================================
-| Extension                                        | Status        | Comment
-|<<cheri_base_ext,   {cheri_base_ext_name}>>        | Stable        | This extension is a candidate for freezing
-|<<cheri_default_ext,{cheri_default_ext_name}>>     | Stable        | This extension is a candidate for freezing
-|<<abhlrsc_ext,     {lr_sc_bh_ext_name}>>          | Stable        | This extension is a candidate for freezing
-|<<section_priv_cheri,{cheri_priv_m_ext}>>          | Stable        | This extension is a candidate for freezing
-|<<section_priv_cheri,{cheri_priv_s_ext}>>          | Stable        | This extension is a candidate for freezing
-|<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>> | Stable        | This extension is a candidate for freezing
+|=============================================================================================================================================================
+| Extension                                                 | Status        | Comment
+|<<rvyi_ext_name>>                                          | Stable        | This extension is a candidate for freezing
+|<<rvyi_sentry_ext_name>>                                   | Stable        | This extension is a candidate for freezing
+|<<rvyba_ext_name>>                                         | Stable        | This extension is a candidate for freezing
+|<<rvyalrsc_ext_name>>                                      | Stable        | This extension is a candidate for freezing
+|<<rvyaamo_ext_name>>                                       | Stable        | This extension is a candidate for freezing
+|<<rvyh_ext_name>>                                          | Stable        | This extension is a candidate for freezing
+|<<rvyc_ext_name>>                                          | Stable        | This extension is a candidate for freezing
+|<<rvycbom_ext_name>>                                       | Stable        | This extension is a candidate for freezing
+|<<rvycboz_ext_name>>                                       | Stable        | This extension is a candidate for freezing
+|<<rvycbop_ext_name>>                                       | Stable        | This extension is a candidate for freezing
+|<<rvyi_default_ext_name>>                                  | Stable        | This extension is a candidate for freezing
+|=============================================================================================================================================================
+
+
+.Unprivileged {cheri_base_ext_name} lists of instructions with _modified_ behavior, status and summary
+[#unpriv-mod-extension-status,reftext="Extension Status and Summary"]
+[options=header,align=center,width="90%",cols="25,23,52"]
+|=============================================================================================================================================================
+| Extension                                                 | Status        | Comment
+|<<rvyi_mod_ext_name>>                                      | Stable        | This extension is a candidate for freezing
+|<<rvyc_mod_ext_name>>                                      | Stable        | This extension is a candidate for freezing
+|=============================================================================================================================================================
+
+
+.Other unprivileged extension status and summary (used by CHERI software), status and summary
+[#zabhlrsc_unpriv-extension-status,reftext="Extension Status and Summary"]
+|=============================================================================================================================================================
+| Extension                                                 | Status        | Comment
+|<<abhlrsc_ext,     {lr_sc_bh_ext_name}>>                   | Stable        | This extension is a candidate for freezing
+|=============================================================================================================================================================
+
+.Privileged extension status and summary
+[#priv-extension-status,reftext="Extension Status and Summary"]
+[options=header,align=center,width="90%",cols="25,23,52"]
+|=============================================================================================================================================================
+| Extension                                                 | Status        | Comment
+|<<section_priv_cheri,{cheri_priv_m_ext}>>                  | Stable        | This extension is a candidate for freezing
+|<<section_priv_cheri,{cheri_priv_s_ext}>>                  | Stable        | This extension is a candidate for freezing
+|<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>>    | Stable        | This extension is a candidate for freezing
 ifdef::support_varxlen[]
-|<<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>> | Stable        | This extension is a candidate for freezing
+|<<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>>     | Stable        | This extension is a candidate for freezing
 endif::support_varxlen[]
-|<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>> | Stable        | This extension is a candidate for freezing
-|<<section_debug_integration_ext,{cheri_priv_debug_ext}>> | Stable        | This extension is a candidate for freezing
+|<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>>          | Stable        | This extension is a candidate for freezing
+|<<section_debug_integration_ext,{cheri_priv_debug_ext}>>   | Stable        | This extension is a candidate for freezing
 |<<section_debug_integration_trig,{cheri_priv_debug_trig}>> | Stable        | This extension is a candidate for freezing
-|<<section_priv_cheri,{cheri_priv_h_ext}>>          | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
-|<<section_cheri_priv_crg_ext,    {cheri_priv_crg_ext}>>         | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
-|==============================================================================
+|<<section_priv_cheri,{cheri_priv_h_ext}>>                  | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
+|<<section_cheri_priv_crg_ext,    {cheri_priv_crg_ext}>>    | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
+|=============================================================================================================================================================
 
 {cheri_base_ext_name} is defined as the base ISA that all CHERI RISC-V implementations must support.
 {cheri_default_ext_name} and {cheri_priv_crg_ext} are optional extensions in addition to
