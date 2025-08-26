@@ -27,34 +27,34 @@ endif::[]
 Synopsis::
 CSR access (CSRRWI, CSRRS, CSRRSI, CSRRC, CSRRCI) 32-bit encodings for {cheri_base_ext_name}
 
-Mnemonics for accessing YLEN-bit CSRs::
+Mnemonics::
 `csrrs  {cd}, csr, rs1` +
 `csrrc  {cd}, csr, rs1` +
 `csrrwi {cd}, csr, imm` +
 `csrrsi {cd}, csr, imm` +
 `csrrci {cd}, csr, imm`
 
-Mnemonics for accessing extended CSRs in {cheri_cap_mode_name}::
-`csrrs  {cd}, csr, rs1` +
-`csrrc  {cd}, csr, rs1` +
-`csrrwi {cd}, csr, imm` +
-`csrrsi {cd}, csr, imm` +
-`csrrci {cd}, csr, imm`
-
-Mnemonics for accessing extended CSRs in {cheri_int_mode_name}::
-`csrrs  rd, csr, rs1` +
-`csrrc  rd, csr, rs1` +
-`csrrwi rd, csr, imm` +
-`csrrsi rd, csr, imm` +
-`csrrci rd, csr, imm`
+//Mnemonics for accessing extended CSRs in {cheri_cap_mode_name}::
+//`csrrs  {cd}, csr, rs1` +
+//`csrrc  {cd}, csr, rs1` +
+//`csrrwi {cd}, csr, imm` +
+//`csrrsi {cd}, csr, imm` +
+//`csrrci {cd}, csr, imm`
+//
+//Mnemonics for accessing extended CSRs in {cheri_int_mode_name}::
+//`csrrs  rd, csr, rs1` +
+//`csrrc  rd, csr, rs1` +
+//`csrrwi rd, csr, imm` +
+//`csrrsi rd, csr, imm` +
+//`csrrci rd, csr, imm`
 
 Encoding::
 include::wavedrom/csr-instr.adoc[]
 
 Description::
-These CSR instructions have extended functionality for accessing YLEN-bit CSRs, and XLEN-bit CSRs extended to YLEN bits (_Extended CSRs_).
+These CSR instructions have extended functionality for accessing YLEN bit CSRs, and XLEN bit CSRs extended to YLEN bits (_Extended CSRs_).
 +
-Access to XLEN-bit CSRs is as defined in Zicsr.
+Access to XLEN bit CSRs is as defined in Zicsr.
 +
 Zicsr rules are followed when determining whether to read or write the CSR.
 +
@@ -62,18 +62,17 @@ Suppressed read or write actions have no side-effects on the CSR.
 +
 All writes are XLEN bits only, as determined by Zicsr, and use the semantics of the <<SCADDR>> instruction to determine the final write data.
 +
-Read data from extended CSRs is YLEN bits in {cheri_cap_mode_name} or XLEN bits in {cheri_int_mode_name}.
+Read data from extended CSRs is YLEN bits in {cheri_cap_mode_name} or, if {cheri_default_ext_name} is supported, XLEN bits in {cheri_int_mode_name}.
 +
-Read data from YLEN-bit CSRs is always YLEN bits.
+Read data from YLEN bit CSRs is always YLEN bits.
++
+In all cases, when writing YLEN bits of `{cs1}`, if any <<section_cap_integrity,integrity>> check fails then set the {ctag} to zero before writing to the CSR.
 
 Permissions::
 Accessing CSRs may require <<asr_perm>>.
 
-Prerequisites for {cheri_cap_mode_name}::
+Prerequisites::
 {cheri_base_ext_name}, Zicsr
-
-Prerequisites for {cheri_int_mode_name}::
-{cheri_default_ext_name}, Zicsr
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

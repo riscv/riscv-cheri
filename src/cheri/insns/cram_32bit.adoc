@@ -13,7 +13,8 @@ Encoding::
 include::wavedrom/cram.adoc[]
 
 Description::
-Integer register `rd` is set to a mask that can be used to round addresses down to a value that is sufficiently aligned to set exact bounds for the nearest representable length of `rs1`.
+`rd[XLEN-1:0]` is set to a mask that can be used to round addresses down to a value that is sufficiently aligned to set exact bounds for the nearest representable length of `rs1[XLEN-1:0]`.
+The upper bits of `rd` are zero extended.
 See <<section_cap_bounds>> for the algorithm used to compute the next representable length.
 
 Operation::
