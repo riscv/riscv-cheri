@@ -119,7 +119,7 @@ include::img/mtidcreg.edn[]
 
 === Machine-Level CSRs modified by {cheri_priv_m_ext}
 
-[#mstatus_cheri]
+[#mstatus_cheri, reftext="mstatus"]
 ==== Machine Status Registers (mstatus and mstatush)
 
 The *mstatus* and *mstatush* registers operate as described in
@@ -137,7 +137,7 @@ Changing XLEN or endianness would change the interpretation of all in-memory cap
 
 NOTE: These restrictions may be relaxed by a future extension. Such an extension is likely to enforce the constraint that any privilege level with XLEN less than MXLEN has CHERI disabled.
 
-<<mstatus_cheri>>.MXR has no effect on the CHERI permission checking.
+MXR has no effect on the CHERI permission checking.
 
 NOTE: CHERI does not need to make use execute only memory for security reasons, and so MXR has no relevance.
  Additionally the 32-bit encoding format does not allow <<x_perm>> to be encoded without <<r_perm>>.
@@ -145,11 +145,9 @@ NOTE: CHERI does not need to make use execute only memory for security reasons, 
 [[cheri-mcause]]
 ==== Machine Cause Register (mcause)
 
-{cheri_base_ext_name} adds a new exception code for CHERI exceptions that <<mcause>> must be able to represent.
-The new exception code and its priority are listed in xref:mcauses[xrefstyle=short] and xref:exception-priority[xrefstyle=short] respectively.
-The behavior and usage of <<mcause>> otherwise remains as described in xref:mcause[xrefstyle=short].
-
-#This table needs to be merged with the main table once we've resolve the Xcause type#
+{cheri_base_ext_name} adds new exception codes for CHERI exceptions that <<mcause>> must be able to represent.
+The new exception codes and priorities are listed in
+xref:mcauses[xrefstyle=short] and xref:exception-priority-cheri[xrefstyle=short] respectively.
 
 [[exception-priority-cheri]]
 .Synchronous exception priority in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
@@ -158,28 +156,26 @@ The behavior and usage of <<mcause>> otherwise remains as described in xref:mcau
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
 | .>|*{cheri_excep_cause_pc}* .<|*Prior to instruction address translation:* +
-*CHERI fault due to {pcc} checks (tag, execute permission, bounds^1^)*
+*CHERI fault due to {pcc} checks ({ctag}, execute permission, bounds^1^)*
 | .>|12, 1 .<|During instruction address translation: +
 First encountered page fault or access fault
 | .>|1 .<|With physical address for instruction: +
 Instruction access fault
 
 | .>|2 +
+*{cheri_excep_cause_pc}* +
 0 +
 8,9,11 +
 3 +
 3 .<|Illegal instruction +
+*CHERI fault due to {pcc} <<asr_perm>> clear* +
 Instruction address misaligned +
 Environment call +
 Environment break +
 Load/store/AMO address breakpoint
 
-| .>| *{cheri_excep_cause_pc}* .<| *CHERI faults due to:* +
-*{pcc} <<asr_perm>> clear* +
-*Branch/jump target address checks (tag, execute permissions, bounds)*
-
 | .>|*{cheri_excep_cause_ls_list}* .<|*Prior to address translation for an explicit memory access:* +
-*CHERI fault due to capability checks (tag, sealed, permissions, bounds)*
+*CHERI fault due to capability checks ({ctag}, sealed, permissions, bounds)*
 | .>|4,6 .<|*Load/store/AMO capability address misaligned* +
 Optionally: +
 Load/store/AMO address misaligned
@@ -249,13 +245,14 @@ The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 === Supervisor-Level CSRs added or extended by {cheri_priv_s_ext}
 
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
-hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is typically required for access to these CSRs.
+hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> required for access to all privileged CSRs.
 
 [#stvec_y,reftext="stvec ({cheri_priv_s_ext})"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
 
 The <<stvec>> register is extended to hold a capability.
-When the S-mode execution environment starts, the value is nominally a <<root-rx-cap>> capability.
+
+{INF_RESET_SCSR}
 
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
@@ -278,7 +275,8 @@ include::img/sscratchcreg.edn[]
 ==== Supervisor Exception Program Counter Capability (sepc)
 
 The <<sepc>> register is extended to hold a capability.
-When the S-mode execution environment starts, the value is nominally a <<root-rx-cap>> capability.
+
+{INF_RESET_SCSR}
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<sepc_y>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 Additionally, the capability in <<sepc_y>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction.
@@ -291,8 +289,8 @@ include::img/sepccreg.edn[]
 ==== Supervisor Thread Identifier Capability (stidc)
 
 The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged utidc CSR.
-When the S-mode execution environment starts,
-the {ctag} of <<stidc>> will be set to zero and the remainder of the data is UNSPECIFIED.
+
+{TAG_RESET_SCSR}
 
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
