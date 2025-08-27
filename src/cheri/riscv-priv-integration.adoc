@@ -17,9 +17,9 @@ to the CSRs.
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
 The <<mtvec>> register is extended to hold a code capability.
-Its reset value is nominally the <<infinite-cap>> capability.
+Its reset value is nominally a <<root-rx-cap>> capability.
 
-NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of the <<infinite-cap>> capability after reset.
+NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of a <<root-rx-cap>> capability after reset.
 
 .Machine-mode trap-vector base-capability register
 include::img/mtveccreg.edn[]
@@ -29,7 +29,7 @@ The fields in the metadata are WARL as many fields can be implemented as constan
 NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setting the reserved fields to zero, otherwise the capability is unusable.
  Another example is to partially or fully restrict the bounds to constant values.
 
-NOTE: Care must be taken however that an <<infinite-cap>> capability is available to software after reset if this CSR does not represent one.
+NOTE: Care must be taken however that suitable root capabilities are available to software after reset if this CSR does not represent one.
 
 When traps are taken into machine mode, the pc is updated following the standard `mtvec` behavior.
 The {ctag} and metadata from <<mtvec_y>> are also written to the <<pcc>>.
@@ -73,7 +73,7 @@ include::img/mscratchcreg.edn[]
 ==== Machine Exception Program Counter Capability (mepc)
 
 The <<mepc>> is extended to hold a capability.
-Its reset value is nominally the <<infinite-cap>> capability.
+Its reset value is nominally a <<root-rx-cap>> capability.
 
 .Machine exception program counter capability register
 include::img/mepccreg.edn[]
@@ -125,20 +125,17 @@ include::img/mtidcreg.edn[]
 The *mstatus* and *mstatush* registers operate as described in
 <<mstatus_cheri>> with two restrictions:
 
-* The <<xlen-control, SXL and UXL>> fields that control the
-value of XLEN for S-mode and U-mode must be read-only in implementations supporting {cheri_base_ext_name}.
-  Only 1 and 2 are supported values for SXL and UXL
+* The <<xlen-control, MXL, SXL and UXL>> fields that control the
+value of XLEN for S-mode and U-mode must be read-only and equal to MXL in{cheri_base_ext_name} implementations.
+  Only 1 and 2 are supported values.
 
-* The <<endianness-control,MBE, SBE, and UBE>> fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in implementations supporting {cheri_base_ext_name}.
+* The <<endianness-control,MBE, SBE, and UBE>> fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in {cheri_base_ext_name} implementations.
    SBE and UBE must be read only and equal to MBE, if S-mode or
 U-mode, respectively, is implemented, or read-only zero otherwise.
 
 Changing XLEN or endianness would change the interpretation of all in-memory capabilities, so allowing these fields to change at runtime is prohibited.
 
-NOTE: These restrictions are relaxed if a further privileged CHERI extension, {cheri_priv_m_dyn_xlen_ext}, optionally makes SXL,
-UXL, MBE, SBE, and UBE writeable, to support CHERI on implementations that support dynamic XLEN or endianness changes.
-
-CAUTION:: #ARC-QUESTION: Does {cheri_priv_m_dyn_xlen_ext} need to be a separate extension or just a "if xME,xXL bits are writable, then this behavior is followed" note in {cheri_priv_m_ext}#
+NOTE: These restrictions may be relaxed by a future extension. Such an extension is likely to enforce the constraint that any privilege level with XLEN less than MXLEN has CHERI disabled.
 
 <<mstatus_cheri>>.MXR has no effect on the CHERI permission checking.
 
@@ -258,7 +255,7 @@ hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is ty
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
 
 The <<stvec>> register is extended to hold a capability.
-When the S-mode execution environment starts, the value is nominally the <<infinite-cap>> capability.
+When the S-mode execution environment starts, the value is nominally a <<root-rx-cap>> capability.
 
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
@@ -281,7 +278,7 @@ include::img/sscratchcreg.edn[]
 ==== Supervisor Exception Program Counter Capability (sepc)
 
 The <<sepc>> register is extended to hold a capability.
-Its reset value is the <<infinite-cap>> capability.
+When the S-mode execution environment starts, the value is nominally a <<root-rx-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<sepc_y>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 Additionally, the capability in <<sepc_y>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction.
@@ -294,7 +291,8 @@ include::img/sepccreg.edn[]
 ==== Supervisor Thread Identifier Capability (stidc)
 
 The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged utidc CSR.
-On reset the {ctag} of <<stidc>> will be set to zero and the remainder of the data is UNSPECIFIED.
+When the S-mode execution environment starts,
+the {ctag} of <<stidc>> will be set to zero and the remainder of the data is UNSPECIFIED.
 
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
@@ -506,9 +504,9 @@ in connection with the <<section_cheri_disable,{CRE}>> and the <<cheri_execution
 ^1^ M-bit is irrelevant when {CRE}=0. +
 ^2^ See xref:legacy_mnemonics[xrefstyle=short] for a list of remapped
 instructions. +
-^3^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold the <<infinite-cap>> capability).
+^3^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
 
-
+ifdef::support_varxlen[]
 [#section_cheri_dyn_xlen]
 == "{cheri_priv_m_dyn_xlen_ext}" Extension, Version 1.0
 
@@ -533,6 +531,7 @@ However, CHERI operations and security checks will continue using the entire har
 Changing endianness::
 Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
 
+endif::support_varxlen[]
 
 [#section_priv_cheri_vmem]
 == "{cheri_priv_vmem_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
@@ -637,13 +636,13 @@ memory addresses must match for the address to be valid.
 The CSRs shown in xref:CSR_exevectors[xrefstyle=short], as well as the pc, need not hold all possible invalid addresses.
 Implementations may convert an invalid address into some other invalid address that the register is capable of holding.
 
-However, the bounds encoding of capabilities depends on the address value if the bounds are not of the <<infinite-cap>> capability.
+However, the bounds encoding of capabilities depends on the address value if the bounds are not infinite.
 
-Therefore implementations must not convert invalid addresses to other arbitrary invalid addresses in an unrestricted manner if the bounds are not <<infinite-cap>>.
+Therefore implementations must not convert invalid addresses to other arbitrary invalid addresses in an unrestricted manner if the bounds are not infinite.
 
-If the bounds could not be decoded due to the address being invalid, and the bounds not being <<infinite-cap>>, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
+If the bounds could not be decoded due to the address being invalid, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
 
-NOTE: In all cases, if the authorizing capability has <<infinite-cap>> bounds, then the behavior is identical to the normal RISC-V behavior without CHERI.
+NOTE: In all cases, if the authorizing capability has bounds that cover all addresses, then the behavior is identical to the normal RISC-V behavior without CHERI.
 
 NOTE: Not requiring to the implementation to decode the bounds for invalid addresses reduces the size of bounds comparators from 64-bits to the supported virtual address width.
 
@@ -656,23 +655,23 @@ A CSR may be updated to hold a capability with an invalid address, due to:
 
 To ensure that the bounds of a valid capability cannot be corrupted:
 
-* If the new address is invalid and the capability does not have <<infinite-cap>> bounds, then set the {ctag} to zero before writing to the CSR.
+* If the new address is invalid and the capability bounds do not cover all addresses, then set the {ctag} to zero before writing to the CSR.
 
 NOTE: When the capability's address is invalid and happens to match an invalid address which the CSR
 can hold, then it is implementation defined whether to set the {ctag} to zero.
 
 ==== Branches and Jumps
 
-If the effective target address of the jump or branch is invalid, and the authorizing capability does not have <<infinite-cap>> bounds, then set the {ctag} of the target <<pcc>> to zero.
+If the effective target address of the jump or branch is invalid, and the authorizing capability's bounds do not cover all addresses, then set the {ctag} of the target <<pcc>> to zero.
 This will cause a {cheri_excep_name_pc} exception when executing the target instruction.
 
 NOTE: RISC-V harts that do not support {cheri_base_ext_name} normally raise an
 instruction access fault or page fault after jumping or branching to an invalid address.
 Therefore, {cheri_base_ext_name} aims to preserve that behavior to ensure that
 harts supporting {cheri_base_ext_name} and {cheri_default_ext_name} are fully
-compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to the
-<<infinite-cap>> capability.
+compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to
+<<root-rx-cap>> and <<root-rw-cap>> capabilities, respectively.
 
 ==== Memory Accesses
 
-If the effective address of the memory access is invalid, and the authorizing capability does not have <<infinite-cap>> bounds, then raise a {cheri_excep_name_ld} or {cheri_excep_name_st} exception because the bounds cannot be reliably decoded.
+If the effective address of the memory access is invalid, and the authorizing capability's bounds do not cover all addresses, then raise a {cheri_excep_name_ld} or {cheri_excep_name_st} exception because the bounds cannot be reliably decoded.

@@ -57,7 +57,7 @@ ebreak
 
 # Write the {ctag} (if nonzero)
 csrrw   {creg}2, dscratch0, {creg}2
-csrr    {creg}2, dinfc
+csrr    {creg}2, drootc
 {cbld_lc}    {creg}1, {creg}2, {creg}1
 csrrw   {creg}2, dscratch0, {creg}2
 ebreak
@@ -126,7 +126,7 @@ Upon entry to debug mode, the _RISC-V Debug Specification_, does not specify how
 update the PC, and says PC relative instructions may be illegal. This concept
 is extended to include any instruction which reads or updates <<pcc>>, which refers to
 all jumps, conditional branches and <<AUIPC_CHERI>>. The exceptions are <<MODESW_CAP>> and <<MODESW_INT>>
-which _are_ supported if {cheri_default_ext_name} is implemented, see <<dinfc>>
+which _are_ supported if {cheri_default_ext_name} is implemented, see <<drootc>>
 for details.
 
 As a result, the value of <<pcc>> is UNSPECIFIED in debug mode according
@@ -164,30 +164,44 @@ The <<dscratch1>> register is extended to hold a capability.
 .Debug scratch 1 capability register
 include::img/dscratch1creg.edn[]
 
-[#dinfc,reftext="dinfc"]
-==== Debug Infinite Capability Register (dinfc)
+[#drootcsel,reftext="drootcsel"]
+==== Debug Root Capability Selector (drootcsel)
 
-<<dinfc>> is a debug mode accessible capability CSR. The address and access details are shown in
+<<drootcsel>> is a debug mode accessible integer CSR.  The address and access details are shown in
 xref:default-csrnames-added[xrefstyle=short].
 
-The reset value is the <<infinite-cap>> capability.
+It selects which <<root-cap>> capability is exposed through <<drootc>>.
+The reset value is `0`, which must cause <<drootcsel>> to expose a
+<<root-rx-cap>> capability.
 
-If {cheri_default_ext_name} is implemented:
+Other capability values may be defined for exposure through <<drootc>>
+by the capability encoding,
+and may be selected by having the debugger write to this register.
+Writes are WARL, so the debugger may confirm that its selection has been applied.
+
+.Debug root capability register
+include::img/drootcselreg.edn[]
+
+[#drootc,reftext="drootc"]
+==== Debug Root Capability Register (drootc)
+
+<<drootc>> is a debug mode accessible capability CSR. The address and access details are shown in
+xref:default-csrnames-added[xrefstyle=short].
+It exposes the capability selected by <<drootcsel>>.
+
+If {cheri_default_ext_name} is implemented,
+the <<root-rx-cap>> exposed when <<drootcsel>> is `0` is further specified thus:
 
 * The <<m_bit>> is reset to {cheri_int_mode_name} ({INT_MODE_VALUE}).
 * The debugger can set the <<m_bit>> to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing <<MODESW_CAP>> from the program buffer.
 ** Executing <<MODESW_CAP>> causes subsequent instructions execution from the program buffer, starting from the next instruction, to be executed in {cheri_cap_mode_name}. It also sets the CHERI execution mode to {cheri_cap_mode_name} on future entry into debug mode.
 ** Therefore to enable use of a CHERI debugger, a single <<MODESW_CAP>> only needs to be executed once from the program buffer after resetting the core.
-** The debugger can also execute <<MODESW_INT>> to change the mode back to {cheri_int_mode_name}, which also affects the execution of the next instruction in the program buffer, updates the <<m_bit>> of <<dinfc>> and controls which CHERI execution mode to enter on the next entry into debug mode.
+** The debugger can also execute <<MODESW_INT>> to change the mode back to {cheri_int_mode_name}, which also affects the execution of the next instruction in the program buffer, updates the <<m_bit>> of this capability and controls which CHERI execution mode to enter on the next entry into debug mode.
 
-The <<m_bit>> of <<dinfc>> is _only_ updated by executing <<MODESW_CAP>> or <<MODESW_INT>> from the program buffer.
+The <<m_bit>> of this capability is _only_ updated by executing <<MODESW_CAP>> or <<MODESW_INT>> from the program buffer.
 
-NOTE: A future version of this specification may add writeable fields to allow creation
- of other capabilities, if, for example, a future extension requires multiple formats for
- the <<infinite-cap>> capability.
-
-.Debug infinite capability register
-include::img/dinfcreg.edn[]
+.Debug root capability register
+include::img/drootcreg.edn[]
 
 [#section_hybrid_debug_integration]
 === Integrating {cheri_default_ext_name} with Sdext
@@ -198,15 +212,15 @@ shown in xref:default-csrnames-added[xrefstyle=short].
 {cheri_default_ext_name} allows <<MODESW_CAP>> and <<MODESW_INT>> to execute in debug mode.
 
 When entering debug mode, whether the core enters {cheri_int_mode_name} or
-{cheri_cap_mode_name} is controlled by the <<m_bit>> in <<dinfc>>.
+{cheri_cap_mode_name} is controlled by the <<m_bit>> in the <<drootc>> capability selected by <<drootcsel>> value 0.
 
-The current mode can be read from <<dinfc>>.
+The current mode can be read by setting <<drootcsel>> to `0` and then reading <<drootc>>.
 
 The following sequence executed from the program buffer will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
 
 [source,subs=attributes+]
 ----
-csrr   {creg}1, dinfc
+csrr   {creg}1, drootc
 {gcmode_lc} x1, {creg}1
 ----
 
@@ -228,9 +242,8 @@ xref:default-csrnames-added[xrefstyle=short].
 .Debug default data capability
 include::img/dddcreg.edn[]
 
-Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>>'s metadata is
-set to the <<infinite-cap>> capability's metadata (with tag set) and <<ddc>>'s
-address remains unchanged.
+Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>> is set to a
+<<root-rw-cap>> capability such that <<ddc>>'s address remains unchanged.
 
 When debug mode is exited by executing <<DRET_CHERI>>, the hart's <<ddc>> is updated to
 the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
