@@ -5,11 +5,9 @@ ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the priv spec. Exact location TBD.
 endif::[]
 
-CAUTION: #This chapter needs additional updates before it is ready for ARC review#
-
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
-The {cheri_priv_crg_ext} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG bit, and <<sstatusreg_pte,sstatus>>.UCRG as described below.
+The {cheri_priv_crg_ext} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG, PTE.CD and <<sstatusreg_pte,sstatus>>.UCRG bits as described below.
 
 NOTE: {cheri_priv_crg_ext} depends on {cheri_priv_vmem_ext} also being supported.
 
@@ -21,7 +19,10 @@ NOTE: If software ignores the new PTE bits then there is no change in functional
 
 NOTE: A future version of this specification may include kernel revocation which may require an <<sstatusreg_pte,sstatus>>.SCRG bit.
 
-The minimum level of PTE support is to set CW to 1 in all PTEs intended for storing capabilities (i.e., private anonymous mappings) and leave <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow capabilities with their tags set to be loaded and stored successfully.
+The minimum level of PTE support is to set CW and CD to 1 in all PTEs intended for storing
+capabilities (i.e., private anonymous mappings) and leave
+<<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow
+capabilities with their tags set to be loaded and stored successfully.
 
 NOTE: Hardware initiated memory accesses from the page-table walker are not checked by a capability.
 
@@ -37,6 +38,8 @@ With a page-granularity generational capability read permission, we can
 eliminate the initial permission change of all PTEs.
 In addition, a page-granularity capability write control can eliminate many pages
 from the sweep that are known to not contain capabilities.
+Page-granularity capability-dirty tracking accelerates the detection of capability-clean
+pages, which enables the revocation sweep to skip them during the visit.
 
 
 [#section_extending_pte]
@@ -47,7 +50,8 @@ NOTE: *CHERI v9 Note:* The current proposal is provisional and only includes
 support for load-side revocation when compared to CHERI v9.
 endif::[]
 
-One new bit, Capability Read Generation (CRG), is added to leaf PTEs in Sv39, Sv48 and Sv57 as shown in
+Two new bits, Capability Read Generation (CRG) and Capability Dirty (CD),
+are added to leaf PTEs in Sv39, Sv48 and Sv57 as shown in
 xref:sv39pte_crg[xrefstyle=short], xref:sv48pte_crg[xrefstyle=short] and
 xref:sv57pte_crg[xrefstyle=short] respectively. For non-leaf PTEs these bits
 remain reserved and must be cleared by software for forward compatibility,
@@ -69,7 +73,7 @@ include::img/sv57pte_crg.edn[]
 
 NOTE: The behavior in this section isn't relevant if:
 
-. The authorizing capability doesn't have <<c_perm>>, for loads, stores and AMOs.
+. The authorizing capability doesn't have <<c_perm>>, for loads, stores and AMO.
 . Any extension-specific mediation has already cleared the stored tag, for stores and AMOs.
 
 The CW bit (defined by {cheri_priv_vmem_ext}) indicates whether reading or writing capabilities with the {ctag} set to
@@ -79,45 +83,63 @@ as usual, and capability reads are controlled by the CRG bit.
 NOTE: The {ctag} bit of the stored capability is checked _after_ it is potentially
 cleared due to lack of <<c_perm>>.
 
-If the CW bit is clear then:
+
+If the CW bit is clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
 
 * When a capability load or AMO instruction is executed, the implementation
  clears the {ctag} bit of the capability read from the virtual page.
-* When CRG is clear, the "no capability state", a {cheri_excep_name_pte_st}
- is raised when a capability store or AMO instruction is executed and the {ctag} bit
- of the capability being written is set.
-* When CRG is set, the "pre-CW state", two schemes are permitted (also see <<section_hardware_pte_updates>>):
-** The same behavior as when CRG is clear, allowing software interpretation
-of this state.
-** When a capability store or AMO instruction is executed
-and the {ctag} bit of the capability being written is set, the
-implementation sets the CW bit and assigns the CRG bit equal to <<sstatusreg_pte,sstatus>>.UCRG.
-+
-The PTE update must be
-atomic with respect to other accesses to the PTE, and must atomically check
-that the PTE is valid and grants sufficient permissions. Updates to the CW bit
-and CRG bit
-must be exact (i.e., not speculative), and observed in program order by the
-local hart. Furthermore, the PTE update must appear in the global memory order
-no later than the explicit memory access, or any subsequent explicit memory
-access to that virtual page by the local hart.  The ordering on loads and
-stores provided by FENCE instructions and the acquire/release bits on atomic
-instructions also orders the PTE updates associated with those loads and
-stores as observed by remote harts.
-+
-The PTE update is not required to be atomic with respect to the explicit memory
-access that caused the update, and the sequence is interruptible. However, the
-hart must not perform explicit memory access before the PTE update is globally
-visible.
+* When a capability store or AMO instruction is executed and the {ctag} bit
+ of the capability being written is set, the implementation raises a
+ {cheri_excep_name_pte_st}.
+
+When the CW bit is set, the "capability state", then the behaviour of
+capability loads is controlled by CRG and the behaviour of capability stores
+is controlled by CD.
 
 When CW is set, the CRG bit indicates the current generation of the virtual memory page with
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
 * A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG and PTE.U is set.
+ with:
+** <<c_perm>> granted, and
+** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
+** PTE.U is set.
 * A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG and PTE.U is set
-and the capability read from memory has its tag set.
+ with:
+** <<c_perm>> granted, and
+** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
+** PTE.U is set, and
+** the capability read from memory has its {ctag} set.
+
+The second option is enabled by the _{cheri_priv_crg_load_tag_ext}_ extension.
+
+When CW is set, the CD bit indicates that a capability was stored to the
+virtual page since the last time the CD bit was cleared.
+When a capability store or AMO instruction is executed, the {ctag} bit
+of the capability being written is set and the CD bit is clear,
+two schemes are permitted (also see <<section_hardware_pte_updates>>):
+
+* The same behavior as when CW is clear, allowing software interpretation
+ of this state.
+* The implementation sets the CD bit. The PTE update must be
+ atomic with respect to other accesses to the PTE, and must atomically check
+ that the PTE is valid and grants sufficient permissions. Updates to the CD bit
+ must be exact (i.e., not speculative), and observed in program order by the
+ local hart. Furthermore, the PTE update must appear in the global memory order
+ no later than the explicit memory access, or any subsequent explicit memory
+ access to that virtual page by the local hart. The ordering on loads and
+ stores provided by FENCE instructions and the acquire/release bits on atomic
+ instructions also orders the PTE updates associated with those loads and
+ stores as observed by remote harts.
+ The PTE update is not required to be atomic with respect to the explicit memory
+ access that caused the update, and the sequence is interruptible. However, the
+ hart must not perform explicit memory accesses before the PTE update is globally
+ visible.
+
+NOTE: _{cheri_priv_crg_ext}_ requires that when CW, CD and CRG are all clear,
+the implementation clears loaded tags and raises {cheri_excep_name_pte_st} when
+the stored {ctag} is set. Other bit combinations when CW=0 are reserved
+for future extensions.
 
 [[pte_cw_crg_load_summary]]
 .Summary of Load CW and CRG behavior in the PTEs
@@ -142,24 +164,24 @@ _{cheri_priv_crg_load_tag_ext}_ implies _{cheri_priv_crg_ext}_.
 
 ^2^ A future version of this specification may check an SCRG bit in <<sstatusreg_pte,sstatus>> for kernel revocation.
 
-[[pte_cw_crg_store_summary]]
-.Summary of Store CW and CRG behavior in the PTEs
+[[pte_cw_cd_store_summary]]
+.Summary of Store CW and CD behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|PTE.CW |PTE.CRG|Store/AMO
-| 0     | 0     | {cheri_excep_name_pte_st} if stored tag is set
-| 0     | 1     | {cheri_excep_name_pte_st} if stored tag is set, or <<section_hardware_pte_updates, hardware CW and CRG update>>
-| 1     | X     | Normal operation
+|PTE.CW |PTE.CD|Store/AMO
+| 0     | X    | {cheri_excep_name_pte_st} if stored tag is set
+| 1     | 0    | {cheri_excep_name_pte_st} if stored tag is set, or <<section_hardware_pte_updates, hardware CD update>>
+| 1     | 1    | Normal operation
 |===
 
 [#section_hardware_pte_updates]
 === Enabling Software or Hardware PTE updates
 
-The decision about whether to take exceptions on capability stores with the {ctag} set to a page with PTE.CW=0 and PTE.CRG=1 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
+The decision about whether to take exceptions on capability stores with the {ctag} set to a page with PTE.CW=1 and PTE.CD=0 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
 These cause PTE Accessed and Dirty updates to be done in software, via the exception handler, or by a hardware mechanism respectively.
 
 * If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a {cheri_excep_name_pte_st}.
-* If only _Svadu_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then do the hardware update of setting PTE.CW=1 and setting PTE.CRG=<<sstatusreg_pte,sstatus>>.UCRG as described in <<section_extending_pte>>.
+* If only _Svadu_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then do the hardware update of setting PTE.CD=1 as described in <<section_extending_pte>>.
 
 [#xstatus_pte]
 === Extending the Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
