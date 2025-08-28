@@ -41,6 +41,9 @@ All CSR accesses to YLEN CSRs only access the lower XLEN bits, and, if writing, 
 {cheri_cap_mode_name}::
 Executing with the {cheri_base_ext_name} base ISA.
 
+The _<<cheri_execution_mode>>_ is key in providing backwards compatibility with the base RV32I/RV64I ISA.
+RISC-V software is able to execute unchanged in implementations supporting {cheri_default_ext_name} provided that the privileged environment sets up <<ddc>> and <<pcc>> appropriately.
+
 NOTE: The CHERI execution mode is always {cheri_cap_mode_name} on implementations that support {cheri_base_ext_name}, but not {cheri_default_ext_name}.
 
 [#m_bit,reftext="M-bit"]
@@ -71,6 +74,16 @@ The <<m_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cher
 | <<JALR_CHERI>> |{cheri_cap_mode_name}| {JALR_CHERI_DESC}
 | <<MODESW_INT>> |{cheri_cap_mode_name}| {MODESW_INT_DESC}
 | <<MODESW_CAP>> |{cheri_int_mode_name}| {MODESW_CAP_DESC}
+|=======================
+
+The <<m_bit>> of a capability can be read and written by the instructions listed in <<tab_hybrid_summary>>:
+
+.{cheri_default_ext_name} instructions to observe and update the mode in a capability
+[#tab_hybrid_summary,%autowidth,options=header,align="center",cols="1,4"]
+|=======================
+|Mnemonic      |Description
+|<<SCMODE>>    |{SCMODE_DESC}
+|<<GCMODE>>    |{GCMODE_DESC}
 |=======================
 
 NOTE: The mode can also be updated by setting the <<m_bit>> of a target capability using <<SCMODE>> followed by a <<JALR_CHERI>>.
