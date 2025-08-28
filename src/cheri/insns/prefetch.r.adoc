@@ -10,9 +10,6 @@ data read in the near future
 Mnemonic::
 `prefetch.r offset({cs1})`
 
-//{cheri_int_mode_name} Mnemonic::
-//`prefetch.r offset(rs1)`
-
 Encoding::
 [wavedrom, , svg]
 ....
@@ -20,7 +17,7 @@ Encoding::
   {bits: 7,  name: 'opcode',    attr: ['7','OP-IMM=0010011'],  type: 8},
   {bits: 5,  name: 'imm[4:0]',  attr: ['5','zero'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','ORI=110'],  type: 8},
-  {bits: 5,  name: '{cs1}≠0',     attr: ['5','base'],     type: 4},
+  {bits: 5,  name: 'rs1≠0',     attr: ['5','base'],     type: 4},
   {bits: 5,  name: 'funct5',    attr: ['5','PREFETCH.R=00001'],   type: 3},
   {bits: 7,  name: 'imm[11:5]', attr: ['7','offset[11:5]'],   type: 3},
 ]}
@@ -36,16 +33,6 @@ operation is `{cs1}`. This instruction does not throw any exceptions. However,
 following the rules from xref:rv32y[xrefstyle=short], this instruction does not
 perform a prefetch if it is not authorized by `{cs1}`.
 
-include::int_mode_remapping_pcc.adoc[]
-
-//{cheri_int_mode_name} Description::
-//A PREFETCH.R instruction indicates to hardware that the cache block whose
-//effective address is the sum of the base address specified in `rs1` and the
-//sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
-//likely to be accessed by a data read (i.e., load) in the near future. The
-//encoding is only valid if imm[4:0]=0. The authorizing capability for this
-//operation is <<ddc>>.
-
 :prefetch_insn: PREFETCH.R
 :prefetch_perm: <<r_perm>>
 include::prefetch_cap_checks.adoc[]
@@ -53,8 +40,8 @@ include::prefetch_cap_checks.adoc[]
 Prerequisites::
 Zicbop, {cheri_base_ext_name}
 
-//Prerequisites for {cheri_int_mode_name}::
-//Zicbop, {cheri_default_ext_name}
+Included in::
+{rvycbop_xref}
 
 Operation::
 [source,sail]

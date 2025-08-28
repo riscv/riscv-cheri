@@ -9,11 +9,6 @@ Synopsis::
 Mnemonic::
 `jalr {cd}, {cs1}, offset`
 
-ifdef::cheri_standalone_spec[]
-{cheri_int_mode_name} Mnemonic::
-`jalr rd, rs1, offset`
-endif::[]
-
 Encoding::
 include::wavedrom/ct-unconditional-2.adoc[]
 
@@ -34,6 +29,9 @@ The <<pcc>> of the next instruction is calculated using the semantics of the <<S
 NOTE: Because of the unsealing and <<SCADDR>> behavior, it is not possible for the target <<pcc>> to be sealed.
 +
 NOTE: A future extension may raise an exception on the JALR instruction itself if the target <<pcc>> will raise a CHERI exception at the target.
+
+Included in::
+{rvyi_mod_xref}
 
 Operation::
 +
