@@ -221,7 +221,7 @@ include::img/mtvalreg.edn[]
 The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 
 .Machine State Enable 0 Register (`mstateen0`)
-[wavedrom, ,svg]
+[wavedrom, ,svg,subs=attributes+]
 ....
 {reg: [
 {bits: 1, name: 'C'},
@@ -315,7 +315,7 @@ The TID (thread ID) bit in `sstateen0` controls access to the <<utidc>> CSR.
 See <<utidc>> for a description of the usage.
 
 .Supervisor State Enable 0 Register (`sstateen0`)
-[wavedrom, ,svg]
+[wavedrom, ,svg,subs=attributes+]
 ....
 {reg: [
 {bits: 1, name: 'C'},
@@ -461,10 +461,7 @@ NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{C
 
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
-//this next line is fixed in PR 730
-
-* Instructions that access full capability registers instead of only the XLEN subset (implicitly or explicitly) cause illegal instruction exceptions.
-+
+* Instructions from {rvyi_xref} and {rvyi_default_xref} cause illegal instruction exceptions.
 * Executing CSR instructions accessing any natively YLEN CSR causes an illegal instruction exception.
 * Executing CSR instructions accessing any CSR extended to YLEN only allows XLEN access (this is identical to {cheri_int_mode_name} access).
 

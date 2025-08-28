@@ -1,3 +1,4 @@
+
 <<<
 
 [#C_STORE_CAP,reftext="{C_STORE_CAP_NAME}"]
@@ -13,11 +14,11 @@ Capability stores ({C_STORE_CAP_NAME}, {C_STORE_CAP_SP_NAME}), 16-bit encodings
 
 include::xlen_variable_warning.adoc[]
 
-{cheri_cap_mode_name} Mnemonics::
-`{C_STORE_cap_name_lc} {cs2}', offset({cs1}')` +
+Mnemonics::
+`{c_store_cap_name_lc} {cs2}', offset({cs1}')` +
 `{c_store_cap_sp_name_lc} {cs2}', offset({abi_creg}sp)`
 
-{cheri_cap_mode_name} Expansions::
+Expansions::
 `{store_cap_name_lc} {cs2}', offset({cs1}')` +
 `{store_cap_name_lc} {cs2}', offset({abi_creg}sp)`
 
@@ -29,9 +30,7 @@ Store the YLEN-bit value in `{cs2}'` to memory. The capability in `{abi_creg}sp`
 authorizes the operation. The effective address of the memory access is
 obtained by adding the address of `{abi_creg}sp` to the zero-extended offset.
 
-NOTE: These mnemonics do not exist in {cheri_int_mode_name}.
-
-Tag of the written capability value::
+{ctag_title} of the written capability value::
 
 The capability written to memory has the {ctag} set to 0 if the {ctag} of `{cs2}'` is 0 or if the authorizing capability (`{abi_creg}sp`) does not grant <<c_perm>>.
 +
@@ -44,6 +43,9 @@ include::store_exceptions.adoc[]
 
 Prerequisites::
 {c_cheri_base_ext_names}
+
+Included in::
+{rvyc_xref}
 
 Operation (after expansion to 32-bit encodings)::
  See <<STORE_CAP>>
