@@ -5,8 +5,6 @@ ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the priv spec. Exact location TBD.
 endif::[]
 
-CAUTION: #This chapter needs additional updates before it is ready for ARC review#
-
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
 The {cheri_priv_crg_ext} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG, PTE.CD and <<sstatusreg_pte,sstatus>>.UCRG bits as described below.
@@ -86,7 +84,7 @@ NOTE: The {ctag} bit of the stored capability is checked _after_ it is potential
 cleared due to lack of <<c_perm>>.
 
 
-If the CW bit is clear, the "no capability state", then:
+If the CW bit is clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
 
 * When a capability load or AMO instruction is executed, the implementation
  clears the {ctag} bit of the capability read from the virtual page.
@@ -100,17 +98,27 @@ is controlled by CD.
 
 When CW is set, the CRG bit indicates the current generation of the virtual memory page with
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
+
 * A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG and PTE.U is set.
+ with:
+** <<c_perm>> granted, and
+** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
+** PTE.U is set.
 * A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
-with <<c_perm>> granted and the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG and PTE.U is set
-and the capability read from memory has its tag set.
+ with:
+** <<c_perm>> granted, and
+** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
+** PTE.U is set, and
+** the capability read from memory has its {ctag} set.
+
+The second option is enabled by the _{cheri_priv_crg_load_tag_ext}_ extension.
 
 When CW is set, the CD bit indicates that a capability was stored to the
 virtual page since the last time the CD bit was cleared.
 When a capability store or AMO instruction is executed, the {ctag} bit
 of the capability being written is set and the CD bit is clear,
 two schemes are permitted (also see <<section_hardware_pte_updates>>):
+
 * The same behavior as when CW is clear, allowing software interpretation
  of this state.
 * The implementation sets the CD bit. The PTE update must be
@@ -123,13 +131,12 @@ two schemes are permitted (also see <<section_hardware_pte_updates>>):
  stores provided by FENCE instructions and the acquire/release bits on atomic
  instructions also orders the PTE updates associated with those loads and
  stores as observed by remote harts.
- +
  The PTE update is not required to be atomic with respect to the explicit memory
  access that caused the update, and the sequence is interruptible. However, the
- hart must not perform explicit memory access before the PTE update is globally
+ hart must not perform explicit memory accesses before the PTE update is globally
  visible.
 
-NOTE: The _{cheri_priv_crg_ext}_ requires that when CW, CD and CRG are all clear,
+NOTE: _{cheri_priv_crg_ext}_ requires that when CW, CD and CRG are all clear,
 the implementation clears loaded tags and raises {cheri_excep_name_pte_st} when
 the stored {ctag} is set. Other bit combinations when CW=0 are reserved
 for future extensions.
