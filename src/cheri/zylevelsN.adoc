@@ -28,12 +28,12 @@ Implementations of ZylevelsN may choose how many <<zylevelsN_cl_field>> bits (`L
 [#zylevelsN_sl_perm,reftext="SL-permission"]
 Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic:
 +
-Capabilities with a <<zylevelsN_cl_field>> (see below) less than the inverse of the authorizing capability's <<zylevelsN_sl_perm>> will be stored with a zero valid tag.
+Capabilities with a <<zylevelsN_cl_field>> (see below) less than the inverse of the authorizing capability's <<zylevelsN_sl_perm>> will be stored with a zero {ctag}.
 +
 In the base ISA this is a single bit comparison, behaving as follows:
 
 * If this field (as well as <<c_perm>> and <<w_perm>>) is set to one then capabilities may be stored via this capability regardless of their associated <<zylevelsN_cl_field>>.
-* If this field is zero, then any capability with a <<zylevelsN_cl_field>> of zero (i.e., _local_), will be stored with the valid tag cleared.
+* If this field is zero, then any capability with a <<zylevelsN_cl_field>> of zero (i.e., _local_), will be stored with the {ctag} cleared.
 
 NOTE: Future extensions may make this field wider to enable more use cases.
 
@@ -42,7 +42,7 @@ NOTE: For `LVLBITS=1` this permission is equivalent to _StoreLocal_ in CHERI v9,
 endif::[]
 
 [#zylevelsN_el_perm,reftext="EL-permission"]
-Elevate Level Permission (EL):: Any unsealed capability with its valid tag set to one that is loaded from memory has its <<zylevelsN_el_perm>> cleared and its <<zylevelsN_cl_field>> restricted to the authorizing capability's <<zylevelsN_cl_field>> if the authorizing capability does not grant <<zylevelsN_el_perm>>.
+Elevate Level Permission (EL):: Any unsealed capability with its {ctag} set to one that is loaded from memory has its <<zylevelsN_el_perm>> cleared and its <<zylevelsN_cl_field>> restricted to the authorizing capability's <<zylevelsN_cl_field>> if the authorizing capability does not grant <<zylevelsN_el_perm>>.
 +
 If sealed, then only <<zylevelsN_cl_field,CL>> is modified, <<zylevelsN_el_perm>> is unchanged.
 +
@@ -99,7 +99,7 @@ TODO
     h|*W*    h|*C* h|*SL* h|*CL* h| Notes
 .3+.^|1  .3+.^| 1   | 1    | X    | Store data capability unmodified
                .2+.^| 0    | 1    | Store data capability unmodified (`CL ≥ ~SL`)
-                           | 0    | Store data capability with valid tag cleared (`CL < ~SL`)
+                           | 0    | Store data capability with {ctag} cleared (`CL < ~SL`)
 |==============================================================================
 
 NOTE: if W=0 or C=0 then SL is irrelevant
