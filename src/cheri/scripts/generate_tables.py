@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import abc
 import os
 import shutil
 import csv
@@ -27,16 +28,15 @@ def insn_xref(insn: str):
     return f'<<{insn}>>'
 
 
-class table:
+class table(abc.ABC):
     """
     virtual class used to define each table
     """
     filename = ""
     file = ""
-    header = []
+    header: list[str]
 
-    def __init__(self, filename, header):
-
+    def __init__(self, filename, header: list[str]):
         self.filename = filename
         if os.path.exists(self.filename):
             os.remove(self.filename)
@@ -46,368 +46,98 @@ class table:
     def __del__(self):
         self.file.close()
 
-    def update(self, row):
-        pass
+    @abc.abstractmethod
+    def update(self, row: list[str]): ...
 
-class Zabhlrsc_insns(table):
-    cols = ["Mnemonic", "Zabhlrsc", "Function"]
+class InsnTable(table):
+    """
+    Base class for instruction tables that check for a '✔' in a specific column
+    """
     indices = []
+    other_cols = ["{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    check_col: str
 
-    def __init__(self, filename, header):
+    def __init__(self, filename, header: list[str]):
         super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
+        self.check_index = self.header.index(self.check_col)
+        self.indices = [self.check_index]
+        for i in self.other_cols:
             self.indices.append(self.header.index(i))
+        self.mnemonic_col_idx = self.header.index("Mnemonic")
 
-    def update(self, row):
+        self.file.write('|' + '|'.join(["Mnemonic", self.check_col, *self.other_cols]) + '\n')
+
+    def update(self, row: list[str]):
         if self.check(row):
-            outStr = ""
+            outStr = '|' + insn_xref(row[self.mnemonic_col_idx])
             for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+               outStr += '|' + row[i]
+            self.file.write(outStr + '\n')
 
-    def check(self,row):
-        return row[self.header.index("Zabhlrsc")] == "✔"
+    def check(self, row: list[str]):
+        return row[self.check_index] == "✔"
 
-class rvyi_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyi_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
 
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
+class Zabhlrsc_insns(InsnTable):
+    other_cols = ["Function"]
+    check_col = ["Zabhlrsc"]
 
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
 
-    def check(self,row):
-        return row[self.header.index("{rvyi_ext_name}")] == "✔"
+class rvyi_ext_name_insns(InsnTable):
+    check_col = "{rvyi_ext_name}"
 
-class rvyi_sentry_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyi_sentry_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
 
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
+class rvyi_sentry_ext_name_insns(InsnTable):
+    check_col = "{rvyi_sentry_ext_name}"
 
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
 
-    def check(self,row):
-        return row[self.header.index("{rvyi_sentry_ext_name}")] == "✔"
+class rvyi_mod_ext_name_insns(InsnTable):
+    check_col = "{rvyi_mod_ext_name}"
 
-class rvyi_mod_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyi_mod_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
 
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
+class rvyc_ext_name_insns(InsnTable):
+    check_col = "{rvyc_ext_name}"
 
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
 
-    def check(self,row):
-        return row[self.header.index("{rvyi_mod_ext_name}")] == "✔"
+class rvyc_mod_ext_name_insns(InsnTable):
+    check_col = "{rvyc_mod_ext_name}"
 
-class rvyc_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyc_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
 
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
+class rvyba_ext_name_insns(InsnTable):
+    check_col = "{rvyba_ext_name}"
 
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
 
-    def check(self,row):
-        return row[self.header.index("{rvyc_ext_name}")] == "✔"
+class rvya_ext_name_insns(InsnTable):
+    check_col = "{rvya_ext_name}"
 
-class rvyc_mod_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyc_mod_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
 
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
+class rvyalrsc_ext_name_insns(InsnTable):
+    check_col = "{rvyalrsc_ext_name}"
 
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
 
-    def check(self,row):
-        return row[self.header.index("{rvyc_mod_ext_name}")] == "✔"
+class rvyaamo_ext_name_insns(InsnTable):
+    check_col = "{rvyaamo_ext_name}"
 
-class rvyba_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyba_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
 
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
+class rvyh_ext_name_insns(InsnTable):
+    check_col = "{rvyh_ext_name}"
 
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
 
-    def check(self,row):
-        return row[self.header.index("{rvyba_ext_name}")] == "✔"
+class rvycbom_ext_name_insns(InsnTable):
+    check_col = "{rvycbom_ext_name}"
 
-class rvya_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvya_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
 
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
+class rvycboz_ext_name_insns(InsnTable):
+    check_col = "{rvycboz_ext_name}"
 
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
 
-    def check(self,row):
-        return row[self.header.index("{rvya_ext_name}")] == "✔"
+class rvycbop_ext_name_insns(InsnTable):
+    check_col = "{rvycbop_ext_name}"
 
-class rvyalrsc_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyalrsc_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
 
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
+class hybrid_ext_name_insns(InsnTable):
+    check_col = "{rvyi_default_ext_name}"
 
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("{rvyalrsc_ext_name}")] == "✔"
-
-class rvyaamo_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyaamo_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("{rvyaamo_ext_name}")] == "✔"
-
-class rvyh_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyh_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("{rvyh_ext_name}")] == "✔"
-
-class rvycbom_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvycbom_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("{rvycbom_ext_name}")] == "✔"
-
-class rvycboz_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvycboz_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("{rvycboz_ext_name}")] == "✔"
-
-class rvycbop_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvycbop_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("{rvycbop_ext_name}")] == "✔"
-
-class hybrid_ext_name_insns(table):
-    cols = ["Mnemonic", "{rvyi_default_ext_name}", "{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write('|'+'|'.join(self.cols)+'\n')
-        self.indices=[]
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i==0:
-                    outStr += '|' + insn_xref(row[i])
-                else:
-                    outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
-
-    def check(self,row):
-        return row[self.header.index("{rvyi_default_ext_name}")] == "✔"
 
 class illegal_insns(table):
     cols = ["Mnemonic", "illegal insn if (1)", "OR illegal insn if (2)", "OR illegal insn if (3)"]
