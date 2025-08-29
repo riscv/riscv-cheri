@@ -49,16 +49,21 @@ class table(abc.ABC):
     @abc.abstractmethod
     def update(self, row: list[str]): ...
 
+
 class InsnTable(table):
     """
     Base class for instruction tables that check for a '✔' in a specific column
     """
-    indices = []
-    other_cols = ["{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+    indices: list[int]
+    other_cols: list[str]
     check_col: str
 
-    def __init__(self, filename, header: list[str]):
+    def __init__(self, check_col: str, filename: str, header: list[str], other_cols: list[str] = None):
         super().__init__(filename, header)
+        self.check_col = check_col
+        if other_cols is None:
+            other_cols = ["{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+        self.other_cols = other_cols
         self.check_index = self.header.index(self.check_col)
         self.indices = [self.check_index]
         for i in self.other_cols:
@@ -76,67 +81,6 @@ class InsnTable(table):
 
     def check(self, row: list[str]):
         return row[self.check_index] == "✔"
-
-
-class Zabhlrsc_insns(InsnTable):
-    other_cols = ["Function"]
-    check_col = ["Zabhlrsc"]
-
-
-class rvyi_ext_name_insns(InsnTable):
-    check_col = "{rvyi_ext_name}"
-
-
-class rvyi_sentry_ext_name_insns(InsnTable):
-    check_col = "{rvyi_sentry_ext_name}"
-
-
-class rvyi_mod_ext_name_insns(InsnTable):
-    check_col = "{rvyi_mod_ext_name}"
-
-
-class rvyc_ext_name_insns(InsnTable):
-    check_col = "{rvyc_ext_name}"
-
-
-class rvyc_mod_ext_name_insns(InsnTable):
-    check_col = "{rvyc_mod_ext_name}"
-
-
-class rvyba_ext_name_insns(InsnTable):
-    check_col = "{rvyba_ext_name}"
-
-
-class rvya_ext_name_insns(InsnTable):
-    check_col = "{rvya_ext_name}"
-
-
-class rvyalrsc_ext_name_insns(InsnTable):
-    check_col = "{rvyalrsc_ext_name}"
-
-
-class rvyaamo_ext_name_insns(InsnTable):
-    check_col = "{rvyaamo_ext_name}"
-
-
-class rvyh_ext_name_insns(InsnTable):
-    check_col = "{rvyh_ext_name}"
-
-
-class rvycbom_ext_name_insns(InsnTable):
-    check_col = "{rvycbom_ext_name}"
-
-
-class rvycboz_ext_name_insns(InsnTable):
-    check_col = "{rvycboz_ext_name}"
-
-
-class rvycbop_ext_name_insns(InsnTable):
-    check_col = "{rvycbop_ext_name}"
-
-
-class hybrid_ext_name_insns(InsnTable):
-    check_col = "{rvyi_default_ext_name}"
 
 
 class illegal_insns(table):
@@ -499,6 +443,10 @@ def parse_cmdline_args():
 
     return parser.parse_args()
 
+def output_file(args, filename: str) -> str:
+    return os.path.join(args.output_dir, filename)
+
+
 if __name__ == "__main__":
     args = parse_cmdline_args()
 
@@ -510,21 +458,21 @@ if __name__ == "__main__":
         header = next(reader)
         tables = []
 
-        tables.append(csr_alias_action          (os.path.join(args.output_dir, "csr_alias_action_table_body.adoc"),header))
-        tables.append(csr_new_write_action      (os.path.join(args.output_dir, "new_csr_write_action_table_body.adoc"),header))
-        tables.append(csr_aliases               (os.path.join(args.output_dir, "csr_aliases_table_body.adoc"),header))
-        tables.append(csr_renamed_purecap_mode_d(os.path.join(args.output_dir, "csr_renamed_purecap_mode_d_table_body.adoc"),header))
-        tables.append(csr_renamed_purecap_mode_m(os.path.join(args.output_dir, "csr_renamed_purecap_mode_m_table_body.adoc"),header))
-        tables.append(csr_renamed_purecap_mode_s(os.path.join(args.output_dir, "csr_renamed_purecap_mode_s_table_body.adoc"),header))
-        tables.append(csr_renamed_purecap_mode_vs(os.path.join(args.output_dir, "csr_renamed_purecap_mode_vs_table_body.adoc"),header))
-        tables.append(csr_renamed_purecap_mode_u(os.path.join(args.output_dir, "csr_renamed_purecap_mode_u_table_body.adoc"),header))
+        tables.append(csr_alias_action          (output_file(args, "csr_alias_action_table_body.adoc"),header))
+        tables.append(csr_new_write_action      (output_file(args, "new_csr_write_action_table_body.adoc"),header))
+        tables.append(csr_aliases               (output_file(args, "csr_aliases_table_body.adoc"),header))
+        tables.append(csr_renamed_purecap_mode_d(output_file(args, "csr_renamed_purecap_mode_d_table_body.adoc"),header))
+        tables.append(csr_renamed_purecap_mode_m(output_file(args, "csr_renamed_purecap_mode_m_table_body.adoc"),header))
+        tables.append(csr_renamed_purecap_mode_s(output_file(args, "csr_renamed_purecap_mode_s_table_body.adoc"),header))
+        tables.append(csr_renamed_purecap_mode_vs(output_file(args, "csr_renamed_purecap_mode_vs_table_body.adoc"),header))
+        tables.append(csr_renamed_purecap_mode_u(output_file(args, "csr_renamed_purecap_mode_u_table_body.adoc"),header))
         #maybe these should be included but they're not
-        #tables.append(csr_added_purecap_mode_d  (os.path.join(args.output_dir, "csr_added_purecap_mode_d_table_body.adoc"),header))
-        #tables.append(csr_added_purecap_mode_m  (os.path.join(args.output_dir, "csr_added_purecap_mode_m_table_body.adoc"),header))
-        #tables.append(csr_added_purecap_mode_s  (os.path.join(args.output_dir, "csr_added_purecap_mode_s_table_body.adoc"),header))
-        tables.append(csr_added_legacy          (os.path.join(args.output_dir, "csr_added_hybrid_table_body.adoc"),header))
-        tables.append(csr_perms                 (os.path.join(args.output_dir, "csr_permission_table_body.adoc"),header))
-        tables.append(csr_exevectors            (os.path.join(args.output_dir, "csr_exevectors_table_body.adoc"),header))
+        #tables.append(csr_added_purecap_mode_d  (output_file(args, "csr_added_purecap_mode_d_table_body.adoc"),header))
+        #tables.append(csr_added_purecap_mode_m  (output_file(args, "csr_added_purecap_mode_m_table_body.adoc"),header))
+        #tables.append(csr_added_purecap_mode_s  (output_file(args, "csr_added_purecap_mode_s_table_body.adoc"),header))
+        tables.append(csr_added_legacy          (output_file(args, "csr_added_hybrid_table_body.adoc"),header))
+        tables.append(csr_perms                 (output_file(args, "csr_permission_table_body.adoc"),header))
+        tables.append(csr_exevectors            (output_file(args, "csr_exevectors_table_body.adoc"),header))
 
         for row in reader:
             for t in tables:
@@ -533,24 +481,83 @@ if __name__ == "__main__":
     with open(args.isa,newline='') as isaFile:
         reader = csv.reader(isaFile, delimiter=',')
         header = next(reader)
-        tables = []
-
-        #same for rv32/rv64
-        tables.append(rvyalrsc_ext_name_insns      (os.path.join(args.output_dir, "Zalrsc_RVY_insns_table_body.adoc"), header))
-        tables.append(rvyaamo_ext_name_insns       (os.path.join(args.output_dir, "Zaamo_RVY_insns_table_body.adoc"), header))
-        tables.append(rvyh_ext_name_insns          (os.path.join(args.output_dir, "H_RVY_insns_table_body.adoc"), header))
-        tables.append(rvyi_ext_name_insns          (os.path.join(args.output_dir, "Zyi_insns_table_body.adoc"), header))
-        tables.append(rvyi_sentry_ext_name_insns   (os.path.join(args.output_dir, "Zys_insns_table_body.adoc"), header))
-        tables.append(rvyi_mod_ext_name_insns      (os.path.join(args.output_dir, "Zyi_mod_insns_table_body.adoc"), header))
-        tables.append(rvyc_ext_name_insns          (os.path.join(args.output_dir, "Zyc_insns_table_body.adoc"), header))
-        tables.append(rvyc_mod_ext_name_insns      (os.path.join(args.output_dir, "Zyca_mod_insns_table_body.adoc"), header))
-        tables.append(rvyba_ext_name_insns         (os.path.join(args.output_dir, "Zba_RVY_insns_table_body.adoc"), header))
-        tables.append(rvycbom_ext_name_insns       (os.path.join(args.output_dir, "Zicbom_RVY_insns_table_body.adoc"), header))
-        tables.append(rvycboz_ext_name_insns       (os.path.join(args.output_dir, "Zicboz_RVY_insns_table_body.adoc"), header))
-        tables.append(rvycbop_ext_name_insns       (os.path.join(args.output_dir, "Zicbop_RVY_insns_table_body.adoc"), header))
-        tables.append(hybrid_ext_name_insns        (os.path.join(args.output_dir, "Zyhybrid_insns_table_body.adoc"), header))
-        tables.append(illegal_insns                (os.path.join(args.output_dir, "illegal_insns_table_body.adoc"), header))
-
+        tables = [
+            InsnTable(
+                check_col="Zabhlrsc",
+                filename=output_file(args,  "Zabhlrsc_insns_table_body.adoc"),
+                header=header,
+                other_cols=["Function"],
+            ),
+            InsnTable(
+                check_col="{cheri_base_ext_name}",
+                filename=output_file(args, "RVY_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_sentry_ext_name}",
+                filename=output_file(args,  "Zys_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_i_mod_ext_name}",
+                filename=output_file(args,  "RVY_I_mod_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_c_ext_name}",
+                filename=output_file(args, "RVY_C_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_c_mod_ext_name}",
+                filename=output_file(args,  "RVY_C_mod_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_zba_ext_name}",
+                filename=output_file(args, "RVY_Zba_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_zalrsc_ext_name}",
+                filename=output_file(args,  "RVY_Zalrsc_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_zaamo_ext_name}",
+                filename=output_file(args,  "RVY_Zaamo_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_h_ext_name}",
+                filename=output_file(args, "RVY_H_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_zicbom_mod_ext_name}",
+                filename=output_file(args,  "RVY_Zicbom_mod_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_zicboz_mod_ext_name}",
+                filename=output_file(args,  "RVY_Zicboz_mod_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{rvy_zicbop_mod_ext_name}",
+                filename=output_file(args,  "RVY_Zicbop_mod_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                check_col="{cheri_default_ext_name}",
+                filename=output_file(args,  "Zyhybrid_insns_table_body.adoc"),
+                header=header,
+            ),
+            illegal_insns(
+                filename=output_file(args, "illegal_insns_table_body.adoc"),
+                header=header,
+            ),
+        ]
         for row in reader:
             for t in tables:
                 t.update(row)
