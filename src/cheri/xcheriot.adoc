@@ -1,0 +1,397 @@
+:cheriot_ext_name: Xcheriot
+
+:cheriot_auicgp_name: AUICGP
+:cheriot_auicgp_name_lc: auicgp
+
+:cheriot_setbounds_round_down_name: YBNDSRDW
+:cheriot_setbounds_big_imm_name: YBNDSWBI
+
+:cheriot_ot_x_min: 1
+:cheriot_sentry_ot_min: 1
+:cheriot_sentry_ot_bd: 4
+:cheriot_sentry_ot_be: 5
+:cheriot_sentry_ot_fd: 2
+:cheriot_sentry_ot_fe: 3
+:cheriot_sentry_ot_fi: 1
+:cheriot_sentry_ot_max: 5
+:cheriot_ot_x_max: 7
+:cheriot_ot_absent: 8
+:cheriot_ot_nx_min: 9
+:cheriot_ot_nx_max: 15
+:cheriot_ot_max: 15
+
+[appendix]
+[#section_cheriot,reftext="{cheriot_ext_name}"]
+== "{cheriot_ext_name}" Extension and Capabilities
+
+=== Required Extensions
+
+{cheriot_ext_name} is specific to {cheri_base32_ext_name}.
+It requires the presence of all of:
+
+* <<section_priv_cheri,{cheri_priv_m_ext}>>,
+
+* <<section_zylevels1>>,
+
+* <<section_zyseal>>, and
+
+* <<section_zysentry>>.
+
+The present specification presumes the *absence* of all of:
+
+* H-, S-, or U-mode,
+
+* <<section_cheri_hybrid_ext,{cheri_default_ext_name}>>,
+
+* <<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>>,
+
+* <<section_zyseal_amb>>, and
+
+* ...
+
+[NOTE]
+=====
+While {cheriot_ext_name} is nominally compatible with
+<<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and
+<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>>,
+and particular instantiations may opt to permit disabling CHERI,
+we have not yet found compelling reason to formally specify this composition.
+=====
+
+[NOTE]
+=====
+While {cheriot_ext_name} is nominally compatible with <<section_zyseal_amb>>,
+the operating systems written for {cheriot_ext_name} have security models
+that presume the absence of ambient sealing.
+=====
+
+=== New Instructions
+
+==== Loads and Stores With `x0` Authority
+
+Instructions such as `{load_cap_name_lc} {cd}, n(x0)` would,
+in {cheri_base_ext_name},
+necessarily fault due to the clear {ctag} of the all-zeros `x0`.
+{cheriot_ext_name} defines these instructions
+to use <<mtidc>> as the authority instead.
+
+[NOTE]
+=====
+TODO, research required: we have never actually tested this; it is just
+conjecture that it works.  Maybe this should be some non-{cheriot_ext_name}
+extension.
+=====
+
+[NOTE]
+=====
+TODO, research required: if we made this depend on <<pcc>>.<<asr_perm>>, using
+<<mtidc>> for unprivileged operations and <<mscratch>> for privileged ones, we
+might be able to get away from the annoying, type-system-wrecking, IRQs-deferred
+CSR/GPR exchange dance at the top of the switcher's trap handler.
+=====
+
+==== Conditional Branches
+
+{cheri_base_ext_name} reserves uncompressed `beq` and `bne` instruction
+encodings in which `rs1≥rs2`.
+{cheriot_ext_name} defines such instructions with `rs2=x0` to be
+conditional branches on the {ctag} of `rs1` being set (`beq`) or clear (`bne`).
+
+[NOTE]
+=====
+TODO, research required: we have never actually tested this; it is just
+conjecture that it works.  Maybe this should be some non-{cheriot_ext_name}
+extension.
+=====
+
+[#section_cheriot_auicgp]
+==== {cheriot_auicgp_name}
+
+{cheriot_ext_name} defines a new U-type instruction, {cheriot_auicgp_name},
+which adds its shifted (see <<section_cheriot_auipc_shift>>) U-immediate
+to the address of <<mtidc>> and stores the result in a target register,
+analogously to <<AUIPC_CHERI>> and <<pcc>>.
+
+==== {cheriot_setbounds_big_imm_name}
+
+[NOTE]
+=====
+TODO: setbounds immediate as an I-type instruction w/ 12-bit immediate rather
+than the base's R-type w/ (scaled) 5-bit immediate.
+=====
+
+==== {cheriot_setbounds_round_down_name}
+
+[NOTE]
+=====
+TODO: setbounds register that fixes base and rounds length down for
+representability.
+=====
+
+=== Capability Load Filter and The Revocation Bitmap
+
+[NOTE]
+=====
+TODO: Define modified `{load_cap_name_lc}` semantics and
+the existence of the bitmap and address mapping function.
+Actual bitmap location and address mapping function
+to be decided by platform memory layout.
+=====
+
+=== Stack High Watermark CSRs
+
+{cheriot_ext_name} introduces two new XLEN CSRs: `mshwm` and `mshwmb`.  Both are
+freely read but require <<asr_perm>> for explicit writes from software.  Writes
+are WARL, with legal values being addresses with capability alignment (that is,
+multiples of YLEN bits in octet bytes).  Store instructions targeting addresses
+between the values held in `mshwm` and `mshwmb` cause `mshwm` to be updated to
+the lowest targeted address (rounded down to capability alignment).
+
+[NOTE]
+=====
+The intended software use of these CSRs is, as the section title suggests,
+to track the "high watermark" of a thread's C stack
+(that is, the lowest address written to, because "stacks grow down").
+The thread context switching code should context switch these registers,
+having initialized `mshwmb` to the lower bound of the thread's stack capability
+and `mshwm` to its upper bound.
+Privileged stack zeroing code can be used to lower `mshwm`, so that all bytes
+between the addresses held in `mshwm` and `mshwmb` are known to be zero.
+=====
+
+=== Capability Encoding
+
+==== <<mycfg>> Value
+
+Harts implementing {cheriot_ext_name} must report `0x2` in <<mycfg>>.
+
+==== Bounds Encoding
+
+[NOTE]
+=====
+TODO
+=====
+
+[#section_cheriot_auipc_shift]
+==== <<AUIPC_CHERI>> Shift
+
+<<AUIPC_CHERI>> and {cheriot_ext_name}'s own <<section_cheriot_auicgp>>
+interpret their 20-bit immediate operand with an **11**-bit left shift.
+That is, `auipc {cd}, 0x1` adds `1 << 11` to <<pcc>>'s address
+and stores the result in `{cd}`.
+
+[NOTE]
+=====
+RISC-V's `AUIPC` instruction is meant to work in combination with
+the signed 12-bit immediate operands
+of load (I-type) and store (S-type) instructions,
+and so its signed 20-bit immediate operand is usually interpreted
+with a 12-bit left shift.
+(This is analogous to `LUI` and `ADDI` for materializing 32-bit constants.)
+As such, absolute displacements with the 12th bit set
+(such as those between 2048 and 4095)
+are expressed by having the `auipc` displace by an extra `1 << 12` bytes
+and adjusting the associated load/store/arithmetic instructions to compensate.
+The {cheriot_ext_name} encoding does not guarantee sufficient
+"out-of-bounds representability" for this sequence,
+and so we alter the shift used with <<AUIPC_CHERI>>'s immediate operand
+so that all in-bound displacements be encoded without exceeding the
+capability's bounds in the intermediate computation.
+By contrast, the encoding scheme of <<app_cap_description>> ensures
+that any capability whose length is at least 2 KiB is able to represent
+at least 2 KiB below its lower bound and above its upper bound.
+=====
+
+==== Permissions
+
+{cheriot_ext_name} defines _one_ <<sec_cap_sdp,software defined permission>>,
+which we call `U0`.
+That is, its `SDPLEN` value is `1`.
+
+[NOTE]
+=====
+As a reminder, there are 11 other architectural permission bits
+in {cheriot_ext_name}:
+
+* <<r_perm>>, <<w_perm>>, <<c_perm>>, <<lm_perm>>, <<x_perm>>, and <<asr_perm>>
+  from {cheri_base_ext_name};
+
+* <<zylevels1_lg_perm>>, <<zylevels1_sl_perm>>, and <<zylevels1_gl_perm>>
+  from <<section_zylevels1>>; and
+
+* <<zyseal_se_perm>> and <<zyseal_us_perm>> from <<section_zyseal>>.
+=====
+
+[NOTE]
+=====
+The aggregate permissions bit field (<<acperm_bit_field>>) used by <<CGPERM>>
+and <<CLRPERM>> for {cheriot_ext_name} is thus:
+include::./img/xcheriot-acperm_bit_field.edn[]
+=====
+
+[#section_cheriot_roots]
+==== Roots
+
+{cheriot_ext_name} defines _three_ <<root-cap>> capability values.
+
+* Its <<root-rx-cap>> capability value is defined as
+  having <<zylevels1_gl_perm>> set and granting exactly all of
+  <<x_perm>>, <<r_perm>>, <<c_perm>>, <<lm_perm>>, <<asr_perm>>,
+  and <<zylevels1_lg_perm>>.
+
+* Its <<root-rw-cap>> capability value is defined as
+  having <<zylevels1_gl_perm>> set and granting exactly all of
+  <<r_perm>>, <<w_perm>>, <<c_perm>>, <<lm_perm>>,
+  <<zylevels1_lg_perm>>, and <<zylevels1_sl_perm>>.
+
+* It defines a _root sealing_ capability value that is unsealed,
+  has full address space bounds,
+  and grants exactly all of <<zyseal_se_perm>>, <<zyseal_us_perm>>, and `U0`.
+
+These root capabilities satisfy the following properties by construction.
+They will necessarily remain true through any series of <<CLRPERM>> transitions.
+
+* At most one of <<x_perm>> or <<w_perm>> may be set.
+
+* The <<zyseal_se_perm>>, <<zyseal_us_perm>>, and `U0`
+  collectively conflict with
+  either of the <<r_perm>> and <<w_perm>> permissions.
++
+That is, a capability may grant permissions
+from at most one of these two sets;
+this serves to partition capabilities that refer to memory addresses
+from those that refer to <<sec_cap_type>> values
+(those granting <<zyseal_se_perm>> and/or <<zyseal_us_perm>>)
+or uninterpreted integers (those granting `U0`).
+
+==== Permission Encoding
+
+{cheriot_ext_name} adds the following rules to <<sec_permission_transitions>>:
+
+[float="center",align="center",cols="2,2,4",options="header"]
+|===
+| <<CLRPERM>> Rule     | Permission            | Valid only if
+| {cheriot_ext_name}-1 | <<x_perm>>            | <<c_perm>> and <<r_perm>>
+| {cheriot_ext_name}-2 | <<zylevels1_sl_perm>> | <<r_perm>>
+|===
+
+[NOTE]
+=====
+This second rule _adds_ <<r_perm>> as a dependency of <<zylevels1_sl_perm>>.
+Its sole effect is to exclude local and global capabilities that would otherwise
+grant exactly all of <<w_perm>>, <<c_perm>>, and <<zylevels1_sl_perm>>.
+These capabilities were judged to be the least useful of the combinations
+left after the by-construction properties of the roots and the myriad
+<<CLRPERM>> rules had winnowed the possible combinations.
+It is easy to verify that all other permission bits are determined by
+the presence of <<zylevels1_sl_perm>> and the absence of <<r_perm>>:
+
+* The presence of <<zylevels1_sl_perm>> already, by its definition,
+  requires the presence of <<w_perm>> and <<c_perm>>.
+
+* The presence of <<w_perm>> implies both
+
+** that neither <<x_perm>> nor <<asr_perm>> are granted
+   (the first "by construction" property and
+   <<asr_perm>>'s dependence on <<x_perm>>) and
+
+** that none of
+   <<zyseal_se_perm>>, <<zyseal_us_perm>>, or the `U0` permission
+   are granted (the second "by construction" property).
+
+* The absence of <<r_perm>> similarly implies absence of
+  its dependents, <<lm_perm>> and <<zylevels1_lg_perm>>.
+
+The only permission bit left to consider is <<zylevels1_gl_perm>>.
+Thus, making <<zylevels1_sl_perm>> depend on <<r_perm>> has the effect of
+precluding exactly the two stated capability forms.
+=====
+
+[NOTE]
+=====
+TODO: the actual encoding format
+=====
+
+==== <<sec_cap_type>> Values and Encoding
+
+{cheriot_ext_name} uses a 3-bit field to encode <<sec_cap_type>> values.
+Unsealed capabilities, those with type `0`, have an all-zeros type field,
+and an all-zeros type field always corresponds to an unsealed capability.
+Otherwise, the interpretation of this field
+_depends on the capability's <<x_perm>> value_:
+field values `0b001` through `0b111` correspond to types...
+
+* {cheriot_ot_x_min} (inclusive) through {cheriot_ot_x_max} (inclusive)
+  iff the capability grants <<x_perm>>, or
+
+* {cheriot_ot_nx_min} (inclusive) through {cheriot_ot_nx_max} (inclusive)
+  iff the capability does not grant <<x_perm>>.
+
+That is, it is not possible to express a capability with type between
+{cheriot_ot_x_min} (inclusive) through {cheriot_ot_x_max} (inclusive)
+that does not grant <<x_perm>> or, dually, one with type between
+{cheriot_ot_nx_min} (inclusive) through {cheriot_ot_nx_max} (inclusive)
+that does grant <<x_perm>>.
+Attempts to <<CSEAL>> or otherwise construct such a capability,
+or one with type equal to {cheriot_ot_absent} or above {cheriot_ot_max},
+will instead result in a cleared {ctag}.
+
+=== Sentries
+
+{cheriot_ext_name} builds upon <<section_zysentry>>
+to give architectural semantics to _five_ <<sec_cap_type>> values
+({cheriot_sentry_ot_min} through {cheriot_sentry_ot_max}, inclusive):
+
+* Any of these values may be passed as inputs to <<JALR_CHERI>>.
+  When such a <<JALR_CHERI>> instruction retires,
+  the hart's `mstatus.MIE` bit is updated as per <<tab_cheriot_sentry_irq>>.
+
+* Two values, {cheriot_sentry_ot_bd} and {cheriot_sentry_ot_be},
+  are used by <<JALR_CHERI>> to seal the return capability.
+  If the hart's `mstatus.MIE` bit is `0` when the instruction retires,
+  the return capability is sealed with {cheriot_sentry_ot_bd};
+  otherwise, {cheriot_sentry_ot_be} is used.
+
+* <<JALR_CHERI>> is given conditional behavior
+  based on the register selectors used,
+  as detailed in <<tab_cheriot_jalr_regs>>.
+  Prohibited combinations of register selectors and <<sec_cap_type>> value
+  will raise a CHERI exception.
+
+.Additional <<JALR_CHERI>> Architectural Semantics
+[#tab_cheriot_sentry_irq,width="100%",options=header,halign=center,cols="1,5"]
+|===
+| <<sec_cap_type>>       | IRQs at Retirement (`mstatus.MIE`)
+| {cheriot_sentry_ot_fi} | Unchanged (as is)
+| {cheriot_sentry_ot_fd}, {cheriot_sentry_ot_bd} | Deferred (`0`)
+| {cheriot_sentry_ot_fe}, {cheriot_sentry_ot_be} | Enabled (`1`)
+|===
+
+.<<JALR_CHERI>> Conditional Behavior
+[#tab_cheriot_jalr_regs,width="100%",options=header,halign=center,cols="1,2,4,4"]
+|===
+| {cs1} | {cd}   | Permitted {cs1} <<sec_cap_type>>-s | Comments
+| `ra`  | `null` | {cheriot_sentry_ot_bd}, {cheriot_sentry_ot_be} | Function return
+| ≠`ra` | `null` | 0, {cheriot_sentry_ot_fi} | Tail call
+| any   | ∉{ `null`, `ra` } | 0, {cheriot_sentry_ot_fi} | Code outlining
+| any   | `ra`   | 0, {cheriot_sentry_ot_fi}, {cheriot_sentry_ot_fd}, {cheriot_sentry_ot_fe} | Function call
+|===
+
+=== Miscellaneous Changes
+
+[NOTE]
+=====
+TODO: What else am I forgetting?
+=====
+
+==== <<mtidc>> Reset Value
+
+The <<mscratch>> register's reset value is changed to be
+the <<root-rw-cap>> capability value
+(with set {ctag}; recall <<section_cheriot_roots>>).
+
+==== <<mscratch>> Reset Value
+
+The <<mscratch>> register's reset value is changed to be
+the root sealing capability value
+(with set {ctag}; recall <<section_cheriot_roots>>).
