@@ -102,13 +102,15 @@ As mentioned, the <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>> permissions
 are dependent on (refinements of) base permissions.
 <<CLRPERM>> (including "implicit <<CLRPERM>>" operations) and/or the capability encoding
 therefore clear these permissions when their dependencies clear.
-Specifically, we add the following rules to <<acperm_rules>>:
+Specifically, we add the following rules to those of <<sec_permission_transitions>>:
 
 [float="center",align="center",cols="2,2,4",options="header"]
 |===
-| Rule                       | Permission            | Valid only if
-| {cheri_levels1_ext_name}-1 | <<zylevels1_lg_perm>> | <<c_perm>> and <<r_perm>>
-| {cheri_levels1_ext_name}-2 | <<zylevels1_sl_perm>> | <<c_perm>> and <<w_perm>>
+| <<CLRPERM>> Rule | Permission | Valid only if
+| [[perm_req:zylevels1:lg:c-and-r,{cheri_levels1_ext_name}-1]]{cheri_levels1_ext_name}-1 +
+                   | <<zylevels1_lg_perm>> | <<c_perm>> and <<r_perm>>
+| [[perm_req:zylevels1:sl:c-and-w,{cheri_levels1_ext_name}-2]]{cheri_levels1_ext_name}-2 +
+                   | <<zylevels1_sl_perm>> | <<c_perm>> and <<w_perm>>
 |===
 
 === Interaction with <<LOAD_CAP>>
