@@ -1,0 +1,149 @@
+:cheriot_ext_name: Xcheriot
+
+:cheriot_auicgp_name: AUICGP
+:cheriot_auicgp_name_lc: auicgp
+
+:cheriot_sentry_ot_bd: 4
+:cheriot_sentry_ot_be: 5
+:cheriot_sentry_ot_fd: 2
+:cheriot_sentry_ot_fe: 3
+:cheriot_sentry_ot_fi: 1
+:cheriot_sentry_ot_min: 1
+:cheriot_sentry_ot_max: 5
+
+[#section_cheriot,reftext="{cheriot_ext_name}"]
+== "{cheriot_ext_name}" Extension and Capabilities
+
+=== Required Extensions
+
+{cheriot_ext_name} is specific to {cheri_base32_ext_name}.
+It requires the presence of all of:
+
+* <<section_priv_cheri,{cheri_priv_m_ext}>>,
+
+* <<section_zylevels1>>,
+
+* <<section_zyseal>>, and
+
+* <<section_zysentry>>.
+
+It prohibits the presence of any of
+
+* H-, S-, or U-mode,
+
+* <<section_cheri_hybrid_ext,{cheri_default_ext_name}>>,
+
+* <<section_zyseal_amb>>, or
+
+* ...
+
+=== Sentries
+
+{cheriot_ext_name} builds upon <<section_zysentry>>
+to give architectural semantics to _five_ <<sec_cap_type>> values
+({cheriot_sentry_ot_min} through {cheriot_sentry_ot_max}, inclusive):
+
+* Any of these values may be passed as inputs to <<JALR_CHERI>>.
+  When such a <<JALR_CHERI>> instruction retires,
+  the hart's `mstatus.MIE` bit is updated as per <<tab_cheriot_sentry_irq>>.
+
+* Two values, {cheriot_sentry_ot_bd} and {cheriot_sentry_ot_be},
+  are used by <<JALR_CHERI>> to seal the return capability.
+  If the hart's `mstatus.MIE` bit is `0` when the instruction retires,
+  the return capability is sealed with {cheriot_sentry_ot_bd};
+  otherwise, {cheriot_sentry_ot_be} is used.
+
+* <<JALR_CHERI>> is given conditional behavior
+  based on the register selectors used,
+  as detailed in <<tab_cheriot_jalr_regs>>.
+  Prohibited combinations of register selectors and <<sec_cap_type>> value
+  will raise a CHERI exception.
+
+.Additional <<JALR_CHERI>> Architectural Semantics
+[#tab_cheriot_sentry_irq,width="100%",options=header,halign=center,cols="1,5"]
+|===
+| <<sec_cap_type>>       | IRQs at Retirement (`mstatus.MIE`)
+| {cheriot_sentry_ot_fi} | Unchanged (as is)
+| {cheriot_sentry_ot_fd}, {cheriot_sentry_ot_bd} | Deferred (`0`)
+| {cheriot_sentry_ot_fe}, {cheriot_sentry_ot_be} | Enabled (`1`)
+|===
+
+.<<JALR_CHERI>> Conditional Behavior
+[#tab_cheriot_jalr_regs,width="100%",options=header,halign=center,cols="1,2,4,4"]
+|===
+| {cs1} | {cd}   | Permitted {cs1} <<sec_cap_type>>-s | Comments
+| `ra`  | `null` | {cheriot_sentry_ot_bd}, {cheriot_sentry_ot_be} | Function return
+| ≠`ra` | `null` | 0, {cheriot_sentry_ot_fi} | Tail call
+| any   | ∉{ `null`, `ra` } | 0, {cheriot_sentry_ot_fi} | Code outlining
+| any   | `ra`   | 0, {cheriot_sentry_ot_fi}, {cheriot_sentry_ot_fd}, {cheriot_sentry_ot_fe} | Function call
+|===
+
+=== New Instructions
+
+==== {cheriot_auicgp_name}
+
+=== Capability Load Filter and The Revocation Bitmap
+
+=== Capability Encoding
+
+==== <<ycfg>> Value
+
+Harts implementing {cheriot_ext_name} must report `0x2` in <<ycfg,mycfg>>.
+
+==== Bounds Encoding
+
+==== <<AUIPC_CHERI>> Shift
+
+==== Permissions
+
+{cheriot_ext_name} defines _one_ <<sec_cap_sdp>>, which we call `U0`.
+
+==== Permission Encoding
+
+{cheriot_ext_name} adds the following _non-dependency_ rules
+to <<sec_permission_transitions>>:
+
+* <<x_perm>> may be granted only if both <<c_perm>> and <<r_perm>> are granted.
+
+* If ever the permission set being computed
+  grants both <<w_perm>> and <<c_perm>> without also granting <<r_perm>>,
+  then <<zylevels1_sl_perm>> is removed.
+
+Additionally, the {cheriot_ext_name} encoding
+satisfies the following properties by construction,
+and so they are necessarily true of its <<root-cap>>
+and need not be checked by <<CLRPERM>>:
+
+* At most one of <<x_perm>> or <<w_perm>> may be set.
+
+* The <<zyseal_se_perm>>, <<zysel_us_perm>>, and `U0` <<sec_cap_sdp>>
+  permissions conflict with the <<r_perm>> and <<w_perm>> permissions.
+  That is, at most one of these two sets may have any set permissions.
+
+[NOTE]
+=====
+The second of the non-dependency rules above deserves a little more attention.
+Its sole effect is to exclude capabilities that would grant
+all of <<w_perm>>, <<c_perm>>, and <<zylevels1_sl_perm>> but not <<r_perm>>.
+The presence of <<w_perm>> implies both that neither
+<<x_perm>> nor <<asr_perm>> are granted
+(the first "by construction" property and
+<<asr_perm>>'s dependence on <<x_perm>>)
+and that none of
+<<zyseal_se_perm>>, <<zyseal_us_perm>>, or the `U0` <<sec_cap_sdp>> permission
+are granted (the second "by construction" property).
+The absense of <<r_perm>> similarly implies absense of
+both <<lm_perm>> and <<zylevels1_lg_perm>>.
+Thus, the only permission bits left to consider are
+<<zylevels1_gl_perm>> (left unaltered) and <<zylevels1_sl_perm>> (cleared).
+=====
+
+==== <<sec_cap_type>> Values and Encoding
+
+=== Miscellaneous Changes
+
+==== <<mscratch>> Reset Value
+
+The <<mscratch>> register's reset value is changed to be
+a <<root-cap>> (with its {ctag} set),
+granting both and only <<zyseal_se_perm>> and <<zyseal_us_perm>>.

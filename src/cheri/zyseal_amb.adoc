@@ -1,0 +1,33 @@
+[#section_zyseal_amb,reftext="{cheri_seal_amb_ext_name}"]
+== "{cheri_seal_amb_ext_name}" Extension for Ambient Sealing
+
+Capability encodings may define a set of <<sec_cap_type>> values that do not
+need capability-based authority to be used as seals.
+Thus, the right to seal at these types (recall <<section_zyseal>>)
+becomes "ambiently available" to all software in the system.
+
+Concretely, extensions may define either or both:
+
+* One or more <<sec_cap_type>> values that will be used for <<YSEAL>>
+  instructions with `null` authority:
+  `{YSEAL_LC} rd, null, rs2` will transform an unsealed capability in `rs2`
+  into a capability in `rd` sealed at one of these types.
+  The type selected is permitted to be a function of the permissions borne by
+  the capability in `rs2`.
+  The remainder of the <<YSEAL>> semantics apply; in particular,
+  if the capability in `rs2` is already sealed or untagged, then
+  the result in `rd` will be untagged.
+
+* A set of <<sec_cap_type>> values for which an untagged authority suffices.
+  If `rs1.address` is one of these types, `{YSEAL_LC} rd, rs1, rs2` performs
+  neither tag nor bounds checks on the authority in `rs1`, but the remainder of
+  its semantics apply.
+
+It is not necessary for such encodings to entail the presence of
+<<section_zyseal>> (though at least some <<YSEAL>> instructions become legal)
+or <<section_zysentry>> (though this is another possible way to build sentries).
+The encodings used by <<YUNSEAL>> may remain an illegal instruction or used by
+other extensions in the platform.
+If the encoding defines only the first option above (<<YSEAL>> with `null`
+authority), all <<YSEAL>> encodings with `rs1≠0` may likewise remain illegal or
+available for use by other extensions.

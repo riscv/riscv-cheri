@@ -76,6 +76,55 @@ The base definition of capabilities in {cheri_base_ext_name} does not have capab
 However, we anticipate that extensions may introduce such schemes;
 see <<section_zylevels1>> for one possibility.
 
+==== Capability Type (CT) Encoding
+
+ifdef::cheri_v9_annotations[]
+WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
+The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
+endif::[]
+
+[NOTE]
+=====
+These are sketches and subject to revision before this PR is merged.
+=====
+
+This encoding may be instantiated with "minimal, implicit sealing support".
+This entails the presence of <<section_zyseal>> and <<section_zysentry>>
+and it specifies a one bit wide CT field.
+This field encodes <<sec_cap_type>> `0` (unsealed capabilities) with value `0`
+and type `1` with value `1`.
+_All_ capabilities are presumed to bear <<zyseal_se_perm>>;
+it is not possible to clear this permission without clearing the tag.
+_No_ capability grants <<zyseal_us_perm>>,
+even the <<root-cap>> capability of <<section_infinite_cap_encoding>>;
+the sole mechanisms available for unsealing are <<JALR_CHERI>> and <<CBLD>>.
+<<JALR_CHERI>> is defined to seal its return capabilities as sentries at type 1
+and to accept (and unseal) input sentry capabilities sealed at type 1;
+no further conditioning on its behavior is imposed
+(so sentries are accepted from any register
+and jumps to sentries may themselves give rise to return capabilities).
+
+This encoding may be instantiated with "minimal, explicit sealing support".
+This too entails the presence of <<section_zyseal>> and <<section_zysentry>>
+and shares the same one bit wide CT field,
+designation of <<sec_cap_type>> `1`,
+and <<JALR_CHERI>> behavior
+with the "minimal, ambient sealing support" above.
+However, in this case, <<zyseal_se_perm>> is manifest in the (encoded) AP field.
+
+Other instantiations of <<section_zyseal>> and <<section_zysentry>>
+are certainly possible and are left for future versions of this encoding.
+
+[NOTE]
+=====
+The CHERIoT encoding (to be defined in a separate section!) will instantiate
+<<section_zyseal>> and <<section_zysentry>> with a 3-bit CT field with
+<<x_perm>>-dependent encoding, explicit <<zyseal_se_perm>> and
+<<zyseal_us_perm>> bits in a separate root, and a plethora of sentry types with
+additional semantics.  All of this should be compatible with the extensions as
+defined.
+=====
+
 [#AP-field-encoding, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
@@ -196,7 +245,7 @@ is supported, otherwise such encodings are reserved. Despite being encoded here 
 
 When MXLEN=32, this compressed permission format introduces
 new dependencies between permisison bits.
-When <<section_zylevels1>> _is not_ present, the following new rows are added to <<acperm_rules>>:
+When <<section_zylevels1>> _is not_ present, the following new rows are added to those of <<sec_permission_transitions>>:
 
 [float="center",align="center",cols="2,2,4",options="header"]
 |===
@@ -206,7 +255,7 @@ When <<section_zylevels1>> _is not_ present, the following new rows are added to
 |===
 
 
-When <<section_zylevels1>> _is_ present, the following new rows are added to <<acperm_rules>>:
+When <<section_zylevels1>> _is_ present, the following new rows are added to those of <<sec_permission_transitions>>:
 
 [float="center",align="center",cols="2,2,4",options="header"]
 |===
@@ -243,36 +292,29 @@ implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
 . For MXLEN=64, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
 . For MXLEN=32, the <<m_bit>> is only encoded in quadrant 1 and does _not_ exist in the other quadrants.
 
-[#sec_permission_transitions]
-===== Permission Transitions
+===== RV32 Permission Transitions
 
 Executing <<CLRPERM>> can result in sets of permissions which cannot be represented when MXLEN=32
-(see <<cap_perms_encoding32>>) or permission combinations which are not useful for MXLEN=64, such as
-<<asr_perm>> set without <<x_perm>>.
+(see <<cap_perms_encoding32>>).
 These cases are defined to return useful minimal sets of permissions.
 
-When removing permissions with <<CLRPERM>> the following rules,
-along with any added by extensions,
-are iterated to fixed-point:
+When removing permissions with <<CLRPERM>> the following rules are included
+(along with those of <<sec_permission_transitions>> and others added by extensions)
+in the set iterated to fixed-point:
 
-[#acperm_rules]
-.<<CLRPERM>> common rules
+.<<CLRPERM>> RV32 rules
 [float="center",align="center",cols="2,2,4",options="header"]
 |===
 | Rule            | Permission   | Valid only if
-|  1  (RV32 only) | <<asr_perm>> | All other permissions are set.
-|  2              | <<c_perm>>   | <<r_perm>> or <<w_perm>>
-|  3  (RV32 only) | <<c_perm>>   | <<r_perm>>
-|  4  (RV32 only) | <<x_perm>>   | <<r_perm>>
-|  5  (RV32 only) | <<w_perm>>   | not(<<c_perm>>) or <<lm_perm>>
-|  6  (RV32 only) | <<x_perm>>   | <<w_perm>> or <<c_perm>>
-|  7              | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
-|  8  (RV32 only) | <<lm_perm>>  | (<<w_perm>> or <<zylevels1_lg_perm>>)
-|  9              | <<asr_perm>> | <<x_perm>>
-| 10^1^           | <<m_bit>>    | <<x_perm>> and {cheri_default_ext_name} is implemented
+| RV32-1 | <<asr_perm>> | All other permissions are set.
+| RV32-2 | <<c_perm>>   | <<r_perm>>
+| RV32-3 | <<x_perm>>   | <<r_perm>>
+| RV32-4 | <<w_perm>>   | not(<<c_perm>>) or <<lm_perm>>
+| RV32-5 | <<x_perm>>   | <<w_perm>> or <<c_perm>>
+| RV32-6 | <<lm_perm>>  | (<<w_perm>> or <<zylevels1_lg_perm>>)
 |===
 
-^1^ For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
+For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
 are only valid if {cheri_default_ext_name} is implemented. Otherwise those encodings represent invalid permissions.
 
 NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
@@ -301,16 +343,6 @@ The value of the <<SDP-field>> bits of the <<GCPERM>> result maps 1:1 to the <<S
 |==============================================================================
 
 NOTE: Software is completely free to define the usage of these bits.
-
-[#section_cap_sealed]
-==== Capability Type (CT) Encoding
-
-ifdef::cheri_v9_annotations[]
-WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
-The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
-endif::[]
-
-For {cheri_base_ext_name} the CT field is one bit wide and maps 1:1 to the capability types listed in <<tab_cap_types>>: it is a sentry capability if the bit is 1 or unsealed if it is 0.
 
 [#section_cap_bounds]
 ==== Bounds (EF, T, TE, B, BE) Encoding
