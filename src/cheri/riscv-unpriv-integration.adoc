@@ -126,15 +126,15 @@ All capabilities derived from invalid capabilities are themselves invalid, i.e.,
 
 NOTE: When the {ctag} is zero, the register or memory location may be used to store non-capability data.
 
-==== Capability tags in registers
+==== {ctag_cap}s in registers
 
 Every YLEN-bit register has a one-bit {ctag}, indicating whether the capability in the register is valid to be dereferenced.
 This {ctag} is cleared whenever an invalid capability operation is performed.
 Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
 
-==== Capability tags in memory
+==== {ctag_cap}s in memory
 
-Capability tags are tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
+{ctag_cap}s are tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
 The {ctag} is set to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand which is permitted to set the {ctag} to one (see <<c_perm>>), and that the stored capability data has its {ctag} set.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
@@ -630,7 +630,7 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 |<<SCBNDS>>   |Set register bounds on capability with rounding, clear {ctag} if rounding is required
 |<<SCBNDSR>>  |Set bounds on capability with rounding up as required
 |<<SENTRY>>   |Seal capability
-|<<CBLD>>     |Set {cd} to {cs2} with its tag set after checking that {cs2} is a subset of {cs1}
+|<<CBLD>>     |Set {cd} to {cs2} with its {ctag} set after checking that {cs2} is a subset of {cs1}
 |=======================
 
 ^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
@@ -695,7 +695,7 @@ include::insns/gchi_32bit.adoc[]
 |=======================
 |Mnemonic   |Description
 |<<SCEQ>>   |Full capability bitwise compare, set result true if all bits (including the {ctag}) are equal
-|<<SCSS>>   |Set result true if {cs1} and {cs1} tags match and {cs2} bounds and permissions are a subset of {cs1}
+|<<SCSS>>   |Set result true if {cs1} and {cs1} {ctag}s match and {cs2} bounds and permissions are a subset of {cs1}
 |<<CRAM>>   |Representable Alignment Mask: Return mask to apply to address to get the requested bounds
 |=======================
 
@@ -814,7 +814,7 @@ endif::[]
 
 All load instructions, except for the {cheri_base_ext_name} <<LOAD_CAP>>, always zero the {ctag} and metadata of the result register.
 
-All store instructions, except for the {cheri_base_ext_name} <<STORE_CAP>>, always write zero to the {ctag} or tags associated with the memory locations that are written to.
+All store instructions, except for the {cheri_base_ext_name} <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
 
 Therefore, misaligned stores may clear up to two associated {ctag} bits.
 

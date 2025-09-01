@@ -280,7 +280,7 @@ NOTE: Future extensions may allow more combinations of permissions, especially f
 NOTE: Future extensions may define new dependent permissions and, if so, must augment the above table.
 
 If any of these transitions (or those added by extensions or the encoding) alter a sealed capability,
-the resulting capability's tag is cleared.
+the resulting capability's {ctag} is cleared.
 
 [#SDP-field, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
@@ -333,7 +333,7 @@ The bounds encode the base and top addresses that constrain memory accesses.
 The capability can be used to access any memory location A in the range base
 &#8804; A < top. The bounds are encoded in compressed format, so it is not
 possible to encode any arbitrary combination of base and top addresses. An
-invalid capability with tag cleared is produced when attempting to construct a
+invalid capability with {ctag} cleared is produced when attempting to construct a
 capability that is not _representable_ because its bounds cannot be correctly
 encoded. The bounds are decoded as described in
 xref:section_cap_encoding[xrefstyle=short].
@@ -681,9 +681,9 @@ Permissions added by extensions (such as those of <<section_zylevels1>>) are pre
 
 A hart supporting {cheri_base_ext_name} has a single byte-addressable address
 space of 2^XLEN^ bytes for all memory accesses. Each memory region capable of
-holding a capability also stores a tag bit for each naturally aligned YLEN bits
-(e.g., 16 bytes in RV64), so that capabilities with their tag set can only be
-stored in naturally aligned addresses. Tags must be atomically bound to the
+holding a capability also stores a {ctag} bit for each naturally aligned YLEN bits
+(e.g., 16 bytes in RV64), so that capabilities with their {ctag} set can only be
+stored in naturally aligned addresses. {ctag_cap} must be atomically bound to the
 data they protect.
 
 The memory address space is circular, so the byte at address

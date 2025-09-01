@@ -12,7 +12,7 @@ The distinction refines the behavior of capability store and load instructions:
 
 * Capability-write-permissive capabilities are refined to authorize stores of _any_ capability or _global_ capabilities only.
   The former may attenuate into the latter.
-  Attempting to store a local capability through an insufficiently permissive authority clears the tag of the value written to memory, if any.
+  Attempting to store a local capability through an insufficiently permissive authority clears the {ctag} of the value written to memory, if any.
 
 * Capability-load-permissive capabilities are refined to authorize loads of _any_ capabilities or _local_ capabilities only.
   Again, the former may attenuate to the latter.
@@ -94,7 +94,7 @@ This applies to both "implicit <<CLRPERM>>s" in loads from memory and explicit <
 
 Implementations _are permitted but not mandated_ to require that an explicit <<CLRPERM>> instruction wishing to clear <<zylevels1_gl_perm>>
 has an input mask that is _entirely 1s_ except for <<zylevels1_gl_perm>>
-(or else clear the tag of the resulting capability).
+(or else clear the {ctag} of the resulting capability).
 
 .Additional <<CLRPERM>> rules (see <<acperm_rules>>)
 
@@ -136,13 +136,13 @@ will necessarily also clear <<zylevels1_sl_perm>>.
 As outlined above, {cheri_levels1_ext_name} introduces a new constraint on capabilities stored to memory,
 as part of a <<STORE_CAP>> instruction `{store_cap_name_lc} {cs2}, offset({cs1})`
 or <<STORE_COND_CAP>> instruction `sc{ld_st_dot_cap_lc} {cs2}, offset({cs1})`:
-the written valid tag may be set _only if_ either
+the written valid {ctag} may be set _only if_ either
 
 * `{cs2}` 's <<zylevels1_gl_perm>> is set or
 * `{cs1}` 's <<zylevels1_sl_perm>> is set.
 
 NOTE: While <<zylevels1_lg_perm>> attenuates by reducing <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>>,
-<<zylevels1_sl_perm>> attenuates by clearing valid tags.
+<<zylevels1_sl_perm>> attenuates by clearing {ctag}s.
 
 === Interaction with <<SCSS>>
 
@@ -172,7 +172,7 @@ The existing permission subset logic applies to the new <<zylevels1_sl_perm>> an
     h|*W*    h|*C* h|*SL* h|*GL*           h| Notes
 .3+.^|1  .3+.^| 1   | 1    | X              | Store data capability unmodified
                .2+.^| 0    | 0              | Store data capability unmodified
-                           | 1              | Store data capability with valid tag cleared
+                           | 1              | Store data capability with valid {ctag} cleared
 |==============================================================================
 
 NOTE: <<zylevels1_sl_perm>> is relevant only to capabilities bearing both <<w_perm>> and <<c_perm>>.
