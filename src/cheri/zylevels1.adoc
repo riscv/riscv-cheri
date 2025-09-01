@@ -114,7 +114,8 @@ Specifically, we add the following rules to <<acperm_rules>>:
 === Interaction with <<LOAD_CAP>>
 
 As outlined above, {cheri_levels1_ext_name} introduces two new constraints on capabilities loaded from memory,
-as part of a <<LOAD_CAP>> instruction `{load_cap_name_lc} {cd}, offset({cs1})`.
+as part of a <<LOAD_CAP>> instruction (`{load_cap_name_lc} {cd}, offset({cs1})`).
+Analogous requirements apply for other instructions that inherit semantics from `<<LOAD_CAP>>`.
 These may be phrased as "implicit <<CLRPERM>>-s" performed on the loaded capability thus:
 
 * If `{cd}.tag=1`, `{cd}` *is not* sealed, and `{cs1}` does not grant <<zylevels1_lg_perm>>,
@@ -133,8 +134,9 @@ will necessarily also clear <<zylevels1_sl_perm>>.
 === Interaction with <<STORE_CAP>>
 
 As outlined above, {cheri_levels1_ext_name} introduces a new constraint on capabilities stored to memory,
-as part of a <<STORE_CAP>> instruction `{store_cap_name_lc} {cs2}, offset({cs1})`,
-the written {ctag} may be set _only if_ either
+as part of a <<STORE_CAP>> instruction (`{store_cap_name_lc} {cs2}, offset({cs1})`).
+Analogous requirements apply for other instructions that inherit semantics from `<<STORE_CAP>>`.
+The written {ctag} may be set _only if_ either
 
 * `{cs2}` 's <<zylevels1_gl_perm>> is set or
 * `{cs1}` 's <<zylevels1_sl_perm>> is set.
