@@ -92,8 +92,8 @@ If the CW bit is clear, the "no capability state", then the existing rules from 
  of the capability being written is set, the implementation raises a
  {cheri_excep_name_pte_st}.
 
-When the CW bit is set, the "capability state", then the behaviour of
-capability loads is controlled by CRG and the behaviour of capability stores
+When the CW bit is set, the "capability state", then the behavior of
+capability loads is controlled by CRG and the behavior of capability stores
 is controlled by CD.
 
 When CW is set, the CRG bit indicates the current generation of the virtual memory page with
@@ -105,7 +105,7 @@ regards to the ongoing capability revocation cycle. Two schemes are permitted:
 ** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
 ** the virtual page's PTE.U is set.
 * A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
- wherein:
+ and:
 ** the authorizing capability grants <<c_perm>>,
 ** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG,
 ** the virtual page's PTE.U is set, and
@@ -125,22 +125,23 @@ two schemes are permitted (also see <<section_hardware_pte_updates>>):
  the D bit update described by the _Svadu_ extesion.
 
 When CW, CD and CRG are all clear, the implementation is required to clear
-loaded tags and raise {cheri_excp_name_pte_st} when the stored {ctag} is set.
+loaded tags and raise {cheri_excep_name_pte_st} when the stored {ctag} is set.
 
-NOTE: Other CD and CRG combinations when CW=0 are reserved for future extension.
-The reserved PTE states behave as the CW=0 CD=0 CRG=0, unless a future extension
+NOTE: Other CD and CRG combinations when CW=0 are reserved for future extensions.
+The reserved PTE states behave as the CW=0, CD=0, CRG=0, unless a future extension
 defines an alternative function.
 
 [[pte_cw_crg_load_summary]]
 .Summary of Load CW and CRG behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
-|PTE.CW | PTE.CD | PTE.CRG                                 | PTE.U | Load/AMO
-| 0     | 0      | 0                                       | X     | Clear loaded tag
-| 0     | X      | 1                                       | X     | Reserved
-| 1     | X      | &#8800; <<sstatusreg_pte,sstatus>>.UCRG | 1     | {cheri_excep_name_pte_ld}, or {cheri_excep_name_pte_ld} if tag is set for _{cheri_priv_crg_load_tag_ext}_^1^
-| 1     | X      | = <<sstatusreg_pte,sstatus>>.UCRG       | 1     | Normal operation
-| 1     | X      | X                                       | 0     | Normal operation^2^
+|PTE.CRW | PTE.CD | PTE.CRG                                 | PTE.U | Load/AMO
+| 0      | 0      | 0                                       | X     | Clear loaded tag
+| 0      | 0      | 1                                       | X     | Reserved
+| 0      | 1      | X                                       | X     | Reserved
+| 1      | X      | &#8800; <<sstatusreg_pte,sstatus>>.UCRG | 1     | {cheri_excep_name_pte_ld}, or {cheri_excep_name_pte_ld} if tag is set for _{cheri_priv_crg_load_tag_ext}_^1^
+| 1      | X      | = <<sstatusreg_pte,sstatus>>.UCRG       | 1     | Normal operation
+| 1      | X      | X                                       | 0     | Normal operation^2^
 |===
 
 ^1^ The choice here is whether to take data dependent exceptions on load data
