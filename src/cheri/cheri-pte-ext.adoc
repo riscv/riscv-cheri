@@ -19,7 +19,7 @@ NOTE: If software ignores the new PTE bits then there is no change in functional
 
 NOTE: A future version of this specification may include kernel revocation which may require an <<sstatusreg_pte,sstatus>>.SCRG bit.
 
-The minimum level of PTE support is to set CW and CD to 1 in all PTEs intended for storing
+The minimum level of PTE support is to set CRW and CD to 1 in all PTEs intended for storing
 capabilities (i.e., private anonymous mappings) and leave
 <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow
 capabilities with their tags set to be loaded and stored successfully.
@@ -76,15 +76,15 @@ NOTE: The behavior in this section isn't relevant if:
 . The authorizing capability doesn't have <<c_perm>>, for loads, stores and AMO.
 . Any extension-specific mediation has already cleared the stored tag, for stores and AMOs.
 
-The CW bit (defined by {cheri_priv_vmem_ext}) indicates whether reading or writing capabilities with the {ctag} set to
-the virtual page is permitted. When the CW bit is set, capabilities are written
+The CRW bit (defined by {cheri_priv_vmem_ext}) indicates whether reading or writing capabilities with the {ctag} set to
+the virtual page is permitted. When the CRW bit is set, capabilities are written
 as usual, and capability reads are controlled by the CRG bit.
 
 NOTE: The {ctag} bit of the stored capability is checked _after_ it is potentially
 cleared due to lack of <<c_perm>>.
 
 
-If the CW bit is clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
+If the CRW bit is clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
 
 * When a capability load or AMO instruction is executed, the implementation
  clears the {ctag} bit of the capability read from the virtual page.
@@ -92,11 +92,11 @@ If the CW bit is clear, the "no capability state", then the existing rules from 
  of the capability being written is set, the implementation raises a
  {cheri_excep_name_pte_st}.
 
-When the CW bit is set, the "capability state", then the behavior of
+When the CRW bit is set, the "capability state", then the behavior of
 capability loads is controlled by CRG and the behavior of capability stores
 is controlled by CD.
 
-When CW is set, the CRG bit indicates the current generation of the virtual memory page with
+When CRW is set, the CRG bit indicates the current generation of the virtual memory page with
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
 * A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
@@ -113,26 +113,26 @@ regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
 The second option is enabled by the _{cheri_priv_crg_load_tag_ext}_ extension.
 
-When CW is set, the CD bit indicates that a capability was stored to the
+When CRW is set, the CD bit indicates that a capability was stored to the
 virtual page since the last time the CD bit was cleared.
 When a capability store or AMO instruction is executed, the {ctag} bit
 of the capability being written is set and the CD bit is clear,
 two schemes are permitted (also see <<section_hardware_pte_updates>>):
 
-* The same behavior as when CW is clear, allowing software interpretation
+* The same behavior as when CRW is clear, allowing software interpretation
  of this state.
 * The implementation sets the CD bit. The PTE update behaves in the same way as
  the D bit update described by the _Svadu_ extesion.
 
-When CW, CD and CRG are all clear, the implementation is required to clear
+When CRW, CD and CRG are all clear, the implementation is required to clear
 loaded tags and raise {cheri_excep_name_pte_st} when the stored {ctag} is set.
 
-NOTE: Other CD and CRG combinations when CW=0 are reserved for future extensions.
-The reserved PTE states behave as the CW=0, CD=0, CRG=0, unless a future extension
+NOTE: Other CD and CRG combinations when CRW=0 are reserved for future extensions.
+The reserved PTE states behave as the CRW=0, CD=0, CRG=0, unless a future extension
 defines an alternative function.
 
-[[pte_cw_crg_load_summary]]
-.Summary of Load CW and CRG behavior in the PTEs
+[[pte_crw_crg_load_summary]]
+.Summary of Load CRW and CRG behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
 |PTE.CRW | PTE.CD | PTE.CRG                                 | PTE.U | Load/AMO
@@ -160,21 +160,21 @@ _{cheri_priv_crg_load_tag_ext}_ implies _{cheri_priv_crg_ext}_.
 
 ^2^ A future version of this specification may check an SCRG bit in <<sstatusreg_pte,sstatus>> for kernel revocation.
 
-[[pte_cw_cd_store_summary]]
-.Summary of Store CW and CD behavior in the PTEs
+[[pte_crw_cd_store_summary]]
+.Summary of Store CRW and CD behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|PTE.CW | PTE.CD | PTE.CRG | Store/AMO
-| 0     | 0      | 0       | {cheri_excep_name_pte_st} if stored tag is set
-| 0     | 1      | X       | Reserved
-| 1     | 0      | X       | {cheri_excep_name_pte_st} if stored tag is set, or <<section_hardware_pte_updates, hardware CD update>>
-| 1     | 1      | X       | Normal operation
+|PTE.CRW | PTE.CD | PTE.CRG | Store/AMO
+| 0      | 0      | 0       | {cheri_excep_name_pte_st} if stored tag is set
+| 0      | 1      | X       | Reserved
+| 1      | 0      | X       | {cheri_excep_name_pte_st} if stored tag is set, or <<section_hardware_pte_updates, hardware CD update>>
+| 1      | 1      | X       | Normal operation
 |===
 
 [#section_hardware_pte_updates]
 === Enabling Software or Hardware PTE updates
 
-The decision about whether to take exceptions on capability stores with the {ctag} set to a page with PTE.CW=1 and PTE.CD=0 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
+The decision about whether to take exceptions on capability stores with the {ctag} set to a page with PTE.CRW=1 and PTE.CD=0 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
 These cause PTE Accessed and Dirty updates to be done in software, via the exception handler, or by a hardware mechanism respectively.
 
 * If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a {cheri_excep_name_pte_st}.
