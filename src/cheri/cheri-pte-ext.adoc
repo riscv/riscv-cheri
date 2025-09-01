@@ -100,15 +100,15 @@ When CW is set, the CRG bit indicates the current generation of the virtual memo
 regards to the ongoing capability revocation cycle. Two schemes are permitted:
 
 * A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
- with:
-** <<c_perm>> granted, and
+ and:
+** the authorizing capability grants <<c_perm>>,
 ** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
-** PTE.U is set.
+** the virtual page's PTE.U is set.
 * A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
- with:
-** <<c_perm>> granted, and
-** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
-** PTE.U is set, and
+ wherein:
+** the authorizing capability grants <<c_perm>>,
+** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG,
+** the virtual page's PTE.U is set, and
 ** the capability read from memory has its {ctag} set.
 
 The second option is enabled by the _{cheri_priv_crg_load_tag_ext}_ extension.
@@ -124,29 +124,36 @@ two schemes are permitted (also see <<section_hardware_pte_updates>>):
 * The implementation sets the CD bit. The PTE update behaves in the same way as
  the D bit update described by the _Svadu_ extesion.
 
-NOTE: _{cheri_priv_crg_ext}_ requires that when CW, CD and CRG are all clear,
-the implementation clears loaded tags and raises {cheri_excep_name_pte_st} when
-the stored {ctag} is set. Other bit combinations when CW=0 are reserved
-for future extensions.
+When CW, CD and CRG are all clear, the implementation is required to clear
+loaded tags and raise {cheri_excp_name_pte_st} when the stored {ctag} is set.
+
+NOTE: Other CD and CRG combinations when CW=0 are reserved for future extension.
+The reserved PTE states behave as the CW=0 CD=0 CRG=0, unless a future extension
+defines an alternative function.
 
 [[pte_cw_crg_load_summary]]
 .Summary of Load CW and CRG behavior in the PTEs
-[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
-|PTE.CW |PTE.U|PTE.CRG                                    |Load/AMO
-| 0     | X   | X                                         | Clear loaded tag
-| 1     | 1   |&#8800; <<sstatusreg_pte,sstatus>>.UCRG    | {cheri_excep_name_pte_ld}, or {cheri_excep_name_pte_ld} if tag is set for _{cheri_priv_crg_load_tag_ext}_^1^
-| 1     | 1   |=       <<sstatusreg_pte,sstatus>>.UCRG^1^ | Normal operation
-| 1     | 0   | X                                         | Normal operation^2^
+|PTE.CW | PTE.CD | PTE.CRG                                 | PTE.U | Load/AMO
+| 0     | 0      | 0                                       | X     | Clear loaded tag
+| 0     | X      | 1                                       | X     | Reserved
+| 1     | X      | &#8800; <<sstatusreg_pte,sstatus>>.UCRG | 1     | {cheri_excep_name_pte_ld}, or {cheri_excep_name_pte_ld} if tag is set for _{cheri_priv_crg_load_tag_ext}_^1^
+| 1     | X      | = <<sstatusreg_pte,sstatus>>.UCRG       | 1     | Normal operation
+| 1     | X      | X                                       | 0     | Normal operation^2^
 |===
 
-^1^ The choice here is whether to take data dependent exceptions on load data for loads or atomic operations.
- The default is to take the trap without checking the value of the loaded {ctag}.
- Taking a trap when the {ctag} is not set will introduce additional traps during revocation sweeps.
- If _{cheri_priv_crg_load_tag_ext}_ is implemented then the trap is only taken if the loaded {ctag} is set, to reduce software overhead from revocation sweeps.
+^1^ The choice here is whether to take data dependent exceptions on load data
+ for loads or atomic operations. The default is to take the trap without
+ checking the value of the loaded {ctag}. Taking a trap when the {ctag} is not
+ set will introduce additional traps during revocation sweeps.
+ If _{cheri_priv_crg_load_tag_ext}_ is implemented then the trap is only taken
+ if the loaded {ctag} is set, to reduce software overhead from revocation sweeps.
  Checking the loaded tag affects the exception priority, see <<exception-priority>>.
 
-NOTE: _{cheri_priv_crg_load_tag_ext}_ is an optimization for software, and as such implementations are allowed to conservatively fault under certain conditions even if the {ctag} is not set.
+NOTE: _{cheri_priv_crg_load_tag_ext}_ is an optimization for software, and as
+such implementations are allowed to conservatively fault under certain
+conditions even if the {ctag} is not set.
 
 _{cheri_priv_crg_load_tag_ext}_ implies _{cheri_priv_crg_ext}_.
 
@@ -154,12 +161,13 @@ _{cheri_priv_crg_load_tag_ext}_ implies _{cheri_priv_crg_ext}_.
 
 [[pte_cw_cd_store_summary]]
 .Summary of Store CW and CD behavior in the PTEs
-[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
+[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|PTE.CW |PTE.CD|Store/AMO
-| 0     | X    | {cheri_excep_name_pte_st} if stored tag is set
-| 1     | 0    | {cheri_excep_name_pte_st} if stored tag is set, or <<section_hardware_pte_updates, hardware CD update>>
-| 1     | 1    | Normal operation
+|PTE.CW | PTE.CD | PTE.CRG | Store/AMO
+| 0     | 0      | 0       | {cheri_excep_name_pte_st} if stored tag is set
+| 0     | 1      | X       | Reserved
+| 1     | 0      | X       | {cheri_excep_name_pte_st} if stored tag is set, or <<section_hardware_pte_updates, hardware CD update>>
+| 1     | 1      | X       | Normal operation
 |===
 
 [#section_hardware_pte_updates]
