@@ -96,22 +96,19 @@ When the CRW bit is set, the "capability state", then the behavior of
 capability loads is controlled by CRG and the behavior of capability stores
 is controlled by CD.
 
-When CRW is set, the CRG bit indicates the current generation of the virtual memory page with
-regards to the ongoing capability revocation cycle. Two schemes are permitted:
+When CRW is set, the CRG bit indicates the current generation of the virtual
+memory page with regards to the ongoing capability revocation cycle.
+The implementation raises {cheri_excep_name_pte_ld} when a capability load
+or AMO instruction is executed and:
 
-* A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
- and:
-** the authorizing capability grants <<c_perm>>,
-** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
-** the virtual page's PTE.U is set.
-* A {cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction is executed
- and:
-** the authorizing capability grants <<c_perm>>,
-** the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG,
-** the virtual page's PTE.U is set, and
-** the capability read from memory has its {ctag} set.
+* the authorizing capability grants <<c_perm>>,
+* the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
+* the virtual page's PTE.U is set.
 
-The second option is enabled by the _{cheri_priv_crg_load_tag_ext}_ extension.
+When the _{cheri_priv_crg_load_tag_ext}_ extension is present, the
+{cheri_excep_name_pte_ld} is raised when capability load or AMO instruction
+satisfies the conditions above and the capability read from memory
+has its {ctag} set.
 
 When CRW is set, the CD bit indicates that a capability was stored to the
 virtual page since the last time the CD bit was cleared.
