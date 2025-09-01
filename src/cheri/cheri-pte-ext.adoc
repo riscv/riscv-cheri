@@ -121,20 +121,8 @@ two schemes are permitted (also see <<section_hardware_pte_updates>>):
 
 * The same behavior as when CW is clear, allowing software interpretation
  of this state.
-* The implementation sets the CD bit. The PTE update must be
- atomic with respect to other accesses to the PTE, and must atomically check
- that the PTE is valid and grants sufficient permissions. Updates to the CD bit
- must be exact (i.e., not speculative), and observed in program order by the
- local hart. Furthermore, the PTE update must appear in the global memory order
- no later than the explicit memory access, or any subsequent explicit memory
- access to that virtual page by the local hart. The ordering on loads and
- stores provided by FENCE instructions and the acquire/release bits on atomic
- instructions also orders the PTE updates associated with those loads and
- stores as observed by remote harts.
- The PTE update is not required to be atomic with respect to the explicit memory
- access that caused the update, and the sequence is interruptible. However, the
- hart must not perform explicit memory accesses before the PTE update is globally
- visible.
+* The implementation sets the CD bit. The PTE update behaves in the same way as
+ the D bit update described by the _Svadu_ extesion.
 
 NOTE: _{cheri_priv_crg_ext}_ requires that when CW, CD and CRG are all clear,
 the implementation clears loaded tags and raises {cheri_excep_name_pte_st} when
