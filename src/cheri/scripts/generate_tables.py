@@ -65,12 +65,10 @@ class InsnTable(table):
             other_cols = ["{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
         self.other_cols = other_cols
         self.check_index = self.header.index(self.check_col)
-        self.indices = [self.check_index]
-        for i in self.other_cols:
-            self.indices.append(self.header.index(i))
+        self.indices = [self.header.index(col) for col in self.other_cols]
         self.mnemonic_col_idx = self.header.index("Mnemonic")
 
-        self.file.write('|' + '|'.join(["Mnemonic", self.check_col, *self.other_cols]) + '\n')
+        self.file.write('|' + '|'.join(["Mnemonic", *self.other_cols]) + '\n')
 
     def update(self, row: list[str]):
         if self.check(row):
