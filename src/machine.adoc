@@ -187,6 +187,8 @@ The "X" bit will be set if there are any non-standard extensions.
 The "Y" bit will be set if the base architecture is {cheri_base_ext_name}.
 In this case "I" or "E" will also be set showing the number of X registers available.
 
+NOTE: The {cheri_priv_m_reg_enable_ext} extension makes the "Y" bit writable.
+
 When the "B" bit is 1, the implementation supports the instructions provided by the
 Zba, Zbb, and Zbs extensions. When the "B" bit is 0, it indicates that the
 implementation might not support one or more of the Zba, Zbb, or Zbs extensions.
@@ -2233,7 +2235,7 @@ The definition of the CBZE field is furnished by the Zicboz extension.
 
 The definitions of the CBCFE and CBIE fields are furnished by the Zicbom extension.
 
-The definition of the {CRE} field is furnished by the <<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>> extension.
+If the base architecture is {cheri_base_ext_name} then the {CRE} field is read-only 1, otherwise it's read-only 0. The <<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>> extension makes it writable.
 
 The definition of the PMM field is furnished by the Smnpm extension.
 

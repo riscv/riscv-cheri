@@ -126,7 +126,7 @@ The *mstatus* and *mstatush* registers operate as described in
 <<mstatus_cheri>> with two restrictions:
 
 * The <<xlen-control, MXL, SXL and UXL>> fields that control the
-value of XLEN for S-mode and U-mode must be read-only and equal to MXL in{cheri_base_ext_name} implementations.
+value of XLEN for S-mode and U-mode must be read-only and equal to MXL in {cheri_base_ext_name} implementations.
   Only 1 and 2 are supported values.
 
 * The <<endianness-control,MBE, SBE, and UBE>> fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in {cheri_base_ext_name} implementations.
@@ -429,35 +429,33 @@ NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
 it is not possible to disable CHERI checks completely.
 endif::[]
 
-CAUTION: #ARC-QUESTION: The CBZE, CBIE etc. bits are specified by Zicbo*, can this be defined by {cheri_priv_m_ext}/{cheri_priv_s_ext}+{cheri_default_ext_name} instead of adding a new priv extension?#
-
 When using a system with {cheri_default_ext_name}, it may be desirable to disable CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
 {cheri_priv_m_reg_enable_ext} includes functions to disable explicit access to CHERI
 registers and instructions (hereafter referred to _disabling CHERI_).
 
 NOTE: When _CHERI is disabled_ for a specific privilege level, <<pcc>> and <<ddc>> bounds are _still_ enforced.
 
-The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
+The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa,misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
 
-IMPORTANT: If {cheri_base_ext_name} is supported and {cheri_default_ext_name} is not supported, then {cheri_priv_m_reg_enable_ext} must also not be supported.
-In this case all {CRE} bits are hardwired to 1 and CHERI is always enabled.
-This allows implementing a hart that always runs in {cheri_cap_mode_name}.
+{cheri_priv_m_reg_enable_ext} implies {cheri_default_ext_name}.
 
-CHERI is disabled if
-
-* XLEN in the current mode is less than MXLEN, or
-* the endianness in the current mode is not the reset value of <<mstatus_cheri>>.MBE, or
-* the effective CHERI-enable for the current privilege is 0.
+//future extensions - currently they must match
+//CHERI is disabled if
+//
+//* XLEN in the current mode is less than MXLEN, or
+//* the endianness in the current mode is not the reset value of <<mstatus_cheri>>.MBE, or
+//* the effective CHERI-enable for the current privilege is 0.
 
 The effective CHERI-enable for the current privilege is:
 
-* Machine: `<<misa>>.{CRE}`
-* Supervisor: `<<misa>>.{CRE} & <<menvcfg>>.{CRE}`
-* User: `<<misa>>.{CRE} & <<menvcfg>>.{CRE} & <<senvcfg>>.{CRE}`
+* Machine: `<<misa,misa>>.{CRE}`
+* Supervisor: `<<misa,misa>>.{CRE} & <<menvcfg>>.{CRE}`
+* User: `<<misa,misa>>.{CRE} & <<menvcfg>>.{CRE} & <<senvcfg>>.{CRE}`
 
+#move this to debug spec#
 NOTE: The effective CHERI-enable is always 1 in debug mode.
 
-NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally infinite).
+NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa,misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally root capabilities (see <<root-cap>>).
 
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
