@@ -9,7 +9,7 @@ endif::[]
 
 The ability to choose between these two behaviors is referred to as switching between _CHERI Execution Modes_. The mode is controlled by a new bit (the <<m_bit>>) allocated in the <<pcc>>.
 
-{cheri_default_ext_name} adds the instructions shown in {rvyi_default_xref} which add the ability to query and update the current mode.
+{cheri_default_ext_name} adds the instructions shown in <<rvy_hybrid_insn_table>> which add the ability to query and update the current mode.
 
 {cheri_default_ext_name} also adds a new unprivileged CSR: the default data capability, <<ddc>>. <<ddc>> is used to authorize all data memory accesses when executing RVI/RVE code.
 
@@ -28,11 +28,12 @@ Executing with the RVI (or RVE) base ISA.
 +
 NOTE: If RVC encodings are supported, load/store encodings will revert back to their non-CHERI encodings, such as <<C_LOAD_CAP_SP>> reverting to C.FLWSP for RV32F. This behavior is summarized in <<insn_remapping_16bit_rv32_a>>, <<insn_remapping_16bit_rv32_b>>, <<insn_remapping_16bit_rv64_a>> and <<insn_remapping_16bit_rv64_b>>.
 +
-NOTE: Instructions which are _modified_ on an {cheri_base_ext_name} architecture ({rvyi_mod_xref}) _revert to their standard behavior_.
+NOTE: Instructions which are _modified_ on an {cheri_base_ext_name} architecture (<<rvy_insn_table>>) _revert to their standard behavior_.
 +
-All {rvyi_xref} instructions, and associated CSRs, are available in addition to RVI/RVE and all supported non-CHERI extensions.
+All <<rvy_insn_table>> instructions, and associated CSRs, are available in addition to RVI/RVE and all supported non-CHERI extensions.
 +
-All memory accesses are implicitly authorized by <<ddc>>, including {PREFETCH_W_CHERI} and {PREFETCH_R_CHERI}. {PREFETCH_I_CHERI} is authorized by <<pcc>> instead.
+All memory accesses are implicitly authorized by <<ddc>>, including <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CHERI>>.
+<<PREFETCH_I_CHERI>> is authorized by <<pcc>> instead.
 +
 NOTE: <<ddc>> is also used to authorize {cheri_base_ext_name} specific memory instructions such as <<LOAD_CAP>> and <<STORE_CAP>>.
 +
