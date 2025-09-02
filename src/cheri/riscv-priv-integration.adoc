@@ -10,8 +10,8 @@ This chapter describes integration of {cheri_base_ext_name} with the RISC-V priv
 === Machine-Level CSRs added or extended by {cheri_base_ext_name}
 
 {cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
-otherwise add new functions. <<asr_perm>> in the <<pcc>> is typically required for access
-to the CSRs.
+otherwise add new functions. <<asr_perm>> in the <<pcc>> is always required for access
+to privileged CSRs.
 
 [#mtvec_y,reftext="mtvec ({cheri_base_ext_name})"]
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
@@ -126,7 +126,7 @@ The *mstatus* and *mstatush* registers operate as described in
 <<mstatus_cheri>> with two restrictions:
 
 * The <<xlen-control, MXL, SXL and UXL>> fields that control the
-value of XLEN for S-mode and U-mode must be read-only and equal to MXL in{cheri_base_ext_name} implementations.
+value of XLEN for S-mode and U-mode must be read-only and equal to MXL in {cheri_base_ext_name} implementations.
   Only 1 and 2 are supported values.
 
 * The <<endianness-control,MBE, SBE, and UBE>> fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in {cheri_base_ext_name} implementations.
@@ -156,7 +156,7 @@ xref:mcauses[xrefstyle=short] and xref:exception-priority-cheri[xrefstyle=short]
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
 | .>|*{cheri_excep_cause_pc}* .<|*Prior to instruction address translation:* +
-*CHERI fault due to {pcc} checks ({ctag}, execute permission, bounds^1^)*
+*{cheri_excep_name_pc} due to {pcc} checks ({ctag}, execute permission, bounds^1^)*
 | .>|12, 1 .<|During instruction address translation: +
 First encountered page fault or access fault
 | .>|1 .<|With physical address for instruction: +
@@ -168,7 +168,7 @@ Instruction access fault
 8,9,11 +
 3 +
 3 .<|Illegal instruction +
-*CHERI fault due to {pcc} <<asr_perm>> clear* +
+*{cheri_excep_name_pc} due to {pcc} <<asr_perm>> clear* +
 Instruction address misaligned +
 Environment call +
 Environment break +
@@ -245,7 +245,7 @@ The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 === Supervisor-Level CSRs added or extended by {cheri_base_ext_name}
 
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
-hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> required for access to all privileged CSRs.
+hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is required for access to all privileged CSRs.
 
 [#stvec_y,reftext="stvec ({cheri_base_ext_name})"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
@@ -288,7 +288,7 @@ include::img/sepccreg.edn[]
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
 
-The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged utidc CSR.
+The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged <<utidc>> CSR.
 
 {TAG_RESET_SCSR}
 
@@ -435,27 +435,27 @@ registers and instructions (hereafter referred to _disabling CHERI_).
 
 NOTE: When _CHERI is disabled_ for a specific privilege level, <<pcc>> and <<ddc>> bounds are _still_ enforced.
 
-The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
+The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa,misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
 
-IMPORTANT: If {cheri_base_ext_name} is supported and {cheri_default_ext_name} is not supported, then {cheri_priv_m_reg_enable_ext} must also not be supported.
-In this case all {CRE} bits are hardwired to 1 and CHERI is always enabled.
-This allows implementing a hart that always runs in {cheri_cap_mode_name}.
+{cheri_priv_m_reg_enable_ext} implies {cheri_default_ext_name}.
 
-CHERI is disabled if
-
-* XLEN in the current mode is less than MXLEN, or
-* the endianness in the current mode is not the reset value of <<mstatus_cheri>>.MBE, or
-* the effective CHERI-enable for the current privilege is 0.
+//future extensions - currently they must match
+//CHERI is disabled if
+//
+//* XLEN in the current mode is less than MXLEN, or
+//* the endianness in the current mode is not the reset value of <<mstatus_cheri>>.MBE, or
+//* the effective CHERI-enable for the current privilege is 0.
 
 The effective CHERI-enable for the current privilege is:
 
-* Machine: `<<misa>>.{CRE}`
-* Supervisor: `<<misa>>.{CRE} & <<menvcfg>>.{CRE}`
-* User: `<<misa>>.{CRE} & <<menvcfg>>.{CRE} & <<senvcfg>>.{CRE}`
+* Machine: `<<misa,misa>>.{CRE}`
+* Supervisor: `<<misa,misa>>.{CRE} & <<menvcfg>>.{CRE}`
+* User: `<<misa,misa>>.{CRE} & <<menvcfg>>.{CRE} & <<senvcfg>>.{CRE}`
 
+#move this to debug spec#
 NOTE: The effective CHERI-enable is always 1 in debug mode.
 
-NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally infinite).
+NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa,misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally root capabilities (see <<root-cap>>).
 
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
@@ -484,15 +484,17 @@ in connection with the <<section_cheri_disable,{CRE}>> and the <<cheri_execution
 .Hart's behavior depending on the effective <<section_cheri_disable,CHERI enable>> and <<cheri_execution_mode>>
 [#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
 |==============================================================================
-| | {CRE}=0                            | {CRE}=1, M-bit={int_mode_value} | {CRE}=1, M-bit={cap_mode_value}
+| | {CRE}=0                            | {CRE}=1^1^, M-bit={int_mode_value} | {CRE}=1, M-bit={cap_mode_value}
 | Authorizing capability for data memory accesses | <<ddc>> | <<ddc>> | capability in `rs1`
 | natively YLEN CSR Access Width       | ✘                 | YLEN                  | YLEN
 | Extended YLEN CSR Access Width       | XLEN              | XLEN                  | YLEN
 | CHERI Instructions Allowed           | ✘                 | ✔                     | ✔
-| Summary                              | **_Fully RISC-V compatible_**^1^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
+| Summary                              | **_Fully RISC-V compatible_**^2^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
 |==============================================================================
 
-^1^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
+^1 _{CRE}_ represents the effective CHERI enable for the current privilege mode.
+
+^2^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
 
 ifdef::support_varxlen[]
 [#section_cheri_dyn_xlen]
@@ -663,3 +665,160 @@ compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to
 ==== Memory Accesses
 
 If the effective address of the memory access is invalid, and the authorizing capability's bounds do not cover all addresses, then raise a {cheri_excep_name_ld} or {cheri_excep_name_st} exception because the bounds cannot be reliably decoded.
+
+==== List of terms defined in the unprivileged manual
+
+NOTE: Due to links to the unpriv manual being broken, this improves readability.
+ Once the two manuals are merged the links will work.
+
+[#asr_perm, reftext="ASR permission"]
+ASR permission::
+ See the unprivileged manual for the definition of ASR-permission.
+
+[#c_perm, reftext="C permission"]
+C permission::
+ See the unprivileged manual for the definition of C-permission.
+
+[#r_perm, reftext="R permission"]
+R permission::
+ See the unprivileged manual for the definition of R-permission.
+
+[#w_perm, reftext="W permission"]
+W permission::
+ See the unprivileged manual for the definition of X-permission.
+
+[#x_perm, reftext="X permission"]
+X permission::
+ See the unprivileged manual for the definition of X-permission.
+
+[#m_bit, reftext="M-bit"]
+M-bit::
+ See the unprivileged manual for the definition of the M-bit.
+
+[#pcc, reftext="pc"]
+PC::
+ See the unprivileged manual for the definition of the program counter capability.
+
+[#ddc, reftext="ddc"]
+DDC::
+ See the unprivileged manual for the definition of the default data capability CSR.
+
+[#cheri_execution_mode, reftext="CHERI execution modes"]
+CHERI execution modes::
+ See the unprivileged manual for the definition of the CHERI execution modes.
+
+[#utidc, reftext="utidc"]
+utidc::
+ See the unprivileged manual for the definition of the utidc CSR.
+
+[#root-cap, reftext="Root"]
+Root Executable::
+ See the unprivileged manual for the definition of Root capabilities.
+
+[#root-rw-cap, reftext="Root Data"]
+Root Executable::
+ See the unprivileged manual for the definition of Root Data capabilities.
+
+[#root-rx-cap, reftext="Root Executable"]
+Root Executable::
+ See the unprivileged manual for the definition of Root Executable capabilities.
+
+[#section_cap_representable_check, reftext="Representable Range"]
+Representable Range::
+ See the unprivileged manual for the definition of the Representable Range of a capability.
+
+[#DRET_CHERI, reftext="DRET (RVY)"]
+DRET (RVY)::
+   See the unprivileged manual for the behavior of DRET for RVY. #should be in debug manual#
+
+[#MRET_CHERI, reftext="MRET (RVY)"]
+MRET (RVY)::
+   See the unprivileged manual for the behavior of MRET for RVY. #should be in priv manual#
+
+[#SRET_CHERI, reftext="SRET (RVY)"]
+SRET (RVY)::
+   See the unprivileged manual for the behavior of SRET for RVY. #should be in priv manual#
+
+[#CBO_INVAL_CHERI, reftext="CBO.INVAL (RVY)"]
+CBO.INVAL (RVY)::
+   See the unprivileged manual for the behavior of CBO.INVAL for RVY.
+
+[#CBO_ZERO_CHERI, reftext="CBO.ZERO (RVY)"]
+CBO.ZERO (RVY)::
+   See the unprivileged manual for the behavior of CBO.ZERO for RVY.
+
+[#AUIPC_CHERI, reftext="AUIPC (RVY)"]
+AUIPC (RVY)::
+   See the unprivileged manual for the behavior of AUIPC for RVY.
+
+[#CSRRW_CHERI, reftext="CSRRW (RVY)"]
+CSRRW (RVY)::
+   See the unprivileged manual for the behavior of CSRRW for RVY.
+
+[#AMOSWAP_CAP, reftext="AMOSWAP.Y"]
+AMOSWAP.Y::
+   See the unprivileged manual for the definition of AMOSWAP.Y.
+
+[#STORE_CAP, reftext="SY"]
+SY::
+   See the unprivileged manual for the definition of SY.
+
+[#LOAD_CAP, reftext="LY"]
+LY::
+   See the unprivileged manual for the definition of LY.
+
+[#HLV_CAP, reftext="HLV.Y"]
+HLV.Y::
+   See the unprivileged manual for the definition of HLV.Y.
+
+[#HSV_CAP, reftext="HSV.Y"]
+HSV.Y::
+   See the unprivileged manual for the definition of HSV.Y.
+
+[#CRAM, reftext="{CRAM}"]
+YAMASK::
+   See the unprivileged manual for the definition of {CRAM}.
+
+[#SCADDR, reftext="{SCADDR}"]
+YADDRW::
+   See the unprivileged manual for the definition of {SCADDR}.
+
+[#MODESW_CAP, reftext="{MODESW_CAP}"]
+{MODESW_CAP}::
+   See the unprivileged manual for the definition of {MODESW_CAP}.
+
+[#MODESW_INT, reftext="{MODESW_INT}"]
+{MODESW_INT}::
+   See the unprivileged manual for the definition of {MODESW_INT}.
+
+[#CSR_exevectors, reftext="YLEN-wide CSRs storing code pointers or data pointers"]
+YLEN-wide CSRs storing code pointers or data pointers::
+  See the unprivileged manual for the table of these CSRs.
+
+[#dcsrnames-renamed, reftext="Extended debug mode CSRs"]
+Extended debug mode CSRs::
+  See the unprivileged manual for the table of these CSRs. #clearly in the wrong place#
+
+[#default-csrnames-added, reftext="Unprivileged YLEN-wide CSRs added in {cheri_default_ext_name}"]
+Unprivileged YLEN-wide CSRs added in {cheri_default_ext_name}::
+  See the unprivileged manual for the table of these CSRs.
+
+[#section_existing_riscv_insns, reftext="Changes to Existing RISC-V Base ISA Instructions"]
+Changes to Existing RISC-V Base ISA Instructions::
+  See the unprivileged manual for the behavior of these instructions.
+
+[#section_cap_integrity, reftext="Integrity of Capabilities"]
+Integrity of Capabilities::
+  See the unprivileged manual for how to check the Integrity of Capabilities.
+
+[#section_cap_encoding, reftext="Capability Encoding"]
+Integrity of Capabilities::
+  See the unprivileged manual for details of the capability encoding.
+
+[#rvy_insn_table, reftext="{cheri_base_ext_name}"]
+Integrity of Capabilities::
+  See the unprivileged manual for instructions added by {cheri_base_ext_name}.
+
+[#rvy_hybrid_insn_table, reftext="{cheri_default_ext_name}"]
+Integrity of Capabilities::
+  See the unprivileged manual for instructions added by {cheri_default_ext_name}.
