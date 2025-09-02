@@ -56,29 +56,29 @@ class InsnTable(table):
     """
     indices: list[int]
     other_cols: list[str]
-    check_col: str
+    extension: str
 
-    def __init__(self, check_col: str, filename: str, header: list[str], other_cols: list[str] = None):
+    def __init__(self, extension: str, filename: str, header: list[str], other_cols: list[str] = None):
         super().__init__(filename, header)
-        self.check_col = check_col
+        self.extension = extension
         if other_cols is None:
             other_cols = ["{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
         self.other_cols = other_cols
-        self.check_index = self.header.index(self.check_col)
         self.indices = [self.header.index(col) for col in self.other_cols]
-        self.mnemonic_col_idx = self.header.index("Mnemonic")
+        self._mnemonic_col_idx = self.header.index("Mnemonic")
+        self._extension_col_idx = self.header.index("Extension")
 
         self.file.write('|' + '|'.join(["Mnemonic", *self.other_cols]) + '\n')
 
     def update(self, row: list[str]):
         if self.check(row):
-            outStr = '|' + insn_xref(row[self.mnemonic_col_idx])
+            outStr = '|' + insn_xref(row[self._mnemonic_col_idx])
             for i in self.indices:
                outStr += '|' + row[i]
             self.file.write(outStr + '\n')
 
     def check(self, row: list[str]):
-        return row[self.check_index] == "✔"
+        return row[self._extension_col_idx] == self.extension
 
 
 class illegal_insns(table):
@@ -479,75 +479,78 @@ if __name__ == "__main__":
     with open(args.isa,newline='') as isaFile:
         reader = csv.reader(isaFile, delimiter=',')
         header = next(reader)
+        assert header[1] == "Extension"
+        rows = [row for row in reader]
+        # extensions = list(sorted(set(row[1] for row in rows)))
         tables = [
             InsnTable(
-                check_col="Zabhlrsc",
+                extension="Zabhlrsc",
                 filename=output_file(args,  "Zabhlrsc_insns_table_body.adoc"),
                 header=header,
                 other_cols=["Function"],
             ),
             InsnTable(
-                check_col="{cheri_base_ext_name}",
+                extension="{cheri_base_ext_name}",
                 filename=output_file(args, "RVY_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_sentry_ext_name}",
+                extension="{rvy_sentry_ext_name}",
                 filename=output_file(args,  "Zys_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_i_mod_ext_name}",
+                extension="{rvy_i_mod_ext_name}",
                 filename=output_file(args,  "RVY_I_mod_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_zca_ext_name}",
+                extension="{rvy_zca_ext_name}",
                 filename=output_file(args, "RVY_Zca_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_zca_mod_ext_name}",
+                extension="{rvy_zca_mod_ext_name}",
                 filename=output_file(args,  "RVY_Zca_mod_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_zba_ext_name}",
+                extension="{rvy_zba_ext_name}",
                 filename=output_file(args, "RVY_Zba_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_zalrsc_ext_name}",
+                extension="{rvy_zalrsc_ext_name}",
                 filename=output_file(args,  "RVY_Zalrsc_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_zaamo_ext_name}",
+                extension="{rvy_zaamo_ext_name}",
                 filename=output_file(args,  "RVY_Zaamo_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_h_ext_name}",
+                extension="{rvy_h_ext_name}",
                 filename=output_file(args, "RVY_H_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_zicbom_mod_ext_name}",
+                extension="{rvy_zicbom_mod_ext_name}",
                 filename=output_file(args,  "RVY_Zicbom_mod_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_zicboz_mod_ext_name}",
+                extension="{rvy_zicboz_mod_ext_name}",
                 filename=output_file(args,  "RVY_Zicboz_mod_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_zicbop_mod_ext_name}",
+                extension="{rvy_zicbop_mod_ext_name}",
                 filename=output_file(args,  "RVY_Zicbop_mod_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{cheri_default_ext_name}",
+                extension="{cheri_default_ext_name}",
                 filename=output_file(args,  "Zyhybrid_insns_table_body.adoc"),
                 header=header,
             ),
@@ -556,6 +559,6 @@ if __name__ == "__main__":
                 header=header,
             ),
         ]
-        for row in reader:
+        for row in rows:
             for t in tables:
                 t.update(row)
