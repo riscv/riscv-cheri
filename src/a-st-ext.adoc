@@ -362,10 +362,13 @@ substantially easier to provide in some microarchitectural styles.
 [#zalrsc_cheri]
 === "Zalrsc" for {cheri_base_ext_name}
 
-If the base architecture is {cheri_base_ext_name}, then additional LR/SC encodings are available in <<rvyalrsc_ext_name>>
-to access capability types in memory.
+If the base architecture is {cheri_base_ext_name}, then additional LR/SC encodings (<<LOAD_RES_CAP>>  and <<STORE_COND_CAP>>) are available in <<rvy_zalrsc_insn_table,Zalrsc>> to access capability types in memory.
 
 Additionally smaller datatype LR/SC encodings are available in the {lr_sc_bh_ext_name} extension, see <<abhlrsc_ext>>.
+If {cheri_base_ext_name} and Zalrsc are implemented, then {lr_sc_bh_ext_name} must also be implemented.
+
+include::cheri/insns/load_res_cap_32bit.adoc[]
+include::cheri/insns/store_cond_cap_32bit.adoc[]
 
 [[sec:amo]]
 === "Zaamo" Extension for Atomic Memory Operations
@@ -493,16 +496,18 @@ bits to be set in either or both the LR and AMOSWAP instructions.
 ====
 
 [#zaamo_cheri]
-=== {rvyaamo_ext_name} ("Zaamo" for {cheri_base_ext_name})
+=== "Zaamo" for {cheri_base_ext_name}
 
-If the base architecture is {cheri_base_ext_name}, then {rvyaamo_ext_name} provides an additional AMOSWAP encoding (<<AMOSWAP_CAP>>) to access capability types in memory.
+If the base architecture is {cheri_base_ext_name}, then Zaamo provides an additional AMOSWAP encoding (<<AMOSWAP_CAP>>) to access capability types in memory.
 
 All atomic operations follow the rules in xref:section_cheri_int_load_store_insns[xrefstyle=short],
 where the atomic operation is considered to be a load followed by a store for the
 capability rules.
 
-Therefore _all_ atomic operations are _reserved_ if `{cs1}={creg}0`.
+Therefore, _all_ atomic operations are _reserved_ if `{cs1}={creg}0`.
 
 NOTE: Other atomic operation types are not yet available as they require capability
 arithmetic to be performed.
  For example, AMOADD would need <<CADD>> functionality.
+
+include::cheri/insns/amoswap_32bit_cap.adoc[]
