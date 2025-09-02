@@ -10,8 +10,8 @@ This chapter describes integration of {cheri_base_ext_name} with the RISC-V priv
 === Machine-Level CSRs added or extended by {cheri_priv_m_ext}
 
 {cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
-otherwise add new functions. <<asr_perm>> in the <<pcc>> is typically required for access
-to the CSRs.
+otherwise add new functions. <<asr_perm>> in the <<pcc>> is always required for access
+to privileged CSRs.
 
 [#mtvec_y,reftext="mtvec ({cheri_priv_m_ext})"]
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
@@ -156,7 +156,7 @@ xref:mcauses[xrefstyle=short] and xref:exception-priority-cheri[xrefstyle=short]
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
 | .>|*{cheri_excep_cause_pc}* .<|*Prior to instruction address translation:* +
-*CHERI fault due to {pcc} checks ({ctag}, execute permission, bounds^1^)*
+*{cheri_excep_name_pc} due to {pcc} checks ({ctag}, execute permission, bounds^1^)*
 | .>|12, 1 .<|During instruction address translation: +
 First encountered page fault or access fault
 | .>|1 .<|With physical address for instruction: +
@@ -168,7 +168,7 @@ Instruction access fault
 8,9,11 +
 3 +
 3 .<|Illegal instruction +
-*CHERI fault due to {pcc} <<asr_perm>> clear* +
+*{cheri_excep_name_pc} due to {pcc} <<asr_perm>> clear* +
 Instruction address misaligned +
 Environment call +
 Environment break +
@@ -245,7 +245,7 @@ The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 === Supervisor-Level CSRs added or extended by {cheri_priv_s_ext}
 
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
-hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> required for access to all privileged CSRs.
+hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is required for access to all privileged CSRs.
 
 [#stvec_y,reftext="stvec ({cheri_priv_s_ext})"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
@@ -288,7 +288,7 @@ include::img/sepccreg.edn[]
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
 
-The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged utidc CSR.
+The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged <<utidc>> CSR.
 
 {TAG_RESET_SCSR}
 
@@ -484,15 +484,17 @@ in connection with the <<section_cheri_disable,{CRE}>> and the <<cheri_execution
 .Hart's behavior depending on the effective <<section_cheri_disable,CHERI enable>> and <<cheri_execution_mode>>
 [#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
 |==============================================================================
-| | {CRE}=0                            | {CRE}=1, M-bit={int_mode_value} | {CRE}=1, M-bit={cap_mode_value}
+| | {CRE}=0                            | {CRE}=1^1^, M-bit={int_mode_value} | {CRE}=1, M-bit={cap_mode_value}
 | Authorizing capability for data memory accesses | <<ddc>> | <<ddc>> | capability in `rs1`
 | natively YLEN CSR Access Width       | ✘                 | YLEN                  | YLEN
 | Extended YLEN CSR Access Width       | XLEN              | XLEN                  | YLEN
 | CHERI Instructions Allowed           | ✘                 | ✔                     | ✔
-| Summary                              | **_Fully RISC-V compatible_**^1^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
+| Summary                              | **_Fully RISC-V compatible_**^2^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
 |==============================================================================
 
-^1^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
+^1 _{CRE}_ represents the effective CHERI enable for the current privilege mode.
+
+^2^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
 
 ifdef::support_varxlen[]
 [#section_cheri_dyn_xlen]
