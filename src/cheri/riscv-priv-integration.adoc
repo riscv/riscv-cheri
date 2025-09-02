@@ -435,7 +435,7 @@ registers and instructions (hereafter referred to _disabling CHERI_).
 
 NOTE: When _CHERI is disabled_ for a specific privilege level, <<pcc>> and <<ddc>> bounds are _still_ enforced.
 
-The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa,misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
+The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
 
 {cheri_priv_m_reg_enable_ext} implies {cheri_default_ext_name}.
 
@@ -448,14 +448,14 @@ The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa,misa>>
 
 The effective CHERI-enable for the current privilege is:
 
-* Machine: `<<misa,misa>>.{CRE}`
-* Supervisor: `<<misa,misa>>.{CRE} & <<menvcfg>>.{CRE}`
-* User: `<<misa,misa>>.{CRE} & <<menvcfg>>.{CRE} & <<senvcfg>>.{CRE}`
+* Machine: `<<misa>>.{CRE}`
+* Supervisor: `<<misa>>.{CRE} & <<menvcfg>>.{CRE}`
+* User: `<<misa>>.{CRE} & <<menvcfg>>.{CRE} & <<senvcfg>>.{CRE}`
 
 #move this to debug spec#
 NOTE: The effective CHERI-enable is always 1 in debug mode.
 
-NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa,misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally root capabilities (see <<root-cap>>).
+NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally root capabilities (see <<root-cap>>).
 
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
