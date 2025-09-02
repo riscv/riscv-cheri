@@ -418,6 +418,13 @@ Implicit memory accesses made by the page table walker are not subject to CHERI 
 
 NOTE: A future extension may add CHERI checks to the page table walker.
 
+
+=== Modified Trap-Return Instructions Behavior
+
+When the {cheri_base_ext_name} base ISA is implemented, the <<otherpriv,trap-return instructions>> (`MRET` and `SRET`) read the full YLEN bits of the <<mepc_y>>/<<sepc_y>> register and unseal it prior to exception return if it is a <<sentry_cap>>.
+
+include::insns/mret_sret.adoc[]
+
 [#section_cheri_disable]
 == "{cheri_priv_m_reg_enable_ext}" Extension, Version 1.0
 
@@ -711,16 +718,20 @@ utidc::
  See the unprivileged manual for the definition of the utidc CSR.
 
 [#root-cap, reftext="Root"]
-Root Executable::
+Root Capability::
  See the unprivileged manual for the definition of Root capabilities.
 
 [#root-rw-cap, reftext="Root Data"]
-Root Executable::
+Root Data Capability::
  See the unprivileged manual for the definition of Root Data capabilities.
 
 [#root-rx-cap, reftext="Root Executable"]
-Root Executable::
+Root Executable Capability::
  See the unprivileged manual for the definition of Root Executable capabilities.
+
+[#sentry_cap,reftext="sentry capability"]
+Sentry Capabilities::
+ See the unprivileged manual for the definition of sentry capabilities.
 
 [#section_cap_representable_check, reftext="Representable Range"]
 Representable Range::
@@ -729,14 +740,6 @@ Representable Range::
 [#DRET_CHERI, reftext="DRET (RVY)"]
 DRET (RVY)::
    See the unprivileged manual for the behavior of DRET for RVY. #should be in debug manual#
-
-[#MRET_CHERI, reftext="MRET (RVY)"]
-MRET (RVY)::
-   See the unprivileged manual for the behavior of MRET for RVY. #should be in priv manual#
-
-[#SRET_CHERI, reftext="SRET (RVY)"]
-SRET (RVY)::
-   See the unprivileged manual for the behavior of SRET for RVY. #should be in priv manual#
 
 [#CBO_INVAL_CHERI, reftext="CBO.INVAL (RVY)"]
 CBO.INVAL (RVY)::
