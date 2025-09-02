@@ -504,13 +504,13 @@ if __name__ == "__main__":
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_c_ext_name}",
-                filename=output_file(args, "RVY_C_insns_table_body.adoc"),
+                check_col="{rvy_zca_ext_name}",
+                filename=output_file(args, "RVY_Zca_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
-                check_col="{rvy_c_mod_ext_name}",
-                filename=output_file(args,  "RVY_C_mod_insns_table_body.adoc"),
+                check_col="{rvy_zca_mod_ext_name}",
+                filename=output_file(args,  "RVY_Zca_mod_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
