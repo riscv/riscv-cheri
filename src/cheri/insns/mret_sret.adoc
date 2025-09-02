@@ -5,7 +5,7 @@
 
 See <<MRET_CHERI>>.
 
-[#MRET_CHERI,reftext="MRET({cheri_base_ext_name})"]
+[#MRET_CHERI,reftext="MRET ({cheri_base_ext_name})"]
 ==== MRET ({cheri_base_ext_name})
 
 Synopsis::
@@ -25,10 +25,15 @@ MRET unseals <<mepc_y>> and writes the result into <<pcc>>. SRET unseals <<sepc_
 Exceptions::
 An illegal instruction fault is raised when <<pcc>> does not grant <<asr_perm>> because <<MRET_CHERI>> and <<SRET_CHERI>> require access to privileged CSRs.
 
-#seems like the wrong extension#
+Prerequisites (MRET)::
+Machine-Level ISA, {cheri_base_ext_name}
 
-Included in::
-<<rvy_i_mod_insn_table>>
+Prerequisites (SRET)::
+Supervisor-Level ISA, {cheri_base_ext_name}
+
+// TODO: Included in::
+// TODO: <<rvy_m_mod_insn_table>>
+// TODO: <<rvy_s_mod_insn_table>>
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]
