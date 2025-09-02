@@ -519,7 +519,7 @@ The trusted code can store capabilities on the trusted stack when calling out of
 when returning to the same compartment.
 =====
 
-[#ycfg,reftext="__x__ycfg"]
+[#ycfg,reftext="ycfg"]
 ===== CHERI Capability Encoding (__x__ycfg)
 
 The <<ycfg>> register is used to identify which CHERI capability encoding is used by the platform.
@@ -536,18 +536,39 @@ if the hart supports hypervisor mode, a `vsycfg` register exists.
 If the hypervisor extension is enabled, then `vsycfg` is WARL,
 updatable from M-mode or HS-mode with <<pcc>> granting <<asr_perm>>.
 
-The base specification defines the following values for `mycfg`, `sycfg`, and `uycfg`:
+.CHERI capability encoding CSR (`__x__ycfg`) format
+[#ycfg_csr_structure]
+[bytefield]
+----
+(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 24}])
+(def row-height 40)
+(def row-header-fn nil)
+(def left-margin 100)
+(def right-margin 100)
+(def boxes-per-row 32)
+(draw-column-headers {:height 20 :font-size 18 :labels (reverse (concat ["0"] (repeat 6 "") ["8" "9"] (repeat 22 "") ["XLEN-1"]))})
+
+(draw-box "Features" {:span 24})
+(draw-box "Base Encoding" {:span 8})
+
+(draw-box "MXLEN-8"  {:span 24 :borders {}})
+(draw-box "8"        {:span 8 :borders {}})
+----
+
+The following values for `mycfg`, `sycfg`, and `uycfg` are defined:
+
+[%autowidth,options=header,cols="^,^,<"]
 |===
-|Version value|Encoding
-|0|Reserved (unspecified capability encoding)
-|0x001|<<app_cap_description>> capabilities, without <<section_zylevels1>> features
-|0x101|<<app_cap_description>> capabilities, with <<section_zylevels1>> features
-|0x002|Reserved for CHERIoT's (RV32-only) encoding
+|Base Encoding|Features|Encoding
+| 0x0         | -      | Reserved (unspecified capability encoding)
+.2+|0x1       | 0x0    | <<app_cap_description>> capabilities, without <<section_zylevels1>> features
+              | 0x1   <| <<app_cap_description>> capabilities, with <<section_zylevels1>> features
+|0x2          | 0x0    | Reserved for CHERIoT's (RV32-only) encoding
 |===
 
-Future extensions that change capability encoding are expected to define new values.
+Future extensions that change capability encoding must define new values.
 Extensions that define encodings derived from <<app_cap_description>>
-are encouraged to preserve the bottom 8 bits as `0x01`.
+and are generally compatible with this encoding (e.g. they only assign meaning to previously reserved bits) must preserve the Base Encoding field (the bottom 8 bits) as `0x01`.
 
 [NOTE]
 =====
