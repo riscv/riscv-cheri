@@ -1,5 +1,5 @@
 [#section_priv_cheri]
-== "{cheri_priv_m_ext}/{cheri_priv_s_ext}" Extensions, Version 1.0
+== "Machine/Supervisor_level ISA ({cheri_base_ext_name}" Extensions, Version 1.0
 
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the priv spec. Exact location TBD.
@@ -7,13 +7,13 @@ endif::[]
 
 This chapter describes integration of {cheri_base_ext_name} with the RISC-V privileged architecture.
 
-=== Machine-Level CSRs added or extended by {cheri_priv_m_ext}
+=== Machine-Level CSRs added or extended by {cheri_base_ext_name}
 
 {cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
 otherwise add new functions. <<asr_perm>> in the <<pcc>> is typically required for access
 to the CSRs.
 
-[#mtvec_y,reftext="mtvec ({cheri_priv_m_ext})"]
+[#mtvec_y,reftext="mtvec ({cheri_base_ext_name})"]
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
 The <<mtvec>> register is extended to hold a code capability.
@@ -57,7 +57,7 @@ NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pc
 
 <<mtvec_y>> follows the rule from `mtvec` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
-[#mscratch_y, reftext="mscratch ({cheri_priv_m_ext})"]
+[#mscratch_y, reftext="mscratch ({cheri_base_ext_name})"]
 ==== Machine Scratch Capability Register (mscratch)
 
 The <<mscratch>> register is extended to hold a capability.
@@ -69,7 +69,7 @@ It is not WARL, all capability fields must be implemented.
 .Machine-mode scratch capability register
 include::img/mscratchcreg.edn[]
 
-[#mepc_y,reftext="mepc ({cheri_priv_m_ext})"]
+[#mepc_y,reftext="mepc ({cheri_base_ext_name})"]
 ==== Machine Exception Program Counter Capability (mepc)
 
 The <<mepc>> is extended to hold a capability.
@@ -117,7 +117,7 @@ of the data is UNSPECIFIED.
 .Machine thread identifier capability register
 include::img/mtidcreg.edn[]
 
-=== Machine-Level CSRs modified by {cheri_priv_m_ext}
+=== Machine-Level CSRs modified by {cheri_base_ext_name}
 
 [#mstatus_cheri, reftext="mstatus"]
 ==== Machine Status Registers (mstatus and mstatush)
@@ -242,12 +242,12 @@ The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 
 
 [#supervisor-level-csrs-section]
-=== Supervisor-Level CSRs added or extended by {cheri_priv_s_ext}
+=== Supervisor-Level CSRs added or extended by {cheri_base_ext_name}
 
 {cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
 hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> required for access to all privileged CSRs.
 
-[#stvec_y,reftext="stvec ({cheri_priv_s_ext})"]
+[#stvec_y,reftext="stvec ({cheri_base_ext_name})"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
 
 The <<stvec>> register is extended to hold a capability.
@@ -259,7 +259,7 @@ include::img/stveccreg.edn[]
 
 The handling of <<stvec_y>> is otherwise identical to <<mtvec_y>>, but in supervisor mode.
 
-[#sscratch_y, reftext="sscratch ({cheri_priv_s_ext})"]
+[#sscratch_y, reftext="sscratch ({cheri_base_ext_name})"]
 ==== Supervisor Scratch Capability Register (sscratch)
 
 The <<sscratch>> register is extended to hold a capability.
@@ -271,7 +271,7 @@ It is not WARL, all capability fields must be implemented.
 .Supervisor scratch capability register
 include::img/sscratchcreg.edn[]
 
-[#sepc_y,reftext="sepc ({cheri_priv_s_ext})"]
+[#sepc_y,reftext="sepc ({cheri_base_ext_name})"]
 ==== Supervisor Exception Program Counter Capability (sepc)
 
 The <<sepc>> register is extended to hold a capability.
@@ -295,7 +295,7 @@ The <<stidc>> register is used to identify the current software thread in superv
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
 
-=== Supervisor-Level CSRs modified by {cheri_priv_s_ext}
+=== Supervisor-Level CSRs modified by {cheri_base_ext_name}
 ==== Supervisor Cause Register (scause)
 
 {cheri_base_ext_name} adds a new exception code for CHERI exceptions that <<scause>> must be able to represent.
@@ -428,8 +428,6 @@ per-privilege enable bits.
 NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
 it is not possible to disable CHERI checks completely.
 endif::[]
-
-CAUTION: #ARC-QUESTION: The CBZE, CBIE etc. bits are specified by Zicbo*, can this be defined by {cheri_priv_m_ext}/{cheri_priv_s_ext}+{cheri_default_ext_name} instead of adding a new priv extension?#
 
 When using a system with {cheri_default_ext_name}, it may be desirable to disable CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
 {cheri_priv_m_reg_enable_ext} includes functions to disable explicit access to CHERI
