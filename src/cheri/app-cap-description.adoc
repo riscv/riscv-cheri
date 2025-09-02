@@ -82,6 +82,33 @@ ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9:* There is now a 1-bit otype (sealed or not) and the old CHERI v9 otype no longer exists.
 endif::[]
 
+The capabilities of this chapter define a 1-bit otype field,
+directly encoding capability types `0` (unsealed) and `1`.
+Building upon <<section_zysentry>>,
+this encoding gives architectural semantics for value `1`:
+
+* Such sealed capabilities may be passed as inputs to <<JALR_CHERI>>.
+
+* <<JALR_CHERI>> uses this type to seal its return capabilities.
+
+Further, this encoding implies <<section_zyseal_amb>>
+and defines <<YSEAL>> instructions with `null` authority to seal at type `1`.
+
+[NOTE]
+=====
+The use of <<section_zyseal_amb>> is intended to be a stopgap, transitional
+mechanism until, at minimum, agreement is reached about
+expressing <<zyseal_se_perm>> in the capabilities of this section
+and software can be rewritten to plumb suitable capabilities
+to <<YSEAL>> instructions.
+One possible approach is that all capabilities herein grant <<zyseal_se_perm>>
+and that this permission may not be cleared without clearing the {ctag},
+so that it does not need explicit representation in the metadata.
+Whether or not we go with a full implementation of <<section_zyseal>>
+or continue to rely on superset unsealing (recall <<CBLD>>)
+is a separate discussion.
+=====
+
 [#AP-field-encoding, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
