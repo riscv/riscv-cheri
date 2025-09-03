@@ -528,12 +528,7 @@ endif::support_varxlen[]
 [#section_priv_cheri_vmem]
 == "{cheri_priv_vmem_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
 
-RISC-V's page-based virtual-memory management is generally orthogonal to CHERI.
-In {cheri_base_ext_name}, capability addresses are interpreted with respect to the privilege level of the processor in line with RISC-V's handling of integer addresses.
-In machine mode, capability addresses are generally interpreted as physical addresses; if the <<mstatus_cheri>> MPRV flag is asserted, then data accesses (but not instruction accesses) will be interpreted as if performed by the privilege mode in <<mstatus_cheri>>'s MPP.
-In supervisor and user modes, capability addresses are interpreted as dictated by the current *satp* configuration: addresses are virtual if paging is enabled and physical if not.
-
-{cheri_priv_vmem_ext} requires that the <<pcc>> grants the <<asr_perm>> to change the page-table root *satp* and other virtual-memory parameters as described in xref:supervisor-level-csrs-section[xrefstyle=short].
+Virtual memory support for {cheri_base64_ext_name} requires at least one additional bit to be allocated in the page table entries, to control access to capabilities in virtual memory pages.
 
 [#section_crw_bit]
 === Capability Read-Write (CRW) Bit
@@ -542,7 +537,7 @@ In supervisor and user modes, capability addresses are interpreted as dictated b
 
 NOTE: _Sv32_ does not have any spare PTE bits, and so this bit does not exist for RV32.
 
-IMPORTANT: Any hart that supports {cheri_base_ext_name} and at least one of the Sv39, Sv48, and Sv57 virtual memory translation schemes must also implement {cheri_priv_vmem_ext}.
+IMPORTANT: Any hart that supports Sv39 must also implement {cheri_priv_vmem_ext}.
 
 [#limit_cap_prop]
 ==== Limiting Capability Propagation
@@ -566,8 +561,13 @@ CHERI adds the concept of _CHERI page faults_. They are split into :
 * {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld}), and
 * {cheri_excep_name_pte_st} (cause value {cheri_excep_cause_pte_st})
 
-All {cheri_base64_ext_name} harts with virtual memory must implement {cheri_priv_vmem_ext} and so can raise _{cheri_excep_name_pte_st}_ exceptions.
-Only harts which also implement a revocation scheme such as {cheri_priv_crg_ext} can raise _{cheri_excep_name_pte_ld}_ exceptions.
+They are prioritized against other fault types as shown in <<exception-priority-cheri>>.
+
+{cheri_priv_vmem_ext} allows {cheri_excep_name_pte_st}s to be raised.
+
+CHERI harts which implement {cheri_priv_vmem_ext} must also implement a revocation scheme to prevent use-after-free attacks.
+
+The current revocation scheme (<<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>) also allows {cheri_excep_name_pte_ld}s to be raised.
 
 ==== Extending the Page Table Entry Format
 
@@ -595,7 +595,7 @@ If the CRW bit is clear then:
 
 * When a capability load or AMO instruction is executed, the {ctag} bit of the
 loaded capability is cleared before it is written to the destination register.
-* A <<cheri_pte_fault,_{cheri_excep_name_pte_st}_>> exception is raised when a capability store or AMO instruction is executed and the {ctag} bit of the capability being written is set.
+* A <<cheri_pte_fault,_{cheri_excep_name_pte_st}_>> exception is raised when a capability store or AMO instruction is executed and the {ctag} bit of the to-be-stored capability is set.
 
 [[pte_crw_summary]]
 .Summary of memory access behavior depending on CRW in the PTEs
@@ -603,8 +603,8 @@ loaded capability is cleared before it is written to the destination register.
 |===
 |PTE.CRW  |Instruction          | Behavior
 | 0       |Capability load      | Set loaded {ctag} to zero
-| 0       |Capability store/AMO | Raise a _{cheri_excep_name_pte_st}_ if the stored {ctag} is set
-| 1       |Any                  | Normal operation
+| 0       |Capability store/AMO | Raise a _{cheri_excep_name_pte_st}_ if the {ctag} of the to-be-stored capability is set
+| 1       |Any                  | Normal operation.
 |===
 
 [NOTE]
