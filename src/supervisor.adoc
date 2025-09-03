@@ -1180,10 +1180,25 @@ loads or stores to the same address.
 ====
 A consequence of this specification is that an implementation may use
 any translation for an address that was valid at any time since the most
-recent SFENCE.VMA that subsumes that address. In particular, if a leaf
-PTE is modified but a subsuming SFENCE.VMA is not executed, either the
-old translation or the new translation will be used, but the choice is
-unpredictable. The behavior is otherwise well-defined.
+recent SFENCE.VMA that subsumes that address.
+
+For example, if a leaf PTE is modified and the corresponding virtual address
+is accessed without a subsuming SFENCE.VMA having been executed in between,
+then either the new translation or any older translation since the last
+subsuming SFENCE.VMA was executed will be used.
+It is unpredictable which translation will be chosen from that set, and
+subsequent accesses to the same virtual address might use different
+translations from that set.
+But the behavior of such accesses is otherwise well defined.
+
+This property applies even if the virtual-address width for that translation
+differs from the width currently specified by `satp`.MODE.
+For a given virtual address and ASID, any translation since the last subsuming
+SFENCE.VMA might be used, even if that translation used a virtual address of a
+different width.
+Similarly, for a given virtual address, any global translation since the
+last subsuming SFENCE.VMA might be used, regardless of both ASID and
+virtual-address width.
 
 In a conventional TLB design, it is possible for multiple entries to
 match a single address if, for example, a page is upgraded to a
@@ -1608,7 +1623,7 @@ algorithm are performed using width PTESIZE.
 [NOTE]
 ====
 This implies, for example, that an Sv48 implementation may not use two
-separate 4B reads to non-atomically access a single 8B PTE, and that A/D
+separate 4{nbsp}B reads to non-atomically access a single 8{nbsp}B PTE, and that A/D
 bit updates performed by the implementation are treated as atomically
 updating the entire PTE, rather than just the A and/or D bit alone (even
 though the PTE value does not otherwise change).
@@ -1831,8 +1846,8 @@ include::images/bytefield/sv48pte.edn[]
 
 The PTE format for Sv48 is shown in <<sv48pte>>.
 Bits 63-54 and 9-0 have the same meaning as for Sv39. Any level of PTE
-may be a leaf PTE, so in addition to pages, Sv48 supports _megapages_,
-_gigapages_, and _terapages_, each of which must be virtually and
+may be a leaf PTE, so in addition to 4 KiB pages, Sv48 supports 2 MiB _megapages_,
+1 GiB _gigapages_, and 512 GiB _terapages_, each of which must be virtually and
 physically aligned to a boundary equal to its size. A page-fault
 exception is raised if the physical address is insufficiently aligned.
 
@@ -1884,8 +1899,8 @@ include::images/bytefield/sv57pte.edn[]
 
 The PTE format for Sv57 is shown in <<sv57pte>>.
 Bits 63–54 and 9–0 have the same meaning as for Sv39. Any level of PTE
-may be a leaf PTE, so in addition to pages, Sv57 supports _megapages_,
-_gigapages_, _terapages_, and _petapages_, each of which must be
+may be a leaf PTE, so in addition to 4 KiB pages, Sv57 supports 2 MiB _megapages_,
+1 GiB _gigapages_, 512 GiB _terapages_, and 256 TiB _petapages_, each of which must be
 virtually and physically aligned to a boundary equal to its size. A
 page-fault exception is raised if the physical address is insufficiently
 aligned.
@@ -2322,6 +2337,29 @@ implementation of Svvptc include: not having any address-translation caches, not
 storing Invalid PTEs in the address-translation caches, automatically evicting
 Invalid PTEs using a bounded timer, or making address-translation caches
 coherent with store instructions that modify PTEs.
+====
+
+[[sec:svrsw60t59b]]
+== "Svrsw60t59b" Extension for PTE Reserved-for-Software Bits 60-59, Version 1.0
+
+If the Svrsw60t59b extension is implemented, then bits 60-59 of the page table
+entries (PTEs) are reserved for use by supervisor software and are ignored by
+the implementation.
+
+If the Hypervisor (H) extension is also implemented, then bits 60-59 of the
+G-stage PTEs are reserved for use by supervisor software and are ignored by the
+implementation.
+
+The Svrsw60t59b extension depends on Sv39.
+
+[NOTE]
+====
+Operating systems frequently use reserved bits within PTEs to store metadata for
+advanced memory management features. Embedding these metadata bits directly within
+the PTEs allows for fast access with minimal overhead, avoiding costly lookups in
+auxiliary data structures. By default, Sv39 and Sv39x4 require a page fault and
+a guest-page fault exception, respectively, to be raised if bits 60–59 are not
+zero.
 ====
 
 [[ssqosid]]
