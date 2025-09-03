@@ -166,7 +166,7 @@ Therefore small exponents can allow byte granularity on the bounds, but larger e
 The {cheri_base_ext_name} bounds encoding format is defined in <<section_cap_bounds>>.
 
 NOTE: Future extensions may use alternative bounds encoding formats.
-Software can query the capability format by reading the <<ycfg>> CSR.
+Software can query the capability format by reading the <<uycfg>> CSR.
 
 Software can query the capability bounds:
 
@@ -468,7 +468,7 @@ xref:csrnames-added-x[xrefstyle=short].
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
 |XLEN CSR|Permissions|Description
-|<<ycfg>>|WARL; see section for details|Capability encoding version
+|<<uycfg>>|RO; see section for details|Capability encoding version
 |===
 
 [#utidc,reftext="utidc"]
@@ -519,43 +519,20 @@ The trusted code can store capabilities on the trusted stack when calling out of
 when returning to the same compartment.
 =====
 
-[#ycfg,reftext="ycfg"]
-===== CHERI Capability Encoding (__x__ycfg)
+[#uycfg,reftext="uycfg"]
+===== CHERI Capability Encoding (uycfg)
 
-The <<ycfg>> register is used to identify which CHERI capability encoding is used by the platform.
+The <<uycfg>> register is a read-only XLEN CSR used to identify which CHERI capability encoding is used by the platform.
 The capability encoding both determines the in-memory representation of a CHERI capability
 and entails a set of extensions present atop {cheri_base_ext_name}.
-The CSR exists in the _writable_ namespace and all bits are defined to be WARL,
-but, absent any future extensions, it is expected that each implementation has exactly one legal value.
-This CSR is always present in the machine mode read/write CSR space;
-if the hart supports user mode, a `uycfg` register exists,
-if the hart supports supervisor mode, an `sycfg` register exists, and
-if the hart supports hypervisor mode, a `vsycfg` register exists.
-`sycfg` is always read-only, as is `vsycfg`, if it exists.
-`uycfg` is a read-only alias of `sycfg`, if it exists, or of `mycfg` otherwise.
-If the hypervisor extension is enabled, then `vsycfg` is WARL,
-updatable from M-mode or HS-mode with <<pcc>> granting <<asr_perm>>.
 
-.CHERI capability encoding CSR (`__x__ycfg`) format
+NOTE: This CSR is read-only, but future extensions may provide a mechanism to modify the capability encoding currently in use.
+
+.CHERI capability encoding CSR (`uycfg`) format
 [#ycfg_csr_structure]
-[bytefield]
-----
-(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 24}])
-(def row-height 40)
-(def row-header-fn nil)
-(def left-margin 100)
-(def right-margin 100)
-(def boxes-per-row 32)
-(draw-column-headers {:height 20 :font-size 18 :labels (reverse (concat ["0"] (repeat 6 "") ["8" "9"] (repeat 22 "") ["XLEN-1"]))})
+include::img/ycfgreg.edn[]
 
-(draw-box "Features" {:span 24})
-(draw-box "Base Encoding" {:span 8})
-
-(draw-box "MXLEN-8"  {:span 24 :borders {}})
-(draw-box "8"        {:span 8 :borders {}})
-----
-
-The following values for `mycfg`, `sycfg`, and `uycfg` are defined:
+The following values for `uycfg` are defined:
 
 [%autowidth,options=header,cols="^,^,<"]
 |===
