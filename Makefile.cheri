@@ -55,7 +55,7 @@ HEADER_SOURCE := $(ROOT_SRC_DIR)/riscv-cheri-standalone.adoc
 ASCIIDOC          = asciidoctor-pdf
 EXTRA_ASCIIDOC_OPTIONS ?=
 
-ASCIIDOC_OPTIONS  = --trace --verbose                                \
+ASCIIDOC_OPTIONS  = --trace --verbose \
                     -a compress                                      \
                     -a mathematical-format=svg                       \
                     -a revnumber=$(VERSION)                          \
@@ -88,15 +88,31 @@ ASCIIDOC_BUILD_COMMAND = $(ASCIIDOC) \
 DOCKER_PATH  := $(shell command -v docker)
 STDIN_IS_TTY := $(shell test -t 0 && echo yes)
 
-ifdef DOCKER_PATH
-    DOCKER_RUN_ARGS = --rm -v $(PWD):/build -w /build $(DOCKER_IMAGE) /bin/sh -c "$(ASCIIDOC_BUILD_COMMAND)"
-    # `-it` is necessary so that ctrl-c works when running locally, however it
-    # does not work in CI ("the input device is not a TTY") so we test for that too.
-    ifdef STDIN_IS_TTY
-        BUILD_COMMAND = docker run -it $(DOCKER_RUN_ARGS)
+DOCKER_BIN ?= docker
+SKIP_DOCKER ?= $(shell if command -v $(DOCKER_BIN) >/dev/null 2>&1 ; then echo false; else echo true; fi)
+ifneq ($(SKIP_DOCKER),true)
+    DOCKER_IS_PODMAN = \
+        $(shell ! ${DOCKER_BIN}  -v | grep podman >/dev/null ; echo $$?)
+    ifeq "$(DOCKER_IS_PODMAN)" "1"
+        # Modify the SELinux label for the host directory to indicate
+        # that it can be shared with multiple containers. This is apparently
+        # only required for Podman, though it is also supported by Docker.
+        DOCKER_VOL_SUFFIX = :z
+        DOCKER_EXTRA_VOL_SUFFIX = ,z
     else
-        BUILD_COMMAND = docker run $(DOCKER_RUN_ARGS)
+        DOCKER_IS_ROOTLESS = \
+            $(shell ! ${DOCKER_BIN} info -f '{{println .SecurityOptions}}' | grep rootless >/dev/null ; echo $$?)
+        ifneq "$(DOCKER_IS_ROOTLESS)" "1"
+            # Rooted Docker requires this flag so that the files it creates are
+            # owned by the current user instead of root. Rootless docker does not
+            # require it, and Podman doesn't either since it is always rootless.
+            DOCKER_USER_ARG := --user $(shell id -u)
+        endif
     endif
+    BUILD_COMMAND = $(DOCKER_BIN) run --rm \
+                    -v $(PWD):/build${DOCKER_VOL_SUFFIX} \
+                    -w /build $(DOCKER_USER_ARG) $(DOCKER_IMAGE) \
+                    /bin/sh -c "$(ASCIIDOC_BUILD_COMMAND)"
 else
     BUILD_COMMAND = $(ASCIIDOC_BUILD_COMMAND)
 endif
