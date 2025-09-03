@@ -103,7 +103,7 @@ The {ctag} is zero then IALIGN=32 when reading the CSR, or executing <<MRET_CHER
 When a trap is taken into M-mode, the pc is written to `mepc.address` following the standard behavior.
 The {ctag} and metadata of the <<pcc>> are also written to <<mepc_y>>.
 
-The capability in <<mepc_y>> is unsealed when it is written to <<pcc>> on execution of an <<MRET_CHERI>> instruction.
+On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_y>> is unsealed and written to <<pcc>>.
 
 <<mepc_y>> follows the rule from `mepc` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 
@@ -593,7 +593,8 @@ When the CRW bit is set, capabilities are written as usual.
 
 If the CRW bit is clear then:
 
-* When a capability load or AMO instruction is executed, the implementation clears the {ctag} bit of the capability read from the virtual page.
+* When a capability load or AMO instruction is executed, the {ctag} bit of the
+loaded capability is cleared before it is written to the destination register.
 * A <<cheri_pte_fault,_{cheri_excep_name_pte_st}_>> exception is raised when a capability store or AMO instruction is executed and the {ctag} bit of the capability being written is set.
 
 [[pte_crw_summary]]
