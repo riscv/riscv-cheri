@@ -5,8 +5,6 @@ ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the unpriv spec after the RV32I chapter.
 endif::[]
 
-#ARC-COMMENT: A fundamental descriptive problem in this narrative is that capabilities are being viewed as variables not as values.  A capability is never modified in place - a new capability value is being created from an existing capability value by instructions.  This confusion makes it more difficult to understand instruction descriptions which operate on values and place them in variables (registers and memory locations).#
-
 This chapter describes the {cheri_base32_ext_name} and {cheri_base64_ext_name} base capability instruction sets, that extend the RV32I and RV64I (or RV32E/RV64E) integer instruction sets with CHERI.
 If the hart supports RV32E/RV64E instead of RV32I/RV64I, {cheri_base_ext_name} the restrictions from <<rv32e>> apply and 16 general purpose registers instead of 32 -- but all other {cheri_base_ext_name} changes are identical so the remainder of this chapter only refers to extending RV32I/RV64I behavior.
 
@@ -253,8 +251,8 @@ When `CT=0`, the capability authorizes access to a region of memory as defined b
 
 [#sealed_cap,reftext="sealed capability"]
 Sealed capabilities::
-Capabilities with `CT≠0` are sealed against modification.
-They cannot be dereferenced to access memory and it is not permitted to change the address, bounds or permissions.
+Capabilities with `CT≠0` are sealed against modification and cannot be dereferenced to access memory.
+Instructions that operate on capabilities will produce a result with a cleared {ctag} if the source capability is sealed and the operation would alter its address, bounds, or permissions.
 Extensions that augment capability metadata must describe their interaction(s) with sealed capabilities.
 
 When a sealed capability is used as a function pointer it is known as a <<sentry_cap>>.
@@ -283,7 +281,7 @@ Permissions grant access subject to the <<cap_valid_tag>> being set, the capabil
 Any operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP and PMAs, even if the capability grants sufficient permissions.
 The permissions currently defined in {cheri_base_ext_name} are listed below.
 
-Permissions can only be removed using <<CLRPERM>> on valid capabilities, they cannot be added.
+Permissions can be cleared when deriving a new capability value (using <<CLRPERM>>) but they can never be added.
 
 NOTE: The encoding of permissions varies with MXLEN and is described in xref:AP-field-encoding[xrefstyle=full].
 
