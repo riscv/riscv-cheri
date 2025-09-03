@@ -86,8 +86,8 @@ cleared due to lack of <<c_perm>>.
 
 If the CRW bit is clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
 
-* When a capability load or AMO instruction is executed, the implementation
- clears the {ctag} bit of the capability read from the virtual page.
+* When a capability load or AMO instruction is executed, the {ctag} bit of the
+  loaded capability is cleared before it is written to the destination register.
 * When a capability store or AMO instruction is executed and the {ctag} bit
  of the capability being written is set, the implementation raises a
  {cheri_excep_name_pte_st}.

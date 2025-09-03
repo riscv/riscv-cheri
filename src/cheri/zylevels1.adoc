@@ -38,8 +38,8 @@ That is, if either of the latter are clear, then <<zylevels1_sl_perm>> has no ef
 [#zylevels1_lg_perm,reftext="LG-permission"]
 Load Global Permission (LG):: This field allows limiting the propagation of _global_ capabilities.
 +
-A capability loaded through an authorizing capability lacking <<zylevels1_lg_perm>> will have its <<zylevels1_gl_perm>> bit cleared.
-Additionally, if the loaded capability is _unsealed_, its <<zylevels1_lg_perm>> is cleared.
+When a capability is loaded through an authorizing capability that lacks <<zylevels1_lg_perm>>, the resulting capability value has its <<zylevels1_gl_perm>> bit cleared.
+Additionally, if the loaded capability value is _unsealed_, its <<zylevels1_lg_perm>> is also cleared in the result.
 +
 This permission is similar to the base <<lm_perm>> and its effects on loaded capabilities' <<w_perm>> and <<lm_perm>> (but note the difference in interaction with seals).
 +
@@ -63,7 +63,7 @@ The _Capability Global_ flag holds one of two values:
 * 1: the capability is _global_.
 * 0: the capability is _local_.
 
-As with permissions, the _Capability Global_ flag of a valid capability can be cleared but never set (without reconstruction from a global superset capability).
+As with permissions, the _Capability Global_ flag can be cleared when creating a new capability value from an existing one, but it can never be set (without deriving it from a global superset capability).
 
 === Interaction with <<root-cap>> Capabilities
 
@@ -88,8 +88,8 @@ used by <<CLRPERM>> and <<GCPERM>>,
 as shown in <<zylevels1_acperm_bit_field>>.
 
 ==== <<CLRPERM>> and the Capability Global (GL) Flag
-
-<<CLRPERM>> is permitted to clear the _Capability Global_ flag, even if the capability is sealed, unlike architectural and software permissions.
+<<CLRPERM>> can produce a new capability value with the _Capability Global_ flag cleared, even if the source capability is sealed.
+This is unlike architectural and software permissions.
 This applies to both "implicit <<CLRPERM>>s" in loads from memory and explicit <<CLRPERM>> instructions.
 
 Implementations _are permitted but not mandated_ to require that an explicit <<CLRPERM>> instruction wishing to clear <<zylevels1_gl_perm>>
