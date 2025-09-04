@@ -1,6 +1,8 @@
 [#section_zyseal_amb,reftext="{cheri_seal_amb_ext_name}"]
 == "{cheri_seal_amb_ext_name}" Extension for Ambient Sealing
 
+=== Authorityless <<YSEAL>>
+
 Capability encodings may define a set of <<sec_cap_type>> values that do not
 need capability-based authority to be used as seals.
 Thus, the right to seal at these types (recall <<section_zyseal>>)
@@ -31,3 +33,23 @@ other extensions in the platform.
 If the encoding defines only the first option above (<<YSEAL>> with `null`
 authority), all <<YSEAL>> encodings with `rs1≠0` may likewise remain illegal or
 available for use by other extensions.
+
+=== Fused Ambient Sealing and Capability Reconstruction
+
+Instantiations of this extension may specify a <<YBLDS>> instruction
+which fuses together the semantics of <<CBLD>> and the above ambient seals.
+Assuming all ambient seals are available via untagged authorities,
+`{YBLDS_LC} {cd}, {cs1}, {cs2}` is equivalent to this sequence,
+modulo a scratch register, `xS`:
+
+[subs="+attributes"]
+----
+  {GCTYPE_LC} xS, {cs2}
+  {CBLD_LC} {cd}, {cs1}, {cs2}
+  beqz xS, 1f
+  {YSEAL_LC} {cd}, xS, {cd}
+1:
+----
+
+#If we do the YSEAL-pass-unsealed-with-zero-authority thing, we can remove the
+branch in the above#
