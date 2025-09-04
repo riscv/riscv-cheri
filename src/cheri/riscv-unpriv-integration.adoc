@@ -687,7 +687,6 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 |<<SCBNDSI>>  |Set immediate bounds on capability with rounding, clear {ctag} if rounding is required
 |<<SCBNDS>>   |Set register bounds on capability with rounding, clear {ctag} if rounding is required
 |<<SCBNDSR>>  |Set bounds on capability with rounding up as required
-|<<SENTRY>>   |Seal capability
 |<<CBLD>>     |Set {cd} to {cs2} with its {ctag} set after checking that {cs2} is a subset of {cs1}
 |=======================
 
@@ -699,7 +698,6 @@ include::insns/cmv_32bit.adoc[]
 include::insns/schi_32bit.adoc[]
 include::insns/scbnds_32bit.adoc[]
 include::insns/scbndsr_32bit.adoc[]
-include::insns/sentry_32bit.adoc[]
 include::insns/cbld_32bit.adoc[]
 
 <<<
@@ -926,3 +924,15 @@ NOTE: Future behavior for these reserved branch encodings may include branching 
 If the target of a taken branch lies outside the bounds of <<pcc>>, the next instruction fetch will raise an exception.
 
 NOTE: A future extension may raise an exception on the branch instruction itself if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
+
+
+== "{rvy_sentry_ext_name}" Extension for Creation of Sentry Capabilities
+
+In the {cheri_base_ext_name} base ISA the only way to create a <<sentry_cap>> is through the <<JALR_CHERI>> instruction as that writes back a sentry capability to the link register.
+The {rvy_sentry_ext_name} extension adds the <<SENTRY>> instruction to allow sealing arbitrary capabilities as a <<sentry_cap>> (<<sec_cap_type>>=1).
+
+NOTE: Future extensions to {cheri_base_ext_name} (such as CHERIoT, see <<uycfg>>) support additional <<sec_cap_type>> values as alternatives to the <<sentry_cap>> (<<sec_cap_type>>=1), so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
+
+=== Added instructions
+
+include::insns/sentry_32bit.adoc[]
