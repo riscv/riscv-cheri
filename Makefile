@@ -75,7 +75,9 @@ else
         cd $@.workdir &&
 endif
 
-ifdef UNRELIABLE_BUT_FASTER_INCREMENTAL_BUILDS
+# Default to incremental builds for the CHERI fork of the isa-manual, we have not seen this cause issues.
+UNRELIABLE_BUT_FASTER_INCREMENTAL_BUILDS ?= 1
+ifneq ($(UNRELIABLE_BUT_FASTER_INCREMENTAL_BUILDS),)
 WORKDIR_SETUP = mkdir -p $@.workdir && ln -sfn ../../src ../../docs-resources $@.workdir/
 WORKDIR_TEARDOWN = mv $@.workdir/$@ $@
 else
