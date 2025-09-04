@@ -87,7 +87,7 @@ The <<m_bit>> of a <<x_perm>>-granting capability can be read and written by the
 |<<GCMODE>>    |{GCMODE_DESC}
 |=======================
 
-NOTE: The mode can also be updated by setting the <<m_bit>> of a target capability using <<SCMODE>> followed by a <<JALR_CHERI>>.
+NOTE: In addition to the mode switching instructions, the current mode can also be updated by setting the <<m_bit>> of a target capability using <<SCMODE>> followed by a <<JALR_CHERI>>.
 
 For capabilities that do not grant <<x_perm>>,
 <<m_bit>> must always be interpreted and reported as {cap_mode_value}.
@@ -112,6 +112,14 @@ auipc {creg}1, 0
 
 NOTE: Implementations that support {cheri_default_ext_name} will typically boot into {cheri_int_mode_name} so that non-CHERI aware software can run unmodified.
  CHERI aware software can observe and switch the mode as required.
+
+=== Added instructions
+
+include::insns/scmode_32bit.adoc[]
+
+include::insns/gcmode_32bit.adoc[]
+
+include::insns/modesw_32bit.adoc[]
 
 === Added State
 
