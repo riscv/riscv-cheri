@@ -463,14 +463,12 @@ it is not possible to disable CHERI checks completely.
 endif::[]
 
 When using a system with {cheri_default_ext_name}, it may be desirable to disable CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
-{cheri_priv_m_reg_enable_ext} includes functions to disable explicit access to CHERI
+{cheri_default_ext_name} includes functions to disable explicit access to CHERI
 registers and instructions (hereafter referred to _disabling CHERI_).
 
 NOTE: When _CHERI is disabled_ for a specific privilege level, <<pcc>> and <<ddc>> bounds are _still_ enforced.
 
-The {cheri_priv_m_reg_enable_ext} extension makes the {CRE} bit of <<misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
-
-{cheri_priv_m_reg_enable_ext} implies {cheri_default_ext_name}.
+The {cheri_default_ext_name} extension makes the {CRE} bit of <<misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
 
 //future extensions - currently they must match
 //CHERI is disabled if
@@ -509,20 +507,20 @@ This is the default behavior on reset.
 ====
 
 xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart
-in connection with the <<section_cheri_disable,{CRE}>> and the <<cheri_execution_mode>> while in a privilege other than debug mode.
+in connection with the effective CHERI enable and the <<cheri_execution_mode>> while in a privilege other than debug mode.
 
 .Hart's behavior depending on the effective <<section_cheri_disable,CHERI enable>> and <<cheri_execution_mode>>
 [#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
 |==============================================================================
-| | {CRE}=0                            | {CRE}=1^1^, M-bit={int_mode_value} | {CRE}=1, M-bit={cap_mode_value}
-| Authorizing capability for data memory accesses | <<ddc>> | <<ddc>> | capability in `rs1`
+|                                      | {CRE}^1^=0        | {CRE}=1, M-bit={int_mode_value} | {CRE}=1, M-bit={cap_mode_value}
+| Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
 | natively YLEN CSR Access Width       | ✘                 | YLEN                  | YLEN
 | Extended YLEN CSR Access Width       | XLEN              | XLEN                  | YLEN
 | CHERI Instructions Allowed           | ✘                 | ✔                     | ✔
 | Summary                              | **_Fully RISC-V compatible_**^2^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
 |==============================================================================
 
-^1 _{CRE}_ represents the effective CHERI enable for the current privilege mode.
+^1^ _{CRE}_ represents the effective CHERI enable for the current privilege mode.
 
 ^2^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
 
