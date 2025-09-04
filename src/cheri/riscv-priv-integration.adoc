@@ -563,7 +563,7 @@ Virtual memory support for {cheri_base64_ext_name} requires at least one additio
 
 NOTE: _Sv32_ does not have any spare PTE bits, and so this bit does not exist for RV32.
 
-IMPORTANT: Any hart that supports Sv39 must also implement {cheri_priv_vmem_ext}.
+IMPORTANT: Any {cheri_base64_ext_name} hart that supports Sv39 must also implement the PTE.CRW bit.
 
 [#limit_cap_prop]
 ==== Limiting Capability Propagation
@@ -589,11 +589,13 @@ CHERI adds the concept of _CHERI page faults_. They are split into :
 
 They are prioritized against other fault types as shown in <<exception-priority-cheri>>.
 
-{cheri_priv_vmem_ext} allows {cheri_excep_name_pte_st}s to be raised.
+The PTE.CRW bit allows {cheri_excep_name_pte_st}s to be raised.
 
-CHERI harts which implement {cheri_priv_vmem_ext} must also implement a revocation scheme to prevent use-after-free attacks.
+CHERI harts which implement Sv39 must also implement a revocation scheme to prevent use-after-free attacks.
 
 The current revocation scheme (<<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>) also allows {cheri_excep_name_pte_ld}s to be raised.
+
+NOTE: A future extension may define an improved scheme.
 
 ==== Extending the Page Table Entry Format
 
