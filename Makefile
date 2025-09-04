@@ -127,6 +127,12 @@ REQUIRES := --require=asciidoctor-bibtex \
             --require=asciidoctor-mathematical \
             --require=asciidoctor-sail
 
+# FIXME: downgrade failure level to WARNING since the CHERI changes introduce:
+# asciidoctor: WARNING: Could not locate the character `' (\u000a) in the following fonts: body, M+ 1p Fallback, Droid Fallback
+# I am unable to figure out what is causing this and why it's not happening in the normal ISA manual, but until
+# we have a docs-resources with a valid glyph for linefeed, we can't set the fatal level to WARN
+OPTIONS += --failure-level=ERROR
+
 # Downloaded Sail Asciidoc JSON, which includes all of
 # the Sail code and can be embedded. We don't vendor it
 # into this repo since it's quite large (~4MB).
