@@ -65,3 +65,33 @@ This is deliberate.
 Software should ensure that the capabilities requisite for such operations are
 attenuated, confined to sufficiently trusted components, and/or destroyed.
 =====
+
+=== Interaction With <<CBLD>>
+
+#This presumes that https://github.com/riscv/riscv-cheri/pull/760 lands#
+
+Systems which wish both to instantiate {cheri_sentry_ext_name}
+with one or more <<sec_cap_type>> values and
+to store capabilities separated from their tags
+(say, paged out to disk)
+should also ensure that the type(s) used with {cheri_sentry_ext_name}
+are made architecturally available to software
+which reconstitutes capabilities from their encoded bit patterns.
+Possible mechanisms for this reconstruction include:
+
+* Instantiation of a sufficient subset of <<section_zyseal>>.
+  (This option is recommended, as it affords software
+  the implementation of fine-grained security models.)
+
+* If only a single type is used with {cheri_sentry_ext_name},
+  instantiating {rvy_sentry_ext_name} such that
+  its <<SENTRY>> instruction also seals with this same type.
+
+* Instantiating <<section_zyseal_amb>> such that
+  the type(s) used with {cheri_sentry_ext_name}
+  are ambiently available to <<YSEAL>>.
+
+* Instantiating <<section_zyseal_amb>>
+  the type(s) used with {cheri_sentry_ext_name}
+  are available to its <<YBLDS>> instruction.
+
