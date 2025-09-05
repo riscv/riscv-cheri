@@ -257,6 +257,28 @@ Capabilities with `CT≠0` are sealed against modification and cannot be derefer
 Instructions that operate on capabilities will produce a result with a cleared {ctag} if the source capability is sealed and the operation would alter its address, bounds, or permissions.
 Extensions that augment capability metadata must describe their interaction(s) with sealed capabilities.
 
+#Begin new since last ARC review#
+
+Given a capability with `CT=0`,
+deriving a capability with `CT≠0` is termed "sealing"
+(or "sealing with type ``x``" when a particular output ``CT=x`` is meant).
+In the other direction,
+deriving a `CT=0` capability from a `CT≠0` capability is termed "unsealing"
+(or "unsealing from type ``x``" when a particular input ``CT=x`` is meant).
+In general, each of these actions may require *authority*
+to operate at the non-zero type;
+extensions will specify how software expresses this authority
+for types not defined above.
+
+[#sec_cap_type_ambient]
+Ambient sealing type::
+Some capability types are said to be "ambiently available" (or just "ambient")
+if they do not require specific authority to seal a capability (with that type).
+Type 1 is considered ambiently available on a given platform
+if <<section_rvy_sentry_insn_ext>> is available on that platform.
+
+#End new since last ARC review#
+
 When a sealed capability is used as a function pointer it is known as a <<sentry_cap>>.
 
 [#sentry_cap,reftext="sentry capability"]
