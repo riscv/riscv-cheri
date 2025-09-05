@@ -77,7 +77,7 @@ The <<m_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cher
 | <<MODESW_CAP>> |{cheri_int_mode_name}| {MODESW_CAP_DESC}
 |=======================
 
-The <<m_bit>> of a capability can be read and written by the instructions listed in <<tab_hybrid_summary>>:
+The <<m_bit>> of a <<x_perm>>-granting capability can be read and written by the instructions listed in <<tab_hybrid_summary>>:
 
 .{cheri_default_ext_name} instructions to observe and update the mode in a capability
 [#tab_hybrid_summary,%autowidth,options=header,align="center",cols="1,4"]
@@ -88,6 +88,14 @@ The <<m_bit>> of a capability can be read and written by the instructions listed
 |=======================
 
 NOTE: The mode can also be updated by setting the <<m_bit>> of a target capability using <<SCMODE>> followed by a <<JALR_CHERI>>.
+
+For capabilities that do not grant <<x_perm>>,
+<<m_bit>> must always be interpreted and reported as {cap_mode_value}.
+
+NOTE: While this is not phrased as an additional rule for <<CLRPERM>> to follow,
+beyond those of <<sec_permission_transitions>>,
+capability encodings may nevertheless take advantage of this implication
+in their representation of architectural CHERI capabilities.
 
 [#m_bit_observe,reftext="Observing the CHERI Execution Mode"]
 ==== Observing the CHERI Execution Mode

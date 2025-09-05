@@ -339,6 +339,32 @@ NOTE: This permission is important in privileged execution environments.
 
 NOTE: Extensions may add additional non-privileged CSRs that require <<asr_perm>>.
 
+[#sec_permission_transitions]
+===== Permission Transitions
+
+Not all capability permissions are _orthogonal_
+(that is, some permissions inherently _depend_ on others).
+As such, using <<CLRPERM>> to clear some permissions
+may have the effect of clearing others as well,
+such that a permission bit being set in the result of <<GCPERM>>
+implies that all bits for permissions upon which it depends will also be set.
+
+For the base set of permissions just defined, the following rules apply.
+Extensions that define new permission bits (such as
+<<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>>)
+may also introduce new dependency constraints.
+Capability _encodings_ may impose additional constraints.
+to reduce the number of bits necessary to represent permissions.
+
+.<<CLRPERM>> base rules
+[float="center",align="center",cols="2,2,4",options="header"]
+|===
+| <<CLRPERM>> Rule                          | Permission   | Valid only if
+| [[perm_req:base:c:r-or-w,base-1]]base-1   | <<c_perm>>   | <<r_perm>> or <<w_perm>>
+| [[perm_req:base:lm:c-and-r,base-2]]base-2 | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
+| [[perm_req:base:asr:x,base-3]]base-3      | <<asr_perm>> | <<x_perm>>
+|===
+
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
