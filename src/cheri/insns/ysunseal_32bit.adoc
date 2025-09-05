@@ -1,0 +1,98 @@
+<<<
+
+[#YSUNSEAL,reftext="{YSUNSEAL}"]
+==== {YSUNSEAL}
+
+#Begin new since last ARC review#
+
+include::new_encoding_note.adoc[]
+
+Synopsis::
+{YSUNSEAL_DESC}
+
+Mnemonic::
+`{ysunseal_lc} {cd}, {cs1}, {cs2}`
+
+Encoding::
+// TODO include::wavedrom/ysunsesal.adoc[]
+
+Description::
+Copy `{cs2}` to `{cd}`.
++
+Set `{cd}.ct=0`.  (That is, unseal `{cd}`.)
++
+Set `{cd}.tag=1` if:
++
+. `{cs1}.tag` is set, and
+. `{cs1}` passes all <<section_cap_integrity,integrity>> checks, and
+. `{cs1}` is not sealed (that is, `{cs1}` has zero <<sec_cap_type>>), and
+. `{cs2}.tag` is set, and
+. `{cs2}` passes all <<section_cap_integrity,integrity>> checks, and
+. `{cs2}` is sealed (that is, `{cs2}` has non-zero <<sec_cap_type>>), and
+. `{cs2}` 's permissions and bounds are equal to or a subset of `{cs1}` 's, and
+. any extension-specific constraints on <<YSUNSEAL>> hold.
+
++
+Otherwise, set `{cd}.tag=0`
+
+NOTE: When `{cs1}` is `{creg}0` <<YSUNSEAL>> will copy `{cs2}` to `{cd}` and clear `{cd}.tag` and `{cd}.ct`.
+However future extensions may add additional behavior to update currently reserved fields,
+and so software should not assume `{cs1}==0` to be a pseudo-instruction for {ctag} and type clearing.
+
+// [NOTE]
+// =====
+// <<YSUNSEAL>> is similar to <<CBLD>> except that it
+//
+// * requires `{cs2}` to be both tagged and sealed and
+//
+// * always sets `{cd}.ct` to `0`.
+//
+// Emulating <<YSUNSEAL>> with <<CBLD>> requires a branch on the tag of `{cs2}` and
+// bit-level understanding of the capability encoding in use to zero `{cs2}.ct`;
+// <<YSUNSEAL>> addresses both concerns.
+// Extensions may further differentiate between <<YSUNSEAL>> and <<CBLD>>
+// as appropriate for their intended uses.
+// =====
+
+[NOTE]
+=====
+<<YSUNSEAL>> is intended to enable "superset unsealing"
+of opaque handles to software objects.
+Specifically, a software component can:
+
+1. allocate the memory for these objects from a region of address space,
+
+2. render capabilities to these objects opaque by sealing
+   (with, for example, the <<SENTRY>> instruction, if present),
+
+3. distribute these handles to other software components, and
+
+4. later use its (unsealed) capability to the backing region
+   as the authority (in `{cs1}`) of a <<YSUNSEAL>> instruction
+   to recover an unsealed capability to the object backing
+   a handle (in `{cs2}`) received from other components.
+
+The result of <<YSUNSEAL>> will be untagged if the received capability
+is not a handle to an object in the recipient's address space.
+This makes it easy for recipient software to ensure that received capabilities
+actually are handles to the recipient's objects.
+=====
+
+[NOTE]
+=====
+While <<YSUNSEAL>> requires that the capability in its `{cs2}` is sealed,
+it imposes no requirements on _which_ non-zero <<sec_cap_type>> value
+has been used to seal `{cs2}`.
+If the capability encoding defines multiple non-zero <<sec_cap_type>> values
+and software wishes to distinguish between them,
+it must use <<GCTYPE>> on the sealed capability.
+=====
+
+Included in::
+<<rvy_insn_table>>
+
+Operation::
++
+// TODO sail::execute[clause="YSUNSEAL(_, _, _)",part=body,unindent]
+
+#End new since last ARC review#
