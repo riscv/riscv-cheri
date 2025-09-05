@@ -122,7 +122,7 @@ two schemes are permitted (also see <<section_hardware_pte_updates>>):
 * The same behavior as when CRW is clear, allowing software interpretation
  of this state.
 * The implementation sets the CD bit. The PTE update behaves in the same way as
- the D bit update described by the _Svadu_ extesion.
+ the D bit update described by the _Svadu_ extension.
 
 When CRW, CD and CRG are all clear, the implementation is required to clear
 loaded tags and raise {cheri_excep_name_pte_st} when the stored {ctag} is set.
@@ -155,6 +155,8 @@ defines an alternative function.
 NOTE: _{cheri_priv_crg_load_tag_ext}_ is an optimization for software, and as
 such implementations are allowed to conservatively fault under certain
 conditions even if the {ctag} is not set.
+
+NOTE: Implementations which already take synchronous traps on loaded data, such as ECC faults, should implement _{cheri_priv_crg_load_tag_ext}_ instead of {cheri_priv_crg_ext}.
 
 _{cheri_priv_crg_load_tag_ext}_ implies _{cheri_priv_crg_ext}_.
 
