@@ -165,6 +165,17 @@ A <<CBLD>> instruction `{CBLD_LC} {cd}, {cs1}, {cs2}` may yield `{cd}.tag=1` onl
 
 The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>>.
 
+=== Interaction with <<YSUNSEAL>>
+
+A <<YSUNSEAL>> instruction `{YSUNSEAL_LC} {cd}, {cs1}, {cs2}`
+must ensure that `{cd}` grants <<zylevels1_gl_perm>> only if
+`{cs1}` also grants <<zylevels1_gl_perm>>.
+(That is, `{cd}` grants <<zylevels1_gl_perm>> if and only if both
+the unsealing authority in `{cs1}` and
+the unsealed form of the capability in `{cs2}` grant <<zylevels1_gl_perm>>.)
+
+The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>>.
+
 === Summary Of System Behavior
 
 .<<zylevels1_sl_perm>> effects for stored capabilities

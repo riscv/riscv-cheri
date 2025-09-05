@@ -294,7 +294,7 @@ Sentry capabilities can establish a form of control-flow integrity between mutua
 <<JALR_CHERI>> also seals the return register, so the callee can return to the caller but cannot access the memory pointed at by the return register, and cannot return elsewhere.
 
 NOTE: In addition to using sealed capabilities as sentries for secure entry points, sealed capabilities can also be useful to software as secure software tokens.
- They can be converted to an unsealed capability by extracting the metadata with <<GCHI>>, zeroing the `CT` field, reapplying it with <<SCHI>> and then rebuilding via a superset capability with the <<CBLD>> instruction.
+ <<YSUNSEAL>> can be used to convert such a token back to an unsealed capability.
  A future extension may add an unseal instruction for performance.
 
 [#AP-field, reftext="AP-field"]
@@ -719,6 +719,7 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 |<<SCBNDS>>   |Set register bounds on capability with rounding, clear {ctag} if rounding is required
 |<<SCBNDSR>>  |Set bounds on capability with rounding up as required
 |<<CBLD>>     |Set {cd} to {cs2} with its {ctag} set after checking that {cs2} is a subset of {cs1}
+|<<YSUNSEAL>> |Set {cd} to {cs2} with a zero <<sec_cap_type>> if {cs2} is a sealed subset of {cs1}
 |=======================
 
 ^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
@@ -730,6 +731,7 @@ include::insns/schi_32bit.adoc[]
 include::insns/scbnds_32bit.adoc[]
 include::insns/scbndsr_32bit.adoc[]
 include::insns/cbld_32bit.adoc[]
+include::insns/ysunseal_32bit.adoc[]
 
 <<<
 
