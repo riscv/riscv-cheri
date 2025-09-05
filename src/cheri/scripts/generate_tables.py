@@ -495,7 +495,7 @@ if __name__ == "__main__":
                 header=header,
             ),
             InsnTable(
-                extension="{rvy_sentry_ext_name}",
+                extension="{rvy_sentry_insn_ext_name}",
                 filename=output_file(args,  "Zys_insns_table_body.adoc"),
                 header=header,
             ),
