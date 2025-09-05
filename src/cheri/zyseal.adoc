@@ -1,0 +1,120 @@
+[#section_zyseal,reftext="{cheri_seal_ext_name}"]
+== "{cheri_seal_ext_name}" Extension for CHERI Capability (Un)Sealing
+
+=== Explicit Sealing and Unsealing Operations
+
+The {cheri_base_ext_name} base architecture defines the notion and behavior of
+sealed capabilities, those with non-zero <<sec_cap_type>>,
+but no mechanism for _constructing_ such.
+In keeping with CHERI's core principle of intensionality,
+we now introduce an intensional (that is, capability-mediated) mechanism for
+introduction and elimination of sealed capability forms.
+(The <<section_zysentry>> extension allows extensions
+to allow <<JALR_CHERI>> to build and consume sealed capabilities,
+in addition to the mechanisms discussed herein.)
+
+We introduce a fundamentally new _kind_ of capabilities, "type capabilities",
+whose address space and borne authority ranges not over _memory_
+but rather <<sec_cap_type>>-s.
+These capabilities will authorize transformations of other capabilities'
+<<sec_cap_type>> fields:
+
+* Constructing a sealed capability with type `T` from an unsealed capability
+  requires the authority to seal at type `T`, and
+
+* Constructing an unsealed capability from a sealed capability with type `T`
+  requires the authority to unseal at type `T`.
+
+We do not enable "type conversion" transformations directly between
+sealed capability types.
+
+=== Usable <<sec_cap_type>> Values Are Encoding Specified
+
+The capabilities used to mediate (un)sealing are, like memory capabilities,
+associated with an XLEN-bit address space.
+However, capability encodings will have fewer than XLEN bits devoted to storing
+<<sec_cap_type>> values.
+As such, encodings will specify what <<sec_cap_type>> values can be used to seal
+capabilities
+(recall that encodings _must_ support representing unsealed capabilities).
+The remainder of the address space described by type capabilities
+is available for software use.
+
+=== Single Address Space Encodings
+
+Capability encodings are permitted to conflate memory and type address spaces,
+such that one capability may authorize both memory access to a location and
+(un)sealing with a type of equal numeric value.
+Indeed, the encoding of <<app_cap_description>> is one such encoding.
+Ideally, such encodings should permit separate manipulation of (un)sealing
+permission and memory access permissions,
+so that software can segregate the address spaces even when the encoding does
+not intrinsically.
+
+=== Added Architectural Permissions (AP) Bits
+
+[#zyseal_ap_field_summary,width="100%",options=header,halign=center,cols="2,2,5"]
+|==============================================================================
+| Permission         | Type                        | Comment
+| <<zyseal_se_perm>> | <<sec_cap_type>> permission | Grants sealing authority
+| <<zyseal_us_perm>> | <<sec_cap_type>> permission | Grants unsealing authority
+|==============================================================================
+
+[#zyseal_se_perm,reftext="SE-permission"]
+Seal Permission (SE):: Permit the bearer to <<YSEAL>> capabilities
+at the in-bound types of this capability.
+
+[#zyseal_us_perm,reftext="US-permission"]
+Unseal Permission (US):: Permit the bearer to <<YUNSEAL>> capabilities
+at the in-bound types of this capability.
+
+=== Added Instructions
+
+<<YSEAL>>:: A `{YSEAL_LC} {cd}, {cs1}, {cs2}` instruction will use the provided
+sealing authority of `{cs1}` to copy the _unsealed_ capability in `{cs2}` into `{cd}`
+and seal it at `{cs1}.address`, assuming `{cs1}` has a set tag and is in bounds.
+If the input capability in `{cs2}` is untagged or is already sealed,
+the result in `{cd}` is untagged.
+If the capability encoding cannot express the result of this operation,
+the result is instead that `{cd}` is a copy of `{cs2}` with clear {ctag}.
+
+#Maybe?#
+As a special case,
+if `{cs1}` has address zero and if `{cs2}` is unsealed,
+then `{cd}` is updated to hold a copy of `{cs2}`.
+This is a micro-optimization for some instruction sequences
+combining <<CBLD>> and <<YSEAL>>.
+
+[NOTE]
+=====
+<<YSEAL>> uses the (in-bounds) _addresss_ of the authority in `{cs1}` as the
+type in the resulting capability.
+If the authority has a nontrivial range,
+software can use <<SCADDR>> to select which type should be used.
+=====
+
+<<YUNSEAL>>:: A `{YUNSEAL_LC} {cd}, {cs1}, {cs2}` instruction will use the
+provided unsealing authority of `{cs1}` to copy the _sealed_ capability in `{cs2}`
+into `{cd}` and unseal it so long as `{cs2}.ct = {cs1}.address`.
+If the input capability in `{cs2}` is untagged or has some other <<sec_cap_type>>
+(including being already unsealed), the result in `{cd}` is untagged.
+
+[NOTE]
+=====
+<<YUNSEAL>> requires exact equality of the authority's type, `{cs1}.address`, and
+the to-be-unsealed capability's type, `{cs2}.ct`.
+If it is desirable to unseal one of several capability types,
+using an authority with nontrivial range,
+software can use <<GCTYPE>> and <<SCADDR>> to make these values match.
+=====
+
+=== Interaction with <<CLRPERM>> and <<GCPERM>>
+
+.Extended capability permissions bit field (see <<acperm_bit_field>>)
+[#zyseal_acperm_bit_field]
+include::./img/zyseal-acperm_bit_field.edn[]
+
+The <<zyseal_se_perm>> and <<zyseal_us_perm>> fields
+are mapped into the <<acperm_bit_field,capability permissions bitfield>> (<<acperm_bit_field>>),
+used by <<CLRPERM>> and <<GCPERM>>,
+as shown in <<zyseal_acperm_bit_field>>.
