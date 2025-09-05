@@ -14,10 +14,12 @@
 --   3. For each subset of all defined permissions, the result of evaluating
 --      the rules is a defined compressed permission set.
 --
---   4. Removing permissions from a defined compressed permission set and
---      evaluating the rules selects the best result, in that all other defined
---      compressed permission sets that could have been chosen are subsets of
---      the one picked.
+--   4. Removing permissions H from a defined compressed permission set S and
+--      evaluating the rules selects a maximal result C, in that no other
+--      compressed permission D that could have been chosen (that is, such that
+--      D is a subset of S \ H) is a (strict) superset of C.  There may,
+--      however, be other subsets of S \ H, D', that are incomparable to the
+--      selected C.
 module Main where
 
 import           Control.Monad
