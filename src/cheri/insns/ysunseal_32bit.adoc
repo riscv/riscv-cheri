@@ -1,0 +1,76 @@
+<<<
+
+[#YSUNSEAL,reftext="{YSUNSEAL}"]
+==== {YSUNSEAL}
+
+#New since last ARC review#
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* {YSUNSEAL} does not use ddc if {cs1}==0
+endif::[]
+
+include::new_encoding_note.adoc[]
+
+Synopsis::
+{YSUNSEAL_DESC}
+
+Mnemonic::
+`{ysunseal_lc} {cd}, {cs1}, {cs2}`
+
+Encoding::
+// TODO include::wavedrom/ysunsesal.adoc[]
+
+Description::
+Copy `{cs2}` to `{cd}`.
++
+Set `{cd}.ct=0`.  (That is, unseal `{cd}`.)
++
+Set `{cd}.tag=1` if:
++
+. `{cs1}.tag` is set, and
+. `{cs1}` passes all <<section_cap_integrity,integrity>> checks, and
+. `{cs1}` is not sealed (that is, `{cs1}` has zero <<sec_cap_type>>), and
+. `{cs2}.tag` is set, and
+. `{cs2}` passes all <<section_cap_integrity,integrity>> checks, and
+. `{cs2}` is sealed (that is, `{cs2}` has non-zero <<sec_cap_type>>), and
+. `{cs2}` 's permissions and bounds are equal to or a subset of `{cs1}` 's, and
+. any extension-specific constraints on <<YSUNSEAL>> hold.
+
++
+Otherwise, set `{cd}.tag=0`
+
+NOTE: When `{cs1}` is `{creg}0` <<YSUNSEAL>> will copy `{cs2}` to `{cd}` and clear `{cd}.tag` and `{cd}.ct`.
+However future extensions may add additional behavior to update currently reserved fields,
+and so software should not assume `{cs1}==0` to be a pseudo-instruction for {ctag} and type clearing.
+
+NOTE: <<YSUNSEAL>> is essentially <<CBLD>> except that it
+requires `{cs2}` to be tagged and always sets `{cd}.ct` to `0`.
+
+[NOTE]
+=====
+<<YSUNSEAL>> is intended to enable "superset unsealing":
+wherein software, given a capability in `{cs2}`, can present, in `{cs1}`,
+a capability granting a superset of the authority
+that would be granted by an unsealed version of the capability in `{cs2}`,
+and thereby reconstruct, into `{cd}`, that unsealed version of `{cs2}`.
+For example, to unseal from `x3` into `x1`
+using the superset in `x2` with scratch `x4`, such software might look like:
+
+[subs="+attributes"]
+----
+{YSUNSEAL_LC} x1, x2, x3
+{GCTAG_LC} x4, x1  // check that output is tagged
+beqz x4, fail
+----
+
+Additional instructions (a <<GCTYPE>> with `{cs1}=x3` and comparisons)
+may be required if the encoding implements
+multiple <<sec_cap_type>> values distinguishing (un)sealed capabilities.
+=====
+
+Included in::
+<<rvy_insn_table>>
+
+Operation::
++
+// TODO sail::execute[clause="YSUNSEAL(_, _, _)",part=body,unindent]
