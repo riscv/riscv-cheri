@@ -231,21 +231,23 @@ image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 [#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
 
-This metadata field indicates the type of the capability.
-The type determines which operations the capability authorizes.
-The following capability types are defined in {cheri_base_ext_name}:
+#Begin changed since last ARC review#
 
-.Capability types in {cheri_base_ext_name}
-[#tab_cap_types,width="50%",options=header,align="center"]
-|===
-|Type |Hardware interpretation
+This metadata value indicates the type of the capability.
+The sole type defined in the {cheri_base_ext_name} base ISA is `0`.
+The type determines which operations the capability authorizes;
+extensions to {cheri_base_ext_name} will define additional types and
+give additional semantics for capabilities with such types.
 
-|0    | Unsealed capability
-|1    | Sealed entry (sentry) capability
-|===
+Which capability types a given CHERI platform supports is a function
+of the extensions and capability encoding format in use.
+The capability encoding additionally specifies a mapping between
+some bits within the capability format (usually described as "the CT field")
+and the space of capability types.
+The mapping must be able to encode type `0` but has few other requirements.
+It need not, for example, be interpreted as an (un)signed binary rendering of CT values.
 
-NOTE: Future extensions will add more types of sealed capabilities by extending the width of the CT-field.
- In the base ISA, sentries are the only type of sealed capability and the CT field is only 1-bit.
+#End changed since last ARC review#
 
 [#unsealed_cap,reftext="unsealed capability]
 Unsealed capabilities::
@@ -274,24 +276,21 @@ for types not defined above.
 Ambient sealing type::
 Some capability types are said to be "ambiently available" (or just "ambient")
 if they do not require specific authority to seal a capability (with that type).
-Type 1 is considered ambiently available on a given platform
-if <<section_rvy_sentry_insn_ext>> is available on that platform.
-
-#End new since last ARC review#
-
-When a sealed capability is used as a function pointer it is known as a <<sentry_cap>>.
+For example, if <<section_rvy_sentry_insn_ext>> is available on a given platform,
+the type with which it seals capabilities is considered ambiently available.
+(With the capabilities of <<app_cap_description>>, that would be type `1`.)
 
 [#sentry_cap,reftext="sentry capability"]
-==== Sentry Capabilities
-Sentries describe secure function entry points.
-They have a <<sec_cap_type>> of 1.
+Sentry capability type::
+It is useful to have *immutable* function pointers within a CHERI software system.
+<<sealed_cap,Sealed capabilities>> are a natural foundation, providing immutability.
+<<JALR_CHERI>> may unseal capabilities of particular, encoding-specified types before installing them to the program counter.
+Capabilities sealed with such a type are are dubbed "sentries" (a portmanteau of "sealed entries").
+<<JALR_CHERI>> may also _seal_ the return pointers it generates with encoding-specified types.
 
-They are used as the target of <<JALR_CHERI>>, which must have a zero offset for the use of a sentry to be valid.
+NOTE: Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
 
-Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
-<<JALR_CHERI>> with zero offset automatically unseals a sentry target capability and installs it in the <<pcc,program counter capability>>.
-
-<<JALR_CHERI>> also seals the return register, so the callee can return to the caller but cannot access the memory pointed at by the return register, and cannot return elsewhere.
+#End new since last ARC review#
 
 NOTE: In addition to using sealed capabilities as sentries for secure entry points, sealed capabilities can also be useful to software as secure software tokens.
  <<YSUNSEAL>> can be used to convert such a token back to an unsealed capability.
@@ -963,9 +962,16 @@ NOTE: A future extension may raise an exception on the branch instruction itself
 [#section_rvy_sentry_insn_ext,reftext="{rvy_sentry_insn_ext_name}"]
 == "{rvy_sentry_insn_ext_name}" Extension for Creation of Sentry Capabilities
 
-The {rvy_sentry_insn_ext_name} extension adds the <<SENTRY>> instruction to allow sealing arbitrary capabilities as a <<sentry_cap>> (<<sec_cap_type>>=1).
+#Begin changed since last ARC review#
 
-NOTE: Future extensions to {cheri_base_ext_name} (such as CHERIoT, see <<uycfg>>) support additional <<sec_cap_type>> values as alternatives to the <<sentry_cap>> (<<sec_cap_type>>=1), so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
+The {rvy_sentry_insn_ext_name} extension adds the <<SENTRY>> instruction to allow sealing arbitrary capabilities
+at a <<sec_cap_type>> value specified by the capability encoding.
+
+NOTE: In principle, despite the names, the type used by <<SENTRY>> might not be a <<sentry_cap>> type, though that is not true of the capabilities of <<app_cap_description>>.
+
+NOTE: Future extensions to {cheri_base_ext_name} (such as CHERIoT, see <<uycfg>>) support additional <<sec_cap_type>> values, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
+
+#End changed since last ARC review#
 
 === Added instructions
 

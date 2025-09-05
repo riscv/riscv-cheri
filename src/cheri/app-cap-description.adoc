@@ -288,7 +288,27 @@ WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old
 The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
 endif::[]
 
-For {cheri_base_ext_name} the CT field is one bit wide and maps 1:1 to the capability types listed in <<tab_cap_types>>: it is a sentry capability if the bit is 1 or unsealed if it is 0.
+#Begin changed since last ARC review#
+
+The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> values;
+this field directly encodes the values `0` and `1`.
+The value `1` is...
+
+* considered <<sec_cap_type_ambient,ambiently available>> for <<CBLD>>,
+
+* used as the type for capabilities sealed by <<SENTRY>> instructions,
+  if <<section_rvy_sentry_insn_ext>> is present in the platform.
+
+Additionally, <<JALR_CHERI>> both
+
+* unseals input capabilities of type 1 and
+
+* seals its return capabilities with type 1.
+
+<<JALR_CHERI>> places no constraints on the triple of input <<sec_cap_type>> value, `{cd}` selector, and `{cs1}` selector.
+That is, <<JALR_CHERI>> will, as directed, attempt to jump to any unsealed or sealed capability in any register regardless of which register comes to hold the sealed return pointer.
+
+#End changed since last ARC review#
 
 [#section_cap_bounds]
 ==== Bounds (EF, T, TE, B, BE) Encoding
