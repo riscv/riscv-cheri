@@ -23,11 +23,14 @@ include::wavedrom/cbld.adoc[]
 Description::
 Copy `{cs2}` to `{cd}`.
 +
+Set `{cd}.ct=0` (that is, set its <<sec_cap_type>> field
+such that <<CBLD>> always builds _unsealed_ capabilities).
++
 Set `{cd}.tag=1` if:
 +
 . `{cs1}.tag` is set, and
 . `{cs1}` passes all <<section_cap_integrity,integrity>> checks, and
-. `{cs1}` is not sealed, and
+. `{cs1}` is not sealed (that is, its <<sec_cap_type>> field, `{cs1}.ct`, is `0`), and
 . `{cs2}` 's permissions and bounds are equal to or a subset of `{cs1}` 's, and
 . `{cs2}` passes all <<section_cap_integrity,integrity>> checks, and
 . any extension-specific constraints on <<CBLD>> hold.
@@ -37,9 +40,58 @@ Otherwise, set `{cd}.tag=0`
 NOTE: <<CBLD>> is typically used alongside <<SCHI>> to build
 capabilities from integer values.
 
-NOTE: When `{cs1}` is `{creg}0` <<CBLD>> will copy `{cs2}` to `{cd}` and clear `{cd}.tag`.
+NOTE: When `{cs1}` is `{creg}0` <<CBLD>> will copy `{cs2}` to `{cd}` and clear `{cd}.ct` and `{cd}.tag`.
 However future extensions may add additional behavior to update currently reserved fields,
-and so software should not assume `{cs1}==0` to be a pseudo-instruction for {ctag} clearing.
+and so software should not assume `{cs1}==0` to be a pseudo-instruction for {ctag} and type clearing.
+
+[NOTE]
+=====
+<<CBLD>> can be used for "superset unsealing",
+wherein software, given a capability `c`
+and having checked for a set tag and an expected <<sec_cap_type>> field value,
+can present, in `{cs1}`,
+a capability to a superset of the authority borne by an unsealed `c`,
+and thereby reconstruct, into `{cd}`, a modified copy of `c`, presented in `{cs2}`,
+with a zeroed <<sec_cap_type>> field and a set tag.
+For example, to unseal from `x3` into `x1`
+using the superset in `x2` with scratch `x4`, such software might look like:
+
+[subs="+attributes"]
+----
+  {GCTAG_LC} x4, x3  // check that input is tagged
+  beqz x4, fail
+  {GCTYPE_LC} x4, x3 // check that input is sealed
+  beqz x4, fail
+  {CBLD_LC} x1, x2, x3
+  {GCTAG_LC} x4, x1  // check that output is tagged
+  beqz x4, fail
+----
+
+Additional instructions may be required if the encoding implements
+multiple <<sec_cap_type>> values
+in addition to distinguishing (un)sealed capabilities.
+
+=====
+
+[NOTE]
+=====
+If software wishes to permit conditional reconstructions of sentries,
+it suffices to conditionally execute a <<SENTRY>> instruction
+on the result of a <<CBLD>>
+depending on the result of <<GCTYPE>> on the input to said <<CBLD>>.
+For example, to rebuild bits from `x3` into `x1`
+using the superset in `x2` with scratch `x4`, software could use:
+
+[subs="+attributes"]
+----
+  {CBLD_LC} x1, x2, x3
+  {GCTYPE_LC} x4, x3
+  beqz x4, 1f
+  {SENTRY_LC} x1, x1
+1:
+----
+
+=====
 
 Included in::
 <<rvy_insn_table>>
