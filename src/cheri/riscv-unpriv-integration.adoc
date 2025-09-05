@@ -255,6 +255,24 @@ Capabilities with `CT≠0` are sealed against modification and cannot be derefer
 Instructions that operate on capabilities will produce a result with a cleared {ctag} if the source capability is sealed and the operation would alter its address, bounds, or permissions.
 Extensions that augment capability metadata must describe their interaction(s) with sealed capabilities.
 
+Given a capability with `CT=0`,
+deriving a capability with `CT≠0` is termed "sealing"
+(or "sealing at ``CT``" when a particular output ``CT`` is meant).
+Dually,
+deriving a `CT=0` capability from a `CT≠0` capability is termed "unsealing"
+(or "unsealing at ``CT``" when a particular input ``CT`` is meant).
+In general, each of these actions may require *authority*
+to operate at the non-zero type;
+extensions will specify how software expresses this authority
+for types not defined above.
+
+[#sec_cap_type_ambient]
+Ambient sealing type::
+Some capability types are said to be "ambiently available" (or just "ambient")
+if they require no particular authority to use to seal a capability.
+Type 1 is considered ambiently available on a given platform
+if <<section_rvy_sentry_insn_ext>> is available on that platform.
+
 When a sealed capability is used as a function pointer it is known as a <<sentry_cap>>.
 
 [#sentry_cap,reftext="sentry capability"]
@@ -925,14 +943,33 @@ If the target of a taken branch lies outside the bounds of <<pcc>>, the next ins
 
 NOTE: A future extension may raise an exception on the branch instruction itself if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
 
+[#section_rvy_sentry_insn_ext,reftext="{rvy_sentry_insn_ext_name}"]
+== "{rvy_sentry_insn_ext_name}" Extension for Creation of Sentry Capabilities
 
-== "{rvy_sentry_ext_name}" Extension for Creation of Sentry Capabilities
+In the {cheri_base_ext_name} base ISA the only ways to create a <<sentry_cap>>
+are either through
 
-In the {cheri_base_ext_name} base ISA the only way to create a <<sentry_cap>> is through the <<JALR_CHERI>> instruction as that writes back a sentry capability to the link register.
-The {rvy_sentry_ext_name} extension adds the <<SENTRY>> instruction to allow sealing arbitrary capabilities as a <<sentry_cap>> (<<sec_cap_type>>=1).
+* <<JALR_CHERI>>, which writes back a sentry capability to the link register
+
+* careful bit manipulation and <<CBLD>>.
+
+The {rvy_sentry_insn_ext_name} extension adds the <<SENTRY>> instruction to allow sealing arbitrary capabilities as a <<sentry_cap>> (<<sec_cap_type>>=1).
 
 NOTE: Future extensions to {cheri_base_ext_name} (such as CHERIoT, see <<uycfg>>) support additional <<sec_cap_type>> values as alternatives to the <<sentry_cap>> (<<sec_cap_type>>=1), so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
 
 === Added instructions
 
 include::insns/sentry_32bit.adoc[]
+
+[#section_rvy_sunseal_insn_ext,reftext="{rvy_sunseal_insn_ext_name}"]
+== "{rvy_sunseal_insn_ext_name}" Extension for Superset Unsealing
+
+In the {cheri_base_ext_name} base ISA the only way to unseal a capability is
+through careful, encoding-specific bit manipulation and use of <<CBLD>>.
+The {rvy_sunseal_insn_ext_name} extension adds the <<YSUNSEAL>> instruction
+to allow unsealing capabilities for which software already holds an unsealed
+superset.
+
+=== Added instructions
+
+include::insns/ysunseal_32bit.adoc[]

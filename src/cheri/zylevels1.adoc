@@ -156,12 +156,16 @@ indicates that `{cs1}` is a subset of `{cs2}` (that is, sets `rd` to 1) only if 
 
 The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>>.
 
-=== Interaction with <<CBLD>>
+=== Interaction with <<CBLD>> and <<YSUNSEAL>>
 
 A <<CBLD>> instruction `{CBLD_LC} {cd}, {cs1}, {cs2}` may yield `{cd}.tag=1` only if either
 
 * `{cs2}` 's <<zylevels1_gl_perm>> is clear or
 * `{cs1}` 's <<zylevels1_gl_perm>> is set.
+
+Identical requirements hold for a <<YSUNSEAL>> instruction `{YSUNSEAL_LC} {cd}, {cs1}, {cs2}`.
+
+#TODO: Or would we prefer that `{cd}` 's <<zylevels1_gl_perm>> is the AND of those of `{cs1}` and `{cs2}`?#
 
 The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>>.
 
