@@ -40,18 +40,18 @@ in-memory format, and also increase precision for RV32.
 endif::[]
 
 The components of a capability, except the {ctag}, are encoded as shown in
-xref:cap_encoding_xlen32[xrefstyle=short] for MXLEN=32 and
-xref:cap_encoding_xlen64[xrefstyle=short] for MXLEN=64. Each memory location
+xref:cap_encoding_xlen32[xrefstyle=short] for {cheri_base32_ext_name} and
+xref:cap_encoding_xlen64[xrefstyle=short] for {cheri_base64_ext_name}. Each memory location
 or register able to hold a capability must also store the {ctag} as _out of band_ or _hidden_
 information that software cannot directly set or clear. The capability metadata
 is held in the most significant bits and the address is held in the least
 significant bits.
 
-.Capability encoding for MXLEN=32
+.Capability encoding for {cheri_base32_ext_name}
 [#cap_encoding_xlen32]
 include::img/cap-encoding-xlen32.edn[]
 
-.Capability encoding for MXLEN=64
+.Capability encoding for {cheri_base64_ext_name}
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
@@ -75,7 +75,7 @@ see <<section_zylevels1>> for one possibility.
 
 The bit width of the permissions field depends on the value of MXLEN as shown
 in xref:perms_bit_width[xrefstyle=short]. A {cap_rv32_perms_width}-bit vector
-encodes the permissions when MXLEN=32. For this case, the legal encodings of
+encodes the permissions when {cheri_base32_ext_name}. For this case, the legal encodings of
 permissions are listed in xref:cap_perms_encoding32[xrefstyle=short]. Certain
 combinations of permissions are impractical. For example, <<c_perm>> is
 superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
@@ -89,7 +89,7 @@ Therefore, it is only possible to encode a subset of all combinations.
 ^| 64    | {cap_rv64_perms_width} | Separate bits for each architectural permission.
 |==============================================================================
 
-For MXLEN=32, the permissions encoding is split into four quadrants.
+For {cheri_base32_ext_name}, the permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
 The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadrant.
 
@@ -99,7 +99,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 
 <<<
 
-.Encoding of architectural permissions for MXLEN=32 without <<section_zylevels1>>
+.Encoding of architectural permissions for {cheri_base32_ext_name} without <<section_zylevels1>>
 [#cap_perms_encoding_nolevels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
 |==============================================================================
 | Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
@@ -137,7 +137,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 ^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
 is supported. Despite being encoded here it is *not* an architectural permission._
 
-NOTE: When MXLEN=32 there are many reserved permission encodings (see
+NOTE: When {cheri_base32_ext_name} there are many reserved permission encodings (see
 xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a valid
 capability to have one of these values since <<CLRPERM>> will never create it. It is
 possible for invalid capabilities to have reserved values. <<GCPERM>> will interpret
@@ -145,10 +145,10 @@ reserved values as if it were 0b00000 (no permissions). Future extensions may as
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
-NOTE: Mode is encoded with permissions for MXLEN=32, but is not a permission. It is
+NOTE: Mode is encoded with permissions for {cheri_base32_ext_name}, but is not a permission. It is
 orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 
-.Encoding of architectural permissions for MXLEN=32 with <<section_zylevels1>>
+.Encoding of architectural permissions for {cheri_base32_ext_name} with <<section_zylevels1>>
 [#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
 |==============================================================================
 |Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
@@ -187,7 +187,7 @@ orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 ^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
 is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._
 
-When MXLEN=32, this encoding's compressed permission format
+When {cheri_base32_ext_name}, this encoding's compressed permission format
 specifies a _particular procedure_ for encoding architectural permissions,
 which is used _instead of_ <<CLRPERM>>'s default fixed-pointing procedure.
 If <<section_zylevels1>> is absent, the following rules are run _in order_:
@@ -230,13 +230,13 @@ For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {ch
 are only valid if {cheri_default_ext_name} is implemented.
 Otherwise those encodings represent invalid permissions.
 
-When MXLEN=64, there is a bit per permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
+When {cheri_base64_ext_name}, there is a bit per permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
 A permission is granted if its corresponding bit, and those of any dependent permissions, are set;
 otherwise, the capability does not grant that permission.
 
 <<<
 
-.Encoding of architectural permissions for MXLEN=64
+.Encoding of architectural permissions for {cheri_base64_ext_name}
 [#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="75%"]
 |==============================================================================
 | Bit | Encoded permission
@@ -253,10 +253,10 @@ otherwise, the capability does not grant that permission.
 The <<m_bit>> is only assigned meaning when the
 implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
 
-. For MXLEN=64, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
-. For MXLEN=32, the <<m_bit>> is only encoded in quadrant 1 and does _not_ exist in the other quadrants.
+. For {cheri_base64_ext_name}, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
+. For {cheri_base32_ext_name}, the <<m_bit>> is only encoded in quadrant 1 and does _not_ exist in the other quadrants.
 
-NOTE: Future extensions may allow more combinations of permissions, especially for MXLEN=64.
+NOTE: Future extensions may allow more combinations of permissions, especially for {cheri_base64_ext_name}.
 
 NOTE: Future extensions may define new dependent permissions and, if so, must augment the above table.
 
@@ -296,7 +296,7 @@ For {cheri_base_ext_name} the CT field is one bit wide and maps 1:1 to the capab
 ===== Concept
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The bounds mantissa width is different in MXLEN=32.
+NOTE: *CHERI v9 Note:* The bounds mantissa width is different in {cheri_base32_ext_name}.
 Also, the old IE bit is renamed to Exponent Format (EF); the function of IE
 is the inverse of EF, i.e., IE=0 has the same effect as EF=1.
 
@@ -476,16 +476,16 @@ alignment boundaries.
 
 The EF bit selects between two cases:
 
-1. EF = 1: The exponent is 0. When MXLEN=32, L~8~ encodes the MSB of the length,
+1. EF = 1: The exponent is 0. When {cheri_base32_ext_name}, L~8~ encodes the MSB of the length,
 which can be used to derive T[MW-1:MW-2], forming a full MW-wide T field.
 2. EF = 0: The exponent is _internal_ with E stored in the lower bits of T and
-B, with L~8~ used for the MSB of E when MXLEN=32. E is chosen so that the most
+B, with L~8~ used for the MSB of E when {cheri_base32_ext_name}. E is chosen so that the most
 significant non-zero bit of the length of the region aligns with T[MW - 2] such
 that this bit is implied by E.
 
 The most significant two bits of T can be derived from B using
 the equality `T = B + L`, where L[MW - 2] is known from the values of EF and E
-(as well as L~8~ when MXLEN=32).
+(as well as L~8~ when {cheri_base32_ext_name}).
 A carry out is implied if `T[MW - 3:0] < B[MW - 3:0]` since it is
 guaranteed that the top is larger than the base.
 
@@ -536,7 +536,7 @@ equivalent to _b_=0 and _t_&#8805;2^MXLEN^.
 
 A capability is _malformed_ if its bounds cannot be correctly decoded.
 The following check
-indicates whether a capability is malformed. `enableL8` is true when MXLEN=32
+indicates whether a capability is malformed. `enableL8` is true when {cheri_base32_ext_name}
 and false otherwise, indicating whether the `L8` bit is available for extra
 precision when `EF=1`.
 
@@ -586,8 +586,8 @@ the difference between in-memory and architectural format.
 endif::[]
 
 The <<null-cap>> capability is represented with 0 in all fields. This implies
-that it has no permissions and its exponent E is CAP_MAX_E (52 for MXLEN=64,
-24 for MXLEN=32), so its bounds cover the entire address space such that the
+that it has no permissions and its exponent E is CAP_MAX_E (52 for {cheri_base64_ext_name},
+24 for {cheri_base32_ext_name}), so its bounds cover the entire address space such that the
 expanded base is 0 and top is 2^MXLEN^.
 
 .Field values of the NULL capability
@@ -597,10 +597,10 @@ expanded base is 0 and top is 2^MXLEN^.
 | {ctag_title}             | zero   | Capability is not valid
 | <<SDP-field,SDP>>        | zeros  | Grants no permissions
 | <<AP-field,AP>>          | zeros  | Grants no permissions
-| <<M-bit,M>>              | zero   | No meaning since non-executable (MXLEN=64 and {cheri_default_ext_name} only)
+| <<M-bit,M>>              | zero   | No meaning since non-executable ({cheri_base64_ext_name} and {cheri_default_ext_name} only)
 | CT       | zero   | Unsealed
 | EF       | zero   | Internal exponent format
-| L~8~     | zero   | Top address reconstruction bit (MXLEN=32 only)
+| L~8~     | zero   | Top address reconstruction bit ({cheri_base32_ext_name} only)
 | T        | zeros  | Top address bits
 | T~E~     | zeros  | Exponent bits
 | B        | zeros  | Base address bits
@@ -629,13 +629,13 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
 | Field         | Value | Comment
 | {ctag_title}  | one   | Capability is valid
 | SDP           | ones  | Grants all permissions
-| AP (MXLEN=32) | 0x8/0x9^1^  (see xref:cap_perms_encoding32[xrefstyle=short])
+| AP ({cheri_base32_ext_name}) | 0x8/0x9^1^  (see xref:cap_perms_encoding32[xrefstyle=short])
                         | Grants all permissions
-| AP (MXLEN=64) | 0xFF (see xref:cap_perms_encoding64[xrefstyle=short])
+| AP ({cheri_base64_ext_name}) | 0xFF (see xref:cap_perms_encoding64[xrefstyle=short])
                         | Grants all permissions
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
-| L~8~          | zero  | Top address reconstruction bit (MXLEN=32 only)
+| L~8~          | zero  | Top address reconstruction bit ({cheri_base32_ext_name} only)
 | T             | zeros | Top address bits
 | T~E~          | zeros | Exponent bits
 | B             | zeros | Base address bits
@@ -647,8 +647,8 @@ NOTE: Future extension to the capability format may use a "multi-root" format wh
 ^1^If {cheri_default_ext_name} is supported, then the infinite capability must represent
 {cheri_int_mode_name} for compatibility with standard RISC-V code. Therefore:
 
-* For MXLEN=32, the <<m_bit>> is set to {INT_MODE_VALUE} in the <<AP-field>>, giving the value 0x9
-* For MXLEN=64, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
+* For {cheri_base32_ext_name}, the <<m_bit>> is set to {INT_MODE_VALUE} in the <<AP-field>>, giving the value 0x9
+* For {cheri_base64_ext_name}, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
 
 ^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
  If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
