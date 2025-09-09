@@ -683,31 +683,30 @@ architecture: normal bounds check rules should be followed.
 
 ==== Concept
 
-The new address, after updating the address of a capability, is within the
-_representable range_ if decompressing the capability's bounds with the
-original and new addresses yields the same base and top bounds.
+When a valid source capability is read, a new address is applied, and then the resulting capability is written to the destination register, a check is applied to the new address to ensure that the decoding of the bounds is the same for the source and destination capabilities.
 
-In other words, given a capability with address _a_ and the
-new address `a' = a + x`, the bounds _b_ and _t_ are decoded using _a_ and the
-new bounds _b'_ and _t'_ are decoded using _a'_. The new address is within the
-capability's _representable range_ if `b == b' && t == t'`.
+This is the _representable range_ check that checks the new address is valid for use with the source capability metadata.
 
-Changing a capability's address to a value outside the _representable range_
-unconditionally clears the capability's tag. Examples are:
+This check is the fundamental building block for combining addresses and capability metadata, and is used by instructions such as <<SCADDR>> and <<CADD>>/<<CADDI>>.
 
-* Instructions such as <<CADD>> which include pointer arithmetic.
-* The <<SCADDR>> instruction which updates the capability address field.
+Given:
+
+* A source capability with address _a_, metadata _m_ that decodes to give the bounds _b_ and _t_.
+* An arbitrary address _a'_ with the same metadata _m_ decodes to give the bounds _b'_ and _t'_.
+
+The address _a'_ is within the source capability's _representable range_ if `b == b' && t == t'`.
+
+If the address _a'_ is outside the _representable range_, then the destination capability has the {ctag} set to zero.
 
 ==== Practical Information
 
-An artifact of the bounds encoding is that if an address is changed
-such that `t != t'`, then it is also the case that `b != b'`.
+An artifact of the bounds encoding is that if the new address
+causes `t != t'`, then it is also the case that `b != b'`.
 The inverse is also true, if `b != b'` then `t != t'`.
 Therefore, for representable range checking, it is acceptable
 to either check `t == t'` or `b == b'`.
 
-In the bounds encoding in this specification, the top and bottom capability
-bounds are formed of two or three sections:
+The top and bottom capability bounds are formed of two or three sections:
 
 * Upper bits from the address
 ** This is only if the other sections do not fill the available bits (E + MW < MXLEN)
