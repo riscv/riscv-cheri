@@ -552,6 +552,11 @@ The <<uycfg>> register is a read-only XLEN CSR used to identify which CHERI capa
 The capability encoding both determines the in-memory representation of a CHERI capability
 and entails a set of extensions present atop {cheri_base_ext_name}.
 
+NOTE: Alternative capability encoding
+specifications must provide key primitives, such as permissions and bounds,
+while using a different encoding that, for example,
+changes the granularity of bounds or adds new features.
+
 NOTE: This CSR is read-only, but future extensions may provide a mechanism to modify the capability encoding currently in use.
 
 .CHERI capability encoding CSR (`uycfg`) format
@@ -562,10 +567,10 @@ The following values for `uycfg` are defined:
 
 [%autowidth,options=header,cols="^,^,<"]
 |===
-|Base Encoding|Features|Encoding
+|Base         |Features|Encoding
 | 0x0         | -      | Reserved (unspecified capability encoding)
-.2+|0x1       | 0x0    | <<app_cap_description, Default Encoding>> capabilities, without <<section_zylevels1>> features
-              | 0x1   <| <<app_cap_description, Default Encoding>> capabilities, with <<section_zylevels1>> features
+.2+|0x1       | 0x0    | <<app_cap_description>> capabilities, without <<section_zylevels1>> features
+              | 0x1   <| <<app_cap_description>> capabilities, with <<section_zylevels1>> features
 |0x2          | 0x0    | Reserved for CHERIoT's (RV32-only) encoding
 |===
 
