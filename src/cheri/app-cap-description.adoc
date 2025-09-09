@@ -14,11 +14,8 @@ ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear as an appendix in the unpriv specification.
 endif::[]
 
-RISC-V defines variants of the base integer instruction set characterized by
-the width of the integer registers and the corresponding size of the address
-space. There are two primary ISA variants, RV32I and RV64I, which provide
-32-bit and 64-bit address spaces respectively. The term XLEN refers to the
-width of an integer register in bits (either 32 or 64). The value of XLEN may
+ifdef::support_varxlen[]
+The value of XLEN may
 change dynamically at run-time depending on the values written to CSRs, so we
 define capability behavior in terms of MXLEN, which is the value of XLEN used
 in machine mode and the widest XLEN the implementation supports.
@@ -27,23 +24,7 @@ NOTE: {cheri_base_ext_name} assumes a version of the privileged architecture
 which defines MXLEN as constant and requires higher privilege modes to have at
 least the same XLEN as lower privilege modes; these changes are present in the
 current draft and expected to be part of privileged architecture 1.13.
-
-{cheri_base_ext_name} defines capabilities of size YLEN corresponding to 2 *
-MXLEN without including the {ctag} bit. The value of YLEN is always calculated
-based on MXLEN regardless of the effective XLEN value.
-
-NOTE: We briefly note that the capability encoding described in this section
-could be replaced with an entirely different design without changing how CHERI
-integrates with the RISC-V ISA. In
-particular, this capability encoding specification was designed to run software
-initially ported to CHERIv9 while providing spatial safety, temporal safety and
-compartmentalization support alongside a good measure of compatibility with
-RISC-V software that is not aware of CHERI. Alternative capability encoding
-specifications must provide key primitives, such as permissions and bounds,
-from this specification while using a different encoding that, for example,
-changes the granularity of bounds or adds new features. For simplicity of
-expression, the text is written as if this was the only possible capability
-encoding for CHERI RISC-V.
+endif::support_varxlen[]
 
 [#section_cap_encoding]
 === Capability Encoding
