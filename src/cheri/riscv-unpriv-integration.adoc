@@ -199,12 +199,14 @@ The granularity constraints means that not all requested combinations of _top_ a
 The bounds are encoded relative to the address field, sharing some upper bits of the address.
 The number of shared bits depends on the exponent, see xref:section_cap_bounds[xrefstyle=short].
 
-NOTE: Early versions of CHERI encoded the top and bottom bounds as full width addresses.
-This proved to be impractical for real systems, and so the https://www.cl.cam.ac.uk/research/security/ctsrd/pdfs/2019tc-cheri-concentrate.pdf[CHERI-concentrate] compressed system was developed to reduce the overhead.
-
+[#section_rep_check_concept]
 ==== Representability and Updating the Address
 
-Because the CHERI concentrate encoding scheme shares the upper bits of the address with the bounds, not all out-of-bounds pointers can be represented.
+Because the CHERI concentrate cite:[woodruff2019cheri] encoding scheme for memory bounds shares the upper bits of the address with the bounds, not all out-of-bounds pointers can be represented.
+
+NOTE: The historic, uncompressed CHERI-MIPS 256-bit capability encoding had separate 64-bit values for the base and top memory bounds, and another for metadata fields.
+ This scheme could represent all out-of-bounds pointers with a very high hardware cost.
+
 The maximum range of address values that the pointer can take without changing the interpretation of bounds is defined by the <<section_cap_representable_check, representable region>>.
 Since capability address modification could change the meaning of the bounds, all updates to registers (e.g., modification of the program counter via control-flow instructions) and instructions that return capabilities with a modified address must check that the new address is also within the representable region.
 If the interpretation of bounds _has_ changed, then the {ctag} is set to zero, so that the capability is invalid for use.
