@@ -242,6 +242,7 @@ For {cheri_base64_ext_name}, PMM is read-only 0.
 If {cheri_default_ext_name} is implemented:
 
 * PMM can be written to non-zero values in {cheri_int_mode_name} only.
+* All writes to PMM in {cheri_cap_mode_name} set the field to 0.
 * Switching into {cheri_cap_mode_name} causes PMM to always read as 0, and therefore pointer masking is never enabled in that mode.
 
 Therefore non-zero state programmed in {cheri_int_mode_name} is retained in {cheri_cap_mode_name}, but is only visible or takes effect in {cheri_int_mode_name}.
