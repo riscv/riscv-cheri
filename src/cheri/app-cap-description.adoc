@@ -683,7 +683,7 @@ architecture: normal bounds check rules should be followed.
 
 ==== Concept
 
-When a valid source capability is read, a new address is applied, and then the resulting capability is written to the destination register, a check is applied to the new address to ensure that the decoding of the bounds is the same for the source and destination capabilities.
+Whenever a capability with a new different address is derived from a valid source capability, a check is applied to the new address to ensure that the decoding of the bounds is the same for the source and destination capabilities.
 
 This is the _representable range_ check that checks the new address is valid for use with the source capability metadata.
 
@@ -692,7 +692,7 @@ This check is the fundamental building block for combining addresses and capabil
 Given:
 
 * A source capability with address _a_, metadata _m_ that decodes to give the bounds _b_ and _t_.
-* An arbitrary address _a'_ with the same metadata _m_ decodes to give the bounds _b'_ and _t'_.
+* An arbitrary address _a'_ with the same metadata _m_ that decodes to give the bounds _b'_ and _t'_.
 
 The address _a'_ is within the source capability's _representable range_ if `b == b' && t == t'`.
 
