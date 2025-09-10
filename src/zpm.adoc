@@ -235,6 +235,17 @@ Each extension introduces a 2-bit WARL field (`PMM`) that may take on the follow
 
 All of these fields are read-only 0 on RV32 systems.
 
+==== PMM for {cheri_base64_ext_name}
+
+For {cheri_base64_ext_name}, PMM is read-only 0.
+
+If {cheri_default_ext_name} is implemented:
+
+* PMM can be written to non-zero values in {cheri_int_mode_name} only.
+* Switching into {cheri_cap_mode_name} causes PMM to always read as 0, and therefore pointer masking is never enabled in that mode.
+
+Therefore non-zero state programmed in {cheri_int_mode_name} is retained in {cheri_cap_mode_name}, but is only visible or takes effect in {cheri_int_mode_name}.
+
 ==== Ssnpm
 
 `Ssnpm` adds a new 2-bit WARL field (`PMM`) to bits 33:32 of `senvcfg`. Setting `PMM` enables or disables pointer masking for the next lower privilege mode (U/VU mode), according to the values in <<pmm-values>>.
