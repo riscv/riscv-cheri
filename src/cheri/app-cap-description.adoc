@@ -366,7 +366,7 @@ when the {ctag} is set (see xref:section_cap_malformed[xrefstyle=short]).
 [#section_cap_bounds_decoding]
 ===== Decoding
 
-The metadata is encoded in a compressed format cite:[woodruff2019cheri]. It
+The metadata is encoded in a compressed format termed CHERI Concentrate cite:[woodruff2019cheri]. It
 uses a floating point representation to encode the bounds relative to the
 capability address. The base and top addresses from the bounds are decoded as
 shown below.
@@ -681,33 +681,28 @@ architecture: normal bounds check rules should be followed.
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
 
-==== Concept
+The concept of the _representability check_ was introduced in <<section_rep_check_concept>>.
 
-The new address, after updating the address of a capability, is within the
-_representable range_ if decompressing the capability's bounds with the
-original and new addresses yields the same base and top bounds.
+The definition of the check is:
 
-In other words, given a capability with address _a_ and the
-new address `a' = a + x`, the bounds _b_ and _t_ are decoded using _a_ and the
-new bounds _b'_ and _t'_ are decoded using _a'_. The new address is within the
-capability's _representable range_ if `b == b' && t == t'`.
+* A source capability with address _a_, metadata _m_ that decodes to give the bounds _b_ and _t_.
+* A derived capability with arbitrary address _a'_ with the same metadata _m_ that decodes to give the bounds _b'_ and _t'_.
 
-Changing a capability's address to a value outside the _representable range_
-unconditionally clears the capability's tag. Examples are:
+The address _a'_ is within the source capability's _representable range_ if `b == b' && t == t'`.
 
-* Instructions such as <<CADD>> which include pointer arithmetic.
-* The <<SCADDR>> instruction which updates the capability address field.
+If the address _a'_ is outside the _representable range_, then the derived capability has the {ctag} set to zero.
 
 ==== Practical Information
 
-An artifact of the bounds encoding is that if an address is changed
-such that `t != t'`, then it is also the case that `b != b'`.
+An artifact of the bounds encoding is that if the new address
+causes `t != t'`, then it is also the case that `b != b'`.
+
 The inverse is also true, if `b != b'` then `t != t'`.
+
 Therefore, for representable range checking, it is acceptable
 to either check `t == t'` or `b == b'`.
 
-In the bounds encoding in this specification, the top and bottom capability
-bounds are formed of two or three sections:
+The top and bottom capability bounds are formed of two or three sections:
 
 * Upper bits from the address
 ** This is only if the other sections do not fill the available bits (E + MW < MXLEN)
