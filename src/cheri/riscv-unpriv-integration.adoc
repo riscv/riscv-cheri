@@ -177,7 +177,7 @@ Software can query the capability bounds:
 
 NOTE: A future extension may add an instruction to directly read the _top_ if needed for performance.
 
-==== Updating the Bounds
+==== Deriving New Bounds
 
 On system initialization, one or more <<root-cap>> capabilities are available;
 typically, these have bounds which cover all of memory and the maximum permissions set.
@@ -199,26 +199,28 @@ The granularity constraints means that not all requested combinations of _top_ a
 The bounds are encoded relative to the address field, sharing some upper bits of the address.
 The number of shared bits depends on the exponent, see xref:section_cap_bounds[xrefstyle=short].
 
-NOTE: Early versions of CHERI encoded the top and bottom bounds as full width addresses.
-This proved to be impractical for real systems, and so the https://www.cl.cam.ac.uk/research/security/ctsrd/pdfs/2019tc-cheri-concentrate.pdf[CHERI-concentrate] compressed system was developed to reduce the overhead.
-
+[#section_rep_check_concept]
 ==== Representability and Updating the Address
 
-Because the CHERI concentrate encoding scheme shares the upper bits of the address with the bounds, not all out-of-bounds pointers can be represented.
+Because the CHERI concentrate cite:[woodruff2019cheri] encoding scheme for memory bounds shares the upper bits of the address with the bounds, not all out-of-bounds pointers can be represented.
+
+NOTE: The historic, uncompressed CHERI-MIPS 256-bit capability encoding had separate 64-bit values for the base and top memory bounds, and another for metadata fields.
+ This scheme could represent all out-of-bounds pointers with a very high hardware cost.
+
 The maximum range of address values that the pointer can take without changing the interpretation of bounds is defined by the <<section_cap_representable_check, representable region>>.
-Since capability address modification could change the meaning of the bounds, all updates to registers (e.g., modification of the program counter via control-flow instructions) and instructions that return capabilities with a modified address must check that the new address is also within the representable region.
-If the interpretation of bounds _has_ changed, then the {ctag} is set to zero, so that the capability is invalid for use.
+Since deriving a new capability with a different address could change the meaning of the bounds, all such derived capabilities (e.g., deriving the next <<pcc>> capability from the existing <<pcc>> via control-flow instructions or sequential execution) and instructions that return valid derived capabilities, must check that the new address is within the representable region defined by the source capability.
+If the interpretation of bounds _has_ changed, then the {ctag} of the derived capability is set to zero, so that it is invalid for use.
 
-Software can create a new capability with an updated address using the <<SCADDR>> instruction.
+Software can derive a capability with a new address using instructions such as <<SCADDR>>, <<CADD>> and <<CADDI>>.
 
-NOTE: <<SCADDR>> writes back a new capability with a modified address field and, if the {ctag} was previously set, sets the {ctag} of the output if the resulting capability still has the same bounds interpretation.
+NOTE: <<SCADDR>> writes back a derived capability with a new address field and, if the {ctag} was previously set, sets the {ctag} of the derived capability to one if the resulting capability still has the same bounds interpretation.
 
 NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only come back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
 
-NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to the default (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
+NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to the <<app_cap_description>> (e.g., for accelerators or specific micro-controllers, see <<uycfg>>) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
 Therefore, the rest of the specification uses the phrase *represented exactly* for this check.
 
-The bounds and representable region (or space) are illustrated in <<cap_bounds_map>>.
+The bounds and representable region (or space) for the <<app_cap_description>> are illustrated in <<cap_bounds_map>>.
 E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
 
 [#cap_bounds_map]
