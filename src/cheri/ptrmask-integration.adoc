@@ -1,25 +1,25 @@
-[#section_pointer_masking_integration]
-== Integrating {cheri_base_ext_name} and {cheri_default_ext_name} with Pointer Masking
-
 ifdef::cheri_standalone_spec[]
-WARNING: This chapter should appear as a section in the pointermasking chapter. Exact location TBD.
+[#section_pointer_masking_integration]
+== Integrating {cheri_base64_ext_name} with Pointer Masking
+
+WARNING: This chapter should appear as a section in the pointer masking chapter. Exact location TBD.
+The pointer masking extensions Smmpm, Smnpm, SSnpm, Sspm and Supm are compatible with {cheri_base64_ext_name}.
 endif::[]
 
-The pointer masking extensions Smmpm, Smnpm, SSnpm, Sspm and Supm are compatible with both {cheri_base_ext_name} and {cheri_default_ext_name}.
-Whenever pointer masking is enabled, all bounds decoding and bounds checks are affected.
+Whenever pointer masking is enabled, all bounds decoding, <<section_cap_representable_check, representable range checks>> and bounds checks are affected.
 
 NOTE: The suggestion in this section is based on the pointer masking approach from Morello but with changes
 to sign extension and to address the dynamic nature of bit masking.
-Further evaluation on RISCV, especially for {cheri_cap_mode_name}, is still required.
+#Further evaluation is still required.#
 
 When bounds are <<section_cap_encoding,encoded or decoded>>, a masked but _not_ sign extended address is used.
 Changing how many bits are masked can therefore change the interpretation of the bounds of a capability,
 both for the purpose of implicit accesses via bounds checks and any instructions that report the bounds of a capability.
-Apart from treating high address bits as 0, there are no other changes to bounds decode,
-which are still based on MXLEN, not the new effectively addressable space.
+Apart from treating the PMLEN high address bits as 0, there are no other changes to bounds decode,
+which are still based on XLEN, not the new effectively addressable space.
 That is, the maximum length of a capability does not change, and
-it is not invalid to have a capability that covers a longer range than could be actually be addressed with pointer masking enabled (such as one that covers the entire MXLEN address space).
-For the <<section_cap_representable_check, representable range check>>, both the original and new address
+it is not invalid to have a capability that covers a longer range than could be actually be addressed with pointer masking enabled (such as one that covers the entire XLEN address space).
+For the <<section_cap_representable_check, representable range check>>, both the original and new addresses
 are masked.
 Bounds setting instructions also mask the address in the same way.
 
@@ -27,6 +27,23 @@ NOTE: Because dynamically changing the number of masked bits changes the interpr
 software must take the same care when sharing capabilities between address spaces with differing pointer masking
 as it generally must when sharing capabilities between address spaces with different page mappings.
 
-Any address that is checked against a capability (whether via loads/stores in {cheri_int_mode_name} or {cheri_cap_mode_name}),
+Any address that is checked against a capability
 is also first subject to the same masking as bounds decode (masking without extension).
-After any CHERI operations, the final access address is still subject to as much sign extension as the masking extensions mandate.
+After any CHERI operations, the final access address is still subject to as much sign extension as the pointer masking extensions mandate.
+
+The summary below makes use of the _transformed_effective_address_ defined above where the upper PMLEN bits of the effective address are set to 0.
+
+In summary:
+
+* When encoding bounds (<<SCBNDS>>/<<SCBNDSI>>/<<SCBNDSR>>), the base address is set to the _transformed_effective_address_.
+** `base = {PMLEN{0}},rs1.address[XLEN-PMLEN-1:0]`.
+* When decoding bounds (<<GCBASE>>), `{cd}` is set to the _transformed_effective_address_.
+** `{cd} = {PMLEN{0}},decoded_base[XLEN-PMLEN-1:0]`.
+* When reading the capability length (<<GCLEN>>), `top` and `base` are set to the _transformed_effective_address_ *before* subtracting.
+** `rd = {PMLEN{0}},decoded_top[XLEN-PMLEN-1:0] - {PMLEN{0}},decoded_base[XLEN-PMLEN-1:0]`.
+* When checking the <<section_cap_representable_check, representable range>> for <<CADDI>>/<<CADD>>/<<SCADDR>>, the old address and new addresses are both set to the _transformed_effective_address_ *before* the check.
+* When checking bounds:
+** The decoded bounds are both the _transformed_effective_address_.
+** Every accessed byte is also the _transformed_effective_address_.
+*** Therefore the bounds check is always comparing _transformed_effective_addresses_.
+* When comparing full capabilities and bounds (<<SCEQ>>, <<SCSS>>, <<CBLD>>), all bounds are decoded and comparisons made between _transformed_effective_addresses_.
