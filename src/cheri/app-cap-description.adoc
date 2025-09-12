@@ -288,7 +288,31 @@ WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old
 The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
 endif::[]
 
-For {cheri_base_ext_name} the CT field is one bit wide and maps 1:1 to the capability types listed in <<tab_cap_types>>: it is a sentry capability if the bit is 1 or unsealed if it is 0.
+#Changed since last ARC review#
+
+The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> values;
+this field directly encodes the values `0` and `1`.
+The value `1` is...
+
+* considered <<sec_cap_type_ambient,ambiently available>> for <<CBLD>>,
+
+* used as the type for capabilities sealed by <<SENTRY>> instructions,
+  if <<section_rvy_sentry_insn_ext>> is present in the platform.
+
+Additionally, if the platform includes the <<section_rvy_sentry_jalr_ext>>
+extension, then <<JALR_CHERI>> both
+
+* unseals input capabilities of type 1 and
+
+* seals its return capabilities with type 1.
+
+[NOTE]
+=====
+The permission encodings of <<AP-field-encoding>> do not provide mappings for
+the <<section_zyseal>> extension's <<zyseal_se_perm>> or <<zyseal_us_perm>>.
+Thus, without further revision, the encodings of this chapter
+are incompatbile with the <<section_zyseal>> extension.
+=====
 
 [#section_cap_bounds]
 ==== Bounds (EF, T, TE, B, BE) Encoding
@@ -551,6 +575,14 @@ Capabilities with malformed bounds:
 
 . Return both base and top bounds as zero, which affects instructions like <<GCBASE>>.
 . Cause certain manipulation instructions like <<CADDI>> to always set the {ctag} of the result to zero.
+
+===== <<AUIPC_CHERI>> Shift
+
+For the capabilities of this chapter, the <<section_auipc_shift>> value is 12.
+The bounds encodings just described, for both 32- and 64-bit addresses,
+have sufficient <<section_rep_check_concept,representability>> that no
+<<AUIPC_CHERI>> instruction used to reach an in-bounds offset
+will clear the {ctag}.
 
 [#section_cap_integrity]
 === Integrity of Capabilities

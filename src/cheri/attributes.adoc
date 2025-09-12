@@ -25,8 +25,8 @@ endif::support_varxlen[]
 // 32-bit encodings added by RVY
 :rvy_file_name:            {cheri_base_ext_name}_insns_table_body
 // 32-bit encoding for YSENTRY
-:rvy_sentry_ext_name:      Zys
-:rvy_sentry_file_name:     {rvy_sentry_ext_name}_insns_table_body
+:rvy_sentry_insn_ext_name:      Zys
+:rvy_sentry_insn_file_name:     {rvy_sentry_insn_ext_name}_insns_table_body
 // 32-bit encodings modified by RVY
 :rvy_i_mod_ext_name:       RVI ({cheri_base_ext_name} modified behavior)
 :rvy_i_mod_file_name:      {cheri_base_ext_name}_I_mod_insns_table_body
@@ -71,6 +71,9 @@ endif::support_varxlen[]
 
 // Extension for capability levels (flow control)
 :cheri_levels1_ext_name:             Zylevels1
+
+:cheri_seal_ext_name: Zyseal
+:rvy_sentry_jalr_ext_name: Zysentry
 
 :ctag: capability tag
 :ctag_cap:   Capability tag
@@ -216,6 +219,10 @@ endif::support_varxlen[]
 :CBLD_LC:       ybld
 :CBLD_DESC:     Build capability
 
+:YSUNSEAL:      YSUNSEAL
+:YSUNSEAL_LC:   ysunseal
+:YSUNSEAL_DESC: Unseal by superset reconstruction
+
 :CLRPERM:       YPERMC
 :CLRPERM_LC:    ypermc
 :CLRPERM_DESC:  Clear capability permissions
@@ -323,6 +330,14 @@ endif::support_varxlen[]
 :C_JALR_CHERI_DESC:        {JALR_CHERI_DESC}, 16-bit encoding
 :C_JR_CHERI_DESC:          Jump to capability register, 16-bit encoding
 
+
+:YSEAL:      YSEAL
+:YSEAL_LC:   yseal
+:YSEAL_DESC: Seal a capability using a sealing capability
+
+:YUNSEAL:    YUNSEAL
+:YUNSEAL_LC: yunseal
+:YSEAL_DESC: Unseal a capability using an unsealing capability
 
 // Variables for register names
 // Prefix for numbered registers
