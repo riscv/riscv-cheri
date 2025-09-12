@@ -202,7 +202,7 @@ The number of shared bits depends on the exponent, see xref:section_cap_bounds[x
 [#section_rep_check_concept]
 ==== Representability and Updating the Address
 
-Because the CHERI concentrate cite:[woodruff2019cheri] encoding scheme for memory bounds shares the upper bits of the address with the bounds, not all out-of-bounds pointers can be represented.
+Because the CHERI Concentrate cite:[woodruff2019cheri] encoding scheme for memory bounds shares the upper bits of the address with the bounds, not all out-of-bounds pointers can be represented.
 
 NOTE: The historic, uncompressed CHERI-MIPS 256-bit capability encoding had separate 64-bit values for the base and top memory bounds, and another for metadata fields.
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
@@ -425,7 +425,8 @@ As stated above, all state which can hold addresses are extended from XLEN to YL
 
 ==== General Purpose Registers
 
-The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to YLEN bits.
+The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to YLEN bits
+and associated {ctag}s, as shown in <<base_cap_registers>>.
 
 .Extended registers in {cheri_base_ext_name}
 [#base_cap_registers]
@@ -439,15 +440,15 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to 
 
 (draw-box "" [:box-first {:span 1}]) (draw-box "{creg}0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
 (draw-box "" [:box-first {:span 1}]) (draw-box "{creg}1" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
-(draw-gap "Same layout for {creg}2-{creg}30 (extending x2-x30)" {:height 100})
+(draw-gap "Same layout for {creg}2-{creg}30" {:height 100})
 (draw-box "" [:box-first {:span 1}]) (draw-box "{creg}31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
 (draw-box nil [:box-first {:span 1}]) (draw-box "{pcc}" [:box-related {:span 32}]) (draw-box "{pcc}" [:box-last {:span 32 }])
 (draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
-When referring to the extended registers, the `x` prefix is replaced with a `y`: i.e., the extended version of `x1` becomes `{creg}1`.
-The register can be referred to either way - as `{creg}1` accessing all YLEN bits or as `{creg}1` accessing only the address field (i.e., the lower XLEN bits).
-For the ABI register names the `y` prefix is added, e.g., `{abi_creg}sp` to refer to all YLEN bits, and so the assembler can refer to either `sp` or `{abi_creg}sp` depending on the instruction operand.
+// When referring to the extended registers, the `x` prefix is replaced with a `y`: i.e., the extended version of `x1` becomes `{creg}1`.
+// The register can be referred to either way - as `{creg}1` accessing all YLEN bits or as `{creg}1` accessing only the address field (i.e., the lower XLEN bits).
+// For the ABI register names the `y` prefix is added, e.g., `{abi_creg}sp` to refer to all YLEN bits, and so the assembler can refer to either `sp` or `{abi_creg}sp` depending on the instruction operand.
 
 The zero register is extended with zero metadata and a zero {ctag}: this is called the <<null-cap>> capability.
 
@@ -661,6 +662,8 @@ No other exception paths are added by {cheri_base_ext_name}: in particular, capa
 // It might be good to distinguish the operands using some kind of different notion, but for now we were asked to use the same as before.
 // To clarify whether an instruction accesses XLEN or YLEN bits of the register, the instruction listing uses `{cd}/{cs1}/{cs2}` for capability operands and `rd/rs1/rs2` for integer operands.
 
+:leveloffset: +1
+
 === Instructions to Update The Capability Pointer
 
 Creating a new capability with a different address (i.e., updating the pointer) requires specific instructions instead of integer ADD/ADDI.
@@ -820,6 +823,8 @@ include::insns/load_32bit_cap.adoc[]
 include::insns/store_32bit_cap.adoc[]
 
 <<<
+
+:leveloffset: -1
 
 [#section_existing_riscv_insns]
 === Changes to Existing RISC-V Base ISA Instructions
