@@ -203,7 +203,18 @@ The <<m_bit>> of this capability is _only_ updated by executing <<MODESW_CAP>> o
 include::img/drootcreg.edn[]
 
 === Modified Trap-Return Instruction Behavior
-The `DRET` instruction reads the full YLEN bits of the <<mepc_y>>/<<sepc_y>> register and unseals it prior to exception return if it is a <<sentry_cap>>.
+
+#Changed since last ARC review#
+
+If the platform incorporates <<section_rvy_sentry_jalr_ext>>,
+the `DRET` instruction reads the full YLEN bits of the <<mepc_y>>/<<sepc_y>> register and unseals it prior to exception return,
+if the read capability's type
+is defined as acceptable for <<JALR_CHERI>> to unseal.
+(If there are conditions on <<JALR_CHERI>>'s ability
+to unseal particular types, those do not apply here;
+that is, if there is any circumstance
+under which <<JALR_CHERI>> would unseal the type in question,
+`DRET` unseals the capability in question.)
 
 include::insns/dret.adoc[]
 
