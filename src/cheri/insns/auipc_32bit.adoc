@@ -14,9 +14,15 @@ include::wavedrom/rv64_lui-auipc.adoc[]
 
 include::base_isa_extension.adoc[]
 
+#Begin changed since last ARC review#
+
 Description::
-Form a 32-bit offset from the 20-bit immediate filling the lowest 12 bits with zeros.
+Form a 32-bit offset from the 20-bit immediate filling the lowest bits with zero;
+the number of places to shift is determined by the capability encoding's choice of
+the <<section_auipc_shift>> value (12, unless otherwise specified).
 Take the value of the AUIPC instruction's <<pcc>>, increment its address by the 32-bit offset using the semantics of the <<SCADDR>> instruction and write the result to `{cd}`.
+
+#End changed since last ARC review#
 +
 include::rep_range_check.adoc[]
 
@@ -26,3 +32,47 @@ Included in::
 Operation::
 +
 sail::execute[clause="AUIPC_capmode(_, _)",part=body,unindent]
+
+[#section_auipc_shift,reftext="AUIPC shift"]
+==== The AUIPC Shift
+
+#Begin new since last ARC review#
+
+The RISC-V base integer ISA frequently splits signed 32-bit constants
+accross instructions as the addition of a signed 12-bit constant
+and a 20-bit constant shifted left by 12 bits.
+For example, the I-type instruction `ADDI`, with its 12-bit immediate,
+is to be combined with the U-type `LUI` instruction and its 20-bit immediate
+when values beyond the reach of a signed 12-bit value are needed.
+To reach a given value in this way involve "overshooting" the desired value:
+for example, to materialize `0xf01` (`3841`) into a register,
+one uses `LUI` to materialize `0x1000` (`4096`)
+and `ADDI` to _subtract_ `0xff` (`255`).
+Similarly, the U-type `AUIPC` instruction, with its 20-bit immediate,
+is designed to compose well with the signed 12-bit immediate operands
+of load (I-type) and store (S-type) instructions.
+
+When manipulating addresses within capabilities, there is a risk
+that such two-step sequences could take the address out of bounds
+before attempting to bring it back within bounds.
+Many capability encodings, including those of the <<app_cap_description>>,
+have a <<section_rep_check_concept,*representable range*>> sufficient
+to ensure that any capability whose length is larger than 2 KiB
+(that is, those for which a signed 12-bit displacement might be insufficient)
+are able to represent at least 2 KiB on either side of their bounds.
+However, this is not an *essential* property of capability encodings,
+and so this specification allows the capability *encoding* to specify
+the shift used within address-manipulating instructions with shifted immediates.
+For <<AUIPC_CHERI>> specifically, we refer to this value as **the AUIPC shift**,
+and take it to be 12 unless the capability encoding sets it to 11.
+(Taking the shift to be 11 instead of 12 decreases the reach of `AUIPC`
+from ±2 GiB to ±1 GiB, but ensures that all values within that range
+can be obtained with the same sign bit in the `AUIPC` immediate
+and subsequent 12-bit immediate(s),
+thereby ensuring that in-bounds addresses can be reached without risk of
+the intermediate computation exceeding capability bounds.)
+Future extensions that add instructions with similar semantics
+should make use this same encoding-specified shift value or
+otherwise allow the capability encoding to set the shift amount.
+
+#End new since last ARC review#
