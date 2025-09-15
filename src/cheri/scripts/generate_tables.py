@@ -106,7 +106,7 @@ class illegal_insns(table):
         return row[self.header.index("illegal insn if (1)")] != ""
 
 class csr_aliases(table):
-    cols = ["YLEN CSR", "Alias", "Prerequisites"]
+    cols = ["YLEN CSR", "Prerequisites"]
     indices = []
 
     def __init__(self, filename, header):
