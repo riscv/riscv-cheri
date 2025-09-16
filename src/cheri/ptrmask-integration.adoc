@@ -35,15 +35,7 @@ The summary below makes use of the _transformed_effective_address_ defined above
 
 In summary:
 
-* When encoding bounds (<<SCBNDS>>/<<SCBNDSI>>/<<SCBNDSR>>), the base address is set to the _transformed_effective_address_.
+* When encoding bounds ({SCBNDS}/{SCBNDSI}/{SCBNDSR}), the base address is set to the _transformed_effective_address_.
 ** `base = {PMLEN{0}},rs1.address[XLEN-PMLEN-1:0]`.
-* When decoding bounds (<<GCBASE>>), `{cd}` is set to the _transformed_effective_address_.
-** `{cd} = {PMLEN{0}},decoded_base[XLEN-PMLEN-1:0]`.
-* When reading the capability length (<<GCLEN>>), `top` and `base` are set to the _transformed_effective_address_ *before* subtracting.
-** `rd = {PMLEN{0}},decoded_top[XLEN-PMLEN-1:0] - {PMLEN{0}},decoded_base[XLEN-PMLEN-1:0]`.
-* When checking the <<section_cap_representable_check, representable range>> for <<CADDI>>/<<CADD>>/<<SCADDR>>, the old address and new addresses are both set to the _transformed_effective_address_ *before* the check.
-* When checking bounds:
-** The decoded bounds are both the _transformed_effective_address_.
-** Every accessed byte is also the _transformed_effective_address_.
-*** Therefore the bounds check is always comparing _transformed_effective_addresses_.
-* When comparing full capabilities and bounds (<<SCEQ>>, <<SCSS>>, <<CBLD>>), all bounds are decoded and comparisons made between _transformed_effective_addresses_.
+* When decoding bounds the address used for decoding is _always_ the _transformed_effective_address_.
+* When checking the <<section_cap_representable_check, representable range>> for {CADDI}/{CADD}/{SCADDR}, the old address and new addresses are both set to the _transformed_effective_address_ *before* the check.
