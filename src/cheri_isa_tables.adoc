@@ -1,0 +1,240 @@
+[appendix]
+== {cheri_base_ext_name} Extensions Summary
+
+An {cheri_base_ext_name} core imports _all_ instructions from RVI and adds new instructions for CHERI functionality.
+Additionally, some RVI instruction (as well as instructions defined in other extensions) have modified behavior.
+The following sections detail the list of added/modified instructions per extension.
+
+[#rvy_insn_table, reftext="{cheri_base_ext_name}"]
+=== {cheri_base_ext_name} added instructions
+
+.{cheri_base_ext_name} added instructions
+[#{rvy_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_file_name}.adoc[]
+|==============================================================================
+
+[#rvy_i_mod_insn_table, reftext="{rvy_i_mod_ext_name}"]
+=== {rvy_i_mod_ext_name}
+
+The following RVI instructions have _modified_ behavior due to adding CHERI functionality.
+In general, this is restricted to changing whether input/output operands read/write XLEN or YLEN bits.
+
+.{rvy_i_mod_ext_name} instructions
+[#{rvy_i_mod_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_i_mod_file_name}.adoc[]
+|==============================================================================
+
+
+[#rvy_zicsr_mod_insn_table, reftext="{rvy_zicsr_mod_ext_name}"]
+=== {rvy_zicsr_mod_ext_name}
+
+The following RVI instructions have _modified_ behavior due to adding CHERI functionality.
+In general, this is restricted to changing whether input/output operands read/write XLEN or YLEN bits.
+
+.{rvy_zicsr_mod_ext_name} instructions
+[#{rvy_zicsr_mod_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_zicsr_mod_file_name}.adoc[]
+|==============================================================================
+
+[#rvy_sentry_insn_table, reftext="{rvy_sentry_ext_name}"]
+=== {rvy_sentry_ext_name}
+
+{rvy_sentry_ext_name} adds the sentry capability type.
+
+.{rvy_sentry_ext_name} instruction extension
+[#{rvy_sentry_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_sentry_file_name}.adoc[]
+|==============================================================================
+
+[#rvy_zca_insn_table, reftext="{rvy_zca_ext_name}"]
+=== {rvy_zca_ext_name}
+
+An {cheri_base_ext_name} core which supports C also supports {rvy_zca_ext_name}.
+
+{rvy_zca_ext_name} is incompatible with Zcf (RV32) and Zcd (RV64).
+
+.{rvy_zca_ext_name} instruction extension
+[#{rvy_zca_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_zca_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+<<<
+//this has all been integrated into the relevant chapter
+=== RV32 / {cheri_base32_ext_name} RVC load/store mapping summary
+
+include::rv32c_mapping_table.adoc[]
+
+<<<
+=== RV64 / {cheri_base64_ext_name} RVC load/store mapping summary
+
+include::rv64c_mapping_table.adoc[]
+
+endif::[]
+
+include::insns/load_16bit_cap_sprel.adoc[]
+include::insns/store_16bit_cap_sprel.adoc[]
+
+<<<
+
+[#rvy_zca_mod_insn_table, reftext="{rvy_zca_mod_ext_name}"]
+=== {rvy_zca_mod_ext_name}
+
+An {cheri_base_ext_name} core which supports C also supports {rvy_zca_mod_ext_name} which _modifies_ the behavior of some instructions.
+
+NOTE: {C_MV_CAP_LC} is renamed from `c.mv` to avoid ambiguity in disassembly.
+
+.{rvy_zca_mod_ext_name} instruction extension
+[#{rvy_zca_mod_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_zca_mod_file_name}.adoc[]
+|==============================================================================
+
+include::insns/addi16sp_16bit.adoc[]
+include::insns/addi4spn_16bit.adoc[]
+include::insns/cmv_16bit.adoc[]
+include::insns/jr_16bit.adoc[]
+include::insns/jal_16bit.adoc[]
+include::insns/jalr_16bit.adoc[]
+
+<<<
+
+[#rvy_zalrsc_insn_table, reftext="{rvy_zalrsc_ext_name}"]
+=== {rvy_zalrsc_ext_name}
+
+Specifying {cheri_base_ext_name} and Zalrsc adds atomic capability load and store instructions.
+
+.{rvy_zalrsc_ext_name} instruction extension
+[#{rvy_zalrsc_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_zalrsc_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/load_res_cap_32bit.adoc[]
+include::insns/store_cond_cap_32bit.adoc[]
+<<<
+endif::[]
+
+[#rvy_zaamo_insn_table, reftext="{rvy_zaamo_ext_name}"]
+=== {rvy_zaamo_ext_name}
+
+Specifying {cheri_base_ext_name} and Zaamo gives {rvy_zaamo_ext_name} functionality, which adds atomic capability swap.
+
+.{rvy_zaamo_ext_name} instruction extension
+[#{rvy_zaamo_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_zaamo_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/amoswap_32bit_cap.adoc[]
+<<<
+endif::[]
+
+<<<
+
+[#rvy_zba_insn_table, reftext="{rvy_zba_ext_name}"]
+=== {rvy_zba_ext_name}
+
+Specifying {cheri_base_ext_name} and Zba gives {rvy_zba_ext_name} functionality, which adds more instructions.
+
+.{rvy_zba_ext_name} instruction extension
+[#{rvy_zba_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_zba_file_name}.adoc[]
+|==============================================================================
+
+NOTE: There is no {cheri_base_ext_name} equivalent for `add.uw` as only having the integer version is sufficient.
+
+ifdef::cheri_standalone_spec[]
+// For the integrated build, these instruction listings are in the Zba chapter.
+include::insns/sh1234add_32bit.adoc[]
+include::insns/sh1234add_uw_32bit.adoc[]
+
+<<<
+endif::[]
+
+[#rvy_zicbom_mod_insn_table, reftext="{rvy_zicbom_mod_ext_name}"]
+=== {rvy_zicbom_mod_ext_name}
+
+Specifying {cheri_base_ext_name} and Zicbom gives {rvy_zicbom_mod_ext_name} functionality, which extends the checking.
+
+.{rvy_zicbom_mod_ext_name} instruction extension
+[#{rvy_zicbom_mod_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_zicbom_mod_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/cbo.clean.adoc[]
+include::insns/cbo.flush.adoc[]
+include::insns/cbo.inval.adoc[]
+
+<<<
+endif::[]
+
+[#rvy_zicboz_mod_insn_table, reftext="{rvy_zicboz_mod_ext_name}"]
+=== {rvy_zicboz_mod_ext_name}
+
+Specifying {cheri_base_ext_name} and Zicboz gives {rvy_zicboz_mod_ext_name} functionality, which extends the checking.
+
+.{rvy_zicboz_mod_ext_name} instruction extension
+[#{rvy_zicboz_mod_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_zicboz_mod_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/cbo.zero.adoc[]
+
+<<<
+endif::[]
+
+[#rvy_zicbop_mod_insn_table, reftext="{rvy_zicbop_mod_ext_name}"]
+=== {rvy_zicbop_mod_ext_name}
+
+Specifying {cheri_base_ext_name} and Zicbop gives {rvy_zicbop_mod_ext_name} functionality, which extends the checking.
+
+.{rvy_zicbop_mod_ext_name} instruction extension
+[#{rvy_zicbop_mod_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_zicbop_mod_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/prefetch.i.adoc[]
+include::insns/prefetch.r.adoc[]
+include::insns/prefetch.w.adoc[]
+
+<<<
+endif::[]
+
+[#rvy_hybrid_insn_table, reftext="{cheri_default_ext_name}"]
+=== {cheri_default_ext_name}
+
+An {cheri_base_ext_name} core which supports {cheri_default_ext_name} adds the instructions in <<{rvy_hybrid_file_name}>>.
+
+.{cheri_default_ext_name} instruction extension
+[#{rvy_hybrid_file_name}]
+[width="100%",options=header,cols="2,1,1,5",]
+|==============================================================================
+include::generated/{rvy_hybrid_file_name}.adoc[]
+|==============================================================================
