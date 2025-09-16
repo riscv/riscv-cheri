@@ -2662,3 +2662,32 @@ While HLVX.* only requires execute permission in the PTE, the authorizing CHERI 
 
 include::cheri/insns/hypv-virt-load-cap.adoc[]
 include::cheri/insns/hypv-virt-store-cap.adoc[]
+
+[#vstidc,reftext="vstidc"]
+==== Virtual Supervisor Thread Identifier Capability (vstidc) for {cheri_base_ext_name}
+
+The <<vstidc>> register is used to identify the current software thread in virtual supervisor mode.
+It is used to identify the current software thread in
+As other Virtual Supervisor registers when V=1, <<vstidc>> substitutes
+for <<stidc>>, so that instructions that normally read or modify
+<<stidc>> actually access <<vstidc>> instead.
+When V=0, <<vstidc>> does not directly affect the
+behavior of the machine.
+On reset the {ctag} of <<vstidc>> will be set to 0 and the remainder
+of the data is UNSPECIFIED.
+
+.Virtual supervisor thread identifier capability register
+include::cheri/img/vstidcreg.edn[]
+
+[#vsycfg,reftext="vsycfg"]
+==== Virtual Supervisor CHERI Capability Encoding (vsycfg) for {cheri_base_ext_name}
+The <<vsycfg>> register is used to identify which CHERI capability encoding is used by the platform.
+The capability encoding both determines the in-memory representation of a CHERI capability
+and entails a set of extensions present atop {cheri_base_ext_name}.
+The CSR exists in the _writable_ namespace and all bits are defined to be WARL,
+but, absent any future extensions, it is expected that each implementation has exactly one legal value.
+For the meaning of the individual fields, refer to the <<uycfg>> register in the unprivileged specification.
+
+.Virtual Supervisor CHERI capability encoding CSR (`vsycfg`) format
+[#vsycfg_csr_structure]
+include::cheri/img/ycfgreg.edn[]
