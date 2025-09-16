@@ -347,6 +347,8 @@ supervisor-mode timer interrupt (see <<scauses>>)
 causes the `pc` to be set to BASE+`0x14`. Setting MODE=Vectored may
 impose a stricter alignment constraint on BASE.
 
+If the base architecture is {cheri_base_ext_name} then see <<stvec_y>>.
+
 ==== Supervisor Interrupt (`sip` and `sie`) Registers
 
 The `sip` register is an SXLEN-bit read/write register containing
@@ -508,6 +510,8 @@ initial working register.
 .Supervisor Scratch Register
 include::images/bytefield/sscratch.edn[]
 
+If the base architecture is {cheri_base_ext_name} then see <<sscratch_y>>.
+
 [#sepc,reftext="sepc"]
 ==== Supervisor Exception Program Counter (`sepc`) Register
 
@@ -535,6 +539,8 @@ though it may be explicitly written by software.
 .Supervisor exception program counter register.
 include::images/bytefield/epcreg.edn[]
 
+If the base architecture is {cheri_base_ext_name} then see <<sepc_y>>.
+
 [#scause,reftext="scause"]
 ==== Supervisor Cause (`scause`) Register
 
@@ -557,7 +563,7 @@ guaranteed to hold supported exception codes.
 include::images/bytefield/scausereg.edn[]
 
 [[scauses]]
-.Supervisor cause (`scause`) register values after trap. Synchronous exception priorities are given by <<exception-priority>>. #Causes added in {cheri_base_ext_name} are in *bold*#
+.Supervisor cause (`scause`) register values after trap. Synchronous exception priorities are given by <<exception-priority>>.
 [%autowidth,float="center",align="center",cols=">,>,3",options="header"]
 |===
 |Interrupt |Exception Code |Description
@@ -696,6 +702,14 @@ address-misaligned, access-fault, page-fault, or hardware-error exception
 occurs on an
 instruction fetch, load, or store, then `stval` will contain the
 faulting virtual address.
+
+If `stval` is written with a nonzero value when a
+{cheri_excep_name_pc},
+{cheri_excep_name_ld},
+{cheri_excep_name_st},
+{cheri_excep_name_pte_ld}, or
+{cheri_excep_name_pte_st} exception occurs, then `mtval` will contain the virtual
+address of the lowest byte of the access.
 
 On a breakpoint exception raised by an EBREAK or C.EBREAK instruction, `stval`
 is written with either zero or the virtual address of the instruction.
