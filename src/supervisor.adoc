@@ -94,7 +94,9 @@ register keeps track of the processor's current operating state.
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 29, name: 'WPRI'},
+  {bits: 27, name: 'WPRI'},
+  {bits:  1, name: 'UCRG'},
+  {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
 ....
@@ -117,6 +119,9 @@ The SPIE bit indicates whether supervisor interrupts were enabled prior
 to trapping into supervisor mode. When a trap is taken into supervisor
 mode, SPIE is set to SIE, and SIE is set to 0. When an SRET instruction
 is executed, SIE is set to SPIE, then SPIE is set to 1.
+
+The UCRG bit is defined by the <<section_cheri_priv_crg_ext>> extension, for the
+{cheri_base_ext_name} base architecture.
 
 The `sstatus` register is a subset of the `mstatus` register.
 
