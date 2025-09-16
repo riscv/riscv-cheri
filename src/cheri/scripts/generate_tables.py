@@ -540,6 +540,21 @@ if __name__ == "__main__":
                 header=header,
             ),
             InsnTable(
+                extension="M",
+                filename=output_file(args, "RVY_M_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                extension="S",
+                filename=output_file(args, "RVY_S_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
+                extension="Sdext",
+                filename=output_file(args, "RVY_Sdext_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
                 extension="{rvy_zicbom_mod_ext_name}",
                 filename=output_file(args,  "RVY_Zicbom_mod_insns_table_body.adoc"),
                 header=header,
