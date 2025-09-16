@@ -145,19 +145,20 @@ include::insns/amoswap_32bit_cap.adoc[]
 <<<
 endif::[]
 
-[#rvy_h_insn_table, reftext="{rvy_h_ext_name}"]
-=== {rvy_h_ext_name}
-
-Specifying {cheri_base_ext_name} and "H" gives {rvy_h_ext_name} functionality, which adds virtualized capability load and store instructions.
-
-While HLVX.* only requires execute permission in the PTE, the authorizing CHERI capability must grant <<r_perm>>.
-
-.{rvy_h_ext_name} instruction extension
-[#{rvy_h_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
-|==============================================================================
-include::generated/{rvy_h_file_name}.adoc[]
-|==============================================================================
+//move to priv
+//[#rvy_h_insn_table, reftext="{rvy_h_ext_name}"]
+//=== {rvy_h_ext_name}
+//
+//Specifying {cheri_base_ext_name} and "H" gives {rvy_h_ext_name} functionality, which adds virtualized capability load and store instructions.
+//
+//While HLVX.* only requires execute permission in the PTE, the authorizing CHERI capability must grant <<r_perm>>.
+//
+//.{rvy_h_ext_name} instruction extension
+//[#{rvy_h_file_name}]
+//[width="100%",options=header,cols="2,1,1,5",]
+//|==============================================================================
+//include::generated/{rvy_h_file_name}.adoc[]
+//|==============================================================================
 
 <<<
 
@@ -251,73 +252,4 @@ An {cheri_base_ext_name} core which supports {cheri_default_ext_name} adds the i
 [width="100%",options=header,cols="2,1,1,5",]
 |==============================================================================
 include::generated/{rvy_hybrid_file_name}.adoc[]
-|==============================================================================
-
-<<<
-
-[appendix]
-[#clen_csr_summary]
-== Capability Width CSR Summary
-
-.CSRs aliased and extended to capability width
-[#aliased_CSRs]
-[width="100%",options=header,cols="1,1,1"]
-|==============================================================================
-include::generated/csr_aliases_table_body.adoc[]
-|==============================================================================
-
-.Action taken on writing to extended CSRs
-[#extended_CSR_writing]
-[width="100%",options=header,cols="1,2,2"]
-|==============================================================================
-include::generated/csr_alias_action_table_body.adoc[]
-|==============================================================================
-
-^*^ The vector range check is to ensure that vectored entry to the handler is within bounds of the capability written to `__x__tvec`.
-  The check on writing must include the lowest (0 offset) and highest possible offset (e.g., 64 * MXLEN bits where HICAUSE=16).
-
-XLEN bits of extended YLEN-wide CSRs are written when executing
-<<CSRRWI_CHERI>>, <<CSRRC_CHERI>>, <<CSRRS_CHERI>>, <<CSRRCI_CHERI>> or <<CSRRSI_CHERI>> regardless of the
-CHERI execution mode. When using <<CSRRW_CHERI>>, YLEN bits are written when the
-CHERI execution mode is {cheri_cap_mode_name} and XLEN bits are written when
-the mode is {cheri_int_mode_name}; therefore, writing XLEN bits with <<CSRRW_CHERI>>
-is only possible when {cheri_default_ext_name} is implemented.
-
-.Action taken on writing to YLEN-wide CSRs
-[#new_cap_CSR_writing]
-[width="100%",options=header,cols="1,2,2"]
-|==============================================================================
-include::generated/new_csr_write_action_table_body.adoc[]
-|==============================================================================
-
-XLEN bits of YLEN-wide CSRs added in {cheri_default_ext_name} are
-written when executing <<CSRRWI_CHERI>>, <<CSRRC_CHERI>>, <<CSRRS_CHERI>>, <<CSRRCI_CHERI>> or
-<<CSRRSI_CHERI>> regardless of the CHERI execution mode. YLEN bits are always written
-when using <<CSRRW_CHERI>> regardless of the CHERI execution mode.
-
-NOTE: Implementations which allow misa.C to be writable need to legalize `__x__epc`
- on _reading_ if the misa.C value has changed since the value was written as this
- can cause the read value of bit [1] to change state.
-
-.YLEN-wide CSRs storing code pointers or data pointers
-[#CSR_exevectors]
-[width="100%",options=header,cols="1,1,1,1"]
-|==============================================================================
-include::generated/csr_exevectors_table_body.adoc[]
-|==============================================================================
-
-Some CSRs store code pointers or data pointers as shown in xref:CSR_exevectors[xrefstyle=short].
-These are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so need not be capable
-of holding all possible invalid addresses. Prior to writing an invalid address to these CSRs,
-the address must be converted to another invalid address that the CSR is capable of holding.
-CSRs that store fewer address bits are also subject to the invalid address
-check in <<section_invalid_addr_conv>> on writing.
-
-xref:all_capability_CSRs[xrefstyle=short] shows all YLEN-wide CSRs.
-
-.All YLEN-wide CSRs.
-[#all_capability_CSRs]
-[width="100%",options=header,cols="2,1,1,2,2,4"]
-|==============================================================================
-include::generated/csr_permission_table_body.adoc[]
 |==============================================================================

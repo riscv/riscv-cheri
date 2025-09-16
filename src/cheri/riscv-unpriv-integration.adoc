@@ -640,13 +640,11 @@ In <<clen_access_summary_base>>, when there is no read or write width shown, the
 
 With {cheri_base_ext_name}, every memory access performed by a CHERI core must be authorized by a capability.
 
-Instruction fetches, branches, jumps, and data memory accesses may result in a fatal exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<AP-field,permissions>>. I.e.,:
+Instruction fetches and data memory accesses may result in a fatal exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<AP-field,permissions>>. I.e.,:
 
 * all load instructions requires <<r_perm>>
 * all store instructions require <<w_perm>>
 * all indirect jumps require <<x_perm>> on the target capability
-
-NOTE: See <<sec_cheri_exception_handling,_CHERI Exception handling_ in the privileged specification>> for further details on the exception reporting mechanism.
 
 Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends the PC.
 This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
