@@ -29,8 +29,13 @@ Any address that is checked against a capability
 is also first subject to the same masking as bounds decode (masking without extension).
 After any CHERI operations, the final access address is still subject to as much sign extension as the pointer masking extensions mandate.
 
-In summary:
+In summary, for data accesses only:
 
 * When encoding bounds ({SCBNDS}/{SCBNDSI}/{SCBNDSR}), bits [XLEN-1:XLEN-PMLEN] of the base address are set to zero.
-* When decoding bounds the address used for decoding has bits [XLEN-1:XLEN-PMLEN] set to zero.
+* When decoding bounds, the address used for decoding has bits [XLEN-1:XLEN-PMLEN] set to zero.
 * When checking the <<section_cap_representable_check, representable range>> for {CADDI}/{CADD}/{SCADDR}, the old address and new addresses both have bits [XLEN-1:XLEN-PMLEN] set to zero *before* the check.
+
+Also note that:
+
+* <<pcc>> bounds decoding isn't affected by pointer masking.
+* Any <<section_cap_representable_check, representable range check>> triggered by a write to a CSR (e.g. <<mtvec_y>>) are not affected by pointer masking.
