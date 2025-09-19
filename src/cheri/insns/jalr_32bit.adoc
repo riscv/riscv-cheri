@@ -25,35 +25,39 @@ Copy `{cs1}` to the target <<pcc>>
   - Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
   - set the zero bit of the target <<pcc>> address to zero.
 . If the target <<pcc>> is a <<sentry_cap>> (for the <<app_cap_description>>: if it has <<sec_cap_type>> `1`), then
-  - clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding
-    (all such triples are acceptable to the <<app_cap_description>>), and
-  - unseal the target <<pcc>>.
+  - unseal the target <<pcc>>, and
+  - clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
++
+NOTE: All such triples are acceptable to the <<app_cap_description>>.
 . If the target <<pcc>> is (still) sealed, clear its {ctag}.
-  (This is not possible for the <<app_cap_description>>, given its two <<sec_cap_type>> values.)
++
+NOTE: This is not possible for the <<app_cap_description>>, given its two <<sec_cap_type>> values.
 . If `{cd}≠0`, compute the return capability and install it to `{cd}`:
   - add the width of this instruction to the current <<pcc>>, and
   - if the capability encoding defines <<sentry_cap>> <<sec_cap_type>> values for return pointers, then seal the return capability as specified.
-    (The <<app_cap_description>> always seals return capabilities with <<sec_cap_type>> `1`.)
++
+NOTE: The <<app_cap_description>> always seals return capabilities with <<sec_cap_type>> `1`.
 . Jump to the target <<pcc>>.
 . Apply any capability encoding specified architectural semantics for the type of `{cs1}`.
-  (There are no such additional semantics defined by the capabilities of the <<app_cap_description>>.)
 +
+NOTE: There are no such additional semantics defined by the capabilities of the <<app_cap_description>>.
+
 [NOTE]
 =====
 <<JALR_CHERI>> defines three hooks for use by the capability encoding:
 
 1. Architectural interpretation of zero or more particular <<sec_cap_type>> values when a capability is passed as the input to <<JALR_CHERI>>.
-   These <<sec_cap_type>> values are, by definiton, <<sentry_cap>> types.
+   These <<sec_cap_type>> values are, by definition, <<sentry_cap>> types.
    The "architectural interpretation" for these capabilities necessary includes unsealing as part of installation but may include other effects as well.
-   (For example, CHERIoT offers sentries that update a hart's `mstatus.MIE` field when invoked.)
+   For example, CHERIoT offers sentries that update a hart's `mstatus.MIE` field when invoked.
 
 2. A subset of those <<sec_cap_type>> values for use by <<JALR_CHERI>> to seal the return capability installed in the link register.
    A sentry return capability grants the right to return exactly to the instruction after the caller's call without relative offset.
    Moreover, a sentry return capability does not grant the callee access to the memory pointed to by the caller's <<pcc>>.
 
 3. Conditional acceptability of the triple of the two _register selectors_ (`{cd}`, `{cs1}`) used in an instance of the instruction together with the <<sec_cap_type>> value of the capability in `{cs1}`.
-  (For the <<app_cap_description>>, there are no conditions and all such triples are acceptable;
-  again the motivation is CHERIoT, which uses register selectors to distinguish between _forward_ and _backward_ control transfers, and restricts which <<sec_cap_type>> values are acceptable in each case.)
+  For the <<app_cap_description>>, there are no conditions and all such triples are acceptable;
+  again the motivation is CHERIoT, which uses register selectors to distinguish between _forward_ and _backward_ control transfers, and restricts which <<sec_cap_type>> values are acceptable in each case.
 
 =====
 
@@ -63,7 +67,7 @@ When a sealed capability is passed as the input to <<JALR_CHERI>>, its address m
 =====
 
 NOTE: It is not possible for the target <<pcc>> to be sealed by the time it is jumped to.
-+
+
 NOTE: A future extension may raise an exception on the JALR instruction itself if the target <<pcc>> will raise a {cheri_excep_name_pc} at the target.
 
 #End changed since last ARC review#
