@@ -19,7 +19,7 @@ include::base_isa_extension.adoc[]
 Description::
 Indirect jump to the target capability in `{cs1}` with an address offset.
 +
-Copy `{cs1}` to the target <<pcc>>
+Operationally, copy `{cs1}` to the target <<pcc>> and then...
 +
 . Compute the target <<pcc>> address in two steps, each using the semantics of the <<SCADDR>> instruction:
   - Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
@@ -42,24 +42,23 @@ NOTE: The <<app_cap_description>> always seals return capabilities with <<sec_ca
 +
 NOTE: There are no such additional semantics defined by the capabilities of the <<app_cap_description>>.
 
-[NOTE]
-=====
-<<JALR_CHERI>> defines three hooks for use by the capability encoding:
++
+The above procedure for <<JALR_CHERI>> defines three hooks for use by the capability encoding:
 
 1. Architectural interpretation of zero or more particular <<sec_cap_type>> values when a capability is passed as the input to <<JALR_CHERI>>.
    These <<sec_cap_type>> values are, by definition, <<sentry_cap>> types.
    The "architectural interpretation" for these capabilities necessary includes unsealing as part of installation but may include other effects as well.
-   For example, CHERIoT offers sentries that update a hart's `mstatus.MIE` field when invoked.
++
+NOTE: For example, CHERIoT offers sentries that update a hart's `mstatus.MIE` field when invoked.
 
 2. A subset of those <<sec_cap_type>> values for use by <<JALR_CHERI>> to seal the return capability installed in the link register.
    A sentry return capability grants the right to return exactly to the instruction after the caller's call without relative offset.
    Moreover, a sentry return capability does not grant the callee access to the memory pointed to by the caller's <<pcc>>.
 
 3. Conditional acceptability of the triple of the two _register selectors_ (`{cd}`, `{cs1}`) used in an instance of the instruction together with the <<sec_cap_type>> value of the capability in `{cs1}`.
-  For the <<app_cap_description>>, there are no conditions and all such triples are acceptable;
-  again the motivation is CHERIoT, which uses register selectors to distinguish between _forward_ and _backward_ control transfers, and restricts which <<sec_cap_type>> values are acceptable in each case.
-
-=====
++
+NOTE: For the <<app_cap_description>>, there are no conditions and all such triples are acceptable;
+again the motivation is CHERIoT, which uses register selectors to distinguish between _forward_ and _backward_ control transfers, and restricts which <<sec_cap_type>> values are acceptable in each case.
 
 [NOTE]
 =====
