@@ -37,9 +37,11 @@ NOTE: This is not possible for the <<app_cap_description>>, given its two <<sec_
 +
 NOTE: The <<app_cap_description>> always seals return capabilities with <<sec_cap_type>> `1`.
 . Jump to the target <<pcc>>.
++
+NOTE: It is not possible for the target <<pcc>> to be sealed by the time it is jumped to.
 . Apply any capability encoding specified architectural semantics for the type of `{cs1}`.
 +
-NOTE: There are no such additional semantics defined by the capabilities of the <<app_cap_description>>.
+NOTE: There are no such additional semantics defined by the capabilities of the <<app_cap_description>>. +
 
 +
 The above procedure for <<JALR_CHERI>> defines three hooks for use by the capability encoding:
@@ -63,8 +65,6 @@ again the motivation is CHERIoT, which uses register selectors to distinguish be
 =====
 When a sealed capability is passed as the input to <<JALR_CHERI>>, its address must have bit zero clear and the instruction must have a zero offset, or the target <<pcc>> will have its {ctag} set to zero, since updates to its address are interpreted with <<SCADDR>> semantics.
 =====
-
-NOTE: It is not possible for the target <<pcc>> to be sealed by the time it is jumped to.
 
 NOTE: A future extension may raise an exception on the JALR instruction itself if the target <<pcc>> will raise a {cheri_excep_name_pc} at the target.
 
