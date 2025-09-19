@@ -138,7 +138,7 @@ def resolve_col_display_name(col_name):
     return col_display_names[col_name] if col_name in col_display_names else col_name
 
 class csr_renamed_purecap_mode_d(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -211,7 +211,7 @@ class csr_added_purecap_mode_d(table):
 
 
 class csr_renamed_purecap_mode_m(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -259,7 +259,7 @@ class csr_added_purecap_mode_m(table):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "M"
 
 class csr_renamed_purecap_mode_s(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -283,7 +283,7 @@ class csr_renamed_purecap_mode_s(table):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "S"
 
 class csr_renamed_purecap_mode_vs(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -331,7 +331,7 @@ class csr_added_purecap_mode_s(table):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "S"
 
 class csr_renamed_purecap_mode_u(table):
-    cols = ["YLEN CSR", "Address", "Alias", "Prerequisites", "Permissions", "Description"]
+    cols = ["YLEN CSR", "Address", "Prerequisites", "Permissions", "Description"]
     indices = []
 
     def __init__(self, filename, header):

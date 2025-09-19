@@ -28,14 +28,13 @@ and 2 are supported values for VSXL. When the implementation supports
 VSXL must be read-only as described in xref:mstatus[xrefstyle=short] for
 <<mstatus>>.SXL. When the implementation supports both {cheri_base_ext_name}
 and {cheri_default_ext_name}, then VSXL behaves as described in
-xref:mstatus_cheri[xrefstyle=short] for mstatus.SXL.
+xref:mstatus_y[xrefstyle=short] for mstatus.SXL.
 
 The VSBE field determines controls the endianness of explicit memory accesses
 from VS-mode and implicit memory accesses to VS-level memory management data
 structures. VSBE=0 indicates little endian and VSBE=1 is big endian. VSBE must
 be read-only and equal to MBE when the implementation only supports
-{cheri_base_ext_name}. VSBE is optionally writable when
-{cheri_default_ext_name} is also supported.
+{cheri_base_ext_name}.
 
 [#henvcfg_cheri,reftext="henvcfg({cheri_base_ext_name})"]
 === Hypervisor Environment Configuration Register (henvcfg)
@@ -74,12 +73,12 @@ and 2 are supported values for UXL. When the implementation supports
 must be read-only as described in xref:mstatus[xrefstyle=short] for
 <<mstatus>>.UXL. When the implementation supports both {cheri_base_ext_name}
 and {cheri_default_ext_name}, then UXL behaves as described in
-xref:mstatus_cheri[xrefstyle=short] for mstatus.UXL.
+xref:mstatus_y[xrefstyle=short] for mstatus.UXL.
 
 [#vstvec_y,reftext="vstvec ({cheri_base_ext_name})"]
 === Virtual Supervisor Trap Vector Base Address Capability Register (vstvec)
 
-The <<vstvec>> register is extended to hold a capability.
+The `vstvec` register is extended to hold a capability.
 Its reset value is a <<root-rx-cap>> capability.
 
 .Virtual supervisor trap vector base address capability register
@@ -91,7 +90,7 @@ virtual supervisor mode.
 [#vsscratch_y,reftext="vsscratch ({cheri_base_ext_name})"]
 === Virtual Supervisor Scratch Register (vsscratch)
 
-The <<vsscratch>> register is extended to hold a capability.
+The `vsscratch` register is extended to hold a capability.
 
 {TAG_RESET_SCSR}
 
@@ -103,7 +102,7 @@ include::img/vsscratchcreg.edn[]
 [#vsepc_y,reftext="vsepc ({cheri_base_ext_name})"]
 === Virtual Supervisor Exception Program Counter Capability (vsepc)
 
-The <<vsepc>> register is extended to hold a capability.
+The `vsepc` register is extended to hold a capability.
 Its reset value is a <<root-rx-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<vsepc_y>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
@@ -189,5 +188,7 @@ load and store capability instructions behave as described in
 xref:section_existing_riscv_insns[xrefstyle=short]. In
 {cheri_int_mode_name}, the instructions use the low XLEN bits of the base register as the effective address for the memory access and the capability authorizing the memory access is <<ddc>>.
 
+ifdef::cheri_standalone_spec[]
 include::insns/hypv-virt-load-cap.adoc[]
 include::insns/hypv-virt-store-cap.adoc[]
+endif::[]

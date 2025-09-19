@@ -389,7 +389,12 @@ causes (codes 16 and above).
 20 +
 21 +
 22 +
-23
+23 +
+{cheri_excep_cause_pc} +
+{cheri_excep_cause_ld} +
+{cheri_excep_cause_st} +
+{cheri_excep_cause_pte_ld} +
+{cheri_excep_cause_pte_st} +
 |(See text) +
 Writable +
 Writable +
@@ -411,7 +416,12 @@ Writable +
 Read-only 0 +
 Read-only 0 +
 Read-only 0 +
-Read-only 0
+Read-only 0 +
+Writable +
+Writable +
+Writable +
+Writable +
+Writable
 |Instruction address misaligned +
 Instruction access fault +
 Illegal instruction +
@@ -433,7 +443,12 @@ Hardware error +
 Instruction guest-page fault +
 Load guest-page fault +
 Virtual instruction +
-Store/AMO guest-page fault
+Store/AMO guest-page fault +
+{cheri_excep_name_pc} +
+{cheri_excep_name_ld} +
+{cheri_excep_name_st} +
+{cheri_excep_name_pte_ld} +
+{cheri_excep_name_pte_st}
 |===
 
 [[hinterruptregs]]
@@ -631,7 +646,9 @@ mode V=1.
   {bits:  2, name: 'CBIE'},
   {bits:  1, name: 'CBCFE'},
   {bits:  1, name: 'CBZE'},
-  {bits: 24, name: 'WPRI'},
+  {bits: 20, name: 'WPRI'},
+  {bits:  1, name: 'Y'},
+  {bits:  4, name: 'WPRI'},
   {bits:  2, name: 'PMM'},
   {bits: 25, name: 'WPRI'},
   {bits:  1, name: 'DTE'},
@@ -719,6 +736,15 @@ When XLEN=32, `henvcfgh` is a
 32-bit read/write register that aliases bits 63:32
 of `henvcfg`. Register `henvcfgh` does not exist when
 XLEN=64.
+
+If the base architecture is {cheri_base_ext_name} and {cheri_default_ext_name} is implemented,
+then the `{CRE}` field in `henvcfg` is defined.
+The {CRE} bit controls whether explicit access to CHERI
+registers is permitted when V=1. When `henvcfg`.{CRE}=1 and `menvcfg`.{CRE}=1
+and `misa`.{CRE}=1, CHERI can be enabled by VS-mode and
+VU-mode. Otherwise, CHERI is disabled in VS-mode and
+VU-mode as described in xref:section_cheri_disable[xrefstyle=short].
+The reset value is 0 for backwards compatbility.
 
 ==== Hypervisor Counter-Enable (`hcounteren`) Register
 
@@ -1027,7 +1053,9 @@ normally read or modify `sstatus` actually access `vsstatus` instead.
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 29, name: 'WPRI'},
+  {bits: 27, name: 'WPRI'},
+  {bits:  1, name: 'UCRG'},
+  {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
 ....
@@ -1152,6 +1180,9 @@ affect the behavior of the machine.
 .Virtual supervisor trap vector base address register `vstvec`.
 include::images/bytefield/vstvecreg.edn[]
 
+[#vstvec_y,reftext="vstvec ({cheri_base_ext_name})"]
+If the base architecture is {cheri_base_ext_name} then `vstvec` is extended to YLEN-bits in the same way as <<stvec_y>>.
+
 [#vsscratch,reftext="vsscratch"]
 ==== Virtual Supervisor Scratch (`vsscratch`) Register
 
@@ -1165,6 +1196,9 @@ of `vsscratch` never directly affect the behavior of the machine.
 [[vsscratchreg]]
 .Virtual supervisor scratch register `vsscratch`.
 include::images/bytefield/vsscratchreg.edn[]
+
+[#vsscratch_y,reftext="vsscratch ({cheri_base_ext_name})"]
+If the base architecture is {cheri_base_ext_name} then `vsscratch` is extended to YLEN-bits in the same way as <<sscratch_y>>.
 
 [#vsepc,reftext="vsepc"]
 ==== Virtual Supervisor Exception Program Counter (`vsepc`) Register
@@ -1182,6 +1216,9 @@ that `sepc` can hold.
 [[vsepcreg]]
 .Virtual supervisor exception program counter (`vsepc`).
 include::images/bytefield/vsepcreg.edn[]
+
+[#vsepc_y,reftext="vsepc ({cheri_base_ext_name})"]
+If the base architecture is {cheri_base_ext_name} then `vsepc` is extended to YLEN-bits in the same way as <<sepc_y>>.
 
 ==== Virtual Supervisor Cause (`vscause`) Register
 
@@ -2622,3 +2659,35 @@ An {cheri_base_ext_name} core which supports the "H" extension also support the 
 and <<HSV_CAP>> instructions in {rvy_h_ext_name}.
 
 While HLVX.* only requires execute permission in the PTE, the authorizing CHERI capability must grant <<r_perm>>.
+
+include::cheri/insns/hypv-virt-load-cap.adoc[]
+include::cheri/insns/hypv-virt-store-cap.adoc[]
+
+[#vstidc,reftext="vstidc"]
+==== Virtual Supervisor Thread Identifier Capability (vstidc) for {cheri_base_ext_name}
+
+The <<vstidc>> register is used to identify the current software thread in virtual supervisor mode.
+It is used to identify the current software thread in
+As other Virtual Supervisor registers when V=1, <<vstidc>> substitutes
+for <<stidc>>, so that instructions that normally read or modify
+<<stidc>> actually access <<vstidc>> instead.
+When V=0, <<vstidc>> does not directly affect the
+behavior of the machine.
+On reset the {ctag} of <<vstidc>> will be set to 0 and the remainder
+of the data is UNSPECIFIED.
+
+.Virtual supervisor thread identifier capability register
+include::cheri/img/vstidcreg.edn[]
+
+[#vsycfg,reftext="vsycfg"]
+==== Virtual Supervisor CHERI Capability Encoding (vsycfg) for {cheri_base_ext_name}
+The <<vsycfg>> register is used to identify which CHERI capability encoding is used by the platform.
+The capability encoding both determines the in-memory representation of a CHERI capability
+and entails a set of extensions present atop {cheri_base_ext_name}.
+The CSR exists in the _writable_ namespace and all bits are defined to be WARL,
+but, absent any future extensions, it is expected that each implementation has exactly one legal value.
+For the meaning of the individual fields, refer to the <<uycfg>> register in the unprivileged specification.
+
+.Virtual Supervisor CHERI capability encoding CSR (`vsycfg`) format
+[#vsycfg_csr_structure]
+include::cheri/img/ycfgreg.edn[]
