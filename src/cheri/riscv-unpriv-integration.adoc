@@ -557,12 +557,12 @@ The privileged code switches software threads and writes the <<utidc>> register.
 
 Every piece of code in the user space (and more privileged levels) can read the contents of the <<utidc>>
 register. However, the memory authorized by the capability in <<utidc>> must not be accessible to untrusted code,
-but only to trusted code. In order to protect this capability, it can be made a sentry (thus being sealed). The
-trusted code will be given a capability large enough so that it can recover the sentry stored in <<utidc>>.
-For the untrusted code, the sentry stored in <<utidc>> is inaccessible. The sentry itself is no secret, but the
-memory pointed to by the sentry is a secret and must not be accessed by any untrusted code.
+but only to trusted code. In order to protect this capability, it can be sealed. The
+trusted code will be given means to unseal this capability (say, via <<YSUNSEAL>>).
+For the untrusted code, the memory pointed to by <<utidc>> is inaccessible. The sealed capability itself is no secret, but the
+memory to which it points is a secret and must not be accessed by any untrusted code.
 
-Trusted code can use the sentry in <<utidc>> to implement secure compartment switches. Often, the sentry is
+Trusted code can use <<utidc>> to implement secure compartment switches. Often, the capability therein is
 used to implement a trusted stack. Whenever a compartment switch happens, the trusted code can pass arguments between
 the caller and callee compartment avoid capability leaks between the two compartments.
 The trusted code can store capabilities on the trusted stack when calling out of a compartment and can install them
