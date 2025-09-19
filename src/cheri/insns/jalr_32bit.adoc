@@ -24,11 +24,10 @@ Operationally, copy `{cs1}` to the target <<pcc>> and then...
 . Compute the target <<pcc>> address in two steps, each using the semantics of the <<SCADDR>> instruction:
   - Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
   - set the zero bit of the target <<pcc>> address to zero.
-. If the target <<pcc>> is a <<sentry_cap>> (for the <<app_cap_description>>: if it has <<sec_cap_type>> `1`), then
-  - unseal the target <<pcc>>, and
-  - clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
+. Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
 +
 NOTE: All such triples are acceptable to the <<app_cap_description>>.
+. If the target <<pcc>> is a <<sentry_cap>> (for the <<app_cap_description>>: if it has <<sec_cap_type>> `1`), then unseal it.
 . If the target <<pcc>> is (still) sealed, clear its {ctag}.
 +
 NOTE: This is not possible for the <<app_cap_description>>, given its two <<sec_cap_type>> values.
