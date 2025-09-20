@@ -19,9 +19,10 @@
 #   docker pull riscvintl/riscv-docs-base-container-image:latest
 #
 
-DOCS := riscv-privileged riscv-unprivileged
+DOCS := riscv-privileged riscv-unprivileged riscv-cheri
 
 RELEASE_TYPE ?= draft
+CHERI_SPEC_VERSION ?= v0.9.5
 
 ifeq ($(RELEASE_TYPE), draft)
   WATERMARK_OPT := -a draft-watermark
@@ -106,6 +107,8 @@ XTRA_ADOC_OPTS ?= -a minimal_cheri_changes_doc=1
 else
 XTRA_ADOC_OPTS ?=
 endif
+# Extra asciidoc flags passed on the command line
+EXTRA_ASCIIDOC_OPTIONS ?=
 ASCIIDOCTOR_PDF := $(ENV) asciidoctor-pdf
 ASCIIDOCTOR_HTML := $(ENV) asciidoctor
 ASCIIDOCTOR_EPUB := $(ENV) asciidoctor-epub3
@@ -117,10 +120,12 @@ OPTIONS := --trace --verbose \
            -a pdf-fontsdir=docs-resources/fonts \
            -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
            $(WATERMARK_OPT) \
-           -a revnumber='$(DATE)' \
+           -a revnumber='$(CHERI_SPEC_VERSION)' \
+           -a revdate='$(DATE)' \
            -a revremark='$(RELEASE_DESCRIPTION)' \
            -a docinfo=shared \
            $(XTRA_ADOC_OPTS) \
+           $(EXTRA_ASCIIDOC_OPTIONS) \
            -D build \
            --failure-level=WARN
 REQUIRES := --require=asciidoctor-bibtex \

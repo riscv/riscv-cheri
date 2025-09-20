@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    # Checkout the repository
+      # Checkout the repository
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
@@ -41,19 +41,15 @@ jobs:
       - name: Get current date
         run: echo "CURRENT_DATE=$(date +'%Y-%m-%d')" >> $GITHUB_ENV
 
-    # Build PDF and HTML files using the container
-      - name: Build Files
-        id: build_files
-        run: make -j$(nproc)
-
       - name: Update environment variables for push events
         run: |
           echo "EXTRA_ASCIIDOC_OPTIONS=-a github_commit_sha=$GITHUB_SHA" >> "$GITHUB_ENV"
         if: github.event_name == 'push'
-      - name: Build standalone CHERI spec
-        run: |
-          docker run --rm -v ${{ github.workspace }}:/build riscvintl/riscv-docs-base-container-image:latest \
-          /bin/sh -c "make -j$(nproc) -f Makefile.cheri all"
+
+    # Build PDF and HTML files using the container
+      - name: Build Files
+        id: build_files
+        run: make -j$(nproc)
 
       # Upload the riscv-cheri PDF file
       - name: Upload riscv-cheri.pdf
@@ -69,6 +65,13 @@ jobs:
         with:
           name: riscv-cheri-${{ env.SHORT_SHA }}.html
           path: ${{ github.workspace }}/build/riscv-cheri.html
+          retention-days: 7
+      - name: Upload riscv-cheri.epub
+        if: steps.build_files.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: riscv-cheri-${{ env.SHORT_SHA }}.epub
+          path: ${{ github.workspace }}/build/riscv-cheri.epub
           retention-days: 7
 
     # Upload the riscv-privileged PDF file
@@ -139,6 +142,7 @@ jobs:
           files: |
             ${{ github.workspace }}/build/riscv-cheri.pdf
             ${{ github.workspace }}/build/riscv-cheri.html
+            ${{ github.workspace }}/build/riscv-cheri.epub
             ${{ github.workspace }}/build/riscv-privileged.pdf
             ${{ github.workspace }}/build/riscv-privileged.html
             ${{ github.workspace }}/build/riscv-privileged.epub
