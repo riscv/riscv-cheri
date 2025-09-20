@@ -1,150 +1,21 @@
 # Makefile for RISC-V specification for CHERI extensions
-#
-# This work is licensed under the Creative Commons Attribution-ShareAlike 4.0
-# International License. To view a copy of this license, visit
-# http://creativecommons.org/licenses/by-sa/4.0/ or send a letter to
-# Creative Commons, PO Box 1866, Mountain View, CA 94042, USA.
-#
-# SPDX-License-Identifier: CC-BY-SA-4.0
-#
-# Description:
-#
-# This Makefile is designed to automate the process of building and packaging
-# the specification document.
-
-# Tools
-DOCKER_IMAGE = riscvintl/riscv-docs-base-container-image:latest
-GEN_SCRIPT   = $(SCRIPTS_DIR)/generate_tables.py
-
-# Version and date
-DATE    ?= $(shell date +%Y-%m-%d)
-VERSION ?= v0.9.5
 
 # Directories and files
-BUILD_DIR   = build
-ROOT_SRC_DIR = src
-SRC_DIR     = $(ROOT_SRC_DIR)/cheri
-SRCS        = $(wildcard $(SRC_DIR)/*.adoc)     \
-              $(wildcard $(SRC_DIR)/*/*.adoc)   \
-              $(wildcard $(SRC_DIR)/*/*.bib)    \
-              $(wildcard $(SRC_DIR)/*/*/*.adoc) \
-              $(VERSION_FILE)
-IMG_DIR     = $(SRC_DIR)/img
-IMGS        = $(wildcard $(IMG_DIR)/*.png) \
-              $(wildcard $(IMG_DIR)/*.svg) \
-              $(wildcard $(IMG_DIR)/*.edn)
-CSV_DIR	    = $(SRC_DIR)/csv
-CSVS	    = $(wildcard $(CSV_DIR)/*.csv)
-GEN_DIR     = $(SRC_DIR)/generated
-SCRIPTS_DIR = $(SRC_DIR)/scripts
-
-# Downloaded Sail Asciidoc JSON, which includes all of
-# the Sail code and can be embedded. We don't vendor it
-# into this repo since it's quite large (~4MB).
-SAIL_ASCIIDOC_JSON_URL_FILE = riscv_RV64.json.url
-SAIL_ASCIIDOC_JSON = $(GEN_DIR)/riscv_RV64.json
-
+BUILD_DIR := build
 # Output files
 PDF_RESULT    := $(BUILD_DIR)/riscv-cheri.pdf
 HTML_RESULT   := $(BUILD_DIR)/riscv-cheri.html
 
-# Top asciidoc file of the document
-HEADER_SOURCE := $(ROOT_SRC_DIR)/riscv-cheri-standalone.adoc
-
-# AsciiDoctor command
-ASCIIDOC          = asciidoctor-pdf
-EXTRA_ASCIIDOC_OPTIONS ?=
-
-ASCIIDOC_OPTIONS  = --trace --verbose \
-                    -a compress                                      \
-                    -a mathematical-format=svg                       \
-                    -a revnumber=$(VERSION)                          \
-                    -a revdate=$(DATE)                               \
-                    -a buildir=$(BUILD_DIR)                          \
-                    -a srcdir=$(ROOT_SRC_DIR)                        \
-                    -a pdf-fontsdir=docs-resources/fonts             \
-                    -a pdf-theme=docs-resources/themes/riscv-pdf.yml \
-                    --failure-level=ERROR $(EXTRA_ASCIIDOC_OPTIONS)
-ASCIIDOC_REQUIRES = --require=asciidoctor-bibtex       \
-                    --require=asciidoctor-diagram      \
-                    --require=asciidoctor-mathematical \
-                    --require=asciidoctor-sail
-
-# File extension to backend map.
-ASCIIDOC_BACKEND_.html = html5
-ASCIIDOC_BACKEND_.pdf  = pdf
-
-# Command to run Asciidoc to build a PDF or HTML document, depending on
-# the output file ($@).
-ASCIIDOC_BUILD_COMMAND = $(ASCIIDOC) \
-                         $(ASCIIDOC_OPTIONS) \
-                         $(ASCIIDOC_REQUIRES) \
-                         $(HEADER_SOURCE) \
-                         --backend=$(ASCIIDOC_BACKEND_$(suffix $@)) \
-                         --out-file=$@
-
-DOCKER_PATH  := $(shell command -v docker)
-STDIN_IS_TTY := $(shell test -t 0 && echo yes)
-
-DOCKER_BIN ?= docker
-SKIP_DOCKER ?= $(shell if command -v $(DOCKER_BIN) >/dev/null 2>&1 ; then echo false; else echo true; fi)
-ifneq ($(SKIP_DOCKER),true)
-    DOCKER_IS_PODMAN = \
-        $(shell ! ${DOCKER_BIN}  -v | grep podman >/dev/null ; echo $$?)
-    ifeq "$(DOCKER_IS_PODMAN)" "1"
-        # Modify the SELinux label for the host directory to indicate
-        # that it can be shared with multiple containers. This is apparently
-        # only required for Podman, though it is also supported by Docker.
-        DOCKER_VOL_SUFFIX = :z
-        DOCKER_EXTRA_VOL_SUFFIX = ,z
-    else
-        DOCKER_IS_ROOTLESS = \
-            $(shell ! ${DOCKER_BIN} info -f '{{println .SecurityOptions}}' | grep rootless >/dev/null ; echo $$?)
-        ifneq "$(DOCKER_IS_ROOTLESS)" "1"
-            # Rooted Docker requires this flag so that the files it creates are
-            # owned by the current user instead of root. Rootless docker does not
-            # require it, and Podman doesn't either since it is always rootless.
-            DOCKER_USER_ARG := --user $(shell id -u)
-        endif
-    endif
-    BUILD_COMMAND = $(DOCKER_BIN) run --rm \
-                    -v $(PWD):/build${DOCKER_VOL_SUFFIX} \
-                    -w /build $(DOCKER_USER_ARG) $(DOCKER_IMAGE) \
-                    /bin/sh -c "$(ASCIIDOC_BUILD_COMMAND)"
-else
-    BUILD_COMMAND = $(ASCIIDOC_BUILD_COMMAND)
-endif
-
 # Convenience targets
 pdf: $(PDF_RESULT)
+$(PDF_RESULT):
+	$(MAKE) -f Makefile $(PDF_RESULT)
 html: $(HTML_RESULT)
+$(HTML_RESULT):
+	$(MAKE) -f Makefile $(HTML_RESULT)
 all: pdf html
 
-$(BUILD_DIR):
-	@echo "  DIR $@"
-	@mkdir -p $@
-
-%.pdf: $(SRCS) $(IMGS) generate $(SAIL_ASCIIDOC_JSON) | $(BUILD_DIR)
-	@echo "  DOC $@"
-	$(BUILD_COMMAND)
-
-%.html: $(SRCS) $(IMGS) generate $(SAIL_ASCIIDOC_JSON) | $(BUILD_DIR)
-	@echo "  DOC $@"
-	$(BUILD_COMMAND)
-
-# Rule to generate all the src/generated/*.adoc from the CSVs using a Python script.
-generate: $(CSVS) $(GEN_SCRIPT)
-	@echo "  GEN $@"
-	@$(GEN_SCRIPT) -o $(GEN_DIR) --csr $(CSV_DIR)/CHERI_CSR.csv --isa $(CSV_DIR)/CHERI_ISA.csv
-
-# Download the Sail JSON. The URL is stored in a file so if the URL changes
-# Make will know to download it again.
-$(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE)
-	@curl --location '$(shell cat $<)' --output $@
-
-# Clean
 clean:
-	@echo "  CLEAN"
-	@$(RM) -r $(PDF_RESULT) $(HTML_RESULT) $(GEN_DIR) $(SAIL_ASCIIDOC_JSON)
+	$(MAKE) -f Makefile clean
 
 .PHONY: all generate clean
