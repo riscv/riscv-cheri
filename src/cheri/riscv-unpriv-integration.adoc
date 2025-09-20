@@ -272,6 +272,17 @@ to operate at the non-zero type;
 extensions will specify how software expresses this authority
 for types not defined above.
 
+Capability encodings may also make the set of <<sec_cap_type>> values
+that may be used to seal a particular capability
+depend on the the permissions granted by that capability.
+For example, it can be a useful space optimization to differentiate
+the <<sec_cap_type>> values for capabilities granting <<x_perm>>
+from those not granting <<x_perm>>;
+the <<x_perm>> in the capability encoding effectively adds
+an additional bit to the <<sec_cap_type>> field.
+(The <<app_cap_description>> does not avail itself of this option,
+but, for example, the CHERIoT capability encoding does.)
+
 [#sec_cap_type_ambient]
 Ambient sealing type::
 Some capability types are said to be "ambiently available" (or just "ambient")
