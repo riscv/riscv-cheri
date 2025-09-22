@@ -31,7 +31,7 @@ After any CHERI operations, the final access address is still subject to as much
 
 In summary, for data accesses only:
 
-* When encoding bounds ({SCBNDS}/{SCBNDSI}/{SCBNDSR}), bits [XLEN-1:XLEN-PMLEN] of the base address are set to zero.
+* When setting bounds ({SCBNDS}/{SCBNDSI}/{SCBNDSR}), bits [XLEN-1:XLEN-PMLEN] of the address are set to zero and therefore the resulting capability will have a base with the PMLEN high address bits set to zero.
 * When decoding bounds, the address used for decoding has bits [XLEN-1:XLEN-PMLEN] set to zero.
 * When checking the <<section_cap_representable_check, representable range>> for {CADDI}/{CADD}/{SCADDR}, the old address and new addresses both have bits [XLEN-1:XLEN-PMLEN] set to zero *before* the check.
 
