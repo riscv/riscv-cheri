@@ -22,7 +22,13 @@
 DOCS := riscv-privileged riscv-unprivileged riscv-cheri
 
 RELEASE_TYPE ?= draft
-CHERI_SPEC_VERSION ?= v0.9.5
+GIT_SHORT_HASH ?= -$(shell git rev-parse --short HEAD || true)
+NEXT_VERSION = v0.9.6
+ifeq ($(RELEASE_TYPE), draft)
+CHERI_SPEC_VERSION ?= $(NEXT_VERSION)-draft$(GIT_SHORT_HASH)
+else
+CHERI_SPEC_VERSION ?= $(NEXT_VERSION)
+endif
 
 ifeq ($(RELEASE_TYPE), draft)
   WATERMARK_OPT := -a draft-watermark
