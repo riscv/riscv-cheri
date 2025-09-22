@@ -132,11 +132,11 @@ include::img/ycfgreg.edn[]
 
 === Machine-Level CSRs modified by {cheri_base_ext_name}
 
-[#mstatus_cheri, reftext="mstatus"]
+[#mstatus_y, reftext="mstatus ({cheri_base_ext_name})"]
 ==== Machine Status Registers (mstatus and mstatush)
 
 The *mstatus* and *mstatush* registers operate as described in
-<<mstatus_cheri>> with two restrictions:
+<<mstatus_y>> with two restrictions:
 
 * The <<xlen-control, MXL, SXL and UXL>> fields that control the
 value of XLEN for S-mode and U-mode must be read-only and equal to MXL in {cheri_base_ext_name} implementations.
@@ -155,7 +155,7 @@ MXR has no effect on the CHERI permission checking.
 NOTE: CHERI does not need to make use execute only memory for security reasons, and so MXR has no relevance.
  Additionally the 32-bit encoding format does not allow <<x_perm>> to be encoded without <<r_perm>>.
 
-[[cheri-mcause]]
+[#mcause_y, reftext="mcause ({cheri_base_ext_name})"]
 ==== Machine Cause Register (mcause)
 
 {cheri_base_ext_name} adds new exception codes for CHERI exceptions that <<mcause>> must be able to represent.
@@ -211,12 +211,13 @@ Load/store/AMO address misaligned
 
 NOTE: The full details of the CHERI exceptions are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
+ifdef::cheri_standalone_spec[]
 ==== Machine Trap Delegation Register (medeleg)
 
 Bits {cheri_excep_cause_list} of <<medeleg>> refer to a valid CHERI exception and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
-[[mtval-cheri]]
+[[mtval_y]]
 ==== Machine Trap Value Register (mtval)
 
 ifdef::cheri_v9_annotations[]
@@ -253,6 +254,7 @@ The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 ], config: {bits: 64, lanes: 4, hspace:1024}}
 ....
 
+endif::[]
 
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs added or extended by {cheri_base_ext_name}
@@ -322,19 +324,21 @@ For the meaning of the individual fields, refer to the <<uycfg>> register in the
 include::img/ycfgreg.edn[]
 
 === Supervisor-Level CSRs modified by {cheri_base_ext_name}
+ifdef::cheri_standalone_spec[]
 ==== Supervisor Cause Register (scause)
 
-{cheri_base_ext_name} adds a new exception code for CHERI exceptions that <<scause>> must be able to represent.
+{cheri_base_ext_name} adds new exception codes for CHERI exceptions that <<scause>> must be able to represent.
 The new exception code is listed in xref:scauses[xrefstyle=short].
 The behavior and usage of <<scause>> otherwise remains as described in xref:scause[xrefstyle=short].
 
-See <<cheri-mcause>> for the new exceptions priorities when {cheri_base_ext_name} is implemented.
+See <<mcause_y>> for the new exceptions priorities when {cheri_base_ext_name} is implemented.
 
 [[stval-cheri]]
 ==== Supervisor Trap Value Register (stval)
 
-<<stval>> is updated following the same rules as <<mtval-cheri>> for CHERI exceptions
+<<stval>> is updated following the same rules as <<mtval_y>> for CHERI exceptions
 and <<cheri_pte_fault,CHERI page faults>> which are delegated to HS-mode or S-mode.
+
 
 ==== "Smstateen/Ssstateen" Integration
 The TID (thread ID) bit in `sstateen0` controls access to the <<utidc>> CSR.
@@ -351,6 +355,8 @@ See <<utidc>> for a description of the usage.
 {bits: 28, name: 'WPRI'}
 ], config:{bits: 32, lanes: 2, hspace:1024}}
 ....
+
+endif::[]
 
 [#sec_cheri_exception_handling]
 === CHERI Exception handling
@@ -474,7 +480,7 @@ The {cheri_default_ext_name} extension makes the {CRE} bit of <<misa>>, <<menvcf
 //CHERI is disabled if
 //
 //* XLEN in the current mode is less than MXLEN, or
-//* the endianness in the current mode is not the reset value of <<mstatus_cheri>>.MBE, or
+//* the endianness in the current mode is not the reset value of <<mstatus_y>>.MBE, or
 //* the effective CHERI-enable for the current privilege is 0.
 
 The effective CHERI-enable for the current privilege is:
@@ -522,14 +528,14 @@ in connection with the effective CHERI enable and the <<cheri_execution_mode>> w
 
 ^1^ _{CRE}_ represents the effective CHERI enable for the current privilege mode.
 
-^2^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, <<mtvec_y>>, <<mepc_y>>, <<stvec_y>>, <<sepc_y>>, <<vstvec_y>>, <<vsepc_y>> and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
+^2^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, Xtvec, Xepc and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
 
 ifdef::support_varxlen[]
 [#section_cheri_dyn_xlen]
 == "{cheri_priv_m_dyn_xlen_ext}" Extension, Version 1.0
 
 {cheri_priv_m_dyn_xlen_ext} eliminates some restrictions for SXL and UXL imposed in {cheri_priv_m_ext} to allow implementations supporting multiple base ISAs.
-This extension allows the SXL, UXL, MBE, SBE, and UBE fields of <<mstatus_cheri>> to be writable (which is prohibited by {cheri_priv_m_ext} otherwise).
+This extension allows the SXL, UXL, MBE, SBE, and UBE fields of <<mstatus_y>> to be writable (which is prohibited by {cheri_priv_m_ext} otherwise).
 
 Changing XLEN::
 Setting the SXL or UXL field to a value that is not MXLEN disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
