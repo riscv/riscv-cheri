@@ -1,0 +1,60 @@
+<<<
+
+[#YUNSEAL,reftext="{YUNSEAL}"]
+==== {YUNSEAL}
+
+Synopsis::
+{YUNSEAL_DESC}
+
+Mnemonic::
+`{YUNSEAL_LC} {cd}, {cs1}, {cs2}`
+
+Encoding::
+TODO
+
+Description::
+Construct, into `{cd}`, an unsealed copy of the capability in `{cs2}`, using the type and authority from `{cs1}`.
++
+Copy `{cs2}` into `{cd}`, and then...
++
+. Clear the {ctag} of the capability in `{cd}` if any of the following hold:
++
+--
+- `{cs1}` has a clear `{ctag}`
+- `{cs1}` does not grant <<zyseal_us_perm>>
+- The address of `{cs1}` is out of bounds
+- The address of `{cs1}` is not equal to the <<sec_cap_type>> of the capability in `{cs2}`.
+--
++
+. Propagate permissions from `{cs1}` onto `{cd}`:
++
+--
+- If the <<section_zylevels1>> extension is implemented,
+  and the capability in `{cs1}` does not grant <<zylevels1_gl_perm>>,
+  use the semantics of the <<CLRPERM>> instruction
+  to clear the <<zylevels1_gl_perm>> of the capbility in `{cd}`.
++
+(That is, the resulting capability in `{cd}` will grant <<zylevels1_gl_perm>>
+if and only if the capabilities in `{cs1}` and `{cs2}` both grant <<zylevels1_gl_perm>>.)
+- Other extensions may impose similar constraints.
+--
++
+. Set the <<sec_cap_type>> of the capability in `{cd}` to zero.
+
+[NOTE]
+=====
+<<YUNSEAL>> requires exact equality of the authority's type, `{cs1}.address`, and
+the to-be-unsealed capability's type, `{cs2}.ct`.
+If it is desirable to unseal one of several capability types,
+using an authority with nontrivial range,
+software can use <<GCTYPE>> and <<SCADDR>> to make these values match.
+Future extensions may specify a fused "copy type" operation,
+as was present in the CHERI v9 ISA.
+=====
+
+Included in::
+{cheri_seal_ext_name}
+
+Operation::
++
+TODO

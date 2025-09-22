@@ -1,0 +1,55 @@
+<<<
+
+[#YSEAL,reftext="{YSEAL}"]
+==== {YSEAL}
+
+Synopsis::
+{YSEAL_DESC}
+
+Mnemonic::
+`{YSEAL_LC} {cd}, {cs1}, {cs2}`
+
+Encoding::
+TODO
+
+Description::
+Construct, into `{cd}`, a sealed copy of the unsealed capability in `{cs2}`, using the type and authority from `{cs1}`.
++
+Copy `{cs2}` into `{cd}`, and then...
++
+. Clear the {ctag} of the capability in `{cd}` if any of the following hold:
++
+--
+- `{cs2}` is sealed (has a non-zero <<sec_cap_type>> value)
+- `{cs1}` has a clear `{ctag}`
+- `{cs1}` does not grant <<zyseal_se_perm>>
+- The address of `{cs1}` is out of bounds
+- The address of `{cs1}` is not a <<sec_cap_type>> value that the capability encoding can encode.
+--
++
+. Set the <<sec_cap_type>> of `{cd}` to the address of `{cs1}`.
+
+[NOTE]
+=====
+<<YSEAL>> uses the (in-bounds) _addresss_ of the authority in `{cs1}` as the
+type in the resulting capability.
+If the authority has a nontrivial range,
+software can use <<SCADDR>> to select which type should be used.
+=====
+
+[NOTE]
+=====
+If a capability encoding also entails the presence of <<sentry_cap>> types,
+it will be possible for software (bearing suitably permissive capabilities)
+to seal and unseal the sentry types that that encoding defines.
+This is deliberate.
+Software should ensure that the capabilities requisite for such operations are
+attenuated, confined to sufficiently trusted components, and/or destroyed.
+=====
+
+Included in::
+{cheri_seal_ext_name}
+
+Operation::
++
+TODO
