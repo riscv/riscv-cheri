@@ -404,6 +404,8 @@ include::images/wavedrom/mstatusreg.edn[]
 .Additional machine-mode status (`mstatush`) register  for RV32.
 include::images/wavedrom/mstatushreg.edn[]
 
+If the base architecture is {cheri_base_ext_name} then see <<mstatus_y>>.
+
 [[privstack]]
 ===== Privilege and Global Interrupt-Enable Stack in `mstatus` register
 
@@ -1255,6 +1257,8 @@ implemented without a hardware adder circuit.
 Reset and NMI vector locations are given in a platform specification.
 ====
 
+If the base architecture is {cheri_base_ext_name} then see <<mtvec_y>>.
+
 ==== Machine Trap Delegation (`medeleg` and `mideleg`) Registers
 
 By default, all traps at any privilege level are handled in machine
@@ -1671,6 +1675,8 @@ upon entry to an M-mode trap handler.
 .Machine-mode scratch register.
 include::images/bytefield/mscratch.edn[]
 
+If the base architecture is {cheri_base_ext_name} then see <<mscratch_y>>.
+
 [NOTE]
 ====
 The MIPS ISA allocated two user registers (`k0`/`k1`) for use by the
@@ -1724,6 +1730,8 @@ though it may be explicitly written by software.
 [[mepcreg]]
 .Machine exception program counter register.
 include::images/bytefield/mepcreg.edn[]
+
+If the base architecture is {cheri_base_ext_name} then see <<mepc_y>>.
 
 [#mcause,reftext="mcause"]
 ==== Machine Cause (`mcause`) Register
@@ -1951,6 +1959,8 @@ Load/store/AMO access fault
 Load/store/AMO address misaligned
 |===
 
+If the base architecture is {cheri_base_ext_name} then see <<exception-priority-cheri>>.
+
 When a virtual address is translated into a physical address, the
 address translation algorithm determines what specific exception may be
 raised.
@@ -2059,6 +2069,14 @@ access-fault, page-fault, or hardware-error exception occurs on a hart with
 variable-length instructions, then `mtval` will contain the virtual
 address of the portion of the instruction that caused the fault, while
 `mepc` will point to the beginning of the instruction.
+
+If `mtval` is written with a nonzero value when a
+{cheri_excep_name_pc},
+{cheri_excep_name_ld},
+{cheri_excep_name_st},
+{cheri_excep_name_pte_ld}, or
+{cheri_excep_name_pte_st} exception occurs, then `mtval` will contain the virtual
+address of the lowest byte of the access.
 
 The `mtval` register can optionally also be used to return the faulting
 instruction bits on an illegal-instruction exception (`mepc` points to
