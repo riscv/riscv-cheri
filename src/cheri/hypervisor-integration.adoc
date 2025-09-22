@@ -1,13 +1,12 @@
+//This file is only included in the standalone spec - not the priv spec
 [#section_hypervisor_integration]
 == Integrating {cheri_base_ext_name} and {cheri_default_ext_name} with the "H" Extension
 
-ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the priv spec. Exact location TBD.
 
 The RISC-V hypervisor (H) extension virtualizes the supervisor-level
 architecture to support the efficient hosting of guest operating systems atop a
 type-1 or type-2 hypervisor cite:[riscv-priv-spec].
-endif::[]
 
 The hypervisor extension is
 generally orthogonal to CHERI; the main requirements, when integrating with
@@ -188,7 +187,5 @@ load and store capability instructions behave as described in
 xref:section_existing_riscv_insns[xrefstyle=short]. In
 {cheri_int_mode_name}, the instructions use the low XLEN bits of the base register as the effective address for the memory access and the capability authorizing the memory access is <<ddc>>.
 
-ifdef::cheri_standalone_spec[]
 include::insns/hypv-virt-load-cap.adoc[]
 include::insns/hypv-virt-store-cap.adoc[]
-endif::[]
