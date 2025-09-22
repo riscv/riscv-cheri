@@ -22,8 +22,8 @@ Indirect jump to the target capability in `{cs1}` with an address offset.
 Operationally, copy `{cs1}` to the target <<pcc>> and then...
 +
 . Compute the target <<pcc>> address in two steps, each using the semantics of the <<SCADDR>> instruction:
-  - Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
-  - set the zero bit of the target <<pcc>> address to zero.
+.. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
+.. set the zero bit of the target <<pcc>> address to zero.
 . Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
 +
 NOTE: All such triples are acceptable to the <<app_cap_description>>.
@@ -32,8 +32,8 @@ NOTE: All such triples are acceptable to the <<app_cap_description>>.
 +
 NOTE: This is not possible for the <<app_cap_description>>, given its two <<sec_cap_type>> values.
 . If `{cd}≠0`, compute the return capability and install it to `{cd}`:
-  - add the width of this instruction to the current <<pcc>>, and
-  - if the capability encoding defines <<sentry_cap>> <<sec_cap_type>> values for return pointers, then seal the return capability as specified.
+.. add the width of this instruction to the current <<pcc>>, and
+.. if the capability encoding defines <<sentry_cap>> <<sec_cap_type>> values for return pointers, then seal the return capability as specified.
 +
 NOTE: The <<app_cap_description>> always seals return capabilities with <<sec_cap_type>> `1`.
 . Jump to the target <<pcc>>.
