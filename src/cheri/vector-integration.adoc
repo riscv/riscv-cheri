@@ -15,7 +15,7 @@ Under {cheri_base_ext_name}, vector loads and stores follow the standard rules f
 * If there are no _active_ elements then no CHERI exceptions will be raised.
 * CHERI exceptions are only raised on fault-only-first loads if element 0 is both _active_ and fails any exception checks.
 
-Additionally the standard rule follows that all load and stores where the base register is `x0` are reserved.
+Additionally the standard {cheri_base_ext_name} rule that all load and stores where the base register is `x0` are reserved applies to all vector memory access instructions.
 
 NOTE: The approach of using indexed loads with the base register set to the value zero and XLEN-wide offsets do not work well with CHERI as the authorizing capability must cover all of memory.
-      If the authorizing capability is actually specified as `x0` then this is reserved behavior.
+      If the authorizing capability is specified as `x0` then this instruction encoding is RESERVED.
