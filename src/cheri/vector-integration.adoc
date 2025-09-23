@@ -1,5 +1,5 @@
 [#section_cheri_vector_integration]
-=== Vector with {cheri_base_ext_name}
+=== Vector ({cheri_base_ext_name})
 
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter should appear as a section in the vector chapter. Exact location TBD.
@@ -20,4 +20,5 @@ Under {cheri_base_ext_name}, vector loads and stores follow the standard rules f
 * CHERI exceptions are only raised on fault-only-first loads if element 0 is both _active_ and fails any exception checks.
 
 NOTE: Indexed loads check the bounds of every access against the authorizing capability in `{cs1}`.
- Therefore the approach of having a zero base register and treating every element as an absolute address may not work well in this mode.
+ Therefore the approach of having base register set to zero and XLEN offsets which therefore are treated as absolute addresses implies that the capability must cover all of memory.
+ #Therefore this mode is not useful and so needs more thought#
