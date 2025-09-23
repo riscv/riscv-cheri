@@ -55,14 +55,13 @@ The C extension is the superset of the following extensions:
 
 * Zca
 * Zcf if F is specified (RV32 only)
-* Zcd if D is specified (not supported for {cheri_base64_ext_name})
+* Zcd if D is specified
 
 As C defines the same instructions as Zca, Zcf, and Zcd, the rule is that:
 
 * C always implies Zca
 * C+F implies Zcf (RV32 only)
-* C+D implies Zcd (except for {cheri_base64_ext_name})
-
+* C+D implies Zcd
 
 [reftext="Zce"]
 === Zce
@@ -2589,3 +2588,98 @@ target_address[XLEN-1:0] = InstMemory[table_address][XLEN-1:0];
 jal ra, target_address[XLEN-1:0]&~0x1;
 
 ----
+
+=== Zc* ({cheri_base_ext_name})
+
+{cheri_base_ext_name} remaps some of the 16-bit encoding space and so is incompatible with some Zc* ISA extensions.
+The mappings are shown in <<insn_remapping_16bit_rv32_b>> and <<insn_remapping_16bit_rv64_b>>
+
+As a result:
+
+. Zcf and Zclsd      are incompatible with {cheri_base32_ext_name}.
+. Zcd, Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.
+
+Therefore Zcmp and Zcmt are available for {cheri_base32_ext_name} only, and so:
+
+. Specifying {cheri_base_ext_name} + C gives Zca and Zcb.
+. Specifying {cheri_base32_ext_name} + Zce gives Zca, Zcb, Zcmp and Zcmt.
+
+==== Zcmp ({cheri_base32_ext_name})
+
+The push/pop instructions (<<insns-cm_push>>, <<insns-cm_pop>>, <<insns-cm_popret>>, <<insns-cm_popretz>>) for {cheri_base32_ext_name} have the following modifications compared to RV32:
+
+. The saved/restored registers are YLEN-wide (64-bit) and so are stored 8-bytes apart, following the RV64 definition.
+. The registers are loaded and stored using <<LOAD_CAP>> and <<STORE_CAP>>, and so the `{abi_creg}sp`` is adjusted by 8-bytes each time.
+
+The double move instructions (<<insns-cm_mvsa01,cm.mvsa01>>, <<insns-cm_mva01s,cm.mva01s>>) have the following modification compared to RV32:
+
+. The copied registers are YLEN-wide.
+
+.Saved register mapping for Zcmp
+[#saved_register_mapping]
+[width="100%",options=header, align="center"]
+|====================================
+| saved register specifier | xreg | {cheri_base32_ext_name} ABI
+| 0                       | x8  | {abi_creg}s0
+| 1                       | x9  | {abi_creg}s1
+| 2                       | x18 | {abi_creg}s2
+| 3                       | x19 | {abi_creg}s3
+| 4                       | x20 | {abi_creg}s4
+| 5                       | x21 | {abi_creg}s5
+| 6                       | x22 | {abi_creg}s6
+| 7                       | x23 | {abi_creg}s7
+|====================================
+
+
+==== Zcmt ({cheri_base32_ext_name})
+
+The table jump instructions (<<insns-cm_jt>>, <<insns-cm_jalt>>) are _not_ redefined to have capabilities in the jump table.
+This is to prevent the code-size growth caused by doubling the size of the jump table.
+
+NOTE: A future extension may add new jump table modes to have capabilities in the jump table.
+
+The jump vector table CSR <<jvt_y>> is extended to be a full capability so that it can be configured to only allow access to the jump table.
+All accesses to the jump table are authorised by <<jvt_y>> and require <<x_perm>>.
+This allows the jump table to be accessed when the <<pcc>> bounds are set narrowly to the local function only.
+
+Therefore the instruction fetch bounds check is authorized by two different capabilities - <<jvt_y>> for the table access and <<pcc>> for the target instruction.
+
+As a result the capability metadata is retained in <<pcc>> during execution.
+
+If {cheri_default_ext_name} is implemented, and the current mode is {cheri_int_mode_name}, the jump table access is checked against <<pcc>> bounds.
+
+NOTE: In {cheri_cap_mode_name} the implementation doesn't need to expand and bounds check against <<jvt_y>> on every access.
+ It is sufficient to decode the valid accessible range of entries after every write to <<jvt_y>>, and then check that the accessed entry is in that range.
+
+include::cheri/insns/zcmp_cmpush.adoc[]
+
+include::cheri/insns/zcmp_cmpop.adoc[]
+
+include::cheri/insns/zcmp_cmpopret.adoc[]
+
+include::cheri/insns/zcmp_cmpopretz.adoc[]
+
+include::cheri/insns/zcmp_cmvsa01.adoc[]
+
+include::cheri/insns/zcmp_cmva01s.adoc[]
+
+[#jvt_y,reftext="jvt ({cheri_base_ext_name})"]
+==== Jump Vector Table CSR (jvt)
+
+The Zcmt <<jvt>> CSR is extended to be a full capability.
+
+.Jump Vector Table Capability register
+include::cheri/img/jvtcreg.edn[]
+
+All instruction fetches from the jump vector table are checked against <<jvt_y>>.
+
+If {cheri_default_ext_name} is implemented, and the current mode is {cheri_int_mode_name}, the address field gives the base address of the table, and the access is checked against <<pcc>> bounds.
+
+If the access to the jump table succeeds, then the instructions execute as follows:
+
+** <<CM_JT_CHERI>>   executes as <<JAL_CHERI,J>>   or <<AUIPC_CHERI,AUIPC>>+<<JALR_CHERI,JR>>
+** <<CM_JALT_CHERI>> executes as <<JAL_CHERI,JAL>> or <<AUIPC_CHERI,AUIPC>>+<<JALR_CHERI,JALR>>
+
+include::cheri/insns/zcmt_cmjalt.adoc[]
+
+include::cheri/insns/zcmt_cmjt.adoc[]
