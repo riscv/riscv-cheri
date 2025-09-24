@@ -2591,7 +2591,7 @@ jal ra, target_address[XLEN-1:0]&~0x1;
 
 === Zc* ({cheri_base_ext_name})
 
-{cheri_base_ext_name} remaps some of the 16-bit encoding space and so is incompatible with some Zc* ISA extensions.
+When the base ISA is {cheri_base_ext_name}, some of the 16-bit encoding space is remapped for Zca YLEN-wide loads/store and therefore some Zc* ISA extensions are incompatible with {cheri_base_ext_name}.
 The mappings are shown in <<insn_remapping_16bit_rv32_b>> and <<insn_remapping_16bit_rv64_b>>
 
 As a result:
@@ -2601,7 +2601,8 @@ As a result:
 
 Therefore Zcmp and Zcmt are available for {cheri_base32_ext_name} only, and so:
 
-. Specifying {cheri_base_ext_name} + C gives Zca and Zcb.
+. Specifying {cheri_base64_ext_name} + C gives Zca and Zcb.
+. Specifying {cheri_base32_ext_name} + C gives Zca and Zcb.
 . Specifying {cheri_base32_ext_name} + Zce gives Zca, Zcb, Zcmp and Zcmt.
 
 [#ZCMP_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
