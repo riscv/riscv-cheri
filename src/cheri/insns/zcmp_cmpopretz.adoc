@@ -21,11 +21,15 @@ Encoding::
 ],config:{bits:16}}
 ....
 
-[NOTE]
+Assembly Syntax:
 
-_rlist_ values 0 to 3 are reserved for a future EABI variant
+[source,sail]
+----
+cm.popretz {reg_list},  stack_adj
+cm.popretz {xreg_list}, stack_adj
+----
 
-include::cheri_mode_dependent.adoc[]
+include::zcmp_cm_common.adoc[]
 
 Description::
 Load capability registers as specified in _creg_list_ using <<LOAD_CAP>> semantics.
@@ -40,13 +44,10 @@ All data accesses are authorized by `{abi_creg}sp`.
 +
 The return destination is authorized by `{abi_creg}ra`.
 
-include::zcm_common.adoc[]
-
 include::pcrel_debug_warning.adoc[]
 
 Prerequisites::
 {c_cheri_base_ext_names}, Zcmp
-for {cheri_cap_mode_name}
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]

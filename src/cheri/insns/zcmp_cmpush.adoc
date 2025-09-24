@@ -21,11 +21,14 @@ Encoding::
 ],config:{bits:16}}
 ....
 
-[NOTE]
+Assembly Syntax:
 
-include::cheri_mode_dependent.adoc[]
-
-_rlist_ values 0 to 3 are reserved for a future EABI variant
+[source,sail]
+--
+cm.push {reg_list},  -stack_adj
+cm.push {xreg_list}, -stack_adj
+--
+include::zcmp_cm_common.adoc[]
 
 Description::
 Create stack frame, store capability registers as specified in _creg_list_ using <<STORE_CAP>> semantics.
@@ -33,8 +36,6 @@ Create stack frame, store capability registers as specified in _creg_list_ using
 Optionally allocate additional multiples of 16-byte stack space in `{abi_creg}sp`.
 +
 All accesses are authorized against `{abi_creg}sp`.
-
-include::zcm_common.adoc[]
 
 Prerequisites::
 {c_cheri_base_ext_names}, Zcmp
