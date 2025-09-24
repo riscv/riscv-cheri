@@ -21,24 +21,26 @@ Encoding::
 ],config:{bits:16}}
 ....
 
-[NOTE]
+Assembly Syntax:
 
-_rlist_ values 0 to 3 are reserved for a future EABI variant
+[source,sail]
+----
+cm.popret {reg_list},  stack_adj
+cm.popret {xreg_list}, stack_adj
+----
 
-include::cheri_mode_dependent.adoc[]
+include::zcmp_cm_common.adoc[]
 
 Description::
 Load capability registers as specified in _creg_list_ using <<LOAD_CAP>> semantics.
 +
 Deallocate stack frame.
 +
-Return by calling <<JALR_CHERI>> to `cra`.
+Return by calling <<JALR_CHERI>> to `{abi_creg}ra`.
 +
 All data accesses are authorized by `{abi_creg}sp`.
 +
-The return destination is authorized by `cra`.
-
-include::zcm_common.adoc[]
+The return destination is authorized by `{abi_creg}ra`.
 
 include::pcrel_debug_warning.adoc[]
 

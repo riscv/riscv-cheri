@@ -4,10 +4,12 @@
 
 include::cheri_isa_tables.adoc[]
 
-== "Zcmp" and "Zcmt" Integration with {cheri_base_ext_name}
+ifdef::cheri_standalone_spec[]
+
+=== "Zcmp", "Zcmt" ({cheri_base_ext_name})
 
 <<<
-[#Zcmp_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
+[#ZCMP_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
 === "Zcmp" Standard Extension For Code-Size Reduction
 
 The push (<<CM_PUSH_CHERI>>) and pop (<<CM_POP_CHERI>>, <<CM_POPRET_CHERI>>, <<CM_POPRETZ_CHERI>>) instructions are redefined in {cheri_cap_mode_name} to save/restore capability data.
@@ -18,7 +20,7 @@ The double move instructions (<<CM_MVSA01_CHERI>>, <<CM_MVA01S_CHERI>>) are rede
 [#saved_register_mapping]
 [width="100%",options=header, align="center"]
 |====================================
-| saved register specifier | xreg | integer ABI | CHERI ABI
+| saved register specifier | xreg | integer ABI | {cheri_base32_ext_name} ABI
 | 0                       | x8  | s0 | {abi_creg}s0
 | 1                       | x9  | s1 | {abi_creg}s1
 | 2                       | x18 | s2 | {abi_creg}s2
@@ -43,7 +45,7 @@ include::insns/zcmp_cmva01s.adoc[]
 
 
 <<<
-[#Zcmt_CHERI,reftext="Zcmt ({cheri_base32_ext_name})"]
+[#ZCMT_CHERI,reftext="Zcmt ({cheri_base32_ext_name})"]
 === "Zcmt" Standard Extension For Code-Size Reduction
 
 The table jump instructions (<<CM_JT_CHERI>>, <<CM_JALT_CHERI>>) are _not_ redefined in {cheri_cap_mode_name} to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.
@@ -81,3 +83,5 @@ As a result the capability metadata is retained in <<pcc>> during execution.
 include::insns/zcmt_cmjalt.adoc[]
 
 include::insns/zcmt_cmjt.adoc[]
+
+endif::[]
