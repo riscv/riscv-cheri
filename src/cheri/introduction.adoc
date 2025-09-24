@@ -30,115 +30,123 @@ be brute forced.
 === CHERI Extensions to RISC-V
 
 This specification is based on publicly available documentation including
-CHERI v9 cite:[cheri-v9-spec] and CHERI Concentrate cite:[woodruff2019cheri]. It defines the following
-extensions to support CHERI alongside RISC-V
+CHERI v9 cite:[cheri-v9-spec] and CHERI Concentrate cite:[woodruff2019cheri].
 
-==== Extensions to the unprivileged specification
+Compatibility with RVA, RVB and RVM profiles will be listed in separate {cheri_base_ext_name} based profiles ({cheri_base_ext_name}A, {cheri_base_ext_name}B, {cheri_base_ext_name}M).
+These will list the compatible extensions.
 
-<<rv32y,{cheri_base_ext_name}>>:: Unprivileged specification for {cheri_base_ext_name} to support CHERI.
-<<section_rvy_sentry_insn_ext>>:: Unprivileged extension for capability ambient sealing.
-<<section_cheri_hybrid_ext,{cheri_default_ext_name}>>:: Unprivileged extension to support switching <<cheri_execution_mode>>.
+NOTE: Most existing extensions are compatible with {cheri_base_ext_name} with no modifications.
+ Incompatible extensions will be listed in the profile documents.
 
-The following extension is useful independently of CHERI:
+IMPORTANT: Zicfiss is currently incompatible. An {cheri_base_ext_name} version has not yet been developed.
 
-<<abhlrsc_ext,{lr_sc_bh_ext_name}>>:: Addition of LR.B, LR.H, SC.B, SC.H for more accurate atomic locking as the memory ranges are restricted by using bounds, therefore precise locking is needed.
-
-==== Privileged specifications
-
-The following privileged specifications are updated for {cheri_base_ext_name}:
-
-<<section_priv_cheri,{cheri_priv_m_ext}>>:: Machine-Level Privileged specification to support CHERI (implies, and required by, Machine-Level ISA).
-<<section_priv_cheri,{cheri_priv_s_ext}>>:: Supervisor-Level Privileged specification to support CHERI (implies, and required by, Supervisor-Level ISA).
-<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>>:: Privileged specification for integrating CHERI with virtual memory (implies, and required by, by Sv39).
-<<section_priv_cheri,{cheri_priv_h_ext}>>:: Privileged specification to integrate CHERI with the Hypervisor extensions (implies, and required by, H).
-
-The following privileged extensions are added for {cheri_base_ext_name}:
-
-ifdef::support_varxlen[]
-<<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>>:: Privileged extension to allow dynamic XLEN and endianness changes.
-endif::support_varxlen[]
-<<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>^1^:: CHERI extension for capability revocation on RISC-V harts supporting page-based virtual-memory (implies {cheri_priv_vmem_ext}).
-
-^1^ {cheri_priv_crg_load_tag_ext} is available for improved software revocation performance if {cheri_priv_crg_ext} is implemented.
-
-==== Debug specifications (#need to move to a separate document#)
-
-<<section_debug_integration_ext,Sdext ({cheri_base_ext_name})>>:: Debug specification for integrating CHERI with external debug mode (implies, and required by, Sdext).
-<<section_debug_integration_trig,{cheri_priv_debug_trig}>>:: Debug specification for integrating CHERI with debug triggers (implies, and required by, Sdtrig).
-
-CAUTION: The extension names are provisional and subject to change.
-
-==== Extension and specification status
-
-.Unprivileged {cheri_base_ext_name} extension and specification status and summary
-[#unpriv-extension-status,reftext="Extension Status and Summary"]
-[options=header,align=center,width="90%",cols="25,15,52"]
-|=============================================================================================================================================================
-| Extension                                                 | Status        | Comment
-|<<rv32y,{cheri_base_ext_name}>>                            | Stable        | This extension is a candidate for freezing
-|<<section_rvy_sentry_insn_ext>>                            | Stable        | This extension is a candidate for freezing
-|<<section_cheri_hybrid_ext,{cheri_default_ext_name}>>      | Stable        | This extension is a candidate for freezing
-|<<section_zyseal>>                                         | Experimental  | This extension is not yet a candidate for freezing
-|<<section_xycheriot>>                                      | Experimental  | This extension is not yet a candidate for freezing
-|=============================================================================================================================================================
-
-.Other unprivileged extension status and summary (used by CHERI software), status and summary
-[#zabhlrsc_unpriv-extension-status,reftext="Extension Status and Summary"]
-[options=header,align=center,width="90%",cols="25,15,52"]
-|=============================================================================================================================================================
-| Extension                                                 | Status        | Comment
-|<<abhlrsc_ext,     {lr_sc_bh_ext_name}>>                   | Stable        | This extension is a candidate for freezing
-|=============================================================================================================================================================
-
-.Privileged extension and specification status and summary
-[#priv-extension-status,reftext="Extension Status and Summary"]
-[options=header,align=center,width="90%",cols="25,15,52"]
-|=============================================================================================================================================================
-| Extension                                                 | Status        | Comment
-|<<section_priv_cheri,{cheri_priv_m_ext}>>                  | Stable        | This specification is a candidate for freezing
-|<<section_priv_cheri,{cheri_priv_s_ext}>>                  | Stable        | This specification is a candidate for freezing
-|<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>>    | Stable        | This extension is a candidate for freezing
-ifdef::support_varxlen[]
-|<<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>>     | Stable        | This extension is a candidate for freezing
-endif::support_varxlen[]
-|<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>>          | Stable        | This specification is a candidate for freezing
-|<<section_debug_integration_ext,Sdext ({cheri_base_ext_name})>>   | Stable | This specification is a candidate for freezing
-|<<section_debug_integration_trig,{cheri_priv_debug_trig}>> | Stable        | This specification is a candidate for freezing
-|<<section_priv_cheri,{cheri_priv_h_ext}>>                  | Stabilizing   | This specification is a candidate for freeze, software evaluation currently ongoing
-|<<section_cheri_priv_crg_ext,    {cheri_priv_crg_ext}>>^1^ | Stabilizing   | This extension is a candidate for freeze, software evaluation currently ongoing
-|=============================================================================================================================================================
+This section lists new extensions available to {cheri_base_ext_name}, and also extensions where the behavior is modified for {cheri_base_ext_name}.
 
 {cheri_base_ext_name} is defined as the base ISA that all CHERI RISC-V implementations must support.
 {cheri_default_ext_name} and {cheri_priv_crg_ext} are examples of optional extensions in addition to
 {cheri_base_ext_name}.
 
-We refer to software as _purecap_ if it utilizes CHERI capabilities for all
+In some cases adding an existing extension, such as C or Zca, causes additional instructions to be added.
+
+In other cases adding an existing extension, such as C or Zca, causes existing instructions to have modified behavior.
+
+#not sure where to put this note#
+
+[NOTE]
+====
+Software is referred to as _purecap_ if it utilizes CHERI capabilities for all
 memory accesses -- including loads, stores and instruction fetches -- rather
 than integer addresses. Purecap software requires the CHERI RISC-V hart to
-support {cheri_base_ext_name}. We refer to software as _hybrid_ if it uses
+support {cheri_base_ext_name}. Software is referred to as _hybrid_ if it uses
 integer addresses *or* CHERI capabilities for memory accesses. Hybrid software
 requires the CHERI RISC-V hart to support {cheri_base_ext_name} and
 {cheri_default_ext_name}.
+====
 
-See xref:app_cheri_instructions[xrefstyle=short] for compatibility with other RISC-V
-extensions.
+==== Stable Extensions and Specifications
 
-=== Risks and Known Uncertainty
+.Unprivileged stable {cheri_base_ext_name} extensions
+[#unpriv-extension-status,reftext="Extension Status and Summary"]
+[options=header,align=center,width="90%"]
+|=============================================================================================================================================================
+| Extension                                                 | Description
+|<<rv32y,{cheri_base_ext_name}>>                            | Base ISA
+|<<app_cap_description,{rvy_default_encoding_name}>>        | Default capability encoding
+|<<section_rvy_sentry_insn_ext>>                            | Sentry extension for CFI
+|<<section_cheri_hybrid_ext,{cheri_default_ext_name}>>      | Hybrid extension for RVI compatibility
+|<<rvy_zca_insn_table,   {rvy_zca_ext_name}>>               | New 16-bit encodings added to Zca
+|<<rvy_zba_insn_table,   {rvy_zba_ext_name}>>               | New 32-bit encodings added to Zba
+|<<rvy_zalrsc_insn_table,{rvy_zalrsc_ext_name}>>            | New 32-bit encodings added to Zalrsc
+|<<rvy_zaamo_insn_table, {rvy_zaamo_ext_name}>>             | New 32-bit encodings added to Zaamo
+|=============================================================================================================================================================
 
-* All extensions could be divided up differently in the future, including after
-ratification
-* The RISC-V Architecture Review Committee (ARC) are likely to update all
-encodings
-* The ARC are likely to update all CSR addresses
-* Instruction mnemonics may be renamed
-    ** Any changes will affect assembly code, but assembler aliases can provide
-backwards compatibility
+.Unprivileged stable extensions where {cheri_base_ext_name} modifies the behavior
+[#unpriv-mod-extension-status,reftext="Extension Status and Summary"]
+[options=header,align=center,width="90%"]
+|=============================================================================================================================================================
+| Extension                                                 | Description
+|<<{rvy_i_mod_file_name},     {rvy_i_mod_ext_name}>>        | RVI instructions modified by {cheri_base_ext_name}
+|<<{rvy_zca_mod_file_name},   {rvy_zca_mod_ext_name}>>      | Zca instructions modified by {cheri_base_ext_name}
+|<<{rvy_zicsr_mod_file_name}, {rvy_zicsr_mod_ext_name}>>    | Zicsr instructions modified by {cheri_base_ext_name}
+|<<{rvy_zicbom_mod_file_name},{rvy_zicbom_mod_ext_name}>>   | Zicbom instructions modified by {cheri_base_ext_name}
+|<<{rvy_zicboz_mod_file_name},{rvy_zicboz_mod_ext_name}>>   | Zicboz instructions modified by {cheri_base_ext_name}
+|<<{rvy_zicbop_mod_file_name},{rvy_zicbop_mod_ext_name}>>   | Zicbop instructions modified by {cheri_base_ext_name}
+|=============================================================================================================================================================
 
-==== Partially Incompatible Extensions
 
-There are RISC-V extensions in development that may duplicate some aspects of
-CHERI functionality or directly conflict with CHERI and should only be
-available in {cheri_int_mode_name} on a CHERI-enabled hart.
-These include:
+.Unprivileged stable extension used by CHERI software
+[#zabhlrsc_unpriv-extension-status,reftext="Extension Status and Summary"]
+[options=header,align=center,width="90%"]
+|=============================================================================================================================================================
+| Extension                                                 | Description
+|<<abhlrsc_ext,     {lr_sc_bh_ext_name}>>                   | Byte and halfword LR/SC functionality
+|=============================================================================================================================================================
 
-* RISC-V CFI specification
+.Privileged stable extensions and specifications
+[#priv-extension-status,reftext="Extension Status and Summary"]
+[options=header,align=center,width="90%"]
+|=============================================================================================================================================================
+| Extension                                                 | Description
+|<<section_priv_cheri,{cheri_priv_m_ext}>>                  | Machine ISA
+|<<section_priv_cheri,{cheri_priv_s_ext}>>                  | Supervisor ISA
+|<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>>    | Hybrid extension for RVI compatibility
+ifdef::support_varxlen[]
+|<<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>>     | Dynamic XLEN support
+endif::support_varxlen[]
+|<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>>          | Virtual Memory
+|<<section_debug_integration_trig,{cheri_priv_debug_trig}>> | Debug triggers
+|<<section_cheri_priv_crg_ext,    {cheri_priv_crg_ext}>>^1^ | Revocation to prevent Use-After-free
+|=============================================================================================================================================================
+
+^1^ {cheri_priv_crg_load_tag_ext} is available for improved software revocation performance if {cheri_priv_crg_ext} is implemented.
+
+.Debug stable extensions and specifications
+[#debug-extension-status,reftext="Extension Status and Summary"]
+[options=header,align=center,width="90%"]
+|=============================================================================================================================================================
+| Extension                                                 | Description
+|<<section_debug_integration_ext,Sdext ({cheri_base_ext_name})>>   | External debug support
+|=============================================================================================================================================================
+
+==== Experimental Extensions and Specifications
+
+.Unprivileged experimental extensions and specifications
+[#unpriv-exp-extension-status,reftext="Extension Status and Summary"]
+[options=header,align=center,width="90%"]
+|=============================================================================================================================================================
+| Extension                                                 | Description
+|<<section_cheri_vector_integration>>                       | Vector
+|<<Zcmt_CHERI>>                                             | Table Jump for {cheri_base32_ext_name}
+|<<Zcmp_CHERI>>                                             | Push/pop and double move for {cheri_base32_ext_name}
+|<<section_xycheriot>>                                      | CHERIoT capability encoding
+|<<section_zyseal>>                                         | Sealing extension required for CHERIoT
+|=============================================================================================================================================================
+
+.Privileged experimental extensions and specifications
+[#priv-exp-extension-status,reftext="Extension Status and Summary"]
+[options=header,align=center,width="90%"]
+|=============================================================================================================================================================
+| Extension                                                 | Description
+|<<section_cheri_hypervisor_integration>>                   | Hypervisor
+|<<section_cheri_pointer_masking_integration>>              | Pointer Masking
+|=============================================================================================================================================================
