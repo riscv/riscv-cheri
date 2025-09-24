@@ -737,6 +737,8 @@ When XLEN=32, `henvcfgh` is a
 of `henvcfg`. Register `henvcfgh` does not exist when
 XLEN=64.
 
+ifndef::cheri_ratification_v1_only[]
+
 If the base architecture is {cheri_base_ext_name} and {cheri_default_ext_name} is implemented,
 then the `{CRE}` field in `henvcfg` is defined.
 The {CRE} bit controls whether explicit access to CHERI
@@ -745,6 +747,8 @@ and `misa`.{CRE}=1, CHERI can be enabled by VS-mode and
 VU-mode. Otherwise, CHERI is disabled in VS-mode and
 VU-mode as described in xref:section_cheri_disable[xrefstyle=short].
 The reset value is 0 for backwards compatbility.
+
+endif::[]
 
 ==== Hypervisor Counter-Enable (`hcounteren`) Register
 
@@ -1180,8 +1184,12 @@ affect the behavior of the machine.
 .Virtual supervisor trap vector base address register `vstvec`.
 include::images/bytefield/vstvecreg.edn[]
 
+ifndef::cheri_ratification_v1_only[]
+
 [#vstvec_y,reftext="vstvec ({cheri_base_ext_name})"]
 If the base architecture is {cheri_base_ext_name} then `vstvec` is extended to YLEN-bits in the same way as <<stvec_y>>.
+
+endif::[]
 
 [#vsscratch,reftext="vsscratch"]
 ==== Virtual Supervisor Scratch (`vsscratch`) Register
@@ -1197,8 +1205,12 @@ of `vsscratch` never directly affect the behavior of the machine.
 .Virtual supervisor scratch register `vsscratch`.
 include::images/bytefield/vsscratchreg.edn[]
 
+ifndef::cheri_ratification_v1_only[]
+
 [#vsscratch_y,reftext="vsscratch ({cheri_base_ext_name})"]
 If the base architecture is {cheri_base_ext_name} then `vsscratch` is extended to YLEN-bits in the same way as <<sscratch_y>>.
+
+endif::[]
 
 [#vsepc,reftext="vsepc"]
 ==== Virtual Supervisor Exception Program Counter (`vsepc`) Register
@@ -1217,8 +1229,12 @@ that `sepc` can hold.
 .Virtual supervisor exception program counter (`vsepc`).
 include::images/bytefield/vsepcreg.edn[]
 
+ifndef::cheri_ratification_v1_only[]
+
 [#vsepc_y,reftext="vsepc ({cheri_base_ext_name})"]
 If the base architecture is {cheri_base_ext_name} then `vsepc` is extended to YLEN-bits in the same way as <<sepc_y>>.
+
+endif::[]
 
 ==== Virtual Supervisor Cause (`vscause`) Register
 
@@ -2653,6 +2669,8 @@ If the Ssdbltrp extension is implemented, when `SRET` is executed in HS-mode,
 if the new privilege mode is VU, the `SRET` instruction sets `vsstatus.SDT`
 to 0. When executed in VS-mode, `vsstatus.SDT` is set to 0.
 
+ifndef::cheri_ratification_v1.0_only[]
+
 === "H" Extension for {cheri_base_ext_name}
 
 An {cheri_base_ext_name} core which supports the "H" extension also support the <<HLV_CAP>>
@@ -2691,3 +2709,5 @@ For the meaning of the individual fields, refer to the <<uycfg>> register in the
 .Virtual Supervisor CHERI capability encoding CSR (`vsycfg`) format
 [#vsycfg_csr_structure]
 include::cheri/img/ycfgreg.edn[]
+
+endif::[]
