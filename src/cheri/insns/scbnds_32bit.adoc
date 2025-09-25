@@ -25,10 +25,12 @@ Synopsis::
 
 Mnemonics::
 `{scbnds_lc} {cd}, {cs1}, rs2` +
-`{scbndsi_lc} {cd}, {cs1}, uimm`
+`{scbndsi_lc} {cd}, {cs1}, imm`
 
 Encoding::
 include::wavedrom/scbnds_32bit.adoc[]
+
+NOTE: 99.5% of uses of unrestricted allocation of {cs1} and {cd} for {SCBNDSI} have {cs1}={cd}, and so the cases where they do not match are reserved.
 
 Description::
 Copy the capability from register `{cs1}` to register `{cd}`.
@@ -41,11 +43,9 @@ Set `{cd}.tag=0` if the requested bounds cannot be encoded exactly.
 +
 include::malformed_cs1_clear_tag.adoc[]
 +
-<<SCBNDSI>> uses the `s` bit to scale the immediate by 4 places
-+
-`immediate = ZeroExtend(s ? uimm<<4 : uimm)`
+<<SCBNDSI>> uses the following formula to determine the requested length:
 
-NOTE: The <<SCBNDSI>> encoding with `s=1` and `uimm ≤ 1` is RESERVED since these immediates can also be encoded with `s=0`.
+* `((imm[7:0] + 257) << imm[9:8]) - 256`
 
 Included in::
 <<rvy_insn_table>>
@@ -56,4 +56,6 @@ sail::execute[clause="SCBNDS(_, _, _)",part=body,unindent]
 
 Operation for {SCBNDSI}::
 +
-sail::execute[clause="SCBNDSI(_, _, _, _)",part=body,unindent]
+TODO
+//this is out of date
+//sail::execute[clause="SCBNDSI(_, _, _, _)",part=body,unindent]
