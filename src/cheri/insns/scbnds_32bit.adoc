@@ -52,15 +52,13 @@ include::malformed_cs1_clear_tag.adoc[]
 [NOTE]
 ====
 This formula does not actually require two additions in decode as it expands to the following:
-[latexmath]
-++++
-\begin{cases}
-(imm[7:0]<<0) + 1 & \text{if } imm[9:8] = 0 \\
-(imm[7:0]<<1) + 258 & \text{if } imm[9:8] = 1 \\
-(imm[7:0]<<2) + 772 & \text{if } imm[9:8] = 2 \\
-(imm[7:0]<<3) + 1800 & \text{if } imm[9:8] = 3
-\end{cases}
-++++
+|===
+|`imm[9:8]`|Resulting immediate   | Immediate range
+|0         |`(imm[7:0]<<0) + 1`   | 1, 2, ..., 256
+|1         |`(imm[7:0]<<1) + 258` | 258, 260, ..., 766, 768
+|2         |`(imm[7:0]<<2) + 772` | 772, 776, ..., 1788, 1792
+|3         |`(imm[7:0]<<3) + 1800`| 1800, 1808, ..., 3832, 3840
+|===
 ====
 
 Included in::
