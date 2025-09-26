@@ -8,10 +8,10 @@ on:
         description: Create a new RISC-V ISA release if set to true
         required: false
         default: 'false'
-      target_branch:
-        description: Target Branch
+      tag_name:
+        description: Name of the tag for the release
         required: true
-        default: main
+        default: riscv-isa-release-${{ env.SHORT_SHA }}-${{ env.CURRENT_DATE }}
       release_notes:
         description: Release Notes
         required: false
@@ -45,6 +45,11 @@ jobs:
         run: |
           echo "EXTRA_ASCIIDOC_OPTIONS=-a github_commit_sha=$GITHUB_SHA" >> "$GITHUB_ENV"
         if: github.event_name == 'push'
+
+      - name: Update environment variables for manual workflow trigger
+        run: |
+          echo "RELEASE_TYPE=intermediate" >> "$GITHUB_ENV"
+        if: github.event.inputs.create_release == 'true'
 
     # Build PDF and HTML files using the container
       - name: Build Files
@@ -134,7 +139,7 @@ jobs:
         uses: softprops/action-gh-release@da05d552573ad5aba039eaac05058a918a7bf631
         with:
           draft: false
-          tag_name: riscv-isa-release-${{ env.SHORT_SHA }}-${{ env.CURRENT_DATE }}
+          tag_name: ${{ github.event.inputs.tag_name }}
           name: ${{ env.CURRENT_DATE }}
           body: |
             This release was created by: ${{ github.event.sender.login }}
