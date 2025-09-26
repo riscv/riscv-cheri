@@ -47,6 +47,17 @@ RISC-V software is able to execute unchanged in implementations supporting {cher
 
 NOTE: The CHERI execution mode is always {cheri_cap_mode_name} on implementations that support {cheri_base_ext_name}, but not {cheri_default_ext_name}.
 
+[NOTE]
+====
+Software is referred to as _purecap_ if it utilizes CHERI capabilities for all
+memory accesses -- including loads, stores and instruction fetches -- rather
+than integer addresses. Purecap software requires the CHERI RISC-V hart to
+support {cheri_base_ext_name}. Software is referred to as _hybrid_ if it uses
+integer addresses *or* CHERI capabilities for memory accesses. Hybrid software
+requires the CHERI RISC-V hart to support {cheri_base_ext_name} and
+{cheri_default_ext_name}.
+====
+
 [#m_bit,reftext="M-bit"]
 ==== CHERI Execution Mode Encoding
 
@@ -178,6 +189,16 @@ YLEN-wide CSRs are accessed identically in either <<cheri_execution_mode>>.
 ^1^ e.g., <<utidc>>
 
 ^2^ e.g., <<jvt_y>>
+
+ifdef::cheri_ratification_v1_only[]
+ifndef::cheri_standalone_spec[]
+NOTE: `jvt` depends on Zcmt, and the {cheri_base32_ext_name} version of this standard extension is not available yet.
+
+[#jvt_y, reftext=jvt ({cheri_base_ext_name})]
+*jvt for {cheri_base32_ext_name}*
+
+endif::[]
+endif::[]
 
 include::insns/csrr_32bit.adoc[]
 include::insns/csrrw_32bit.adoc[]
