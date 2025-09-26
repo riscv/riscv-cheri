@@ -522,13 +522,15 @@ in connection with the effective CHERI enable and the <<cheri_execution_mode>> w
 | Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
 | natively YLEN CSR Access Width       | ✘                 | YLEN                  | YLEN
 | Extended YLEN CSR Access Width       | XLEN              | XLEN                  | YLEN
-| CHERI Instructions Allowed           | ✘                 | ✔                     | ✔
+| CHERI Instructions Allowed           | ✘                 | ✔^3^                  | ✔
 | Summary                              | **_Fully RISC-V compatible_**^2^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
 |==============================================================================
 
 ^1^ _{CRE}_ represents the effective CHERI enable for the current privilege mode.
 
 ^2^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, Xtvec, Xepc and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
+
+^3^ The compressed instructions operating on capability data are unavailable as their encoding will revert to non-CHERI (see <<section_cheri_hybrid_ext>>).
 
 ifdef::support_varxlen[]
 [#section_cheri_dyn_xlen]
