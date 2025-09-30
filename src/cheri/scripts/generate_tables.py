@@ -105,6 +105,54 @@ class illegal_insns(table):
     def check(self,row):
         return row[self.header.index("illegal insn if (1)")] != ""
 
+class old_and_new_mnemonics(table):
+    cols = ["Mnemonic", "Old mnemonic", "Extension"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("Old mnemonic")] != "N/A" and row[self.header.index("Old mnemonic")] != "same"
+
+class new_instructions(table):
+    cols = ["Mnemonic", "Old mnemonic", "Extension"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write('|'+'|'.join(self.cols)+'\n')
+        self.indices=[]
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i==0:
+                    outStr += '|' + insn_xref(row[i])
+                else:
+                    outStr += '|'+row[i]
+            self.file.write(outStr+'\n')
+
+    def check(self,row):
+        return row[self.header.index("Old mnemonic")] == "N/A"
+
 class csr_aliases(table):
     cols = ["YLEN CSR", "Prerequisites"]
     indices = []
@@ -479,7 +527,7 @@ if __name__ == "__main__":
     with open(args.isa,newline='') as isaFile:
         reader = csv.reader(isaFile, delimiter=',')
         header = next(reader)
-        assert header[1] == "Extension"
+        assert header[2] == "Extension"
         rows = [row for row in reader]
         # extensions = list(sorted(set(row[1] for row in rows)))
         tables = [
@@ -576,6 +624,14 @@ if __name__ == "__main__":
             ),
             illegal_insns(
                 filename=output_file(args, "illegal_insns_table_body.adoc"),
+                header=header,
+            ),
+            old_and_new_mnemonics(
+                filename=output_file(args, "old_and_new_mnemonics_table_body.adoc"),
+                header=header,
+            ),
+            new_instructions(
+                filename=output_file(args, "new_instructions_table_body.adoc"),
                 header=header,
             ),
         ]
