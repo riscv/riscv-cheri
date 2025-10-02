@@ -84,3 +84,53 @@ include::insns/zcmt_cmjalt.adoc[]
 include::insns/zcmt_cmjt.adoc[]
 
 endif::[]
+
+ifdef::cheri_standalone_spec[]
+
+== ISA changes since 0.9.5
+
+Many mnemonics have been renamed since v0.9.5 of the specification a shown in <<ISA_renames_095>>.
+
+.ISA renames since 0.9.5
+[#ISA_renames_095]
+[width="100%",options=header,cols="2,2,2",]
+|==============================================================================
+include::generated/old_and_new_mnemonics_table_body.adoc[]
+|==============================================================================
+
+Some instructions have been added as shown in <<ISA_added_095>>.
+
+.Instructions added since 0.9.5
+[#ISA_added_095]
+[width="100%",options=header,cols="2,2,2",]
+|==============================================================================
+include::generated/new_instructions_table_body.adoc[]
+|==============================================================================
+
+WARNING: {YSEAL} and {YUNSEAL} are not included in the v1.0 ratification package.
+
+[NOTE]
+====
+
+. {SCHI_BASE} and {GCHI_BASE} are actual instructions. {SCHI} and {GCHI} are pseudoinstructions.
+. ACPERM was replaced by {CLRPERM}. The difference being that the mask is used to clear, not retain, permission bits.
+.. Clearing bits makes it much simpler to form the necessary constant compared to retaining bits, and so gives better code-size.
+. 0.9.5 had SH[123]ADD, and the .UW forms, replaced by capability versions.
+.. This is no longer the case, so now the capability versions have new encodings.
+. There is no longer an SH4ADD instruction (i.e. the integer version).
+. The <<{SENTRY}>> instruction is now in a separate extension {rvy_sentry_insn_ext_name}.
+
+====
+
+[NOTE]
+====
+
+The following changes are for forwards compatibility with {cheriot_ext_name}:
+
+. Capability encodings are now the naming authorities for capability types (only 0/unsealed exists in the base architecture).
+. Capability encodings are now in a separate extension - the default being <<app_cap_description,{rvy_default_encoding_name}>>.
+. <<JALR_CHERI>> has been given explicit hooks for sentry handling (especially for future forward/backward arc distinction).
+
+====
+
+endif::[]
