@@ -88,13 +88,9 @@ used by <<CLRPERM>> and <<GCPERM>>,
 as shown in <<zylevels1_acperm_bit_field>>.
 
 ==== <<CLRPERM>> and the Capability Global (GL) Flag
-<<CLRPERM>> can produce a new capability value with the _Capability Global_ flag cleared, even if the source capability is sealed.
+<<CLRPERM>> can produce a new capability value with its <<zylevels1_gl_perm>> cleared, even if the source capability is sealed.
 This is unlike architectural and software permissions.
 This applies to both "implicit <<CLRPERM>>s" in loads from memory and explicit <<CLRPERM>> instructions.
-
-Implementations _are permitted but not mandated_ to require that an explicit <<CLRPERM>> instruction wishing to clear <<zylevels1_gl_perm>>
-has an input mask that is _entirely 0s_ except for <<zylevels1_gl_perm>>
-(or else clear the {ctag} of the resulting capability).
 
 ==== Additional <<CLRPERM>> rules
 
