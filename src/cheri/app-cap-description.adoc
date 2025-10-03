@@ -97,14 +97,16 @@ Quadrant 0 does the opposite - the encodings are allocated _not_ to implicitly a
 Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 
 <<<
+[#default-cap-AP-no-zylevels1]
+==== AP encoding and rules without <<section_zylevels1>> for {cheri_base32_ext_name}
 
 .Encoding of architectural permissions for {cheri_base32_ext_name} without <<section_zylevels1>>
 [#cap_perms_encoding_nolevels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
 |==============================================================================
-| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
 9+| *Quadrant 0: Non-capability data read/write*
 9+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
 9+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
+| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
 | 0   |   |   |   |   |     |   | N/A | No permissions
 | 1   | ✔ |   |   |   |     |   | N/A | Data RO
 | 2-3   8+| reserved
@@ -113,6 +115,7 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 | 6-7   8+| reserved
 9+| *Quadrant 1: Executable capabilities*
 9+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
+| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
 | 0-1   | ✔ | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + Data & Cap RW + ASR
 | 2-3   | ✔ |   | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RO
 | 4-5   | ✔ | ✔ | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
@@ -121,12 +124,14 @@ Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
 9+| R and C implicitly granted, LM dependent on W permission.
 9+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
 9+| _bit[2] is reserved to mean write for future encodings_
+| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
 | 0-2   8+| reserved
 | 3       | ✔ |   | ✔ |   |   |     | N/A | Data & Cap RO (no LM)
 | 4-7   8+| reserved
 9+| *Quadrant 3: Capability data read/write*
 9+| bit[2] - write, R and C implicitly granted.
 9+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
 | 0-2   8+| reserved
 | 3       | ✔ |   | ✔ | ✔ |   |     | N/A | Data & Cap RO
 | 4-6   8+| reserved
@@ -147,50 +152,13 @@ non-zero value.
 NOTE: Mode is encoded with permissions for {cheri_base32_ext_name}, but is not a permission. It is
 orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 
-.Encoding of architectural permissions for {cheri_base32_ext_name} with <<section_zylevels1>>
-[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
-|==============================================================================
-|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
-11+| *Quadrant 0: Non-capability data read/write*
-11+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
-11+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
-| 0   |   |   |   |   |   |   |   |   | N/A | No permissions
-| 1   | ✔ |   |   |   |   |   |   |   | N/A | Data RO
-| 2-3   10+| reserved
-| 4   |   | ✔ |   |   |   |   |   |   | N/A | Data WO
-| 5   | ✔ | ✔ |   |   |   |   |   |   | N/A | Data RW
-| 6-7   10+| reserved
-11+| *Quadrant 1: Executable capabilities*
-11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
-| 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |  ✔  | Mode^1^  | Execute + Data & Cap RW + ASR
-| 2-3   | ✔ |   | ✔ | ✔  | ✔  |   | ✔ |     | Mode^1^  | Execute + Data & Cap RO
-| 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
-| 6-7   | ✔ | ✔ |   |    |    |   | ✔ |     | Mode^1^  | Execute + Data RW
-11+| *Quadrant 2: Restricted capability data read/write*
-11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted, LM dependent on W permission.
-| 0-2   10+| reserved
-| 3       | ✔ |   | ✔ |    |    |   |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
-| 4-5  10+| reserved
-| 6       | ✔ | ✔ | ✔ | ✔  |    | ✔ |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
-| 7       | ✔ | ✔ | ✔ | ✔  |    |   |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
-11+| *Quadrant 3: Capability data read/write*
-11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted.
-11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
-| 0-2   10+| reserved
-| 3       | ✔ |   | ✔ | ✔  | ✔  |   |   |     | N/A | Data & Cap R0
-| 4-6   10+| reserved
-| 6       | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>)
-| 7       | ✔ | ✔ | ✔ | ✔  | ✔  |   |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>)
-|==============================================================================
-
-^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
-is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._
-
-When {cheri_base32_ext_name}, this encoding's compressed permission format
+This encoding's compressed permission format
 specifies a _particular procedure_ for encoding architectural permissions,
 which is used _instead of_ <<CLRPERM>>'s default fixed-pointing procedure.
-If <<section_zylevels1>> is absent, the following rules are run _in order_:
+If <<section_zylevels1>> is absent, the following rules are run once _in order_:
 
+[#clrperm-rules-no-zylevels1]
+.{cheri_base32_ext_name} <<CLRPERM>> rules if <<section_zylevels1>> is absent.
 [float="center",align="center",cols="2,2,4",options="header"]
 |===
 | <<CLRPERM>> Rule | Permission   | Valid only if
@@ -204,8 +172,55 @@ If <<section_zylevels1>> is absent, the following rules are run _in order_:
 | RV32-base-8      | <<m_bit>>    | <<x_perm>> and {cheri_default_ext_name} is implemented
 |===
 
-If <<section_zylevels1>> is present, the following rules are run _in order_:
+[#default-cap-AP-zylevels1]
+==== AP encoding and rules with <<section_zylevels1>> for {cheri_base32_ext_name}
 
+.Encoding of architectural permissions for {cheri_base32_ext_name} with <<section_zylevels1>>
+[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
+|==============================================================================
+11+| *Quadrant 0: Non-capability data read/write*
+11+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
+11+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
+| 0   |   |   |   |   |   |   |   |   | N/A | No permissions
+| 1   | ✔ |   |   |   |   |   |   |   | N/A | Data RO
+| 2-3   10+| reserved
+| 4   |   | ✔ |   |   |   |   |   |   | N/A | Data WO
+| 5   | ✔ | ✔ |   |   |   |   |   |   | N/A | Data RW
+| 6-7   10+| reserved
+11+| *Quadrant 1: Executable capabilities*
+11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
+| 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |  ✔  | Mode^1^  | Execute + Data & Cap RW + ASR
+| 2-3   | ✔ |   | ✔ | ✔  | ✔  |   | ✔ |     | Mode^1^  | Execute + Data & Cap RO
+| 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
+| 6-7   | ✔ | ✔ |   |    |    |   | ✔ |     | Mode^1^  | Execute + Data RW
+11+| *Quadrant 2: Restricted capability data read/write*
+11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted, LM dependent on W permission.
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
+| 0-2   10+| reserved
+| 3       | ✔ |   | ✔ |    |    |   |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
+| 4-5  10+| reserved
+| 6       | ✔ | ✔ | ✔ | ✔  |    | ✔ |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
+| 7       | ✔ | ✔ | ✔ | ✔  |    |   |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
+11+| *Quadrant 3: Capability data read/write*
+11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted.
+11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
+| 0-2   10+| reserved
+| 3       | ✔ |   | ✔ | ✔  | ✔  |   |   |     | N/A | Data & Cap R0
+| 4-6   10+| reserved
+| 6       | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>)
+| 7       | ✔ | ✔ | ✔ | ✔  | ✔  |   |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>)
+|==============================================================================
+
+^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
+is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._
+
+The following rules are run once _in order_:
+
+[#clrperm-rules-zylevels1]
+.{cheri_base32_ext_name} <<CLRPERM>> rules if <<section_zylevels1>> is present.
 [float="center",align="center",cols="2,2,4",options="header"]
 |===
 | <<CLRPERM>> Rule | Permission            | Valid only if
