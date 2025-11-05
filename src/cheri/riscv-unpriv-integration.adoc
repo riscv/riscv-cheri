@@ -5,8 +5,40 @@ ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the unpriv spec after the RV32I chapter.
 endif::[]
 
-This chapter describes the {cheri_base32_ext_name} and {cheri_base64_ext_name} base capability instruction sets, that extend the RV32I and RV64I (or RV32E/RV64E) integer instruction sets with CHERI.
-If the hart supports RV32E/RV64E instead of RV32I/RV64I, {cheri_base_ext_name} the restrictions from <<rv32e>> apply and 16 general purpose registers instead of 32 -- but all other {cheri_base_ext_name} changes are identical so the remainder of this chapter only refers to extending RV32I/RV64I behavior.
+This chapter describes the {cheri_base32_ext_name} and {cheri_base64_ext_name} base capability instruction sets, that extend the RV32I and RV64I instruction sets with CHERI.
+Other standard options to bases are also supported such as E (16-registers), Zfinx and endianess.
+
+=== CHERI encoding formats
+
+CHERI implementations are required to choose a capability encoding format.
+The CHERI base ISA name is extended with the capability encoding format in use.
+
+The definition of all CHERI base ISAs include sufficient details of a capability encoding format to give enough details to allow execution of all base ISA instructions.
+
+As a result, the {cheri_base32_ext_name} and {cheri_base64_ext_name} names on their own do not describe complete base ISAs, as a capability encoding must be selected.
+
+The currently available base ISAs including capability encoding formats are listed below:
+
+* For {cheri_base64_ext_name}, the capability encoding format from the University of Cambridge covering the full 64-bit address space:
+** {rvy64_uni_base_name}
+** {rvy64e_uni_base}
+* For {cheri_base32_ext_name}, the capability encoding format from the University of Cambridge covering the full 32-bit address space and optional RISC-V compatibility with {cheri_default_ext_name}:
+** {rvy32_uni_base_name}
+ifndef::cheri_ratification_v1_only[]
+* For {cheri_base32_ext_name}E, the CHERIoT encoding optimized for smaller devices:
+** {rvy32e_cheriot_base_name}
+
+NOTE: RV32YE (16-register) implementations are recommended to use the {rvy32e_cheriot_base_name} format.
+
+endif::[]
+
+NOTE: The base + encoding format scheme is designed to simply allow more encoding formats to be added in the future, to allow the formats to be optimized for specific applications.
+
+NOTE: {rvy_uni_base_name} bases are closely based upon features from CHERI v9 cite:[cheri-v9-spec], and the bounds encoding scheme is based upon CHERI Concentrate cite:[woodruff2019cheri].
+
+Custom capability encoding formats may be implemented for vendor-specific non-standard implementations.
+
+=== CHERI Overview
 
 CHERI enhances the base ISA to add hardware memory access control.
 It has an additional memory access mechanism that protects _references to code and data_ (pointers), rather than the _location of code and data_ (integer addresses).
@@ -405,7 +437,7 @@ to reduce the number of bits necessary to represent permissions.
 | [[perm_req:base:asr:x,base-3]]base-3      | <<asr_perm>> | <<x_perm>>
 |===
 
-When using <<app_cap_description,{rvy_default_encoding_name}>> and {cheri_base32_ext_name} the complete set of rules with and without <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>> are shown in <<clrperm-rules-no-zylevels1>> and <<clrperm-rules-zylevels1>>.
+When using <<app_cap_description,{rvy_uni_base_name}>> and {cheri_base32_ext_name} the complete set of rules with and without <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>> are shown in <<clrperm-rules-no-zylevels1>> and <<clrperm-rules-zylevels1>>.
 
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
