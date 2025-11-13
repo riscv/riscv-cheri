@@ -48,7 +48,7 @@ This capability encoding has the following properties that affect the observable
 | MW        | {cap_rv64_mw_width}  | Mantissa width
 | EW        | {cap_rv64_exp_width} | Exponent width
 | CAP_MAX_E | {cap_rv64_exp_max}   | Maximum exponent value
-| enableL8  | 0                    | Whether the encoding format includes the L8 bit
+| enableL8  | 0                    | Whether the encoding format includes the L~8~ bit
 | AP_MBit   | 0                    | Whether the <<m_bit>> is encoded in the AP-field
 | AP_MAX    | ones                 | Value of the AP field giving maximum permissions
 |==============================================================================
@@ -225,7 +225,7 @@ inverted to ensure that the <<null-cap>> capability is encoded as zero without t
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base addresses respectively. +
-When EF=0, the exponent `E=CAP_MAX_E - ( (XLEN == 32) ? { L8, TE, BE } : { TE, BE } )`,
+When EF=0, the exponent `E=CAP_MAX_E - ( (XLEN == 32) ? { L~8~, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
 and base addresses respectively. E is computed by subtracting from the maximum
 possible exponent CAP_MAX_E which can be efficiently implemented in hardware
@@ -245,9 +245,9 @@ If EF = 1:
     T[EW / 2 - 1:0] = TE
     B[EW / 2 - 1:0] = BE
     LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
-    LMSB            = (XLEN == 32) ? L8 : 0
+    LMSB            = (XLEN == 32) ? L~8~ : 0
 else:
-    E               = CAP_MAX_E - ( (XLEN == 32) ? { L8, TE, BE } : { TE, BE } )
+    E               = CAP_MAX_E - ( (XLEN == 32) ? { L~8~, TE, BE } : { TE, BE } )
     T[EW / 2 - 1:0] = 0
     B[EW / 2 - 1:0] = 0
     LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
@@ -383,7 +383,7 @@ equivalent to _b_=0 and _t_&#8805;2^XLEN^.
 
 A capability is _malformed_ if its bounds cannot be correctly decoded.
 The following check indicates whether a capability is malformed.
-If `enableL8` is true, the `L8` bit is available in the capability encoding format for extra precision when `EF=1`.
+If `enableL8` is true, the `L~8~` bit is available in the capability encoding format for extra precision when `EF=1`.
 
 [source]
 ----
