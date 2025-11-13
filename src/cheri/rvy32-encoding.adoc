@@ -1,0 +1,304 @@
+[#rvy32_cap_description, reftext="{rvy32_uni_base_name}"]
+== The {rvy32_uni_base_name} Capability Base Extension for {cheri_base32_ext_name}, Version 1.0
+
+This chapter describes an in-memory format and properties of a capability encoding intended for {cheri_base32_ext_name}.
+
+[#section_cap_encoding32]
+=== Capability Encoding
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the in-memory format, and also increase precision for RV32.
+endif::[]
+
+The components of a capability, except the {ctag}, are encoded as shown in xref:cap_encoding_xlen32[xrefstyle=short].
+Each memory location or register able to hold a capability must also store the {ctag} as _out of band_ or _hidden_ information that software cannot directly set or clear.
+The capability metadata is held in the most significant bits and the address is held in the least significant bits.
+
+.Capability encoding for {rvy32_uni_base_name}
+[#cap_encoding_xlen32]
+include::img/cap-encoding-xlen32.edn[]
+
+NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
+
+The encoding diagram above shows the format of capabilities in the case where all {cheri_base_ext_name} (Zy*) extension listed in this manual are supported.
+Certain bits of the capability encoding are only used if certain extensions are implemented and are reserved otherwise:
+
+<<section_cheri_hybrid_ext>>::
+When {cheri_default_ext_name} is supported, capabilities include an <<m_bit>> (which is encoded as part of the <<AP-field-encoding32>>).
+If not supported the <<m_bit>> is reserved and reads as zero.
+
+<<section_zylevels1>>::
+If <<section_zylevels1>> is available, bits 6 and 7 of the `AP` field are allocated, otherwise they must always be set to `1` for any valid capability.
+Additionally, the <<zylevels1_gl_perm,GL>> flag is only available if <<section_zylevels1>> is implemented, otherwise it is reserved and must be zero.
+
+This capability encoding has the following properties that affect the observable behavior of {cheri_base_ext_name} instructions such as <<SCBNDS>> and <<CLRPERM>>:
+
+* **Mantissa width (mw{cap_rv32_mw_width})**: The mantissa width for the bounds encoding uses {cap_rv32_mw_width} bits
+* **Maximum exponent (e{cap_rv32_exp_max})**: The maximum value for the exponent in a valid capability is {cap_rv32_exp_max}.
+* **Representable region (rc1)**: The encoding uses one additional bit to ensure a _centered_ region of at least 1/4 of the capability size remains representable when creating out-of-bounds derived capabilities.
+* **Permission encoding (pc)**: The permissions are encoded using a compressed format that cannot represent every combination of permissions.
+
+[#AP-field-encoding32, reftext="AP-field encoding"]
+==== Architectural Permissions (AP) Encoding
+
+The permissions field is {cap_rv32_perms_width} bits wide and is encoded using one a compressed representation as shown below.
+Certain combinations of permissions are impractical. For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
+Therefore, it is only legal to encode a subset of all combinations, and this redundancy is used to reduce the size of the permissions field compared to {rvy32_uni_base_name}.
+
+The permissions encoding is split into four quadrants.
+The quadrant is taken from bits [4:3] of the permissions encoding.
+The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadrant.
+
+Quadrants 2 and 3 are arranged to implicitly grant future permissions which may be added with the existing allocated encodings.
+Quadrant 0 does the opposite -- the encodings are allocated _not_ to implicitly add future permissions, and so granting future permissions will require new encodings.
+Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
+
+<<<
+[#default-cap-AP-no-zylevels1]
+==== AP encoding and rules without <<section_zylevels1>> for {rvy32_uni_base_name}
+
+.Encoding of architectural permissions for {rvy32_uni_base_name} without <<section_zylevels1>>
+[#cap_perms_encoding_nolevels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
+|==============================================================================
+9+| *Quadrant 0: Non-capability data read/write*
+9+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
+9+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
+| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
+| 0   |   |   |   |   |     |   | N/A | No permissions
+| 1   | ✔ |   |   |   |     |   | N/A | Data RO
+| 2-3   8+| reserved
+| 4   |   | ✔ |   |   |     |   | N/A | Data WO
+| 5   | ✔ | ✔ |   |   |     |   | N/A | Data RW
+| 6-7   8+| reserved
+9+| *Quadrant 1: Executable capabilities*
+9+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
+| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
+| 0-1   | ✔ | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + Data & Cap RW + ASR
+| 2-3   | ✔ |   | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RO
+| 4-5   | ✔ | ✔ | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
+| 6-7   | ✔ | ✔ |   |   | ✔ |     | Mode^1^  | Execute + Data RW
+9+| *Quadrant 2: Restricted capability data read/write*
+9+| R and C implicitly granted, LM dependent on W permission.
+9+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+9+| _bit[2] is reserved to mean write for future encodings_
+| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
+| 0-2   8+| reserved
+| 3       | ✔ |   | ✔ |   |   |     | N/A | Data & Cap RO (no LM)
+| 4-7   8+| reserved
+9+| *Quadrant 3: Capability data read/write*
+9+| bit[2] - write, R and C implicitly granted.
+9+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
+| 0-2   8+| reserved
+| 3       | ✔ |   | ✔ | ✔ |   |     | N/A | Data & Cap RO
+| 4-6   8+| reserved
+| 7       | ✔ | ✔ | ✔ | ✔ |   |     | N/A | Data & Cap RW
+|==============================================================================
+
+^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
+is supported. Despite being encoded here it is *not* an architectural permission._
+
+NOTE: When {rvy32_uni_base_name} there are many reserved permission encodings (see
+xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a valid
+capability to have one of these values since <<CLRPERM>> will never create it. It is
+possible for invalid capabilities to have reserved values. <<GCPERM>> will interpret
+reserved values as if they were 0b00000 (no permissions). Future extensions may assign
+meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
+non-zero value.
+
+NOTE: Mode is encoded with permissions for {rvy32_uni_base_name}, but is not a permission. It is
+orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
+
+This encoding's compressed permission format
+specifies a _particular procedure_ for encoding architectural permissions,
+which is used _instead of_ <<CLRPERM>>'s default fixed-pointing procedure.
+If <<section_zylevels1>> is absent, the following rules are run once _in order_:
+
+[#clrperm-rules-no-zylevels1]
+.{rvy32_uni_base_name} <<CLRPERM>> rules if <<section_zylevels1>> is absent.
+[float="center",align="center",cols="2,2,4",options="header"]
+|===
+| <<CLRPERM>> Rule | Permission   | Valid only if
+| RV32-base-1      | <<c_perm>>   | <<r_perm>> (supersedes <<perm_req:base:c:r-or-w>>)
+| RV32-base-2      | <<x_perm>>   | <<r_perm>>
+| RV32-base-3      | <<w_perm>>   | not(<<c_perm>>) or <<lm_perm>>
+| RV32-base-4      | <<x_perm>>   | <<w_perm>> or <<c_perm>>
+| RV32-base-5      | <<lm_perm>>  | <<c_perm>> (supersedes <<perm_req:base:lm:c-and-r>>)
+| RV32-base-6      | <<x_perm>>   | (<<c_perm>> and <<lm_perm>>) or not (<<c_perm>> or <<lm_perm>>)
+| RV32-base-7      | <<asr_perm>> | <<w_perm>> and <<c_perm>> and <<x_perm>> (supersedes <<perm_req:base:asr:x>>)
+| RV32-base-8      | <<m_bit>>    | <<x_perm>> and {cheri_default_ext_name} is implemented
+|===
+
+[#default-cap-AP-zylevels1]
+==== AP encoding and rules with <<section_zylevels1>> for {rvy32_uni_base_name}
+
+.Encoding of architectural permissions for {rvy32_uni_base_name} with <<section_zylevels1>>
+[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
+|==============================================================================
+11+| *Quadrant 0: Non-capability data read/write*
+11+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
+11+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
+| 0   |   |   |   |   |   |   |   |   | N/A | No permissions
+| 1   | ✔ |   |   |   |   |   |   |   | N/A | Data RO
+| 2-3   10+| reserved
+| 4   |   | ✔ |   |   |   |   |   |   | N/A | Data WO
+| 5   | ✔ | ✔ |   |   |   |   |   |   | N/A | Data RW
+| 6-7   10+| reserved
+11+| *Quadrant 1: Executable capabilities*
+11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
+| 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |  ✔  | Mode^1^  | Execute + Data & Cap RW + ASR
+| 2-3   | ✔ |   | ✔ | ✔  | ✔  |   | ✔ |     | Mode^1^  | Execute + Data & Cap RO
+| 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
+| 6-7   | ✔ | ✔ |   |    |    |   | ✔ |     | Mode^1^  | Execute + Data RW
+11+| *Quadrant 2: Restricted capability data read/write*
+11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted, LM dependent on W permission.
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
+| 0-2   10+| reserved
+| 3       | ✔ |   | ✔ |    |    |   |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
+| 4-5  10+| reserved
+| 6       | ✔ | ✔ | ✔ | ✔  |    | ✔ |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
+| 7       | ✔ | ✔ | ✔ | ✔  |    |   |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
+11+| *Quadrant 3: Capability data read/write*
+11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted.
+11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
+| 0-2   10+| reserved
+| 3       | ✔ |   | ✔ | ✔  | ✔  |   |   |     | N/A | Data & Cap R0
+| 4-6   10+| reserved
+| 6       | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>)
+| 7       | ✔ | ✔ | ✔ | ✔  | ✔  |   |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>)
+|==============================================================================
+
+^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
+is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._
+
+The following rules are run once _in order_:
+
+[#clrperm-rules-zylevels1]
+.{rvy32_uni_base_name} <<CLRPERM>> rules if <<section_zylevels1>> is present.
+[float="center",align="center",cols="2,2,4",options="header"]
+|===
+| <<CLRPERM>> Rule | Permission            | Valid only if
+| RV32-l1-1        | <<c_perm>>            | <<r_perm>> (supersedes <<perm_req:base:c:r-or-w>>)
+| RV32-l1-2        | <<x_perm>>            | <<r_perm>>
+| RV32-l1-3        | <<w_perm>>            | not(<<c_perm>>) or <<lm_perm>>
+| RV32-l1-4        | <<x_perm>>            | <<w_perm>> or <<c_perm>>
+| RV32-l1-5        | <<lm_perm>>           | <<c_perm>> (supersedes <<perm_req:base:lm:c-and-r>>)
+| RV32-l1-6        | <<lm_perm>>           | <<w_perm>> or <<zylevels1_lg_perm>>
+| RV32-l1-7        | <<zylevels1_lg_perm>> | <<lm_perm>> (supersedes <<perm_req:zylevels1:lg:c-and-r>>)
+| RV32-l1-8        | <<zylevels1_sl_perm>> | <<lm_perm>> and <<w_perm>> (supersedes <<perm_req:zylevels1:sl:c-and-w>>)
+| RV32-l1-9        | <<x_perm>>            |
+  (<<c_perm>> and <<lm_perm>> and <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>) or +
+  (<<c_perm>> and <<lm_perm>> and <<zylevels1_lg_perm>> and not <<w_perm>>) or +
+  not (<<c_perm>> or <<lm_perm>> or <<zylevels1_lg_perm>> or <<zylevels1_sl_perm>>)
+| RV32-l1-10       | <<asr_perm>>          | <<w_perm>> and <<c_perm>> and <<x_perm>> (supersedes <<perm_req:base:asr:x>>)
+| RV32-l1-11       | <<m_bit>>             | <<x_perm>> and {cheri_default_ext_name} is implemented
+|===
+
+For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
+are only valid if {cheri_default_ext_name} is implemented.
+Otherwise those encodings represent invalid permissions.
+
+[#M-field-encoding32, reftext="M-field encoding"]
+==== Capability Mode (M) Encoding
+
+The <<m_bit>> is encoded as bit zero of the <<AP-field-encoding32>> for the executable quadrant and only assigned meaning when the implementation supports {cheri_default_ext_name} (_and_ <<x_perm>> is set).
+In valid capabilities, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
+
+[#SDP-field32, reftext="SDP-field"]
+==== Software-Defined Permissions (SDP) Encoding
+
+The <<SDP-field32>> is {cap_rv32_sdp_width} bits wide.
+The value of the <<SDP-field32>> bits of the <<GCPERM>> result maps 1:1 to the <<SDP-field32>> in the capability.
+
+NOTE: Software is completely free to define the usage of these bits.
+
+[#section_cap_sealed32]
+==== Capability Type (CT) Encoding
+
+Capabilities in this encoding have a 1-bit field for <<sec_cap_type>> values which behaves in the same way as the {rvy64_uni_base_name} <<section_cap_sealed>>.
+
+[#section_cap_bounds32]
+==== Bounds (EF, T, TE, B, BE, L8) Encoding
+
+The bounds are encoding in the same way as in <<section_cap_bounds,{rvy64_uni_base_name}>>, with the appropriate values for mantissa width and maximum exponent substituted.
+Compared to {rvy64_uni_base_name}, this encoding uses an additional `L8` bit as described in xref:section_cap_bounds[xrefstyle=short].
+
+===== <<AUIPC_CHERI>> Shift
+
+For the capabilities of this encoding, the <<section_auipc_shift>> value is 12.
+The bounds encoding has sufficient <<section_rep_check_concept,representability>> that no <<AUIPC_CHERI>> instruction used to reach an in-bounds offset
+will clear the {ctag}.
+
+[#section_special_caps_encoding32]
+=== Encoding of Special Capabilities
+
+[#section_null_cap_encoding32]
+==== NULL Capability Encoding
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
+the difference between in-memory and architectural format.
+endif::[]
+
+The <<null-cap>> capability is represented with 0 in all fields. This implies
+that it has no permissions and its exponent E is CAP_MAX_E (24), so its bounds cover the entire address space such that the expanded base is 0 and top is 2^XLEN^.
+
+.Field values of the NULL capability
+[#null-cap-encoding32,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
+|==============================================================================
+| Field    | Value  | Comment
+| {ctag_title}             | zero   | Capability is not valid
+| <<SDP-field32,SDP>>        | zeros  | Grants no permissions
+| <<AP-field-encoding32,AP>>          | zeros  | Grants no permissions
+| CT       | zero   | Unsealed
+| EF       | zero   | Internal exponent format
+| L~8~     | zero   | Top address reconstruction bit
+| T        | zeros  | Top address bits
+| T~E~     | zeros  | Exponent bits
+| B        | zeros  | Base address bits
+| B~E~     | zeros  | Exponent bits
+| Address  | zeros  | Capability address
+| Reserved | zeros  | All reserved fields
+|==============================================================================
+
+[#section_infinite_cap_encoding32]
+==== Infinite Capability Encoding
+
+This encoding is for an _Infinite_ capability value, which grants all permissions while its bounds also cover the whole address space.
+It includes <<x_perm>> and so includes the <<m_bit>> if {cheri_default_ext_name} is supported.
+This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capability.
+
+.Field values of the Infinite capability
+[#infinite-cap-encoding32,reftext="Infinite"]
+[options=header,align=center,width="90%",cols="25,23,52"]
+|==============================================================================
+| Field         | Value | Comment
+| {ctag_title}  | one   | Capability is valid
+| SDP           | ones  | Grants all permissions
+| AP            | 0x8/0x9^1^ | Grants all permissions
+| CT            | zero  | Unsealed
+| EF            | zero  | Internal exponent format
+| L~8~          | zero  | Top address reconstruction bit
+| T             | zeros | Top address bits
+| T~E~          | zeros | Exponent bits
+| B             | zeros | Base address bits
+| B~E~          | zeros | Exponent bits
+| Address       | any^2^ | Capability address
+| Reserved      | zeros | All reserved fields
+|==============================================================================
+
+^1^If {cheri_default_ext_name} is supported, then the infinite capability must represent {cheri_int_mode_name} for compatibility with standard RISC-V code.
+Therefore, the <<m_bit>> is set to {INT_MODE_VALUE} in the <<AP-field-encoding32>>, giving the value 0x9.
+
+^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
+If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
+
+Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities.
+
+[#section_cap_representable_check32, reftext="Representable Range"]
+=== Representable Range Check
+
+The representable range check behaves in exactly the same way as in {rvy64_uni_base_name}, just with the {cap_rv32_mw_width}-bit mantissa width of this encoding.

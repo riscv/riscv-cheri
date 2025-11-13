@@ -1,256 +1,54 @@
-[#app_cap_description, reftext="{rvy_uni_base_name}"]
-== {rvy_uni_base_name} - The University of Cambridge Capability Encoding in {cheri_base_ext_name}
+[#rvy64_cap_description, reftext="{rvy64_uni_base_name}"]
+== The {rvy64_uni_base_name} Capability Base Extension for {cheri_base64_ext_name}, Version 1.0
 
-This chapter describes the University of Cambridge capability encoding for both {rvy64_uni_base_name} and {rvy32_uni_base_name}.
-It covers the following configurations:
-
-* <<uycfg>>.base=0, and
-* <<uycfg>>.features=0 (no levels support) or 1 (<<section_zylevels1>> support)
-
-NOTE: No levels support is specified as an option to allow flexibility for future extensions to reuse the architectural permissions allocated to <<section_zylevels1>> in {rvy32_uni_base_name}. It is not recommended to exclude <<section_zylevels1>> until a better alternative exists.
-
-This minimal encoding is indicated by <<uycfg>>.base=0, <<uycfg>>.features=1.
-
-
-If {cheri_default_ext_name} is implemented, the specification includes encoding the <<cheri_execution_mode>> in the capability format.
-
-ifdef::cheri_standalone_spec[]
-WARNING: This chapter will appear as an appendix in the unpriv specification.
-endif::[]
-
-ifdef::support_varxlen[]
-The value of XLEN may
-change dynamically at run-time depending on the values written to CSRs, so we
-define capability behavior in terms of MXLEN, which is the value of XLEN used
-in machine mode and the widest XLEN the implementation supports.
-
-NOTE: {cheri_base_ext_name} assumes a version of the privileged architecture
-which defines MXLEN as constant and requires higher privilege modes to have at
-least the same XLEN as lower privilege modes; these changes are present in the
-current draft and expected to be part of privileged architecture 1.13.
-endif::support_varxlen[]
+This chapter describes the in-memory format and properties of the capability encoding intended for {cheri_base64_ext_name}.
 
 [#section_cap_encoding]
 === Capability Encoding
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the
-in-memory format, and also increase precision for RV32.
+NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the in-memory format.
 endif::[]
 
-The components of a capability, except the {ctag}, are encoded as shown in
-xref:cap_encoding_xlen32[xrefstyle=short] for {rvy32_uni_base_name} and
-xref:cap_encoding_xlen64[xrefstyle=short] for {rvy64_uni_base_name}. Each memory location
-or register able to hold a capability must also store the {ctag} as _out of band_ or _hidden_
-information that software cannot directly set or clear. The capability metadata
-is held in the most significant bits and the address is held in the least
-significant bits.
-
-.Capability encoding for {rvy32_uni_base_name}
-[#cap_encoding_xlen32]
-include::img/cap-encoding-xlen32.edn[]
+The components of a capability, except the {ctag}, are encoded as shown in xref:cap_encoding_xlen64[xrefstyle=short].
+Each memory location or register able to hold a capability must also store the {ctag} as _out of band_ or _hidden_ information that software cannot directly set or clear.
+The capability metadata is held in the most significant bits and the address is held in the least significant bits.
 
 .Capability encoding for {rvy64_uni_base_name}
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
-Reserved bits are available for future extensions to {rvy_uni_base_name}.
+NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
 
-NOTE: The <<zylevels1_gl_perm,GL>> flag is only available if <<section_zylevels1>> is implemented, otherwise it is reserved
-
-NOTE: Reserved bits must be 0 in valid capabilities.
-
-The encoding of capabilities depends on the extensions supported by the current environment.
-The following extensions affect the capability encoding:
+The encoding diagram above shows the format of capabilities in the case where all {cheri_base_ext_name} (Zy*) extension listed in this manual are supported.
+Certain bits of the capability encoding are only used if certain extensions are implemented and are reserved otherwise:
 
 <<section_cheri_hybrid_ext>>::
-When {cheri_default_ext_name} is supported, capabilities include an <<m_bit>> which is included in the specification below.
+When {cheri_default_ext_name} is supported, capabilities include an <<m_bit>> (bit 52).
 If not supported the <<m_bit>> is reserved and reads as zero.
 
 <<section_zylevels1>>::
-The base definition of capabilities in {rvy_uni_base_name} does not have capability-mediated Information Flow Control (IFC) mechanisms.
-<<section_zylevels1>> is available for this and other schemes are likely in the future to add more levels.
+If <<section_zylevels1>> is available, bits 6 and 7 of the `AP` field are allocated, otherwise they must always be set to `1` for any valid capability.
+Additionally, the <<zylevels1_gl_perm,GL>> flag is only available if <<section_zylevels1>> is implemented, otherwise it is reserved and must be zero.
 
-[#AP-field-encoding, reftext="AP-field encoding"]
+
+This capability encoding has the following properties that affect the observable behavior of {cheri_base_ext_name} instructions such as <<SCBNDS>> and <<CLRPERM>>:
+
+* **Mantissa width (mw{cap_rv64_mw_width})**: The mantissa width for the bounds encoding uses {cap_rv64_mw_width} bits
+* **Maximum exponent (e{cap_rv64_exp_max})**: The maximum value for the exponent in a valid capability is {cap_rv64_exp_max}.
+* **Representable region (rc1)**: The encoding uses one additional bit to ensure a _centered_ region of at least 1/4 of the capability size remains representable when creating out-of-bounds derived capabilities.
+* **Permission encoding (ps)**: The permissions are encoded using a simple representation of one bit per architectural permission.
+
+[#AP-field-encoding64, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
-The bit width of the permissions field depends on the value of MXLEN as shown
-in xref:perms_bit_width[xrefstyle=short]. A {cap_rv32_perms_width}-bit vector
-encodes the permissions when {rvy32_uni_base_name}. For this case, the legal encodings of
-permissions are listed in xref:cap_perms_encoding32[xrefstyle=short]. Certain
-combinations of permissions are impractical. For example, <<c_perm>> is
-superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
-Therefore, it is only possible to encode a subset of all combinations.
-
-.Permissions widths depending on MXLEN
-[#perms_bit_width,options=header,align="center",width="80%",cols="^13%,^27%,<60%"]
-|==============================================================================
-^| MXLEN | <<AP-field>> width     | Comment
-^| 32    | {cap_rv32_perms_width} | Encodes some combinations of {cap_rv64_perms_width} permission bits, including the <<m_bit>> if {cheri_default_ext_name} is supported.
-^| 64    | {cap_rv64_perms_width} | Separate bits for each architectural permission.
-|==============================================================================
-
-For {rvy32_uni_base_name}, the permissions encoding is split into four quadrants.
-The quadrant is taken from bits [4:3] of the permissions encoding.
-The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadrant.
-
-Quadrants 2 and 3 are arranged to implicitly grant future permissions which may be added with the existing allocated encodings.
-Quadrant 0 does the opposite - the encodings are allocated _not_ to implicitly add future permissions, and so granting future permissions will require new encodings.
-Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
-
-<<<
-[#default-cap-AP-no-zylevels1]
-==== AP encoding and rules without <<section_zylevels1>> for {rvy32_uni_base_name}
-
-.Encoding of architectural permissions for {rvy32_uni_base_name} without <<section_zylevels1>>
-[#cap_perms_encoding_nolevels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
-|==============================================================================
-9+| *Quadrant 0: Non-capability data read/write*
-9+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
-9+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
-| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
-| 0   |   |   |   |   |     |   | N/A | No permissions
-| 1   | ✔ |   |   |   |     |   | N/A | Data RO
-| 2-3   8+| reserved
-| 4   |   | ✔ |   |   |     |   | N/A | Data WO
-| 5   | ✔ | ✔ |   |   |     |   | N/A | Data RW
-| 6-7   8+| reserved
-9+| *Quadrant 1: Executable capabilities*
-9+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
-| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
-| 0-1   | ✔ | ✔ | ✔ | ✔ | ✔ |  ✔  | Mode^1^  | Execute + Data & Cap RW + ASR
-| 2-3   | ✔ |   | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RO
-| 4-5   | ✔ | ✔ | ✔ | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
-| 6-7   | ✔ | ✔ |   |   | ✔ |     | Mode^1^  | Execute + Data RW
-9+| *Quadrant 2: Restricted capability data read/write*
-9+| R and C implicitly granted, LM dependent on W permission.
-9+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
-9+| _bit[2] is reserved to mean write for future encodings_
-| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
-| 0-2   8+| reserved
-| 3       | ✔ |   | ✔ |   |   |     | N/A | Data & Cap RO (no LM)
-| 4-7   8+| reserved
-9+| *Quadrant 3: Capability data read/write*
-9+| bit[2] - write, R and C implicitly granted.
-9+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
-| Field[2:0] | R | W | C | LM | X | ASR | Mode^1^ | Notes
-| 0-2   8+| reserved
-| 3       | ✔ |   | ✔ | ✔ |   |     | N/A | Data & Cap RO
-| 4-6   8+| reserved
-| 7       | ✔ | ✔ | ✔ | ✔ |   |     | N/A | Data & Cap RW
-|==============================================================================
-
-^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
-is supported. Despite being encoded here it is *not* an architectural permission._
-
-NOTE: When {rvy32_uni_base_name} there are many reserved permission encodings (see
-xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a valid
-capability to have one of these values since <<CLRPERM>> will never create it. It is
-possible for invalid capabilities to have reserved values. <<GCPERM>> will interpret
-reserved values as if they were 0b00000 (no permissions). Future extensions may assign
-meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
-non-zero value.
-
-NOTE: Mode is encoded with permissions for {rvy32_uni_base_name}, but is not a permission. It is
-orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
-
-This encoding's compressed permission format
-specifies a _particular procedure_ for encoding architectural permissions,
-which is used _instead of_ <<CLRPERM>>'s default fixed-pointing procedure.
-If <<section_zylevels1>> is absent, the following rules are run once _in order_:
-
-[#clrperm-rules-no-zylevels1]
-.{rvy32_uni_base_name} <<CLRPERM>> rules if <<section_zylevels1>> is absent.
-[float="center",align="center",cols="2,2,4",options="header"]
-|===
-| <<CLRPERM>> Rule | Permission   | Valid only if
-| RV32-base-1      | <<c_perm>>   | <<r_perm>> (supersedes <<perm_req:base:c:r-or-w>>)
-| RV32-base-2      | <<x_perm>>   | <<r_perm>>
-| RV32-base-3      | <<w_perm>>   | not(<<c_perm>>) or <<lm_perm>>
-| RV32-base-4      | <<x_perm>>   | <<w_perm>> or <<c_perm>>
-| RV32-base-5      | <<lm_perm>>  | <<c_perm>> (supersedes <<perm_req:base:lm:c-and-r>>)
-| RV32-base-6      | <<x_perm>>   | (<<c_perm>> and <<lm_perm>>) or not (<<c_perm>> or <<lm_perm>>)
-| RV32-base-7      | <<asr_perm>> | <<w_perm>> and <<c_perm>> and <<x_perm>> (supersedes <<perm_req:base:asr:x>>)
-| RV32-base-8      | <<m_bit>>    | <<x_perm>> and {cheri_default_ext_name} is implemented
-|===
-
-[#default-cap-AP-zylevels1]
-==== AP encoding and rules with <<section_zylevels1>> for {rvy32_uni_base_name}
-
-.Encoding of architectural permissions for {rvy32_uni_base_name} with <<section_zylevels1>>
-[#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
-|==============================================================================
-11+| *Quadrant 0: Non-capability data read/write*
-11+| bit[2] - write, bit[1] - reserved (0), bit[0] - read
-11+| _Reserved bits for future extensions are 0 so new permissions are not implicitly granted_
-|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
-| 0   |   |   |   |   |   |   |   |   | N/A | No permissions
-| 1   | ✔ |   |   |   |   |   |   |   | N/A | Data RO
-| 2-3   10+| reserved
-| 4   |   | ✔ |   |   |   |   |   |   | N/A | Data WO
-| 5   | ✔ | ✔ |   |   |   |   |   |   | N/A | Data RW
-| 6-7   10+| reserved
-11+| *Quadrant 1: Executable capabilities*
-11+| bit[0] - <<m_bit>> ({CAP_MODE_VALUE}-{cheri_cap_mode_name}, {INT_MODE_VALUE}-{cheri_int_mode_name})
-|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
-| 0-1   | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |  ✔  | Mode^1^  | Execute + Data & Cap RW + ASR
-| 2-3   | ✔ |   | ✔ | ✔  | ✔  |   | ✔ |     | Mode^1^  | Execute + Data & Cap RO
-| 4-5   | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |     | Mode^1^  | Execute + Data & Cap RW
-| 6-7   | ✔ | ✔ |   |    |    |   | ✔ |     | Mode^1^  | Execute + Data RW
-11+| *Quadrant 2: Restricted capability data read/write*
-11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted, LM dependent on W permission.
-|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
-| 0-2   10+| reserved
-| 3       | ✔ |   | ✔ |    |    |   |   |     | N/A | Data & Cap R0 (without <<lm_perm>>)
-| 4-5  10+| reserved
-| 6       | ✔ | ✔ | ✔ | ✔  |    | ✔ |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
-| 7       | ✔ | ✔ | ✔ | ✔  |    |   |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>, no <<zylevels1_lg_perm>>)
-11+| *Quadrant 3: Capability data read/write*
-11+| bit[2] = write, bit[1] reserved, bit[0] = !SL. R and C implicitly granted.
-11+| _Reserved bits for future extensions must be 1 so they are implicitly granted_
-|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Mode^1^ | Notes
-| 0-2   10+| reserved
-| 3       | ✔ |   | ✔ | ✔  | ✔  |   |   |     | N/A | Data & Cap R0
-| 4-6   10+| reserved
-| 6       | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ |   |     | N/A | Data & Cap RW (with <<zylevels1_sl_perm>>)
-| 7       | ✔ | ✔ | ✔ | ✔  | ✔  |   |   |     | N/A | Data & Cap RW (no <<zylevels1_sl_perm>>)
-|==============================================================================
-
-^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
-is supported, otherwise such encodings are reserved. Despite being encoded here it is *not* an architectural permission._
-
-The following rules are run once _in order_:
-
-[#clrperm-rules-zylevels1]
-.{rvy32_uni_base_name} <<CLRPERM>> rules if <<section_zylevels1>> is present.
-[float="center",align="center",cols="2,2,4",options="header"]
-|===
-| <<CLRPERM>> Rule | Permission            | Valid only if
-| RV32-l1-1        | <<c_perm>>            | <<r_perm>> (supersedes <<perm_req:base:c:r-or-w>>)
-| RV32-l1-2        | <<x_perm>>            | <<r_perm>>
-| RV32-l1-3        | <<w_perm>>            | not(<<c_perm>>) or <<lm_perm>>
-| RV32-l1-4        | <<x_perm>>            | <<w_perm>> or <<c_perm>>
-| RV32-l1-5        | <<lm_perm>>           | <<c_perm>> (supersedes <<perm_req:base:lm:c-and-r>>)
-| RV32-l1-6        | <<lm_perm>>           | <<w_perm>> or <<zylevels1_lg_perm>>
-| RV32-l1-7        | <<zylevels1_lg_perm>> | <<lm_perm>> (supersedes <<perm_req:zylevels1:lg:c-and-r>>)
-| RV32-l1-8        | <<zylevels1_sl_perm>> | <<lm_perm>> and <<w_perm>> (supersedes <<perm_req:zylevels1:sl:c-and-w>>)
-| RV32-l1-9        | <<x_perm>>            |
-  (<<c_perm>> and <<lm_perm>> and <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>) or +
-  (<<c_perm>> and <<lm_perm>> and <<zylevels1_lg_perm>> and not <<w_perm>>) or +
-  not (<<c_perm>> or <<lm_perm>> or <<zylevels1_lg_perm>> or <<zylevels1_sl_perm>>)
-| RV32-l1-10       | <<asr_perm>>          | <<w_perm>> and <<c_perm>> and <<x_perm>> (supersedes <<perm_req:base:asr:x>>)
-| RV32-l1-11       | <<m_bit>>             | <<x_perm>> and {cheri_default_ext_name} is implemented
-|===
-
-For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
-are only valid if {cheri_default_ext_name} is implemented.
-Otherwise those encodings represent invalid permissions.
-
-When {rvy64_uni_base_name}, there is a bit per permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
+The permissions field is {cap_rv64_perms_width} bits wide and is encoded using one bit per architectural permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
 A permission is granted if its corresponding bit, and those of any dependent permissions, are set;
 otherwise, the capability does not grant that permission.
+Certain combinations of permissions are impractical. For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
+Therefore, it is only legal to encode a subset of all combinations, but this capability encoding does not make use of this redundancy as there are sufficient reserved bits.
 
-<<<
+NOTE: In the future, if there are no further remaining reserved bits, but extensions need to allocate further capability metadata bits, it will be possible to use the redundancy to create a future version two of this encoding that is fully _compatible for all software_ but with observable differences in the in-memory representation of capabilities.
 
 .Encoding of architectural permissions for {rvy64_uni_base_name}
 [#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="75%"]
@@ -262,37 +60,23 @@ otherwise, the capability does not grant that permission.
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
 | 5   | <<lm_perm>>
-| 6   | <<zylevels1_lg_perm>> if <<section_zylevels1>> is implemented; reserved otherwise.
-| 7   | <<zylevels1_sl_perm>> if <<section_zylevels1>> is implemented; reserved otherwise.
+| 6   | <<zylevels1_lg_perm>> if <<section_zylevels1>> is implemented; reserved `1` otherwise.
+| 7   | <<zylevels1_sl_perm>> if <<section_zylevels1>> is implemented; reserved `1` otherwise.
 |==============================================================================
 
-The <<m_bit>> is only assigned meaning when the
-implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
+NOTE: Future extensions may define new permissions and, if so, must augment the above table.
 
-. For {rvy64_uni_base_name}, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
-. For {rvy32_uni_base_name}, the <<m_bit>> is only encoded in quadrant 1 and does _not_ exist in the other quadrants.
+[#M-field-encoding64, reftext="M-field encoding"]
+==== Capability Mode (M) Encoding
 
-NOTE: Future extensions may allow more combinations of permissions, especially for {rvy64_uni_base_name}.
+The <<m_bit>> is only assigned meaning when the implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
+In valid capabilities, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
 
-NOTE: Future extensions may define new dependent permissions and, if so, must augment the above table.
-
-[#SDP-field, reftext="SDP-field"]
+[#SDP-field64, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
 
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* CHERI v9 had no software-defined permissions for RV32
-endif::[]
-
-The width of the <<SDP-field>> depends on the underlying base architecture.
-The value of the <<SDP-field>> bits of the <<GCPERM>> result maps 1:1 to the <<SDP-field>> in the capability.
-
-.SDP widths depending on MXLEN
-[#sdp_bit_width,options=header,align="center",width="55%"]
-|==============================================================================
-^| MXLEN   ^| SDPLEN
-^| 32      ^| {cap_rv32_sdp_width}
-^| 64      ^| {cap_rv64_sdp_width}
-|==============================================================================
+The <<SDP-field64>> is {cap_rv64_sdp_width} bits wide.
+The value of the <<SDP-field64>> bits of the <<GCPERM>> result maps 1:1 to the <<SDP-field64>> in the capability.
 
 NOTE: Software is completely free to define the usage of these bits.
 
@@ -328,7 +112,7 @@ That is, <<JALR_CHERI>> will, as directed, attempt to jump to any unsealed or se
 ifdef::cheri_standalone_spec[]
 [NOTE]
 =====
-The permission encodings of <<AP-field-encoding>> do not provide mappings for
+The permission encodings of <<rvy32_cap_description>>/<<rvy64_cap_description>> do not provide mappings for
 the <<section_zyseal>> extension's <<zyseal_se_perm>> or <<zyseal_us_perm>>.
 Thus, without further revision, the encodings of this chapter
 are incompatible with the <<section_zyseal>> extension.
@@ -376,35 +160,36 @@ into the capability's address
     ** The exponent is zero if EF=1
 
 The bit width of T and B are defined in terms of the mantissa width (MW) which
-is set depending on the value of MXLEN as shown in
+is set depending on capability encoding as shown in
 xref:mantissa_bit_width[xrefstyle=short].
 
-.Mantissa width (MW) values depending on MXLEN
+.Mantissa width (MW) values depending on capability encoding
 [#mantissa_bit_width,options=header,align="center",width="55%"]
 |==============================================================================
-^| MXLEN   ^| MW
-^| 32      ^| {cap_rv32_mw_width}
-^| 64      ^| {cap_rv64_mw_width}
+^| Encoding   ^| MW
+^| {rvy32_uni_base_name} ^| {cap_rv32_mw_width}
+^| {rvy64_uni_base_name} ^| {cap_rv64_mw_width}
 |==============================================================================
 
 The exponent E indicates the position of T and B within the capability's
 address as described in xref:section_cap_encoding[xrefstyle=short]. The bit
-width of the exponent (EW) is set depending on the value of MXLEN. The
+width of the exponent (EW) is set depending on the encoding. The
 maximum value of the exponent is calculated as follows:
 
-```
-CAP_MAX_E = MXLEN - MW + 2
-```
+[source]
+----
+CAP_MAX_E = XLEN - MW + 2
+----
 
 The possible values for EW and CAP_MAX_E are shown in
 xref:exp_bit_width[xrefstyle=short].
 
-.Exponent widths and CAP_MAX_E depending on MXLEN
+.Exponent widths and CAP_MAX_E depending on capability encoding
 [#exp_bit_width,options=header,align="center",width="55%"]
 |==============================================================================
-^| MXLEN   ^| EW                   ^| CAP_MAX_E
-^| 32      ^| {cap_rv32_exp_width} ^| 24
-^| 64      ^| {cap_rv64_exp_width} ^| 52
+^| XLEN                 ^| EW ^| CAP_MAX_E
+^| {rvy32_uni_base_name} ^| {cap_rv32_exp_width}  ^| {cap_rv32_exp_max}
+^| {rvy64_uni_base_name} ^| {cap_rv64_exp_width}  ^| {cap_rv64_exp_max}
 |==============================================================================
 
 NOTE: The address and bounds must be representable in valid capabilities i.e.,
@@ -428,7 +213,7 @@ inverted to ensure that the <<null-cap>> capability is encoded as zero without t
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base addresses respectively. +
-When EF=0, the exponent `E=CAP_MAX_E - ( (MXLEN == 32) ? { L8, TE, BE } : { TE, BE } )`,
+When EF=0, the exponent `E=CAP_MAX_E - ( (XLEN == 32) ? { L8, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
 and base addresses respectively. E is computed by subtracting from the maximum
 possible exponent CAP_MAX_E which can be efficiently implemented in hardware
@@ -438,38 +223,40 @@ base addresses by assuming that T and B are at bit 0 and performing a logical
 bitwise shift left by E.
 endif::[]
 
-```
-EW        = (MXLEN == 32) ? 5 : 6
-CAP_MAX_E = MXLEN - MW + 2
+[source]
+----
+EW        = (XLEN == 32) ? 5 : 6
+CAP_MAX_E = XLEN - MW + 2
 
 If EF = 1:
     E               = 0
     T[EW / 2 - 1:0] = TE
     B[EW / 2 - 1:0] = BE
     LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
-    LMSB            = (MXLEN == 32) ? L8 : 0
+    LMSB            = (XLEN == 32) ? L8 : 0
 else:
-    E               = CAP_MAX_E - ( (MXLEN == 32) ? { L8, TE, BE } : { TE, BE } )
+    E               = CAP_MAX_E - ( (XLEN == 32) ? { L8, TE, BE } : { TE, BE } )
     T[EW / 2 - 1:0] = 0
     B[EW / 2 - 1:0] = 0
     LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
     LMSB            = 1
-```
+----
 
 Reconstituting the top two bits of T:
 
-```
+[source]
+----
 T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
-```
+----
 
 The bounds are decoded as shown in xref:top_bound_dec[xrefstyle=short] and
 xref:base_bound_dec[xrefstyle=short].
 
-.Decoding of the MXLEN+1 wide top (_t_) bound
+.Decoding of the XLEN+1 wide top (_t_) bound
 [#top_bound_dec]
 include::img/top-bound-dec.edn[]
 
-.Decoding of the MXLEN wide base (_b_) bound
+.Decoding of the XLEN wide base (_b_) bound
 [#base_bound_dec]
 include::img/base-bound-dec.edn[]
 
@@ -477,16 +264,16 @@ xref:top_bound_dec[xrefstyle=short] and xref:base_bound_dec[xrefstyle=short]
 include ranges which may not be present when the bounds are decoded:
 
 * If E = 0 the lower section does not exist.
-* If E+MW=MXLEN then the top section is only the least signification bit of
+* If E+MW=XLEN then the top section is only the least signification bit of
  c~t~ for the top bound, and top section doesn't exist for the bottom bound.
-* If E+MW>MXLEN then neither top section exists, and so the bounds are calculated
+* If E+MW>XLEN then neither top section exists, and so the bounds are calculated
  with no depending on the address field _a_.
 
 The corrections c~t~ and c~b~ are calculated as as shown below using the
 definitions in xref:cap_encoding_ct[xrefstyle=short] and
 xref:cap_encoding_cb[xrefstyle=short].
 
-[subs="quotes"]
+[source,subs="quotes"]
 ----
 A[MW-1:0] = a[E + MW - 1:E]
 R[MW-1:0] = B - 2^MW-2^
@@ -532,7 +319,7 @@ that this bit is implied by E.
 
 The most significant two bits of T can be derived from B using
 the equality `T = B + L`, where L[MW - 2] is known from the values of EF and E
-(as well as L~8~ when {rvy32_uni_base_name}).
+(as well as L~8~ for {rvy32_uni_base_name}).
 A carry out is implied if `T[MW - 3:0] < B[MW - 3:0]` since it is
 guaranteed that the top is larger than the base.
 
@@ -558,17 +345,18 @@ while still allowing the bounds to be correctly decoded.
 ===== Top bound MSB correction
 
 A capability has _infinite_ bounds if its bounds cover the entire address space
-such that the base address _b_=0 and the top address _t_&#8805;2^MXLEN^,
-i.e., _t_ is an MXLEN + 1 bit value. However, _b_ is an
-MXLEN-bit value and the size mismatch introduces additional complications
+such that the base address _b_=0 and the top address _t_&#8805;2^XLEN^,
+i.e., _t_ is an XLEN + 1 bit value. However, _b_ is an
+XLEN-bit value and the size mismatch introduces additional complications
 when decoding, so the following condition is required to correct _t_ for
 capabilities whose <<section_cap_representable_check>> wraps the edge of the address
-space:D
+space:
 
-```
-if ( (E < (CAP_MAX_E - 1)) & (t[MXLEN: MXLEN - 1] - b[MXLEN - 1] > 1) )
-    t[MXLEN] = !t[MXLEN]
-```
+[source]
+----
+if ( (E < (CAP_MAX_E - 1)) & (t[XLEN: XLEN - 1] - b[XLEN - 1] > 1) )
+    t[XLEN] = !t[XLEN]
+----
 NOTE: The comparison is _unsigned_.
 
 That is, invert the most significant bit of _t_ if the decoded length of the
@@ -576,7 +364,7 @@ capability is larger than E.
 
 NOTE: A capability has infinite bounds if E=CAP_MAX_E and it is not
 malformed (see xref:section_cap_malformed[xrefstyle=short]); this check is
-equivalent to _b_=0 and _t_&#8805;2^MXLEN^.
+equivalent to _b_=0 and _t_&#8805;2^XLEN^.
 
 [#section_cap_malformed]
 ===== Malformed Capability Bounds
@@ -587,12 +375,13 @@ indicates whether a capability is malformed. `enableL8` is true when {rvy32_uni_
 and false otherwise, indicating whether the `L8` bit is available for extra
 precision when `EF=1`.
 
-```
+[source]
+----
 malformedMSB =  (E == CAP_MAX_E     && B         != 0)
              || (E == CAP_MAX_E - 1 && B[MW - 1] != 0)
 malformedLSB =  (E  < 0) || (E == 0 && enableL8)
 malformed    =  !EF && (malformedMSB || malformedLSB)
-```
+----
 
 Capabilities with malformed bounds:
 
@@ -623,9 +412,8 @@ the difference between in-memory and architectural format.
 endif::[]
 
 The <<null-cap>> capability is represented with 0 in all fields. This implies
-that it has no permissions and its exponent E is CAP_MAX_E (52 for {rvy64_uni_base_name},
-24 for {rvy32_uni_base_name}), so its bounds cover the entire address space such that the
-expanded base is 0 and top is 2^MXLEN^.
+that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}), so its bounds cover the entire address space such that the
+expanded base is 0 and top is 2^XLEN^.
 
 .Field values of the NULL capability
 [#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
@@ -677,15 +465,13 @@ NOTE: This capability format has a single encoding for the _Infinite_ capability
 | T~E~          | zeros | Exponent bits
 | B             | zeros | Base address bits
 | B~E~          | zeros | Exponent bits
-| Address       | zeros^2^ | Capability address
+| Address       | any^2^ | Capability address
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
 ^1^If {cheri_default_ext_name} is supported, then the infinite capability must represent
-{cheri_int_mode_name} for compatibility with standard RISC-V code. Therefore:
-
-* For {rvy32_uni_base_name}, the <<m_bit>> is set to {INT_MODE_VALUE} in the <<AP-field>>, giving the value 0x9
-* For {rvy64_uni_base_name}, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
+{cheri_int_mode_name} for compatibility with standard RISC-V code.
+Therefore, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
 
 ^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
  If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
@@ -719,7 +505,7 @@ to either check `t == t'` or `b == b'`.
 The top and bottom capability bounds are formed of two or three sections:
 
 * Upper bits from the address
-** This is only if the other sections do not fill the available bits (E + MW < MXLEN)
+** This is only if the other sections do not fill the available bits (E + MW < XLEN)
 * Middle bits from T and B decoded from the metadata
 * Lower bits are set to zero
 ** This is only if there is an internal exponent (EF=0)
@@ -727,9 +513,9 @@ The top and bottom capability bounds are formed of two or three sections:
 .Composition of the decoded top address bound
 [#comp_addr_bounds,options=header,align="center",cols="2,4,2,2"]
 |==============================================================================
-| Configuration   | Upper Section (if E + MW < MXLEN) | Middle Section | Lower Section
-| EF=0            | address[MXLEN-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
-| EF=1, i.e., E=0 | address[MXLEN-1:MW] + ct   2+| T[MW - 1:0]
+| Configuration   | Upper Section (if E + MW < XLEN) | Middle Section | Lower Section
+| EF=0            | address[XLEN-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
+| EF=1, i.e., E=0 | address[XLEN-1:MW] + ct   2+| T[MW - 1:0]
 |==============================================================================
 
 The _representable range_ defines the range of addresses which do not corrupt
@@ -758,7 +544,7 @@ Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follo
 [#t_bound_msb_inversion_truth_table]
 [options=header,align=center,width="100%"]
 |==============================================================================
-| input_t[MXLEN:MXLEN-1]  | b[MXLEN-1]  | output_t[MXLEN:MXLEN-1]
+| input_t[XLEN:XLEN-1]  | b[XLEN-1]  | output_t[XLEN:XLEN-1]
 |      00                 |      0      | 00
 |      01                 |      0      | 01
 |      10                 |      0      | 00
@@ -770,21 +556,21 @@ Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follo
 |==============================================================================
 
 Inspection of xref:t_bound_msb_inversion_truth_table[xrefstyle=short] shows
-that `output_t[MXLEN]` does not depend on `input_t[MXLEN]` as:
+that `output_t[XLEN]` does not depend on `input_t[XLEN]` as:
 
-* `output_t[MXLEN] = {input_t[MXLEN-1], b[MXLEN-1]} == 2'b01`.
+* `output_t[XLEN] = {input_t[XLEN-1], b[XLEN-1]} == 2'b01`.
 
 This leads to the conclusions:
 
-* If `t[MXLEN-1] == t'[MXLEN-1]` and `b[MXLEN-1] == b'[MXLEN-1]`, then it is guaranteed `t[MXLEN] == t'[MXLEN]`.
-* If `t[MXLEN-1] != t'[MXLEN-1]` or `b[MXLEN-1] != b'[MXLEN-1]`, then the representable check will fail regardless of checking `t[MXLEN] == t'[MXLEN]`.
+* If `t[XLEN-1] == t'[XLEN-1]` and `b[XLEN-1] == b'[XLEN-1]`, then it is guaranteed `t[XLEN] == t'[XLEN]`.
+* If `t[XLEN-1] != t'[XLEN-1]` or `b[XLEN-1] != b'[XLEN-1]`, then the representable check will fail regardless of checking `t[XLEN] == t'[XLEN]`.
 
 Therefore, for the purpose of representable range checking, it is not
-required to check that `t[MXLEN]==t'[MXLEN]`.
+required to check that `t[XLEN]==t'[XLEN]`.
 
-Given that `t[MXLEN]` is not part of the representable range check:
+Given that `t[XLEN]` is not part of the representable range check:
 
-* when `E == CAP_MAX_E - 2`, `t[MXLEN-1:E] == T[MW-1:0]` and `b[MXLEN-1:E] == B[MW-1:0]`.
+* when `E == CAP_MAX_E - 2`, `t[XLEN-1:E] == T[MW-1:0]` and `b[XLEN-1:E] == B[MW-1:0]`.
 
 Therefore, `T` and `B` are both derived from the capabilities metadata and are
 therefore constant.  Which means that in this case too, the representable
