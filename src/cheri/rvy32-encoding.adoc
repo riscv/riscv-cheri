@@ -41,9 +41,9 @@ This capability encoding has the following properties that affect the observable
 [#AP-field-encoding32, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
-The permissions field is {cap_rv32_perms_width} bits wide and is encoded using one a compressed representation as shown below.
+The permissions field is {cap_rv32_perms_width} bits wide and is encoded using a compressed representation as shown below.
 Certain combinations of permissions are impractical. For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
-Therefore, it is only legal to encode a subset of all combinations, and this redundancy is used to reduce the size of the permissions field compared to {rvy32_uni_base_name}.
+Therefore, it is only legal to encode a subset of all combinations, and this redundancy is used to reduce the size of the permissions field compared to <<rvy64_cap_description,{rvy64_uni_base_name}>>.
 
 The permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
@@ -218,13 +218,13 @@ NOTE: Software is completely free to define the usage of these bits.
 [#section_cap_sealed32]
 ==== Capability Type (CT) Encoding
 
-Capabilities in this encoding have a 1-bit field for <<sec_cap_type>> values which behaves in the same way as the {rvy64_uni_base_name} <<section_cap_sealed>>.
+Capabilities in this encoding have a 1-bit field for <<sec_cap_type>> values which behaves in the same way as the <<section_cap_sealed,{rvy64_uni_base_name}>>.
 
 [#section_cap_bounds32]
 ==== Bounds (EF, T, TE, B, BE, L8) Encoding
 
 The bounds are encoding in the same way as in <<section_cap_bounds,{rvy64_uni_base_name}>>, with the appropriate values for mantissa width and maximum exponent substituted.
-Compared to {rvy64_uni_base_name}, this encoding uses an additional `L8` bit as described in xref:section_cap_bounds[xrefstyle=short].
+Compared to <<rvy64_cap_description,{rvy64_uni_base_name}>>, this encoding uses an additional `L8` bit as described in xref:section_cap_bounds[xrefstyle=short].
 
 ===== <<AUIPC_CHERI>> Shift
 
@@ -301,4 +301,4 @@ Permissions added by extensions (such as those of <<section_zylevels1>>) are pre
 [#section_cap_representable_check32, reftext="Representable Range"]
 === Representable Range Check
 
-The representable range check behaves in exactly the same way as in {rvy64_uni_base_name}, just with the {cap_rv32_mw_width}-bit mantissa width of this encoding.
+The representable range check behaves in exactly the same way as in <<section_cap_representable_check,{rvy64_uni_base_name}>>, just with the {cap_rv32_mw_width}-bit mantissa width of this encoding.
