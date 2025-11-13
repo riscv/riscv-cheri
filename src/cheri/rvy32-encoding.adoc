@@ -38,6 +38,36 @@ This capability encoding has the following properties that affect the observable
 * **Representable region (rc1)**: The encoding uses one additional bit to ensure a _centered_ region of at least 1/4 of the capability size remains representable when creating out-of-bounds derived capabilities.
 * **Permission encoding (pc)**: The permissions are encoded using a compressed format that cannot represent every combination of permissions.
 
+==== Capability Encoding Summary
+
+.{rvy32_uni_base_name} parameter summary
+[#rvy32_uni_base_name_param_summary,width="100%",options=header,]
+|==============================================================================
+| Parameter | Value                | Comment
+| MW        | {cap_rv32_mw_width}  | Mantissa width
+| EW        | {cap_rv32_exp_width} | Exponent width
+| CAP_MAX_E | {cap_rv32_exp_max}   | Maximum exponent value
+|==============================================================================
+
+.{rvy32_uni_base_name} extension summary
+[#rvy32_uni_base_name_ext_summary,width="100%",options=header,]
+|==============================================================================
+| Extension                    | Comment
+| <<section_cheri_hybrid_ext>> | Optional
+| <<section_zylevels1>>        | Optional
+ifdef::cheri_standalone_spec[]
+| <<section_zyseal>>           | Incompatible
+endif::[]
+|==============================================================================
+
+.{rvy32_uni_base_name} Feature summary
+[#rvy32_uni_base_name_feature_summary,width="100%",options=header,]
+|==============================================================================
+| Feature                      | Comment
+| Representable region         | At least 1/4 of the capability size
+| Permission encodings         | Not all combinations can be represented
+|==============================================================================
+
 [#AP-field-encoding32, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 

@@ -39,6 +39,36 @@ This capability encoding has the following properties that affect the observable
 * **Representable region (rc1)**: The encoding uses one additional bit to ensure a _centered_ region of at least 1/4 of the capability size remains representable when creating out-of-bounds derived capabilities.
 * **Permission encoding (ps)**: The permissions are encoded using a simple representation of one bit per architectural permission.
 
+==== Capability Encoding Summary
+
+.{rvy64_uni_base_name} parameter summary
+[#rvy64_uni_base_name_param_summary,width="100%",options=header,]
+|==============================================================================
+| Parameter | Value                | Comment
+| MW        | {cap_rv32_mw_width}  | Mantissa width
+| EW        | {cap_rv32_exp_width} | Exponent width
+| CAP_MAX_E | {cap_rv32_exp_max}   | Maximum exponent value
+|==============================================================================
+
+.{rvy64_uni_base_name} extension summary
+[#rvy64_uni_base_name_ext_summary,width="100%",options=header,]
+|==============================================================================
+| Extension                    | Comment
+| <<section_cheri_hybrid_ext>> | Optional
+| <<section_zylevels1>>        | Optional
+ifdef::cheri_standalone_spec[]
+| <<section_zyseal>>           | Incompatible
+endif::[]
+|==============================================================================
+
+.{rvy64_uni_base_name} Feature summary
+[#rvy64_uni_base_name_feature_summary,width="100%",options=header,]
+|==============================================================================
+| Feature                      | Comment
+| Representable region         | At least 1/4 of the capability size
+| Permission encodings         | All combinations can be represented, some combinations are reserved
+|==============================================================================
+
 [#AP-field-encoding64, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
@@ -161,15 +191,7 @@ into the capability's address
 
 The bit width of T and B are defined in terms of the mantissa width (MW) which
 is set depending on capability encoding as shown in
-xref:mantissa_bit_width[xrefstyle=short].
-
-.Mantissa width (MW) values depending on capability encoding
-[#mantissa_bit_width,options=header,align="center",width="55%"]
-|==============================================================================
-^| Encoding   ^| MW
-^| {rvy32_uni_base_name} ^| {cap_rv32_mw_width}
-^| {rvy64_uni_base_name} ^| {cap_rv64_mw_width}
-|==============================================================================
+xref:rvy64_uni_base_name_param_summary[xrefstyle=short].
 
 The exponent E indicates the position of T and B within the capability's
 address as described in xref:section_cap_encoding[xrefstyle=short]. The bit
@@ -181,16 +203,8 @@ maximum value of the exponent is calculated as follows:
 CAP_MAX_E = XLEN - MW + 2
 ----
 
-The possible values for EW and CAP_MAX_E are shown in
-xref:exp_bit_width[xrefstyle=short].
-
-.Exponent widths and CAP_MAX_E depending on capability encoding
-[#exp_bit_width,options=header,align="center",width="55%"]
-|==============================================================================
-^| XLEN                 ^| EW ^| CAP_MAX_E
-^| {rvy32_uni_base_name} ^| {cap_rv32_exp_width}  ^| {cap_rv32_exp_max}
-^| {rvy64_uni_base_name} ^| {cap_rv64_exp_width}  ^| {cap_rv64_exp_max}
-|==============================================================================
+The values of EW and CAP_MAX_E are shown in
+xref:rvy64_uni_base_name_param_summary[xrefstyle=short].
 
 NOTE: The address and bounds must be representable in valid capabilities i.e.,
 when the {ctag} is set (see xref:section_cap_malformed[xrefstyle=short]).
