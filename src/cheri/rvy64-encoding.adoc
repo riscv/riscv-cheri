@@ -432,7 +432,7 @@ expanded base is 0 and top is 2^XLEN^.
 | {ctag_title}             | zero   | Capability is not valid
 | <<SDP-field,SDP>>        | zeros  | Grants no permissions
 | <<AP-field,AP>>          | zeros  | Grants no permissions
-| <<M-bit,M>>^1^             zero   | No meaning since non-executable ({cheri_default_ext_name} only)
+| <<M-bit,M>>^1^           | zero   | No meaning since non-executable ({cheri_default_ext_name} only)
 | CT       | zero   | Unsealed
 | EF       | zero   | Internal exponent format
 | L~8~^2^  | zero   | Top address reconstruction bit
@@ -468,21 +468,23 @@ NOTE: This capability format has a single encoding for the _Infinite_ capability
 | {ctag_title}  | one   | Capability is valid
 | SDP           | ones  | Grants all permissions
 | AP            | AP_MAX | Grants all permissions
-| <<m_bit,M>>   | {INT_MODE_VALUE} | Only present if AP_Mbit=1
+| <<m_bit,M>>^1^   | {INT_MODE_VALUE} | CHERI execution mode
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
-| L~8~^1^       | zero  | Top address reconstruction bit
+| L~8~^2^       | zero  | Top address reconstruction bit
 | T             | zeros | Top address bits
 | T~E~          | zeros | Exponent bits
 | B             | zeros | Base address bits
 | B~E~          | zeros | Exponent bits
-| Address       | any^2^ | Capability address
+| Address       | any^3^ | Capability address
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-^1^ Only present if `enableL8` is set.
+^1^ Only present if `AP_MBit=1` and {cheri_default_ext_name} is implemented.
 
-^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
+^2^ Only present if `enableL8` is set.
+
+^3^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
  If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
 
 Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities.
