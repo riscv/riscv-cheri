@@ -11,10 +11,10 @@ Other standard options to bases are also supported such as E (16-registers), Zfi
 === CHERI encoding formats
 CHERI implementations are required to choose a capability encoding format that defines certain properties of the ISA such as the bounds precision and permissions encoding.
 The CHERI base ISA name is extended with the capability encoding format in use as a suffix.
-The definition of all CHERI base ISAs include sufficient details of a capability encoding format to give enough details to allow execution of all base ISA instructions.
+The definition of all CHERI base ISAs includes sufficient details of a capability encoding format to give enough details to allow execution of all base ISA instructions.
 
-As a result, the {cheri_base32_ext_name} and {cheri_base64_ext_name} names on their own do not describe the complete base ISAs, but defines all the _semantics_ of a {cheri_base_ext_name} machine, where the certain behavioral parameters must be filled in by the capability encoding.
-For example, the <<SCBNDSR>> instruction yields a capability with a new bounds that are rounded differently depending on the number of bits allocated to the bounds in the capability format.
+As a result, the {cheri_base32_ext_name} and {cheri_base64_ext_name} names on their own do not describe the complete base ISAs, but define all the _semantics_ of a {cheri_base_ext_name} machine, where certain behavioral parameters must be filled in by the capability encoding.
+For example, the <<SCBNDSR>> instruction yields a capability with new bounds that are rounded differently depending on the number of bits allocated to the bounds in the capability format.
 Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds than XLEN=32 system and therefore have a larger <<section_cap_representable_check>>.
 
 NOTE: These observable differences in behaviour are similar to floating point numbers where the operations supported are the same for 32-bit vs. 64-bit, but the exact result depends on the representation (e.g. IEEE-754 vs. other floating point formats).
@@ -22,7 +22,7 @@ NOTE: These observable differences in behaviour are similar to floating point nu
 [IMPORTANT]
 ====
 For XLEN=32 there are very limited numbers of bits available in the capability metadata but depending on the target domain different choices must be made.
-For example, a as small embedded controller with limited address space of a few megabytes may need to make different tradeoffs than an auxiliary core within a larger SoC with many gigabytes of address space, and a accelerator using the {cheri_base_ext_name} ISA may need yet another set of tradeoffs.
+For example, a small embedded controller with limited address space of a few megabytes may need to make different tradeoffs than an auxiliary core within a larger SoC with many gigabytes of address space, and a accelerator using the {cheri_base_ext_name} ISA may need yet another set of tradeoffs.
 Therefore, multiple capability encodings with observable (but generally uninteresting) behavior differences need to be defined.
 While the in-memory bit pattern of capabilities across these systems as well as the precision of bounds may differ, software that does not depend on the raw bits in memory is source (and often also binary) compatible with these different capability encodings.
 ====
