@@ -47,17 +47,24 @@ This capability encoding has the following properties that affect the observable
 | MW        | {cap_rv32_mw_width}  | Mantissa width
 | EW        | {cap_rv32_exp_width} | Exponent width
 | CAP_MAX_E | {cap_rv32_exp_max}   | Maximum exponent value
+| enableL8  | 1                    | Whether the encoding format includes the L8 bit
+| AP_MBit   | 1                    | Whether the <<m_bit>> is encoded in the AP-field
+| AP_MAX    | 0x8/0x9^1^           | Value of the AP field giving maximum permissions
 |==============================================================================
+
+^1^If {cheri_default_ext_name} is supported, then the infinite capability must represent {cheri_int_mode_name} for compatibility with standard RISC-V code.
+See xref:cap_perms_encoding32[xrefstyle=short].
 
 .{rvy32_uni_base_name} extension summary
 [#rvy32_uni_base_name_ext_summary,width="100%",options=header,]
 |==============================================================================
 | Extension                    | Comment
-| <<section_cheri_hybrid_ext>> | Optional
-| <<section_zylevels1>>        | Optional
+| <<section_cheri_hybrid_ext>> | Compatible
+| <<section_zylevels1>>        | Compatible
 ifdef::cheri_standalone_spec[]
 | <<section_zyseal>>           | Incompatible
 endif::[]
+| All RVY versions of other standard extensions | Compatible
 |==============================================================================
 
 .{rvy32_uni_base_name} Feature summary

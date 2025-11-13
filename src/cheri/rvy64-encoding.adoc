@@ -20,7 +20,7 @@ include::img/cap-encoding-xlen64.edn[]
 
 NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
 
-The encoding diagram above shows the format of capabilities in the case where all {cheri_base_ext_name} (Zy*) extension listed in this manual are supported.
+The encoding diagram above shows the format of capabilities in the case where all {cheri_base_ext_name} (Zy*) extensions listed in this manual are supported.
 Certain bits of the capability encoding are only used if certain extensions are implemented and are reserved otherwise:
 
 <<section_cheri_hybrid_ext>>::
@@ -48,17 +48,21 @@ This capability encoding has the following properties that affect the observable
 | MW        | {cap_rv64_mw_width}  | Mantissa width
 | EW        | {cap_rv64_exp_width} | Exponent width
 | CAP_MAX_E | {cap_rv64_exp_max}   | Maximum exponent value
+| enableL8  | 0                    | Whether the encoding format includes the L8 bit
+| AP_MBit   | 0                    | Whether the <<m_bit>> is encoded in the AP-field
+| AP_MAX    | ones                 | Value of the AP field giving maximum permissions
 |==============================================================================
 
 .{rvy64_uni_base_name} extension summary
 [#rvy64_uni_base_name_ext_summary,width="100%",options=header,]
 |==============================================================================
 | Extension                    | Comment
-| <<section_cheri_hybrid_ext>> | Optional
-| <<section_zylevels1>>        | Optional
+| <<section_cheri_hybrid_ext>> | Compatible
+| <<section_zylevels1>>        | Compatible
 ifdef::cheri_standalone_spec[]
 | <<section_zyseal>>           | Incompatible
 endif::[]
+| All RVY versions of other standard extensions | Compatible
 |==============================================================================
 
 .{rvy64_uni_base_name} Feature summary
@@ -142,7 +146,7 @@ That is, <<JALR_CHERI>> will, as directed, attempt to jump to any unsealed or se
 ifdef::cheri_standalone_spec[]
 [NOTE]
 =====
-The permission encodings of <<rvy32_cap_description>>/<<rvy64_cap_description>> do not provide mappings for
+The permission encodings of <<rvy64_cap_description>> do not provide mappings for
 the <<section_zyseal>> extension's <<zyseal_se_perm>> or <<zyseal_us_perm>>.
 Thus, without further revision, the encodings of this chapter
 are incompatible with the <<section_zyseal>> extension.
@@ -157,12 +161,6 @@ endif::[]
 ===== Concept
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The bounds mantissa width is different in {rvy32_uni_base_name}.
-Also, the old IE bit is renamed to Exponent Format (EF); the function of IE
-is the inverse of EF, i.e., IE=0 has the same effect as EF=1.
-
-NOTE: *CHERI v9 Note:* The mantissa width for RV32 was increased to 10.
-
 NOTE: *CHERI v9 Note:* The sense of the exponent is reversed, so an encoded
 value of 0 represents CAP_MAX_E, and CAP_MAX_E represents 0 from the previous
 specification.
@@ -324,16 +322,16 @@ alignment boundaries.
 
 The EF bit selects between two cases:
 
-1. EF = 1: The exponent is 0. When {rvy32_uni_base_name}, L~8~ encodes the MSB of the length,
+1. EF = 1: The exponent is 0. When `enableL8=1`, L~8~ encodes the MSB of the length,
 which can be used to derive T[MW-1:MW-2], forming a full MW-wide T field.
 2. EF = 0: The exponent is _internal_ with E stored in the lower bits of T and
-B, with L~8~ used for the MSB of E when {rvy32_uni_base_name}. E is chosen so that the most
+B, with L~8~ used for the MSB of E when `enableL8=1`. E is chosen so that the most
 significant non-zero bit of the length of the region aligns with T[MW - 2] such
 that this bit is implied by E.
 
 The most significant two bits of T can be derived from B using
 the equality `T = B + L`, where L[MW - 2] is known from the values of EF and E
-(as well as L~8~ for {rvy32_uni_base_name}).
+(as well as L~8~ when `enableL8=1`).
 A carry out is implied if `T[MW - 3:0] < B[MW - 3:0]` since it is
 guaranteed that the top is larger than the base.
 
@@ -384,10 +382,8 @@ equivalent to _b_=0 and _t_&#8805;2^XLEN^.
 ===== Malformed Capability Bounds
 
 A capability is _malformed_ if its bounds cannot be correctly decoded.
-The following check
-indicates whether a capability is malformed. `enableL8` is true when {rvy32_uni_base_name}
-and false otherwise, indicating whether the `L8` bit is available for extra
-precision when `EF=1`.
+The following check indicates whether a capability is malformed.
+If `enableL8` is true, the `L8` bit is available in the capability encoding format for extra precision when `EF=1`.
 
 [source]
 ----
@@ -436,10 +432,10 @@ expanded base is 0 and top is 2^XLEN^.
 | {ctag_title}             | zero   | Capability is not valid
 | <<SDP-field,SDP>>        | zeros  | Grants no permissions
 | <<AP-field,AP>>          | zeros  | Grants no permissions
-| <<M-bit,M>>              | zero   | No meaning since non-executable ({rvy64_uni_base_name} and {cheri_default_ext_name} only)
+| <<M-bit,M>>^1^             zero   | No meaning since non-executable ({cheri_default_ext_name} only)
 | CT       | zero   | Unsealed
 | EF       | zero   | Internal exponent format
-| L~8~     | zero   | Top address reconstruction bit ({rvy32_uni_base_name} only)
+| L~8~^2^  | zero   | Top address reconstruction bit
 | T        | zeros  | Top address bits
 | T~E~     | zeros  | Exponent bits
 | B        | zeros  | Base address bits
@@ -447,6 +443,9 @@ expanded base is 0 and top is 2^XLEN^.
 | Address  | zeros  | Capability address
 | Reserved | zeros  | All reserved fields
 |==============================================================================
+
+^1^ Only present if `AP_MBit=1` and {cheri_default_ext_name} is implemented.
+^2^ Only present if `enableL8=1`.
 
 Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed absent in NULL capabilities.
 
@@ -468,13 +467,11 @@ NOTE: This capability format has a single encoding for the _Infinite_ capability
 | Field         | Value | Comment
 | {ctag_title}  | one   | Capability is valid
 | SDP           | ones  | Grants all permissions
-| AP ({rvy32_uni_base_name}) | 0x8/0x9^1^  (see xref:cap_perms_encoding32[xrefstyle=short])
-                        | Grants all permissions
-| AP ({rvy64_uni_base_name}) | 0xFF (see xref:cap_perms_encoding64[xrefstyle=short])
-                        | Grants all permissions
+| AP            | AP_MAX | Grants all permissions
+| <<m_bit,M>>   | {INT_MODE_VALUE} | Only present if AP_Mbit=1
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
-| L~8~          | zero  | Top address reconstruction bit ({rvy32_uni_base_name} only)
+| L~8~^1^       | zero  | Top address reconstruction bit
 | T             | zeros | Top address bits
 | T~E~          | zeros | Exponent bits
 | B             | zeros | Base address bits
@@ -483,9 +480,7 @@ NOTE: This capability format has a single encoding for the _Infinite_ capability
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-^1^If {cheri_default_ext_name} is supported, then the infinite capability must represent
-{cheri_int_mode_name} for compatibility with standard RISC-V code.
-Therefore, the <<m_bit>> is set to {INT_MODE_VALUE} in a separate M field which is _not shown_ in the table above.
+^1^ Only present if `enableL8` is set.
 
 ^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
  If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
