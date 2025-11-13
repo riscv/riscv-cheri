@@ -63,14 +63,16 @@ requires the CHERI RISC-V hart to support {cheri_base_ext_name} and
 
 The _<<cheri_execution_mode>>_ is determined by a bit in the metadata of the <<pcc>> called the <<m_bit>>.
 {cheri_default_ext_name} adds a new _<<cheri_execution_mode>>_ field (M) to the capability format.
-Although always present, it only takes effect in code capabilities, i.e., when the <<x_perm>> is set.
+This field _need_ be present only in capabilities granting <<X-permission>>,
+as it is only ever architecturally interpreted on the capability resident in <<pcc>>.
+Capabilities not granting <<X-permission>> may or may not have a defined M field,
+and attempting to update this field may or may not clear their {ctag}s.
 The exact location of the M-bit in the capability format for XLEN=32 and XLEN=64 is described in <<app_cap_description>>.
 
 * Mode (M)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
 * Mode (M)={INT_MODE_VALUE} indicates {cheri_int_mode_name}.
 
-IMPORTANT: While the <<m_bit>> only has an effect when installed in <<pcc>>, it needs to be encoded in all capabilities.
-  Since indirect jumps copy the full target capability into <<pcc>>, it allows indirect jumps to change between modes (see <<sec_changing_cheri_execution_mode>>).
+IMPORTANT: Since indirect jumps copy the full target capability into <<pcc>>, it allows indirect jumps to change between modes (see <<sec_changing_cheri_execution_mode>>).
 
 //#I don't understand this statement, as <<MODESW_CAP>> can be executed at any time#
 //The <<m_bit>> of the <<pcc>>, may be overridden by the execution environment which may not grant permission to enter {cheri_cap_mode_name}.
