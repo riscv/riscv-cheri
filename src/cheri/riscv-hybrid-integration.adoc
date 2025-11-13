@@ -116,7 +116,8 @@ in their representation of architectural CHERI capabilities.
 
 The effective CHERI execution mode cannot be determined just by reading the <<m_bit>> from <<pcc>> since it also depends on the execution environment.
 The following code sequence demonstrates how a program can observe the current, effective CHERI execution mode.
-It will write {CAP_MODE_VALUE} for {cheri_cap_mode_name} and {INT_MODE_VALUE} for {cheri_int_mode_name} to `x1`:
+It will write, to `x1`, the value `1` for {cheri_cap_mode_name} (wherein `pc` has a set {ctag})
+or `0` for {cheri_int_mode_name} (wherein `pc` is just an address and has a clear {ctag}):
 
 [source,subs=attributes+]
 ----
