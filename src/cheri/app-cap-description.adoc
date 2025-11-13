@@ -717,29 +717,6 @@ NOTE: This capability format has a single encoding for the _Infinite_ capability
 
 Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities.
 
-=== Memory space
-
-A hart supporting {rvy_uni_base_name} has a single byte-addressable address
-space of 2^XLEN^ bytes for all memory accesses. Each memory region capable of
-holding a capability also stores a {ctag} bit for each naturally aligned YLEN bits
-(e.g., 16 bytes in RV64), so that capabilities with their {ctag} set can only be
-stored in naturally aligned addresses. {ctag_cap}s must be atomically bound to the
-data they protect.
-
-The memory address space is circular, so the byte at address
-2^XLEN^ - 1 is adjacent to the byte at address zero. A capability's
-<<section_cap_representable_check>> described in xref:section_cap_encoding[xrefstyle=short] is
-also circular, so address 0 is within the <<section_cap_representable_check>> of a capability
-where address 2^MXLEN^ - 1 is within the bounds.
-However, the decoded top address of a capability is MXLEN + 1 bits wide and does *not* wrap, so
-a capability with base 2^MXLEN^ - 1 and top 2^MXLEN^ + 1 is not a subset of the
-infinite capability and does not authorize access to the byte at address 0.
-Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
-a CHERI core to generate a valid capability with top > 2^MXLEN^.
-If such a capability exists then it must have been caused by a logic or memory fault.
-Unlike malformed bounds, the top overflowing is not treated as a special case in the
-architecture: normal bounds check rules should be followed.
-
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
 
