@@ -9,9 +9,9 @@ This chapter describes the {cheri_base32_ext_name} and {cheri_base64_ext_name} b
 Other standard options to bases are also supported such as E (16-registers), Zfinx and endianess.
 
 === CHERI encoding formats
-CHERI implementations are required to choose a capability encoding format that defines certain properties of the ISA such as the bounds precision and permissions encoding.
-The CHERI base ISA name is extended with the capability encoding format in use as a suffix.
-The definition of all CHERI base ISAs includes sufficient details of a capability encoding format to give enough details to allow execution of all base ISA instructions.
+CHERI implementations make trade-offs in their "encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
+The CHERI base ISA name is extended with a compact description of these decisions,
+and the definition of all CHERI base ISAs includes sufficient details of a capability encoding format to give enough details to allow execution of all base ISA instructions.
 
 As a result, the {cheri_base32_ext_name} and {cheri_base64_ext_name} names on their own do not describe the complete base ISAs, but define all the _semantics_ of a {cheri_base_ext_name} machine, where certain behavioral parameters must be filled in by the capability encoding.
 For example, the <<SCBNDSR>> instruction yields a capability with new bounds that are rounded differently depending on the number of bits allocated to the bounds in the capability format.
