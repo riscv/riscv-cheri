@@ -67,15 +67,6 @@ endif::support_varxlen[]
 :rvy_zicbop_mod_file_name: {cheri_base_ext_name}_Zicbop_mod_insns_table_body
 // 32-bit encodings added by Zyhybrid
 :rvy_hybrid_file_name:     {cheri_default_ext_name}_insns_table_body
-// university (default) encoding scheme
-// For some reason can't use _Lymw{cap_rv32_mw_width}e{cap_rv32_exp_max}rc1pc
-// here, probably need some macro for double expansion
-:rvy32_uni_encoding_suffix: _Lymw10e24rc1pc
-:rvy64_uni_encoding_suffix: _Lymw14e52rc1ps
-:rvy64_uni_base_name: {cheri_base64_ext_name}{rvy64_uni_encoding_suffix}
-:rvy64e_uni_base: {cheri_base64_ext_name}E{rvy64_uni_encoding_suffix}
-:rvy32_uni_base_name: {cheri_base32_ext_name}{rvy32_uni_encoding_suffix}
-:rvy32e_uni_base_name: {cheri_base32_ext_name}E{rvy32_uni_encoding_suffix}
 // cheriot encoding scheme
 :rvy_cheriot_encoding_suffix: CEC
 :rvy32e_cheriot_base_name: {cheri_base32_ext_name}E_{rvy_cheriot_encoding_suffix}
@@ -132,6 +123,14 @@ endif::support_varxlen[]
 :cap_rv32_exp_max:      24
 :cap_rv64_exp_width:    6
 :cap_rv64_exp_max:      52
+
+// Base suffixes
+:rvy32_uni_encoding_suffix: _Lymw{cap_rv32_mw_width}e{cap_rv32_exp_max}rc1pc
+:rvy64_uni_encoding_suffix: _Lymw{cap_rv64_mw_width}e{cap_rv64_exp_max}rc1ps
+:rvy64_uni_base_name: {cheri_base64_ext_name}{rvy64_uni_encoding_suffix}
+:rvy64e_uni_base: {cheri_base64_ext_name}E{rvy64_uni_encoding_suffix}
+:rvy32_uni_base_name: {cheri_base32_ext_name}{rvy32_uni_encoding_suffix}
+:rvy32e_uni_base_name: {cheri_base32_ext_name}E{rvy32_uni_encoding_suffix}
 
 :cheri_excep_cause_pc:       32
 :cheri_excep_cause_ld:       33
