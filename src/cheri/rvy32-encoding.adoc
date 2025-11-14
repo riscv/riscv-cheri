@@ -28,7 +28,7 @@ When {cheri_default_ext_name} is supported, capabilities include an <<m_bit>> (w
 If not supported the <<m_bit>> is reserved and reads as zero.
 
 <<section_zylevels1>>::
-If <<section_zylevels1>> is available, bits 6 and 7 of the `AP` field are allocated, otherwise they must always be set to `1` for any valid capability.
+If <<section_zylevels1>> is available, additional values of the `AP,M` field are allocated, otherwise they are reserved for any valid capability.
 Additionally, the <<zylevels1_gl_perm,GL>> flag is only available if <<section_zylevels1>> is implemented, otherwise it is reserved and must be zero.
 
 This capability encoding has the following properties that affect the observable behavior of {cheri_base_ext_name} instructions such as <<SCBNDS>> and <<CLRPERM>>:
@@ -75,8 +75,8 @@ endif::[]
 | Permission encodings         | Not all combinations can be represented
 |==============================================================================
 
-[#AP-field-encoding32, reftext="AP-field encoding"]
-==== Architectural Permissions (AP) Encoding
+[#AP-field-encoding32, reftext="AP,M-field encoding"]
+==== Architectural Permissions and Mode (AP,M) Encoding
 
 The permissions field is {cap_rv32_perms_width} bits wide and is encoded using a compressed representation as shown below.
 Certain combinations of permissions are impractical. For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
@@ -88,8 +88,9 @@ The meaning for bits [2:0] are shown in <<cap_perms_encoding32>> for each quadra
 
 Quadrants 2 and 3 are arranged to implicitly grant future permissions which may be added with the existing allocated encodings.
 Quadrant 0 does the opposite -- the encodings are allocated _not_ to implicitly add future permissions, and so granting future permissions will require new encodings.
-Quadrant 1 encodes permissions for executable capabilities and the <<m_bit>>.
+Quadrant 1 encodes permissions for executable capabilities.
 
+The <<m_bit>> is encoded as bit zero of the <<AP-field-encoding32>> for the executable quadrant and only assigned meaning when the implementation supports {cheri_default_ext_name} (_and_ <<x_perm>> is set).
 <<<
 [#default-cap-AP-no-zylevels1]
 ==== AP encoding and rules without <<section_zylevels1>> for {rvy32_uni_base_name}
@@ -237,12 +238,6 @@ The following rules are run once _in order_:
 For RV32, the encodings which have the <<m_bit>> set to {int_mode_value} for {cheri_int_mode_name}
 are only valid if {cheri_default_ext_name} is implemented.
 Otherwise those encodings represent invalid permissions.
-
-[#M-field-encoding32, reftext="M-field encoding"]
-==== Capability Mode (M) Encoding
-
-The <<m_bit>> is encoded as bit zero of the <<AP-field-encoding32>> for the executable quadrant and only assigned meaning when the implementation supports {cheri_default_ext_name} (_and_ <<x_perm>> is set).
-In valid capabilities, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
 
 [#SDP-field32, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
