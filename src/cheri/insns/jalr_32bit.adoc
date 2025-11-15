@@ -26,22 +26,22 @@ Operationally, copy `{cs1}` to the target <<pcc>> and then...
 .. set the zero bit of the target <<pcc>> address to zero.
 . Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
 +
-NOTE: All such triples are acceptable to <<app_cap_description>>.
-. If the target <<pcc>> is a <<sentry_cap>> (for <<app_cap_description>>: if it has <<sec_cap_type>> `1`), then unseal it.
+NOTE: All such triples are acceptable to <<rvy64_cap_description>> and <<rvy32_cap_description>>.
+. If the target <<pcc>> is a <<sentry_cap>> (for <<rvy32_cap_description>>/<<rvy64_cap_description>>: if it has <<sec_cap_type>> `1`), then unseal it.
 . If the target <<pcc>> is (still) sealed, clear its {ctag}.
 +
-NOTE: This is not possible for <<app_cap_description>>, given its two <<sec_cap_type>> values.
+NOTE: This is not possible for <<rvy32_cap_description>>/<<rvy64_cap_description>>, given its two <<sec_cap_type>> values.
 . If `{cd}≠0`, compute the return capability and install it to `{cd}`:
 .. add the width of this instruction to the current <<pcc>>, and
 .. if the capability encoding defines <<sentry_cap>> <<sec_cap_type>> values for return pointers, then seal the return capability as specified.
 +
-NOTE: <<app_cap_description>> always seals return capabilities with <<sec_cap_type>> `1`.
+NOTE: <<rvy32_cap_description>>/<<rvy64_cap_description>> always seals return capabilities with <<sec_cap_type>> `1`.
 . Jump to the target <<pcc>>.
 +
 NOTE: It is not possible for the target <<pcc>> to be sealed by the time it is jumped to.
 . Apply any capability encoding specified architectural semantics for the type of `{cs1}`.
 +
-NOTE: There are no such additional semantics defined by the capabilities of <<app_cap_description>>. +
+NOTE: There are no such additional semantics defined by the capabilities of <<rvy32_cap_description>>/<<rvy64_cap_description>>. +
 
 +
 The above procedure for <<JALR_CHERI>> defines three hooks for use by the capability encoding:
@@ -58,7 +58,7 @@ NOTE: For example, CHERIoT offers sentries that update a hart's `mstatus.MIE` fi
 
 3. Conditional acceptability of the triple of the two _register selectors_ (`{cd}`, `{cs1}`) used in an instance of the instruction together with the <<sec_cap_type>> value of the capability in `{cs1}`.
 +
-NOTE: For <<app_cap_description>>, there are no conditions and all such triples are acceptable;
+NOTE: For <<rvy32_cap_description>>/<<rvy64_cap_description>>, there are no conditions and all such triples are acceptable;
 again the motivation is CHERIoT, which uses register selectors to distinguish between _forward_ and _backward_ control transfers, and restricts which <<sec_cap_type>> values are acceptable in each case.
 
 [NOTE]
