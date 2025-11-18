@@ -32,8 +32,9 @@ NOTE: Instructions which are _modified_ on an {cheri_base_ext_name} architecture
 +
 All <<rvy_insn_table>> instructions, and associated CSRs, are available in addition to RVI/RVE and all supported non-CHERI extensions.
 +
-All memory accesses are implicitly authorized by <<ddc>>, including <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CHERI>>.
-<<PREFETCH_I_CHERI>> is authorized by <<pcc>> instead.
+The authorizing capability for memory access is <<ddc>> (as opposed to `rs1`).
+That is, all memory accesses, including <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CHERI>>, are implicitly authorized by <<ddc>> and only the memory address is sourced from `rs1`.
+Jumps and <<PREFETCH_I_CHERI>> are exceptions to this rule, as <<pcc>> authorizes them.
 +
 NOTE: <<ddc>> is also used to authorize {cheri_base_ext_name} specific memory instructions such as <<LOAD_CAP>> and <<STORE_CAP>>.
 +
