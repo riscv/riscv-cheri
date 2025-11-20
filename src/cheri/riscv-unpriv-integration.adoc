@@ -241,7 +241,7 @@ NOTE: <<SCADDR>> writes back a derived capability with a new address field and, 
 
 NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only come back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
 
-NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv32y_cap_description>>/<<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers, see <<uycfg>>) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
+NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv32y_cap_description>>/<<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
 Therefore, the rest of the specification uses the phrase *represented exactly* for this check.
 
 The bounds and representable region (or space) for <<rv32y_cap_description>>/<<rv64y_cap_description>> are illustrated in <<cap_bounds_map>>.
@@ -686,6 +686,8 @@ xref:csrnames-added-x[xrefstyle=short].
 |<<utidc>>|RW, <<asr_perm>> required for writes, not reads|User Thread ID Capability
 |===
 
+ifdef::cheri_xycfg_csr[]
+
 [[csrnames-added-x]]
 .Unprivileged integer CSRs added in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
@@ -693,6 +695,8 @@ xref:csrnames-added-x[xrefstyle=short].
 |XLEN CSR|Permissions|Description
 |<<uycfg>>|RO; see section for details|Capability encoding version
 |===
+
+endif::[]
 
 [#utidc,reftext="utidc"]
 ===== User Thread Identifier Capability (utidc)
@@ -742,6 +746,8 @@ The trusted code can store capabilities on the trusted stack when calling out of
 when returning to the same compartment.
 =====
 
+ifdef::cheri_xycfg_csr[]
+
 [#uycfg,reftext="uycfg"]
 ===== CHERI Capability Encoding (uycfg)
 
@@ -784,6 +790,8 @@ to determine if the platform's capability encoding is backwards-compatible with 
 Among other things, such a facility should be used as part of the platform executable loader
 to reject executables that expect unknown or known-incompatible CHERI features or capability encodings.
 =====
+
+endif::[]
 
 ==== Extended CSRs
 
@@ -1142,7 +1150,7 @@ at a <<sec_cap_type>> value specified by the capability encoding.
 
 NOTE: In principle, despite the names, the type used by <<SENTRY>> might not be a <<sentry_cap>> type, though that is not true of the capabilities of <<rv32y_cap_description>>/<<rv64y_cap_description>>.
 
-NOTE: Future extensions to {cheri_base_ext_name} (such as CHERIoT, see <<uycfg>>) support additional <<sec_cap_type>> values, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
+NOTE: Future extensions to {cheri_base_ext_name} (such as CHERIoT) support additional <<sec_cap_type>> values, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
 
 #End changed since last ARC review#
 
