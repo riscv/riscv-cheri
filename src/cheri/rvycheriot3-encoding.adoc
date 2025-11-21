@@ -1,0 +1,51 @@
+[#rv32y_cheriot3_cap_description, reftext="{rvy32e_cheriot2_base_name} (CHERIoT V2B)"]
+== The {rvy32e_cheriot2_base_name} Capability Base Extension for {cheri_base32e_ext_name}, (CHERIoT V2b)
+
+This chapter describes a variation on the <<rv32y_cheriot2_cap_description>> encoding.
+It is equivalent in terms of representable bounds, supported features and the number of bits used, but has different microarchitectural properties.
+The only observable difference for software is the encoded metadata bits of capabilities in stored in memory, which is only relevant to specialised system software such as debuggers.
+As such, the decision of which to use should be based on microarchitectural requirements. 
+It is included here in order to provide flexibility to implementations.
+
+[#section_cap_encoding_cheriot3]
+=== Capability Encoding
+
+The components of a capability, except the {ctag}, are encoded as shown in xref:cap_encoding_cheriot3[xrefstyle=short].
+
+.Capability encoding for {rvy32e_cheriot2_base_name} (Alternative Version))
+[#cap_encoding_cheriot3]
+include::img/cap-encoding-cheriot3.edn[]
+
+The only difference from {rvy32e_cheriot2_base_name} is that the top field, T, is replaced by a length, L.
+The 8-bit L is expanded to 9 bits by adding a leading implicit one bit, except in the case of the special exponent 31 where L[8] is zero. Bounds decoding can then proceed as follows:
+
+[source]
+----
+// Decode L8 and exponent
+e = (E == 31) ? 0 : E
+L8 = (e == 31) ? 0 : 1
+
+// Decode base (same as <<rvy32e_cheriot_base_name>>)
+c_b = (A[e + 8 : e]) < B ? -1 : 0
+base = ((A[31 : e + 9] + c_b) @ B) << e
+
+// Compute top from base and length
+top = base + ((L8 @ L) << e)
+----
+
+All other aspects of the capability encoding are identical to {rvy32e_cheriot2_base_name}.
+
+==== Capability Encoding Parameter Summary
+
+The encoding parameters for this encoding are identical to {rvy32e_cheriot2_base_name}.
+
+.{rvy32e_cheriot2_base_name} (Alternative Version) parameter summary
+[#rvy32e_cheriot3_base_name_param_summary,%autowidth,options=header,]
+|==============================================================================
+| Parameter | Value                | Comment
+| mw        | {cap_cheriot_mw_width}  | Mantissa width
+| e         | a                    | All exponents are supported
+| rc        | 0                    | Representable region between base and top only
+| p         | pc                   | Compressed permission encoding
+| as        | 11                   | <<AUIPC>> shift
+|==============================================================================
