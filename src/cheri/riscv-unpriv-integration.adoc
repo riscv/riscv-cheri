@@ -736,7 +736,6 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 |<<SCBNDSI>>  |Set immediate bounds on capability with rounding, clear {ctag} if rounding is required
 |<<SCBNDS>>   |Set register bounds on capability with rounding, clear {ctag} if rounding is required
 |<<SCBNDSR>>  |Set bounds on capability with rounding up as required
-|<<CBLD>>     |Set {cd} to {cs2} with its {ctag} set after checking that {cs2} is a subset of {cs1}
 |<<YSUNSEAL>> |Set {cd} to {cs2} with a zero <<sec_cap_type>> if {cs2} is a sealed subset of {cs1}
 |=======================
 
@@ -748,7 +747,6 @@ include::insns/cmv_32bit.adoc[]
 include::insns/schi_32bit.adoc[]
 include::insns/scbnds_32bit.adoc[]
 include::insns/scbndsr_32bit.adoc[]
-include::insns/cbld_32bit.adoc[]
 include::insns/ysunseal_32bit.adoc[]
 
 <<<
@@ -997,3 +995,18 @@ NOTE: Future extensions to {cheri_base_ext_name} (such as CHERIoT, see <<uycfg>>
 === Added instructions
 
 include::insns/sentry_32bit.adoc[]
+
+[#section_rvy_bld_insn_ext,reftext="{rvy_bld_insn_ext_name}"]
+== "{rvy_bld_insn_ext_name}" Extension for Building Capabilities
+
+#Begin changed since last ARC review#
+
+The {rvy_bld_insn_ext_name} extension adds the <<CBLD>> instruction to capabilities with a superset authority to validate (i.e. set the {ctag}) of a capability with lesser authority.
+
+NOTE: CHERIoT implementations do not use {CBLD}, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
+
+#End changed since last ARC review#
+
+=== Added instructions
+
+include::insns/cbld_32bit.adoc[]
