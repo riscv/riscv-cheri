@@ -2,6 +2,11 @@
 == The {rvy32_uni_base_name} Capability Base Extension for {cheri_base32_ext_name}, Version 1.0
 
 This chapter describes an in-memory format and properties of a capability encoding intended for {cheri_base32_ext_name}.
+This format is heavily based upon the {cheri_base64_ext_name} format <<rvy64_cap_description,{rvy64_uni_base_name}>> with the following changes:
+
+* The parameters used to set the width, or presence, of fields in the encoding are defined in <<rvy32_uni_base_name_param_summary>>.
+* The architectural permissions (AP) field is compressed to save encoding space, and so rules are defined for removing permissions.
+
 
 [#section_cap_encoding32]
 === Capability Encoding
@@ -74,7 +79,7 @@ endif::[]
 | Permission encodings         | Not all combinations can be represented
 |==============================================================================
 
-[#AP-field-encoding32, reftext="AP,M-field encoding"]
+[#AP-field-encoding32, reftext="M-bit encoding in the AP field"]
 ==== Architectural Permissions and Mode (AP,M) Encoding
 
 The permissions field is {cap_rv32_perms_width} bits wide and is encoded using a compressed representation as shown below.
@@ -90,6 +95,7 @@ Quadrant 0 does the opposite -- the encodings are allocated _not_ to implicitly 
 Quadrant 1 encodes permissions for executable capabilities.
 
 The <<m_bit>> is encoded as bit zero of the <<AP-field-encoding32>> for the executable quadrant and only assigned meaning when the implementation supports {cheri_default_ext_name} (_and_ <<x_perm>> is set).
+
 <<<
 [#default-cap-AP-no-zylevels1]
 ==== AP encoding and rules without <<section_zylevels1>> for {rvy32_uni_base_name}
