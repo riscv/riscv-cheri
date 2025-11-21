@@ -1,5 +1,5 @@
-[#rvy64_cap_description, reftext="{rvy64_uni_base_name}"]
-== The {rvy64_uni_base_name} Capability Base Extension for {cheri_base64_ext_name}, Version 1.0
+[#rv64y_cap_description, reftext="{rv64y_uni_base_name}"]
+== The {rv64y_uni_base_name} Capability Base Extension for {cheri_base64_ext_name}, Version 1.0
 
 This chapter describes the in-memory format and properties of the capability encoding intended for {cheri_base64_ext_name}.
 
@@ -10,25 +10,21 @@ ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the in-memory format.
 endif::[]
 
-The components of a capability, except the {ctag}, are encoded as shown in xref:cap_encoding_xlen64[xrefstyle=short].
-Each memory location or register able to hold a capability must also store the {ctag} as _out of band_ or _hidden_ information that software cannot directly set or clear.
-The capability metadata is held in the most significant bits and the address is held in the least significant bits.
 
-.Capability encoding for {rvy64_uni_base_name}
+.Capability encoding for {rv64y_uni_base_name}
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
 NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
 
-The encoding diagram above shows the format of capabilities in the case where all {cheri_base_ext_name} (Zy*) extensions listed in this manual are supported.
-Certain bits of the capability encoding are only used if certain extensions are implemented and are reserved otherwise:
+The encoding diagram above of the capability format includes some fields which depend upon the presence of extensions:
 
 <<section_cheri_hybrid_ext>>::
 When {cheri_default_ext_name} is supported, capabilities include an <<m_bit>> (bit 52).
 If not supported the <<m_bit>> is reserved and reads as zero.
 
 <<section_zylevels1>>::
-If <<section_zylevels1>> is available, bits 6 and 7 of the `AP` field are allocated, otherwise they must always be set to `1` for any valid capability.
+If <<section_zylevels1>> is available, bits 6 and 7 of the `AP` field are allocated, otherwise they must always be set to one for any valid capability.
 Additionally, the <<zylevels1_gl_perm,GL>> flag is only available if <<section_zylevels1>> is implemented, otherwise it is reserved and must be zero.
 
 
@@ -41,7 +37,7 @@ This capability encoding has the following properties that affect the observable
 
 ==== Capability Encoding Summary
 
-.{rvy64_uni_base_name} parameter summary
+.{rv64y_uni_base_name} parameter summary
 [#rvy64_uni_base_name_param_summary,width="100%",options=header,]
 |==============================================================================
 | Parameter | Value                | Comment
@@ -53,19 +49,19 @@ This capability encoding has the following properties that affect the observable
 | AP_MAX    | ones                 | Value of the AP field giving maximum permissions
 |==============================================================================
 
-.{rvy64_uni_base_name} extension summary
+.{rv64y_uni_base_name} extension summary
 [#rvy64_uni_base_name_ext_summary,width="100%",options=header,]
 |==============================================================================
 | Extension                    | Comment
 | <<section_cheri_hybrid_ext>> | Compatible
 | <<section_zylevels1>>        | Compatible
 ifdef::cheri_standalone_spec[]
-| <<section_zyseal>>           | Not yet compatible (need to allocate encoding)
+| <<section_zyseal>>           | Will be compatible if new permissions are encoded
 endif::[]
 | All RVY versions of other standard extensions | Compatible if the extension is compatible with RV64I
 |==============================================================================
 
-.{rvy64_uni_base_name} Feature summary
+.{rv64y_uni_base_name} Feature summary
 [#rvy64_uni_base_name_feature_summary,width="100%",options=header,]
 |==============================================================================
 | Feature                      | Comment
@@ -82,9 +78,9 @@ otherwise, the capability does not grant that permission.
 Certain combinations of permissions are impractical. For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
 Therefore, it is only legal to encode a subset of all combinations, but this capability encoding does not make use of this redundancy as there are sufficient reserved bits.
 
-NOTE: In the future, if there are no further remaining reserved bits, but extensions need to allocate further capability metadata bits, it will be possible to use the redundancy to create a future version two of this encoding that is fully _compatible for all software_ but with observable differences in the in-memory representation of capabilities.
+NOTE: In the future, if there are no further remaining reserved bits, but extensions need to allocate further capability metadata bits, it will be possible to use the redundancy to create a future version of this encoding that is fully _compatible for all software_ but with observable differences in the in-memory representation of capabilities.
 
-.Encoding of architectural permissions for {rvy64_uni_base_name}
+.Encoding of architectural permissions for {rv64y_uni_base_name}
 [#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="75%"]
 |==============================================================================
 | Bit | Encoded permission
@@ -146,7 +142,7 @@ That is, <<JALR_CHERI>> will, as directed, attempt to jump to any unsealed or se
 ifdef::cheri_standalone_spec[]
 [NOTE]
 =====
-The permission encodings of <<rvy64_cap_description>> do not provide mappings for
+The permission encodings of <<rv64y_cap_description>> do not provide mappings for
 the <<section_zyseal>> extension's <<zyseal_se_perm>> or <<zyseal_us_perm>>.
 Thus, without further revision, the encodings of this chapter
 are incompatible with the <<section_zyseal>> extension.

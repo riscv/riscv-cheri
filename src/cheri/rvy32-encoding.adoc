@@ -1,12 +1,11 @@
-[#rvy32_cap_description, reftext="{rvy32_uni_base_name}"]
-== The {rvy32_uni_base_name} Capability Base Extension for {cheri_base32_ext_name}, Version 1.0
+[#rv32y_cap_description, reftext="{rv32y_uni_base_name}"]
+== The {rv32y_uni_base_name} Capability Base Extension for {cheri_base32_ext_name}, Version 1.0
 
 This chapter describes an in-memory format and properties of a capability encoding intended for {cheri_base32_ext_name}.
-This format is heavily based upon the {cheri_base64_ext_name} format <<rvy64_cap_description,{rvy64_uni_base_name}>> with the following changes:
+This format is heavily based upon the {cheri_base64_ext_name} format <<rv64y_cap_description,{rv64y_uni_base_name}>> with the following changes:
 
 * The parameters used to set the width, or presence, of fields in the encoding are defined in <<rvy32_uni_base_name_param_summary>>.
 * The architectural permissions (AP) field is compressed to save encoding space, and so rules are defined for removing permissions.
-
 
 [#section_cap_encoding32]
 === Capability Encoding
@@ -44,7 +43,7 @@ This capability encoding has the following properties that affect the observable
 
 ==== Capability Encoding Summary
 
-.{rvy32_uni_base_name} parameter summary
+.{rv32y_uni_base_name} parameter summary
 [#rvy32_uni_base_name_param_summary,width="100%",options=header,]
 |==============================================================================
 | Parameter | Value                | Comment
@@ -59,19 +58,19 @@ This capability encoding has the following properties that affect the observable
 ^1^If {cheri_default_ext_name} is supported, then the infinite capability must represent {cheri_int_mode_name} for compatibility with standard RISC-V code.
 See xref:cap_perms_encoding32[xrefstyle=short].
 
-.{rvy32_uni_base_name} extension summary
+.{rv32y_uni_base_name} extension summary
 [#rvy32_uni_base_name_ext_summary,width="100%",options=header,]
 |==============================================================================
 | Extension                    | Comment
 | <<section_cheri_hybrid_ext>> | Compatible
 | <<section_zylevels1>>        | Compatible
 ifdef::cheri_standalone_spec[]
-| <<section_zyseal>>           | Not yet compatible (need to allocate encoding)
+| <<section_zyseal>>           | Will be compatible if new permissions are encoded
 endif::[]
 | All RVY versions of other standard extensions | Compatible if the extension is compatible with RV32I
 |==============================================================================
 
-.{rvy32_uni_base_name} Feature summary
+.{rv32y_uni_base_name} Feature summary
 [#rvy32_uni_base_name_feature_summary,width="100%",options=header,]
 |==============================================================================
 | Feature                      | Comment
@@ -84,7 +83,7 @@ endif::[]
 
 The permissions field is {cap_rv32_perms_width} bits wide and is encoded using a compressed representation as shown below.
 Certain combinations of permissions are impractical. For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
-Therefore, it is only legal to encode a subset of all combinations, and this redundancy is used to reduce the size of the permissions field compared to <<rvy64_cap_description,{rvy64_uni_base_name}>>.
+Therefore, it is only legal to encode a subset of all combinations, and this redundancy is used to reduce the size of the permissions field compared to <<rv64y_cap_description,{rv64y_uni_base_name}>>.
 
 The permissions encoding is split into four quadrants.
 The quadrant is taken from bits [4:3] of the permissions encoding.
@@ -98,9 +97,9 @@ The <<m_bit>> is encoded as bit zero of the <<AP-field-encoding32>> for the exec
 
 <<<
 [#default-cap-AP-no-zylevels1]
-==== AP encoding and rules without <<section_zylevels1>> for {rvy32_uni_base_name}
+==== AP encoding and rules without <<section_zylevels1>> for {rv32y_uni_base_name}
 
-.Encoding of architectural permissions for {rvy32_uni_base_name} without <<section_zylevels1>>
+.Encoding of architectural permissions for {rv32y_uni_base_name} without <<section_zylevels1>>
 [#cap_perms_encoding_nolevels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
 |==============================================================================
 9+| *Quadrant 0: Non-capability data read/write*
@@ -141,7 +140,7 @@ The <<m_bit>> is encoded as bit zero of the <<AP-field-encoding32>> for the exec
 ^1^ _Mode (<<m_bit>>) can only be set on a valid capability when {cheri_default_ext_name}
 is supported. Despite being encoded here it is *not* an architectural permission._
 
-NOTE: When {rvy32_uni_base_name} there are many reserved permission encodings (see
+NOTE: When {rv32y_uni_base_name} there are many reserved permission encodings (see
 xref:cap_perms_encoding32[xrefstyle=short]). It is not possible for a valid
 capability to have one of these values since <<CLRPERM>> will never create it. It is
 possible for invalid capabilities to have reserved values. <<GCPERM>> will interpret
@@ -149,7 +148,7 @@ reserved values as if they were 0b00000 (no permissions). Future extensions may 
 meanings to the reserved bit patterns, in which case <<GCPERM>> is allowed to report a
 non-zero value.
 
-NOTE: Mode is encoded with permissions for {rvy32_uni_base_name}, but is not a permission. It is
+NOTE: Mode is encoded with permissions for {rv32y_uni_base_name}, but is not a permission. It is
 orthogonal to permissions as it can vary arbitrarily using <<SCMODE>>.
 
 This encoding's compressed permission format
@@ -158,7 +157,7 @@ which is used _instead of_ <<CLRPERM>>'s default fixed-pointing procedure.
 If <<section_zylevels1>> is absent, the following rules are run once _in order_:
 
 [#clrperm-rules-no-zylevels1]
-.{rvy32_uni_base_name} <<CLRPERM>> rules if <<section_zylevels1>> is absent.
+.{rv32y_uni_base_name} <<CLRPERM>> rules if <<section_zylevels1>> is absent.
 [float="center",align="center",cols="2,2,4",options="header"]
 |===
 | <<CLRPERM>> Rule | Permission   | Valid only if
@@ -173,9 +172,9 @@ If <<section_zylevels1>> is absent, the following rules are run once _in order_:
 |===
 
 [#default-cap-AP-zylevels1]
-==== AP encoding and rules with <<section_zylevels1>> for {rvy32_uni_base_name}
+==== AP encoding and rules with <<section_zylevels1>> for {rv32y_uni_base_name}
 
-.Encoding of architectural permissions for {rvy32_uni_base_name} with <<section_zylevels1>>
+.Encoding of architectural permissions for {rv32y_uni_base_name} with <<section_zylevels1>>
 [#cap_perms_encoding32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
 |==============================================================================
 11+| *Quadrant 0: Non-capability data read/write*
@@ -220,7 +219,7 @@ is supported, otherwise such encodings are reserved. Despite being encoded here 
 The following rules are run once _in order_:
 
 [#clrperm-rules-zylevels1]
-.{rvy32_uni_base_name} <<CLRPERM>> rules if <<section_zylevels1>> is present.
+.{rv32y_uni_base_name} <<CLRPERM>> rules if <<section_zylevels1>> is present.
 [float="center",align="center",cols="2,2,4",options="header"]
 |===
 | <<CLRPERM>> Rule | Permission            | Valid only if
@@ -250,18 +249,16 @@ Otherwise those encodings represent invalid permissions.
 The <<SDP-field32>> is {cap_rv32_sdp_width} bits wide.
 The value of the <<SDP-field32>> bits of the <<GCPERM>> result maps 1:1 to the <<SDP-field32>> in the capability.
 
-NOTE: Software is completely free to define the usage of these bits.
-
 [#section_cap_sealed32]
 ==== Capability Type (CT) Encoding
 
-Capabilities in this encoding have a 1-bit field for <<sec_cap_type>> values which behaves in the same way as the {rvy64_uni_base_name} <<section_cap_sealed>>.
+Capabilities in this encoding have a 1-bit field for <<sec_cap_type>> values which behaves in the same way as the <<rv64y_cap_description,{rv64y_uni_base_name}>> <<section_cap_sealed>>.
 
 [#section_cap_bounds32]
 ==== Bounds (EF, T, TE, B, BE, L~8~) Encoding
 
-The bounds are encoding in the same way as in <<section_cap_bounds,{rvy64_uni_base_name}>>, with the appropriate values for mantissa width and maximum exponent substituted.
-Compared to <<rvy64_cap_description,{rvy64_uni_base_name}>>, this encoding uses an additional `L~8~` bit as described in xref:section_cap_bounds[xrefstyle=short].
+The bounds are encoding in the same way as in <<section_cap_bounds,{rv64y_uni_base_name}>>, with the appropriate values for mantissa width and maximum exponent substituted.
+Compared to <<rv64y_cap_description,{rv64y_uni_base_name}>>, this encoding uses an additional `L~8~` bit as described in xref:section_cap_bounds[xrefstyle=short].
 
 ===== <<AUIPC_CHERI>> Representability
 
@@ -340,4 +337,4 @@ Permissions added by extensions (such as those of <<section_zylevels1>>) are pre
 [#section_cap_representable_check32, reftext="Representable Range"]
 === Representable Range Check
 
-The representable range check behaves in exactly the same way as in <<section_cap_representable_check,{rvy64_uni_base_name}>>, just with the {cap_rv32_mw_width}-bit mantissa width of this encoding.
+The representable range check behaves in exactly the same way as in <<section_cap_representable_check,{rv64y_uni_base_name}>>, just with the {cap_rv32_mw_width}-bit mantissa width of this encoding.

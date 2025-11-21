@@ -223,10 +223,10 @@ NOTE: <<SCADDR>> writes back a derived capability with a new address field and, 
 
 NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only come back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
 
-NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rvy32_cap_description>>/<<rvy64_cap_description>> (e.g., for accelerators or specific micro-controllers, see <<uycfg>>) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
+NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv32y_cap_description>>/<<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers, see <<uycfg>>) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
 Therefore, the rest of the specification uses the phrase *represented exactly* for this check.
 
-The bounds and representable region (or space) for <<rvy32_cap_description>>/<<rvy64_cap_description>> are illustrated in <<cap_bounds_map>>.
+The bounds and representable region (or space) for <<rv32y_cap_description>>/<<rv64y_cap_description>> are illustrated in <<cap_bounds_map>>.
 E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
 
 [#cap_bounds_map]
@@ -309,7 +309,7 @@ the <<sec_cap_type>> values for capabilities granting <<x_perm>>
 from those not granting <<x_perm>>;
 the <<x_perm>> in the capability encoding effectively adds
 an additional bit to the <<sec_cap_type>> field.
-(<<rvy32_cap_description>>/<<rvy64_cap_description>> does not avail itself of this option,
+(<<rv32y_cap_description>>/<<rv64y_cap_description>> does not avail itself of this option,
 but, for example, the CHERIoT capability encoding does.)
 
 [#sec_cap_type_ambient]
@@ -318,7 +318,7 @@ Some capability types are said to be "ambiently available" (or just "ambient")
 if they do not require specific authority to seal a capability (with that type).
 For example, if <<section_rvy_sentry_insn_ext>> is available on a given platform,
 the type with which it seals capabilities is considered ambiently available.
-(With the capabilities of <<rvy32_cap_description>>/<<rvy64_cap_description>>, that would be type `1`.)
+(With the capabilities of <<rv32y_cap_description>>/<<rv64y_cap_description>>, that would be type `1`.)
 
 [#sentry_cap,reftext="sentry capability"]
 Sentry capability type::
@@ -434,7 +434,7 @@ to reduce the number of bits necessary to represent permissions.
 | [[perm_req:base:asr:x,base-3]]base-3      | <<asr_perm>> | <<x_perm>>
 |===
 
-When using <<rvy64_cap_description,{rvy64_uni_base_name}>> and <<rvy32_cap_description,{rvy32_uni_base_name}>> the complete set of rules with and without <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>> are shown in <<clrperm-rules-no-zylevels1>> and <<clrperm-rules-zylevels1>>.
+When using <<rv64y_cap_description,{rv64y_uni_base_name}>> and <<rv32y_cap_description,{rv32y_uni_base_name}>> the complete set of rules with and without <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>> are shown in <<clrperm-rules-no-zylevels1>> and <<clrperm-rules-zylevels1>>.
 
 [#sec_cap_sdp]
 ==== Software-Defined Permissions (SDP)
@@ -511,10 +511,10 @@ While the in-memory bit pattern of capabilities across these systems as well as 
 The currently ratified {cheri_base_ext_name} base extensions including capability encoding formats are listed below:
 
 * For {cheri_base64_ext_name}, the capability encoding format from the University of Cambridge covering the full 64-bit address space:
-** {rvy64_uni_base_name}
-** {rvy64e_uni_base}
+** <<rv64y_cap_description, {rv64y_uni_base_name}>>
+** The above encoding format can also be used for {rvy64e_uni_base}
 * For {cheri_base32_ext_name}, the capability encoding format from the University of Cambridge covering the full 32-bit address space and optional RISC-V compatibility with {cheri_default_ext_name}:
-** {rvy32_uni_base_name}
+** <<rv32y_cap_description, {rv32y_uni_base_name}>>
 ifndef::cheri_ratification_v1_only[]
 * For {cheri_base32_ext_name}E, the CHERIoT encoding optimized for smaller devices:
 ** {rvy32e_cheriot_base_name}
@@ -528,7 +528,7 @@ The intent is to simplify the future development of more (possibly domain-specif
 
 NOTE: It is expected that the actual {cheri_base_ext_name} instantiation is chosen using a profile rather than a full architecture string and therefore the unwieldy suffix should rarely be user-visible.
 
-NOTE: The {rvy64_uni_base_name} and {rvy32_uni_base_name} base extensions are closely modeled upon features from CHERI v9 cite:[cheri-v9-spec], and the bounds encoding scheme is based upon CHERI Concentrate cite:[woodruff2019cheri].
+NOTE: The {rv64y_uni_base_name} and {rv32y_uni_base_name} base extensions are closely modeled upon features from CHERI v9 cite:[cheri-v9-spec], and the bounds encoding scheme is based upon CHERI Concentrate cite:[woodruff2019cheri].
 
 Custom capability encoding formats may be implemented for vendor-specific non-standard implementations (their name suffix should start with `_Lxy`).
 
@@ -715,13 +715,13 @@ The following values for `uycfg` are defined:
 |===
 |Base         |Features|Encoding
 | 0x0         | -      | Reserved (unspecified capability encoding)
-.2+|0x1       | 0x0    | <<rvy32_cap_description>>/<<rvy64_cap_description>> capabilities, without <<section_zylevels1>> features
-              | 0x1   <| <<rvy32_cap_description>>/<<rvy64_cap_description>> capabilities, with <<section_zylevels1>> features
+.2+|0x1       | 0x0    | <<rv32y_cap_description>>/<<rv64y_cap_description>> capabilities, without <<section_zylevels1>> features
+              | 0x1   <| <<rv32y_cap_description>>/<<rv64y_cap_description>> capabilities, with <<section_zylevels1>> features
 |0x2          | 0x0    | Reserved for CHERIoT's (RV32-only) encoding
 |===
 
 Future extensions that change capability encoding must define new values.
-Extensions that define encodings derived from <<rvy32_cap_description>>/<<rvy64_cap_description>>
+Extensions that define encodings derived from <<rv32y_cap_description>>/<<rv64y_cap_description>>
 and are generally compatible with this encoding (e.g. they only assign meaning to previously reserved bits) must preserve the Base Encoding field (the bottom 8 bits) as `0x01`.
 
 [NOTE]
@@ -1090,7 +1090,7 @@ NOTE: A future extension may raise an exception on the branch instruction itself
 The {rvy_sentry_insn_ext_name} extension adds the <<SENTRY>> instruction to allow sealing arbitrary capabilities
 at a <<sec_cap_type>> value specified by the capability encoding.
 
-NOTE: In principle, despite the names, the type used by <<SENTRY>> might not be a <<sentry_cap>> type, though that is not true of the capabilities of <<rvy32_cap_description>>/<<rvy64_cap_description>>.
+NOTE: In principle, despite the names, the type used by <<SENTRY>> might not be a <<sentry_cap>> type, though that is not true of the capabilities of <<rv32y_cap_description>>/<<rv64y_cap_description>>.
 
 NOTE: Future extensions to {cheri_base_ext_name} (such as CHERIoT, see <<uycfg>>) support additional <<sec_cap_type>> values, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
 
