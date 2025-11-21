@@ -108,8 +108,6 @@ In valid capabilities, the bit assigned to the <<m_bit>> must be zero if <<x_per
 The <<SDP-field64>> is {cap_rv64_sdp_width} bits wide.
 The value of the <<SDP-field64>> bits of the <<GCPERM>> result maps 1:1 to the <<SDP-field64>> in the capability.
 
-NOTE: Software is completely free to define the usage of these bits.
-
 [#section_cap_sealed]
 ==== Capability Type (CT) Encoding
 
@@ -161,6 +159,8 @@ NOTE: *CHERI v9 Note:* The sense of the exponent is reversed, so an encoded
 value of 0 represents CAP_MAX_E, and CAP_MAX_E represents 0 from the previous
 specification.
 endif::[]
+
+This bounds encoding scheme is based upon cite:[woodruff2019cheri].
 
 The bounds encode the base and top addresses that constrain memory accesses.
 The capability can be used to access any memory location A in the range base
@@ -394,94 +394,6 @@ Capabilities with malformed bounds:
 . Return both base and top bounds as zero, which affects instructions like <<GCBASE>>.
 . Cause certain manipulation instructions like <<CADDI>> to always set the {ctag} of the result to zero.
 
-===== <<AUIPC_CHERI>> Representability
-
-#Begin new since last ARC review#
-
-The capabilities of this chapter have sufficient <<section_rep_check_concept,representability>> such that sequences used to form XLEN-bit addresses (such as <<AUIPC_CHERI>>+<<JALR_CHERI>>) will not clear the {ctag}.
-
-#End new since last ARC review#
-
-[#section_special_caps_encoding]
-=== Encoding of Special Capabilities
-
-[#section_null_cap_encoding]
-==== NULL Capability Encoding
-
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
-the difference between in-memory and architectural format.
-endif::[]
-
-The <<null-cap>> capability is represented with 0 in all fields. This implies
-that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}), so its bounds cover the entire address space such that the
-expanded base is 0 and top is 2^XLEN^.
-
-.Field values of the NULL capability
-[#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
-|==============================================================================
-| Field    | Value  | Comment
-| {ctag_title}             | zero   | Capability is not valid
-| <<SDP-field,SDP>>        | zeros  | Grants no permissions
-| <<AP-field,AP>>          | zeros  | Grants no permissions
-| <<M-bit,M>>^1^           | zero   | No meaning since non-executable ({cheri_default_ext_name} only)
-| CT       | zero   | Unsealed
-| EF       | zero   | Internal exponent format
-| L~8~^2^  | zero   | Top address reconstruction bit
-| T        | zeros  | Top address bits
-| T~E~     | zeros  | Exponent bits
-| B        | zeros  | Base address bits
-| B~E~     | zeros  | Exponent bits
-| Address  | zeros  | Capability address
-| Reserved | zeros  | All reserved fields
-|==============================================================================
-
-^1^ Only present if `AP_MBit=1` and {cheri_default_ext_name} is implemented.
-
-^2^ Only present if `enableL8=1`.
-
-Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed absent in NULL capabilities.
-
-[#section_infinite_cap_encoding]
-==== Infinite Capability Encoding
-
-This encoding is for an _Infinite_ capability value, which
-grants all permissions while its bounds also cover the whole address space.
-It includes <<x_perm>> and so includes the <<m_bit>> if {cheri_default_ext_name} is supported.
-This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capability.
-
-// Added note here for CHERIoT which enforces W xor X.
-NOTE: This capability format has a single encoding for the _Infinite_ capability. The CHERIoT encoding format has separate roots for code and for data, and will be included in a future version of this specification.
-
-.Field values of the Infinite capability
-[#infinite-cap-encoding,reftext="Infinite"]
-[options=header,align=center,width="90%",cols="25,23,52"]
-|==============================================================================
-| Field         | Value | Comment
-| {ctag_title}  | one   | Capability is valid
-| SDP           | ones  | Grants all permissions
-| AP            | AP_MAX | Grants all permissions
-| <<m_bit,M>>^1^   | {INT_MODE_VALUE} | CHERI execution mode
-| CT            | zero  | Unsealed
-| EF            | zero  | Internal exponent format
-| L~8~^2^       | zero  | Top address reconstruction bit
-| T             | zeros | Top address bits
-| T~E~          | zeros | Exponent bits
-| B             | zeros | Base address bits
-| B~E~          | zeros | Exponent bits
-| Address       | any^3^ | Capability address
-| Reserved      | zeros | All reserved fields
-|==============================================================================
-
-^1^ Only present if `AP_MBit=1` and {cheri_default_ext_name} is implemented.
-
-^2^ Only present if `enableL8` is set.
-
-^3^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
- If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
-
-Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities.
-
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
 
@@ -595,3 +507,88 @@ xref:section_cap_encoding[xrefstyle=short].
 This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
 is _representable_.
+
+===== <<AUIPC_CHERI>> Representability
+
+#Begin new since last ARC review#
+
+The capabilities of this chapter have sufficient <<section_rep_check_concept,representability>> such that sequences used to form XLEN-bit addresses (such as <<AUIPC_CHERI>>+<<JALR_CHERI>>) will not clear the {ctag}.
+
+#End new since last ARC review#
+
+[#section_special_caps_encoding]
+=== Encoding of Special Capabilities
+
+[#section_null_cap_encoding]
+==== NULL Capability Encoding
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
+the difference between in-memory and architectural format.
+endif::[]
+
+The <<null-cap>> capability is represented with 0 in all fields. This implies
+that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}), so its bounds cover the entire address space such that the
+expanded base is 0 and top is 2^XLEN^.
+
+.Field values of the NULL capability
+[#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
+|==============================================================================
+| Field    | Value  | Comment
+| {ctag_title}             | zero   | Capability is not valid
+| <<SDP-field,SDP>>        | zeros  | Grants no permissions
+| <<AP-field,AP>>          | zeros  | Grants no permissions
+| <<M-bit,M>>^1^           | zero   | No meaning since non-executable ({cheri_default_ext_name} only)
+| CT       | zero   | Unsealed
+| EF       | zero   | Internal exponent format
+| L~8~^2^  | zero   | Top address reconstruction bit
+| T        | zeros  | Top address bits
+| T~E~     | zeros  | Exponent bits
+| B        | zeros  | Base address bits
+| B~E~     | zeros  | Exponent bits
+| Address  | zeros  | Capability address
+| Reserved | zeros  | All reserved fields
+|==============================================================================
+
+^1^ Only present if `AP_MBit=1` and {cheri_default_ext_name} is implemented.
+
+^2^ Only present if `enableL8=1`.
+
+Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed absent in NULL capabilities.
+
+[#section_infinite_cap_encoding]
+==== Infinite Capability Encoding
+
+This encoding is for an _Infinite_ capability value, which
+grants all permissions while its bounds also cover the whole address space.
+It includes <<x_perm>> and so includes the <<m_bit>> if {cheri_default_ext_name} is supported.
+This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capability.
+
+.Field values of the Infinite capability
+[#infinite-cap-encoding,reftext="Infinite"]
+[options=header,align=center,width="90%",cols="25,23,52"]
+|==============================================================================
+| Field         | Value | Comment
+| {ctag_title}  | one   | Capability is valid
+| SDP           | ones  | Grants all permissions
+| AP            | AP_MAX | Grants all permissions
+| <<m_bit,M>>^1^   | {INT_MODE_VALUE} | CHERI execution mode
+| CT            | zero  | Unsealed
+| EF            | zero  | Internal exponent format
+| L~8~^2^       | zero  | Top address reconstruction bit
+| T             | zeros | Top address bits
+| T~E~          | zeros | Exponent bits
+| B             | zeros | Base address bits
+| B~E~          | zeros | Exponent bits
+| Address       | any^3^ | Capability address
+| Reserved      | zeros | All reserved fields
+|==============================================================================
+
+^1^ Only present if `AP_MBit=1` and {cheri_default_ext_name} is implemented.
+
+^2^ Only present if `enableL8` is set.
+
+^3^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
+ If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
+
+Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities.

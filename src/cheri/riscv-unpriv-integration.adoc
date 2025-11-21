@@ -57,14 +57,18 @@ improve their security.
 {cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to YLEN, each register also gains one-bit {ctag} which is defined below.
 
-{cheri_base_ext_name} specifies the fields which the capability format supports, and how those fields behave for XLEN=32 and XLEN=64.
-However, the precise in-memory representation is not defined in this chapter since multiple legal (and generally software-compatible) encodings exists.
-For more details on this see <<sec_cap_encoding_formats>>.
+{cheri_base_ext_name} specifies the minimum required fields which the capability format must support, and their semantics.
+However, the precise in-memory representation of capabilities is not defined in this chapter since multiple legal (and generally software-compatible) encodings exist.
+Specific encoding formats may support different ISA extensions, and add new architectural permissions.
+For more details on the currently available formats see <<sec_cap_encoding_formats>>.
+
+NOTE: {cheri_base_ext_name} si designed to be highly extensible allowing multiple encoding formats to be created.
+ Multiple formats are most likely for {cheri_base32_ext_name} due to the limited number of bits available in the metadata.
 
 [IMPORTANT]
 ====
 It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid in-memory encodings.
-However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, these are encoded via an `_Ly<params>` suffix to the base ISA name such as `{rvy32_uni_base_name}_IMAF_Zicsr`.
+However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, these are encoded via an `_Ly<params>` suffix to the base ISA name such as `{rv32y_uni_base_name}_IMAF_Zicsr`.
 ====
 
 .CHERI Capability structure
@@ -169,10 +173,9 @@ In a typical load/store unit, the expansion of the bounds from `{cs1}` and bound
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 
-The {cheri_base_ext_name} bounds encoding format is defined in <<section_cap_bounds>>.
+One bounds encoding format based upon cite:[woodruff2019cheri] is defined in <<section_cap_bounds>>.
 
-NOTE: Future extensions may use alternative bounds encoding formats.
-Software can query the capability format by reading the <<uycfg>> CSR.
+NOTE: Capability encoding formats are free to define their own bounds encoding scheme.
 
 Software can query the capability bounds:
 
@@ -346,7 +349,7 @@ The permissions currently defined in {cheri_base_ext_name} are listed below.
 
 Permissions can be cleared when deriving a new capability value (using <<CLRPERM>>) but they can never be added.
 
-NOTE: The in-memory encoding of permissions varies with MXLEN and is described in the corresponding chapters (xref:AP-field-encoding64[xrefstyle=full] or xref:AP-field-encoding32[xrefstyle=full]).
+NOTE: This is the minimum set of permissions which a capability format must support. The in-memory format will depend on the capability encoding.
 
 .AP-field summary
 [#ap_field_summary,width="100%",options=header,halign=center,cols="2,2,5"]
@@ -445,6 +448,8 @@ They can be cleared by <<CLRPERM>> but are not interpreted by the CPU otherwise.
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set on valid capabilities.
 
 NOTE: This property is required to ensure restricted programs cannot forge capabilities that would pass the software-enforced checks.
+
+NOTE: Software is completely free to define the usage of these bits.
 
 [#section_special_caps]
 ==== Special Capabilities
