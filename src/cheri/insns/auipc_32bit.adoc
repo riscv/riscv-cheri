@@ -19,7 +19,7 @@ include::base_isa_extension.adoc[]
 Description::
 Form a 32-bit offset from the 20-bit immediate filling the lowest bits with zero;
 the number of places to shift is determined by the capability encoding's choice of
-the <<section_auipc_shift>> value (12, unless otherwise specified).
+the <<section_auipc_shift>> value (12, unless otherwise specified by the capability encoding format).
 Take the value of the AUIPC instruction's <<pcc>>, increment its address by the 32-bit offset using the semantics of the <<SCADDR>> instruction and write the result to `{cd}`.
 +
 #End changed since last ARC review#
@@ -55,7 +55,7 @@ of load (I-type) and store (S-type) instructions.
 When manipulating addresses within capabilities, there is a risk
 that such two-step sequences could take the address out of bounds
 before attempting to bring it back within bounds.
-Many capability encodings, including those of <<app_cap_description>>,
+Many capability encodings, including those of <<rv32y_cap_description>>,
 have a <<section_rep_check_concept,*representable range*>> sufficient
 to ensure that any capability whose length is larger than 2 KiB
 (that is, those for which a signed 12-bit displacement might be insufficient)
