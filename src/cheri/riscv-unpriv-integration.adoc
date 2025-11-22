@@ -57,19 +57,30 @@ improve their security.
 {cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to YLEN, each register also gains one-bit {ctag} which is defined below.
 
+#Begin new since last ARC review#
+
 {cheri_base_ext_name} specifies the minimum required fields which the capability format must support, and their semantics.
-However, the precise in-memory representation of capabilities is not defined in this chapter since multiple legal (and generally software-compatible) encodings exist.
+However, the precise in-memory representation of the capability metadata is not defined in this chapter since multiple legal (and generally software-compatible) encodings exist.
+On little-endian systems, the memory representation of capabilities always holds the address in the first `XLEN` bytes of memory followed by the metadata.
+
+NOTE: So far, no big-endian implementations of {cheri_base_ext_name} exist, but it is likely that such systems would switch the order of metadata and address in memory for consistency (even though having the address first is better for software compatibility).
+
+{cheri_base_ext_name} is designed to be highly extensible, and therefore must allow multiple metadata encoding formats to exist.
 Specific encoding formats may support different ISA extensions, and add new architectural permissions.
 For more details on the currently available formats see <<sec_cap_encoding_formats>>.
 
-NOTE: {cheri_base_ext_name} si designed to be highly extensible allowing multiple encoding formats to be created.
- Multiple formats are most likely for {cheri_base32_ext_name} due to the limited number of bits available in the metadata.
-
-[IMPORTANT]
+[NOTE]
 ====
+Depending on the target domain different capability requirements exist, but for XLEN=32 there are insufficient bits available in the capability metadata to define one common format for all use cases.
+For example, a small embedded controller with limited address space of a few megabytes may need to make different tradeoffs than an auxiliary core within a larger SoC with many gigabytes of address space, and a accelerator using the {cheri_base_ext_name} ISA may need yet another set of features.
+Therefore, multiple capability encodings with observable (but generally uninteresting) behavior differences need to be defined.
+While the in-memory bit pattern of capabilities across these systems as well as the precision of bounds may differ, software that does not depend on the raw bits in memory is source (and often also binary) compatible with these different capability encodings.
+====
+
 It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid in-memory encodings.
 However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, these are encoded via an `_Ly<params>` suffix to the base ISA name such as `{rv32y_uni_base_name}_IMAF_Zicsr`.
-====
+
+#End new since last ARC review#
 
 .CHERI Capability structure
 [#cap_structure]
@@ -504,14 +515,6 @@ For example, the <<SCBNDSR>> instruction yields a capability with new bounds tha
 Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds than XLEN=32 system and therefore have a larger <<section_cap_representable_check>>.
 
 NOTE: These observable differences in behaviour are similar to floating point numbers where the operations supported are the same for 32-bit vs. 64-bit, but the exact result depends on the representation (e.g. IEEE-754 vs. other floating point formats).
-
-[IMPORTANT]
-====
-For XLEN=32 there are very limited numbers of bits available in the capability metadata but depending on the target domain different choices must be made.
-For example, a small embedded controller with limited address space of a few megabytes may need to make different tradeoffs than an auxiliary core within a larger SoC with many gigabytes of address space, and a accelerator using the {cheri_base_ext_name} ISA may need yet another set of tradeoffs.
-Therefore, multiple capability encodings with observable (but generally uninteresting) behavior differences need to be defined.
-While the in-memory bit pattern of capabilities across these systems as well as the precision of bounds may differ, software that does not depend on the raw bits in memory is source (and often also binary) compatible with these different capability encodings.
-====
 
 The currently ratified {cheri_base_ext_name} base extensions including capability encoding formats are listed below:
 
