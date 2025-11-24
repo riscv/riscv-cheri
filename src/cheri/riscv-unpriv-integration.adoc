@@ -536,7 +536,8 @@ The following parameters are currently defined to distinguish existing formats:
 Parameters for bounds precision and representability::
 These parameters affect the behavior of <<SCBNDS>>/<<SCBNDSR>> as well as the representability check that affects the tag-clearing behavior of how far you can go out of bounds with <<SCADDR>>/<<CADD>>.
 * **Mantissa width (mw<N>)**: The mantissa width for the bounds encoding. For example, a format with {cap_rv64_mw_width} bits of mantissa, would use `mw{cap_rv64_mw_width}`.
-* **Maximum exponent (e<N>)**: The encoded value of the exponent for a valid capability spanning the whole address space. For example, for {cheri_base64_ext_name} with {cap_rv64_mw_width} bits of mantissa this would be `e{cap_rv64_exp_max}`.
+* **Maximum exponent (ea or e<N>)**: If _all_ required values of the exponent can be encoded directly in the exponent field this uses `ea`, otherwise `e<N>` describes the exponent for a valid capability spanning the whole address space (e.g. `e15` for the CHERIoTv1 format).
+This value `ea` for this parameter may be omitted as it is default value.
 * **Representable region (rc1 or r0)**: The number of mantissa bits used to guarantee representability of out-of-bounds capability values.
 So far two options have been used in commercial implementations: `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, and `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed out-of-bounds range.
 
