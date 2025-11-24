@@ -537,6 +537,13 @@ Parameter for permissions::
 This parameter defines which permission modifications using <<CLRPERM>> also clear additional (non-encodable) permissions.
 * **Permission encoding (ps or pc)**: Whether permissions are encoded using a _simple_ representation of one bit per architectural permission (`ps`) or a _compressed_ encoding that leverages dependencies between permissions and does not allow encoding all possible combinations (`pc`).
 
+Parameter for in-memory format::
+* **In-memory encoding (enc<N>)**: This parameter defines layout of capability metadata fields in memory.
+For all encodings defined in this specification, the only legal value for `N` is 1 and therefore this parameter may be omitted (but vendors may define alternate formats).
+Additionally, there is one other value, `enc0`, which means the compiler and/or software must avoid making any assumptions about the in-memory representation.
+
+NOTE: In general, only very specialized software such as offline crash-dump debuggers need to know the exact memory representation, and all other software can and should use the inspection instructions such as <<GCBASE>>, etc.
+
 Other parameters::
 These other parameters are not used by the formats currently set forward for ratification but are being used in vendor extensions on top of {cheri_base_ext_name}.
 * **<<AUIPC_CHERI>> shift (as<N>)**: The shift amount used in the {cheri_base_ext_name} variant of <<AUIPC_CHERI>>. This is 12 (as in RVI) unless specified otherwise.
