@@ -549,7 +549,7 @@ if __name__ == "__main__":
             ),
             InsnTable(
                 extension="{rvy_bld_insn_ext_name}",
-                filename=output_file(args,  "Zyb_insns_table_body.adoc"),
+                filename=output_file(args,  "Zybld_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
