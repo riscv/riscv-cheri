@@ -504,6 +504,9 @@ Extensions introducing new permissions may require these to be provided by root 
 A capability with all-zero metadata, a zero {ctag}, and an address of zero is referred to as the _NULL_ capability.
 This capability grants no permissions and any dereference results in raising an exception.
 
+
+#Begin new since last ARC review#
+
 [#sec_cap_encoding_formats]
 === CHERI encoding formats
 CHERI implementations make trade-offs in their "encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
@@ -515,6 +518,27 @@ For example, the <<SCBNDSR>> instruction yields a capability with new bounds tha
 Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds than XLEN=32 system and therefore have a larger <<section_cap_representable_check>>.
 
 NOTE: These observable differences in behaviour are similar to floating point numbers where the operations supported are the same for 32-bit vs. 64-bit, but the exact result depends on the representation (e.g. IEEE-754 vs. other floating point formats).
+
+The encoding format parameters are specified in the architecture string using a `_Ly<params>` syntax, which can be used by software and/or the compiler to optimize for that specific in-memory format.
+The following parameters are currently defined to distinguish existing formats:
+
+Parameters for bounds precision and representability::
+These parameters affect the behavior of <<SCBNDS>>/<<SCBNDSR>> as well as the representability check that affects the tag-clearing behavior of how far you can go out of bounds with <<SCADDR>>/<<CADD>>.
+* **Mantissa width (mw<N>)**: The mantissa width for the bounds encoding. For example, a format with {cap_rv64_mw_width} bits of mantissa, would use `mw{cap_rv64_mw_width}`.
+* **Maximum exponent (e<N>)**: The encoded value of the exponent for a valid capability spanning the whole address space. For example, for {cheri_base64_ext_name} with {cap_rv64_mw_width} bits of mantissa this would be `e{cap_rv64_exp_max}`.
+* **Representable region (rc1 or r0)**: The number of mantissa bits used to guarantee representability of out-of-bounds capability values.
+So far two options have been used in commercial implementations: `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, and `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed out-of-bounds range.
+
+Parameter for permissions::
+This parameter defines which permission modifications using <<CLRPERM>> also clear additional (non-encodable) permissions.
+* **Permission encoding (ps or pc)**: Whether permissions are encoded using a _simple_ representation of one bit per architectural permission (`ps`) or a _compressed_ encoding that leverages dependencies between permissions and does not allow encoding all possible combinations (`pc`).
+
+Other parameters::
+These other parameters are not used by the formats currently set forward for ratification but are being used in vendor extensions on top of {cheri_base_ext_name}.
+* **<<AUIPC_CHERI>> shift (as<N>)**: The shift amount used in the {cheri_base_ext_name} variant of <<AUIPC_CHERI>>. This is 12 (as in RVI) unless specified otherwise.
+
+As with other extensions, a version number suffix may be added to the `_Ly` string to identify a new version with the same parameters but different in-memory representation.
+Any newer version must be forwards compatible with any existing software using the same parameters.
 
 The currently ratified {cheri_base_ext_name} base extensions including capability encoding formats are listed below:
 
@@ -542,6 +566,7 @@ Custom capability encoding formats may be implemented for vendor-specific non-st
 
 IMPORTANT: Any future capability encoding formats must provide all the capability guarantees listed in this chapter and must undergo formal verification of these properties before being proposed for ratification.
 
+#End new since last ARC review#
 
 
 [#section_cap_integrity]
