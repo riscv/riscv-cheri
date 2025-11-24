@@ -1,0 +1,78 @@
+[#rv32y_cheriot2_cap_description, reftext="{rvy32e_cheriot2_base_name}"]
+== The {rvy32e_cheriot2_base_name} Capability Base Extension for {cheri_base32e_ext_name}, Version 1.0
+
+This chapter describes a variation on the {rvy32e_cheriot_base_name} encoding to support all exponents using the same number of bits.
+This change is backwards compatible for software but enables support for more precise bounds on capabilities larger than 8MiB.
+Due to increased microarchitectural complexity and the limited need for precise alignment on such large capabilities on small systems implementations may choose to support either.
+
+The changes are limited to the bounds encoding; all other aspects of the capability encoding are identical to {rvy32e_cheriot_base_name}.
+
+[#section_cap_encoding_cheriot]
+=== Capability Encoding
+
+The components of a capability, except the {ctag}, are encoded as shown in xref:cap_encoding_cheriot2[xrefstyle=short].
+
+.Capability encoding for {rvy32e_cheriot2_base_name}
+[#cap_encoding_cheriot2]
+include::img/cap-encoding-cheriot2.edn[]
+
+The only difference from <<rvy32e_cheriot_base_name>> is that the exponent field, E, is grown to 5 bits and the T field is shrunk to 8 bits.
+This allows all exponents from 0 to 24 to be represented directly, with some spare exponents available for other uses.
+To enable the reduced T field to be decoded to a 9-bit value it is assumed that the top bit of the length, L = T - B, is one, similar to normalised floating point numbers.
+To encode small capabilities with exponent zero and lengths less than 256 bytes the special E value, 31, is used to mean L[8] is zero.
+T[8] can then be reconstructed as follows:
+
+[source]
+----
+T[8] = B[8] XOR (E == 31 ? 0 : 1) XOR (T[7:0] < B[7:0])
+----
+
+Other aspects of bounds decoding remain identical to <<section_cheriot_cap_bounds>>.
+
+Encoding the bounds is also similar:
+[source]
+----
+// compute candidate exponent
+e = 23 - count_leading_zeros(top - base)
+// extract 10-bit from base and top
+b = base[e + 9 : e]
+t = top[e + 9 : e]
+
+// ensure we produce a top gteater than or equal to requested if low bits are truncated
+if top[e-1:0] != 0 {
+  t = t + 1
+}
+
+// in case we overflowed this exponent use the one above
+if t - b >= 2^(e + 9) {
+  e += 1
+  b = base[e + 9 : e]
+  t = top[e + 9 : e]
+  if top[e-1:0] != 0 {
+     t = t + 1
+  }
+}
+
+// truncate B and T to 9 bits
+B = b[8:0]
+T = t[8:0]
+// encode E
+E = (e == 0 && (t-b)[8] == 0) ? 0 : (e XOR 31)
+----
+
+Note that the E is stored bitwise inverted so that exponent zero decodes to the special small capability case, with length zero for the NULL capability.
+
+==== Capability Encoding Parameter Summary
+
+.{rvy32e_cheriot_base_name} parameter summary
+[#rvy32e_cheriot_base_name_param_summary,%autowidth,options=header,]
+|==============================================================================
+| Parameter | Value                | Comment
+| mw        | {cap_cheriot_mw_width}  | Mantissa width
+| e         | a                    | All exponents are supported
+| rc        | 0                    | Representable region between base and top only
+| p         | pc                   | Compressed permission encoding
+| AP_MBit   | 0                    | Whether the <<m_bit>> is encoded in the AP-field
+| AP_MAX    | ?                    | Multiple capability roots
+| as        | 11                   | <<AUIPC>> shift
+|==============================================================================
