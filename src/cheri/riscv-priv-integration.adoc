@@ -117,6 +117,8 @@ of the data is UNSPECIFIED.
 .Machine thread identifier capability register
 include::img/mtidcreg.edn[]
 
+ifdef::cheri_xycfg_csr[]
+
 [#mycfg,reftext="mycfg"]
 ==== Machine CHERI Capability Encoding (mycfg)
 The <<mycfg>> register is used to identify which CHERI capability encoding is used by the platform.
@@ -129,6 +131,8 @@ For the meaning of the individual fields, refer to the <<uycfg>> register in the
 .Machine CHERI capability encoding CSR (`mycfg`) format
 [#mycfg_csr_structure]
 include::img/ycfgreg.edn[]
+
+endif::[]
 
 === Machine-Level CSRs modified by {cheri_base_ext_name}
 
@@ -310,6 +314,8 @@ The <<stidc>> register is used to identify the current software thread in superv
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
 
+ifdef::cheri_xycfg_csr[]
+
 [#sycfg,reftext="sycfg"]
 ==== Supervisor CHERI Capability Encoding (sycfg)
 The <<sycfg>> register is used to identify which CHERI capability encoding is used by the platform.
@@ -322,6 +328,8 @@ For the meaning of the individual fields, refer to the <<uycfg>> register in the
 .Supervisor CHERI capability encoding CSR (`sycfg`) format
 [#sycfg_csr_structure]
 include::img/ycfgreg.edn[]
+
+endif::[]
 
 === Supervisor-Level CSRs modified by {cheri_base_ext_name}
 ifdef::cheri_standalone_spec[]
@@ -746,9 +754,13 @@ CHERI execution modes::
 utidc::
  See the unprivileged manual for the definition of the utidc CSR.
 
+ifdef::cheri_xycfg_csr[]
+
 [#uycfg, reftext="uycfg"]
 uycfg::
 See the unprivileged manual for the definition of the uycfg CSR.
+
+endif::[]
 
 [#root-cap, reftext="Root"]
 Root Capability::
