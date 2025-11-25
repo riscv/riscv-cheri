@@ -67,8 +67,6 @@ endif::support_varxlen[]
 :rvy_zicbop_mod_file_name: {cheri_base_ext_name}_Zicbop_mod_insns_table_body
 // 32-bit encodings added by Zyhybrid
 :rvy_hybrid_file_name:     {cheri_default_ext_name}_insns_table_body
-// default encoding scheme
-:rvy_default_encoding_name: Zydefaultcap
 
 // Extension for supporting lr/sc.[bh]
 :lr_sc_bh_ext_name:     Zabhlrsc
@@ -104,6 +102,8 @@ endif::support_varxlen[]
 
 :CAP_MODE_VALUE: 0
 :INT_MODE_VALUE: 1
+:CAP_MODE_VALUE_WORD: zero
+:INT_MODE_VALUE_WORD: one
 
 ///////////////////////////////////////////////////////////////////////////////
 // Cap definitions
@@ -119,7 +119,21 @@ endif::support_varxlen[]
 :cap_rv32_addr_width:  32
 :cap_rv64_addr_width:  64
 :cap_rv32_exp_width:    5
+:cap_rv32_exp_max:      24
 :cap_rv64_exp_width:    6
+:cap_rv64_exp_max:      52
+
+// Base suffixes
+:rv32y_uni_encoding_suffix: _Lymw{cap_rv32_mw_width}rc1pc
+:rv64y_uni_encoding_suffix: _Lymw{cap_rv64_mw_width}rc1ps
+:rv64y_uni_base_name: {cheri_base64_ext_name}{rv64y_uni_encoding_suffix}
+:rvy64e_uni_base: {cheri_base64_ext_name}E{rv64y_uni_encoding_suffix}
+:rv32y_uni_base_name: {cheri_base32_ext_name}{rv32y_uni_encoding_suffix}
+:rv32ye_uni_base_name: {cheri_base32_ext_name}E{rv32y_uni_encoding_suffix}
+// CHERIoT encoding scheme
+:rvy_cheriot_encoding_suffix: _Lxymw9e14r0as11pc
+:rvy32e_cheriot_base_name: {cheri_base32_ext_name}E{rvy_cheriot_encoding_suffix}
+
 
 :cheri_excep_cause_pc:       32
 :cheri_excep_cause_ld:       33
