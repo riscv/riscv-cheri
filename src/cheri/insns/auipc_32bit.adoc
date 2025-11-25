@@ -19,7 +19,7 @@ include::base_isa_extension.adoc[]
 Description::
 Form a 32-bit offset from the 20-bit immediate filling the lowest bits with zero;
 the number of places to shift is determined by the capability encoding's choice of
-the <<section_auipc_shift>> value (12, unless otherwise specified).
+the <<section_auipc_shift>> value (12, unless otherwise specified by the capability encoding format).
 Take the value of the AUIPC instruction's <<pcc>>, increment its address by the 32-bit offset using the semantics of the <<SCADDR>> instruction and write the result to `{cd}`.
 +
 #End changed since last ARC review#
@@ -55,7 +55,7 @@ of load (I-type) and store (S-type) instructions.
 When manipulating addresses within capabilities, there is a risk
 that such two-step sequences could take the address out of bounds
 before attempting to bring it back within bounds.
-Many capability encodings, including those of <<app_cap_description>>,
+Many capability encodings, including those of <<rv32y_cap_description>>,
 have a <<section_rep_check_concept,*representable range*>> sufficient
 to ensure that any capability whose length is larger than 2 KiB
 (that is, those for which a signed 12-bit displacement might be insufficient)
@@ -64,7 +64,7 @@ However, this is not an *essential* property of capability encodings,
 and so this specification allows the capability *encoding* to specify
 the shift used within address-manipulating instructions with shifted immediates.
 For <<AUIPC_CHERI>> specifically, we refer to this value as **the AUIPC shift**,
-and take it to be 12 unless the capability encoding sets it to 11.
+and take it to be 12 unless the capability encoding sets it to another value.
 (Taking the shift to be 11 instead of 12 decreases the reach of `AUIPC`
 from ±2 GiB to ±1 GiB, but ensures that all values within that range
 can be obtained with the same sign bit in the `AUIPC` immediate
@@ -72,7 +72,27 @@ and subsequent 12-bit immediate(s),
 thereby ensuring that in-bounds addresses can be reached without risk of
 the intermediate computation exceeding capability bounds.)
 Future extensions that add instructions with similar semantics
-should make use this same encoding-specified shift value or
+should make use of this same encoding-specified shift value or
 otherwise allow the capability encoding to set the shift amount.
+
+NOTE: It is possible for the compiler to generate code that is compatible with any AUIPC shift by emitting a AUIPC with a zero offset followed by a sequence of LUI and <<CADD>>/<<CADDI>>.
+
+// The compiler (and maybe assembler) can always (inefficiently!) articulate the 12-bit shift semantics of AUIPC %0, n; ADDIY %0, %0, m in a way that does not depend on the AUIPC shift and guarantees not going OOB -- that is, oblivious to representation concerns -- by using a temporary register (%1) and emitting (for positive n, without loss of generality; the negative case is similar):
+//
+// AUIPC %0, 0
+//
+//   ; if m < 0, step 2Ki shorter than AUIPC would have taken us
+// LUI %1, (m >= 0) ? n : (n - 1)  ; other sequences possible for small n.
+// ADDY %0, %0, %1                 ; this gets us "most of" the way to (n << 12) + m.
+//
+//   ; if m < 0, reach upwards from 2 Ki shy of where 12-bit AUIPC would have taken us
+// ADDIY %0, %0, ((m >= 0) ? m : (0x1000 - m))
+//
+// Proof sketch: Assume n > 0 throughout. AUIPC n is used only when the cap in pc has at least (n - 1) * 2 KiB of in-bounds addresses above the current offset, because the expected counterparts of AUIPC (ADDI and loads and stores) use signed 12-bit displacements.
+// That is, AUIPC n may "overshoot" the intended target by up to 2 KiB, the furthest negative reach of these displacements. Put differently, in the integer base, AUIPC %0, n; ADDI %0, %0, m leaves %0 displaced from pc by at minimum n * 2 Ki - 2 Ki or (n - 1) * 2 Ki (when m = 0x800) and at most (n - 1) * 2 Ki + (2 Ki - 1) or n * 2 Ki - 1 (when m = 0x7FF).
+// To reach the same set of targets while remaining in bounds, we need to step in the same direction: one, LUI (n - 1); ADDY, that gets us (n - 1) * 2 KiB of the way, and the other that gets us the last bit of the way there.
+//
+// In practice, of course, the toolchain may be able to fold the last ADDYI into the counterpart/subsequent instructions, and may be able to reuse the intermediate result (from ADDY) just like existing toolchains.
+// (CHERIoT making its AUIPC shift 11 means that we can always guarantee that the first step is in bounds, and our toolchain picks the correspondingly different immediates to its AUIPC and counterpart instructions.)
 
 #End new since last ARC review#
