@@ -23,6 +23,8 @@ include::wavedrom/cbld.adoc[]
 Description::
 Copy `{cs2}` to `{cd}`.
 +
+Set `{cd}.ct=0` if `{cs2}.ct>1`^1^
++
 Set `{cd}.tag=1` if:
 +
 . `{cs1}.tag` is set, and
@@ -30,20 +32,17 @@ Set `{cd}.tag=1` if:
 . `{cs1}` is not sealed, and
 . `{cs2}` 's permissions and bounds are equal to or a subset of `{cs1}` 's, and
 . `{cs2}` passes all <<section_cap_integrity,integrity>> checks, and
+. `{cs2}.ct<2`^1^
 . any extension-specific constraints on <<CBLD>> hold.
 +
 Otherwise, set `{cd}.tag=0`
 
 #Begin new since last ARC review#
 
+^1^ this refers to the <<sec_cap_type>>, and values of > 1 are both sealed and non-<<sec_cap_type_ambient,ambient>>.
+
 NOTE: The <<section_cap_integrity,integrity>> check on `{cs2}` is required to prevent authorising a capability with a lack of integrity.
  The <<section_cap_integrity,integrity>> check on `{cs1}` is optional.
-
-If `{cd}.ct` (that is, its <<sec_cap_type>>) is
-neither 0 nor an <<sec_cap_type_ambient,ambient>> type, then
-set `{cd}.ct` to 0.
-That is, <<CBLD>> will construct a sealed capability
-only if its type is ambiently available.
 
 #End new since last ARC review#
 
