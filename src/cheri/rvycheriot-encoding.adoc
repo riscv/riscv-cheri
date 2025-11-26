@@ -175,7 +175,9 @@ This is used to encode 15 different sealing types by distinguishing between exec
 | 1 .. 7   | 0 | 9 .. 15 | Data capability sealed with given type
 |===
 
-In addition to the ordinary <<sentry_cap>> type this encoding defines four types of sentry for enforcing structured control flow and atomically changing the value of `mstatus.IE` during a <<JALR_CHERI>>.
+Note that sealing type 8 is not used in order to allow CT value of zero to represent unsealed for both executable and non-executable capabilities.
+
+In addition to the ordinary <<sentry_cap>> type this encoding defines four types of sentry for enforcing structured control flow and atomically changing the value of `mstatus.MIE` for the current mode, X, during a <<JALR_CHERI>>.
 This works as follows:
 
 * The type of the link capability produced by <<JALR_CHERI>> and <<JAL_CHERI>> varies depending on the current value of `mstatus.MIE` and the destination register index, rd. If the destination is `ra` then a return sentry appropriate to the current interrupt status is created, otherwise an ordinary forward sentry is created:
@@ -212,7 +214,7 @@ Non-standard control flow transfers such as tail calls and calls to compiler out
 [#section_cheriot_cap_bounds, reftext="CHERIoT Capability Bounds Encoding"]
 ==== Bounds (E, B, T) Encoding
 
-The bounds are encoded in similar, but slightly simplified way to <<section_cap_bounds,{rv64y_uni_base_name}>>, with field B and T being substitued into the address at the offset given by the exponent to form the base and top.
+The bounds are encoded in similar, but slightly simplified way to <<section_cap_bounds,{rv64y_uni_base_name}>>, with field B and T being substituted into the address at the offset given by the exponent to form the base and top.
 Rather than using an EF field to indicate whether the exponent is zero or contained in the low bits of B and T the exponent is stored  in its own 4-bit field, E.
 Since this is not large enough to store the maximum exponent of 24 required to cover the full 32-bit address space, an E value of 15 decodes as 24 with exponents 15 to 23 being invalid.
 The decoded exponent, e, is given by:
@@ -305,7 +307,7 @@ T = t[8 : 0]
 
 ===== <<AUIPC_CHERI>> Representability
 
-Due to the limited representable range of this encoding there can be a problem when using <<AUIPC_CHERI>> to form addresses relative to <<pcc>>. For example, the following sequence might used to performa a pc relative relocation by an offset [imm20|imm12]:
+Due to the limited representable range of this encoding there can be a problem when using <<AUIPC_CHERI>> to form addresses relative to <<pcc>>. For example, the following sequence might used to perform a pc relative relocation by an offset [imm20|imm12]:
 
 [source,riscv]
 ----
