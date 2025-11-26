@@ -14,7 +14,8 @@ The ability to choose between these two behaviors is referred to as switching be
 {cheri_default_ext_name} also adds a new unprivileged CSR: the default data capability, <<ddc>>. <<ddc>> is used to authorize all data memory accesses when executing RVI/RVE code.
 
 NOTE: Together with <<pcc>>, <<ddc>> allows confining code runs to a compartment (also called a _sandbox_), where all data memory and instruction memory accesses are bounded to fixed memory regions. These compartments have full binary compatibility with all existing ratified RISC-V base architectures and extensions,
-i.e. non-CHERI aware programs which execute unmodified. Providing that the privileged execution environment has set up <<ddc>> and <<pcc>> appropriately, non-CHERI aware programs will execute unmodified providing they don't attempt to access memory out of the defined bounds.
+i.e. non-CHERI-aware programs which execute unmodified.
+Provided that the privileged execution environment has set up <<ddc>> and <<pcc>> appropriately, non-CHERI-aware programs will execute unmodified (as long as they don't attempt to access memory out of the defined bounds).
 
 {cheri_base_ext_name} implementations which support {cheri_default_ext_name} are typically referred to as CHERI Hybrid, whereas implementations which do not support {cheri_default_ext_name} are typically referred to as CHERI purecap.
 
@@ -64,7 +65,7 @@ requires the CHERI RISC-V hart to support {cheri_base_ext_name} and
 
 The _<<cheri_execution_mode>>_ is determined by a bit in the metadata of the <<pcc>> called the <<m_bit>>.
 {cheri_default_ext_name} adds a new _<<cheri_execution_mode>>_ field (M) to the capability format.
-This field _need_ be present only in capabilities granting <<X-permission>>,
+This field needs to be present only in capabilities granting <<X-permission>>,
 as it is only ever architecturally interpreted on the capability resident in <<pcc>>.
 Capabilities not granting <<X-permission>> may or may not have a defined M field,
 and attempting to update this field may be a no-op.
@@ -128,8 +129,8 @@ auipc {creg}1, 0
 {gctag_lc} x1, {creg}1
 ----
 
-NOTE: Implementations that support {cheri_default_ext_name} will typically boot into {cheri_int_mode_name} so that non-CHERI aware software can run unmodified.
- CHERI aware software can observe and switch the mode as required.
+NOTE: Implementations that support {cheri_default_ext_name} will typically boot into {cheri_int_mode_name} so that non-CHERI-aware software can run unmodified.
+ CHERI-aware software can observe and switch the mode as required.
 
 === Added instructions
 
@@ -172,9 +173,9 @@ When in {cheri_int_mode_name}, there is a special rule for updating extended CSR
 These are CSRs that are XLEN-wide for RVI/RVE but YLEN-wide for {cheri_base_ext_name}.
 
 * Writing an extended CSR writes the address field (XLEN bits) only, and the full CSR is updated using the semantics of the <<SCADDR>> instruction.
-* Reading an extended CSR reads the address field (XLEN bits) only
+* Reading an extended CSR reads the address field (XLEN bits) only.
 
-Accesses to extended CSRs in {cheri_int_mode_name} must only access XLEN bits for compatibility, and so use the semantics of the <<SCADDR>> instruction to determine the final written value.
+Accesses to extended CSRs in {cheri_int_mode_name} must access only XLEN bits for compatibility, and so use the semantics of the <<SCADDR>> instruction to determine the final written value.
 
 YLEN-wide CSRs are accessed identically in either <<cheri_execution_mode>>.
 
