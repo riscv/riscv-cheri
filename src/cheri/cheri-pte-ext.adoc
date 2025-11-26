@@ -24,7 +24,7 @@ capabilities (i.e., private anonymous mappings) and leave
 <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow
 capabilities with their tags set to be loaded and stored successfully.
 
-NOTE: Hardware initiated memory accesses from the page-table walker are not checked by a capability.
+NOTE: Hardware-initiated memory accesses from the page-table walker are not checked by a capability.
 
 [#cap_revocation]
 === Capability Revocation
@@ -106,7 +106,7 @@ or AMO instruction is executed and:
 * the virtual page's PTE.U is set.
 
 When the _{cheri_priv_crg_load_tag_ext}_ extension is implemented, the
-{cheri_excep_name_pte_ld} is raised when capability load or AMO instruction
+{cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction
 satisfies the conditions above and the capability read from memory
 has its {ctag} set.
 
@@ -124,7 +124,7 @@ two schemes are permitted (also see <<section_hardware_pte_updates>>):
 * The implementation sets the CD bit. The PTE update behaves in the same way as
  the D bit update described by the _Svadu_ extension.
 
-When CRW, CD and CRG are all clear, the implementation is required to clear
+When CRW, CD, and CRG are all clear, the implementation is required to clear
 loaded tags and raise {cheri_excep_name_pte_st} when the stored {ctag} is set.
 
 NOTE: Other CD and CRG combinations when CRW=0 are reserved for future extensions.

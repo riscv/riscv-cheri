@@ -11,13 +11,13 @@ Whenever pointer masking is enabled, all bounds decoding, <<section_cap_represen
 NOTE: The suggestion in this section is based on the pointer masking approach from Morello but with changes
 to sign extension and to address the dynamic nature of bit masking.
 
-When bounds are <<section_cap_encoding,encoded or decoded>>, a masked but _not_ sign extended address is used.
+When bounds are <<section_cap_encoding,encoded or decoded>>, a masked but _not_ sign-extended address is used.
 Changing how many bits are masked can therefore change the interpretation of the bounds of a capability,
 both for the purpose of implicit accesses via bounds checks and any instructions that report the bounds of a capability.
-Apart from treating the PMLEN high address bits as zero, there are no other changes to bounds decode,
-which are still based on XLEN, not the new effectively addressable space.
+Apart from treating the PMLEN high address bits as zero, there are no other changes to bounds decoding,
+which is still based on XLEN, not the new effectively addressable space.
 That is, the maximum length of a capability does not change, and
-it is not invalid to have a capability that covers a longer range than could be actually be addressed with pointer masking enabled (such as one that covers the entire XLEN address space).
+it is not invalid to have a capability that covers a longer range than could actually be addressed with pointer masking enabled (such as one that covers the entire XLEN address space).
 For the <<section_cap_representable_check, representable range check>>, both the original and new addresses
 are masked.
 Bounds setting instructions also mask the address in the same way.
@@ -39,4 +39,4 @@ In summary, for data accesses only:
 Also note that:
 
 * <<pcc>> bounds decoding isn't affected by pointer masking.
-* Any <<section_cap_representable_check, representable range check>> triggered by a write to a CSR (e.g. <<mtvec_y>>) are not affected by pointer masking.
+* Any <<section_cap_representable_check, representable range check>> triggered by a write to a CSR (e.g. <<mtvec_y>>) is not affected by pointer masking.
