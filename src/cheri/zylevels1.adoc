@@ -30,7 +30,7 @@ The distinction refines the behavior of capability store and load instructions:
 [#zylevels1_sl_perm,reftext="SL-permission"]
 Store Local Permission (SL):: This field allows limiting the propagation of _local_ capabilities.
 +
-A capability without <<zylevels1_gl_perm>> set stored through an authorizing capability lacking <<zylevels1_sl_perm>> will be stored with a zero {ctag}.
+A capability without <<zylevels1_gl_perm>> set stored using an authorizing capability lacking <<zylevels1_sl_perm>> will be stored with a zero {ctag}.
 +
 <<zylevels1_sl_perm>> is a _refinement of_ <<c_perm>> and <<w_perm>>.
 That is, if either of the latter are clear, then <<zylevels1_sl_perm>> has no effect.
@@ -70,7 +70,7 @@ As with permissions, the _Capability Global_ flag can be cleared when creating a
 The <<root-cap>> capabilities used in the system are extended thus:
 
 * The definitions of <<root-rx-cap>> and <<root-rw-cap>> capabilities are
-  both augmented to require <<zylevels1_gl_perm>> be set to _global_.
+  both augmented to require that <<zylevels1_gl_perm>> be set to _global_.
 
 * A <<root-rx-cap>> capability is required to grant <<zylevels1_lg_perm>>.
 
@@ -114,7 +114,7 @@ Specifically, we add the following rules to those of <<sec_permission_transition
 
 As outlined above, {cheri_levels1_ext_name} introduces two new constraints on capabilities loaded from memory,
 as part of a <<LOAD_CAP>> instruction (`{load_cap_name_lc} {cd}, offset({cs1})`).
-Analogous requirements apply for other instructions that inherit semantics from `<<LOAD_CAP>>`.
+Analogous requirements apply for other instructions that inherit semantics from <<LOAD_CAP>>.
 These may be phrased as "implicit <<CLRPERM>>-s" performed on the loaded capability thus:
 
 * If `{cd}.tag=1`, `{cd}` *is not* sealed, and `{cs1}` does not grant <<zylevels1_lg_perm>>,
@@ -200,5 +200,5 @@ NOTE: <<zylevels1_sl_perm>> is relevant only to capabilities granting both <<w_p
 NOTE: <<zylevels1_lg_perm>> is relevant only to capabilities granting both <<r_perm>> and <<c_perm>>.
 
 ifdef::cheri_v9_annotations[]
-NOTE: The <<zylevels1_gl_perm>> and <<zylevels1_sl_perm>> are as in CHERI v9, Morello and CHERIoT v1.  The <<zylevels1_lg_perm>> is as in CHERIoT v1.
+NOTE: The <<zylevels1_gl_perm>> and <<zylevels1_sl_perm>> are as in CHERI v9, Morello, and CHERIoT v1.  The <<zylevels1_lg_perm>> is as in CHERIoT v1.
 endif::[]

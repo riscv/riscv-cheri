@@ -68,7 +68,7 @@ The low `MXLEN` bits of a capability are read and written using normal Access
 Register abstract commands.  If <<dscratch0_y>> were known to be preserved
 between abstract commands, it would be possible to remove the requirements on
 `hartinfo.datasize`, `hartinfo.dataaccess`, and `abstractcs.progbufsize`,
-however there is no way to discover the former property.
+however, there is no way to discover the former property.
 ====
 
 ==== Debug Mode
@@ -124,9 +124,9 @@ The <<dpc>> register is extended to hold a capability.
 include::img/dpccreg.edn[]
 
 Upon entry to debug mode, the _RISC-V Debug Specification_, does not specify how to
-update the PC, and says PC relative instructions may be illegal. This concept
+update the PC, and says PC-relative instructions may be illegal. This concept
 is extended to include any instruction which reads or updates <<pcc>>, which refers to
-all jumps, conditional branches and <<AUIPC_CHERI>>. The exceptions are <<MODESW_CAP>> and <<MODESW_INT>>
+all jumps, conditional branches and <<AUIPC_CHERI>>. The exceptions are <<MODESW_CAP>> and <<MODESW_INT>>,
 which _are_ supported if {cheri_default_ext_name} is implemented, see <<drootc>>
 for details.
 
@@ -135,11 +135,11 @@ to this specification. The <<pcc>> metadata has no architectural effect in debug
 mode. Therefore <<asr_perm>> is implicitly granted for access to all CSRs for
 instruction execution.
 
-On debug mode entry <<dpc_y>> is updated with the
+On debug mode entry, <<dpc_y>> is updated with the
 capability in <<pcc>> whose address field is set to the address of the next
 instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
 
-When leaving debug mode, a unsealed capability value is copied from the value in <<dpc_y>> and written into <<pcc>>.
+When leaving debug mode, an unsealed capability value is copied from the value in <<dpc_y>> and written into <<pcc>>.
 A debugger may write <<dpc_y>> to change where the hart resumes and its mode, permissions, sealing or bounds.
 
 The legalization of <<dpc_y>> follows the same rules described for <<mepc_y>>.
@@ -190,11 +190,11 @@ xref:all_capability_CSRs[xrefstyle=short].
 It exposes the capability selected by <<drootcsel>>.
 
 If {cheri_default_ext_name} is implemented,
-the <<root-rx-cap>> exposed when <<drootcsel>> is `0` is further specified thus:
+the <<root-rx-cap>> exposed when <<drootcsel>> is `0` is further specified as follows:
 
 * The <<m_bit>> is reset to {cheri_int_mode_name} ({INT_MODE_VALUE}).
 * The debugger can set the <<m_bit>> to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing <<MODESW_CAP>> from the program buffer.
-** Executing <<MODESW_CAP>> causes subsequent instructions execution from the program buffer, starting from the next instruction, to be executed in {cheri_cap_mode_name}. It also sets the CHERI execution mode to {cheri_cap_mode_name} on future entry into debug mode.
+** Executing <<MODESW_CAP>> causes execution of subsequent instructions from the program buffer, starting from the next instruction, to be executed in {cheri_cap_mode_name}. It also sets the CHERI execution mode to {cheri_cap_mode_name} on future entry into debug mode.
 ** Therefore to enable use of a CHERI debugger, a single <<MODESW_CAP>> only needs to be executed once from the program buffer after resetting the core.
 ** The debugger can also execute <<MODESW_INT>> to change the mode back to {cheri_int_mode_name}, which also affects the execution of the next instruction in the program buffer, updates the <<m_bit>> of this capability and controls which CHERI execution mode to enter on the next entry into debug mode.
 

@@ -41,7 +41,7 @@ This _draft_ section explores how the modular structure of, and hooks within,
 the {cheri_base32_ext_name} base ISA and its extensions
 could be used to define a future edition of the CHERIoT ISA
 atop a ratified RISC-V CHERI.
-Much of the CHERIoT-specific _detail_ is not yet imported hereto,
+Much of the CHERIoT-specific _detail_ is not yet imported here,
 but effort has been made to cite the existing CHERIoT ISA documentation.
 At the same time, this chapter ponders
 a few proposed incremental changes to the existing CHERIoT ISA;
@@ -650,7 +650,7 @@ the diagnostic and debugging experience.
 
 CHERIoTv1 differentiated between register selector operands intended to access
 an integer value (`xN`) from those intended to access a capability value (`cN`).
-ABI names for registers were similarly differeniated,
+ABI names for registers were similarly differentiated,
 using a prefix of `c` when the full capability was intended (`csp`, `ca0`, &c).
 {cheri_base_ext_name} does away with the distinction:
 all register selectors are `xN` and all ABI names are un-prefixed.
@@ -664,14 +664,14 @@ explicitly zeroing its {ctag} and metadata, preserving only the address.
 when capability registers were, like floating registers (without Zfinx),
 distinct from integer registers,
 and was largely obsolesced by CHERIoTv1 using a merged register file.
-Since {cheri_base_ext_name} likewise uses a merged regiser file,
+Since {cheri_base_ext_name} likewise uses a merged register file,
 instructions consuming XLEN-width values use the
 XLEN-width address field of a capability while ignoring its {ctag} and metadata,
 and instructions producing XLEN-width results
 write capability values with zero {ctag} and metadata.
 Thus, `addi x1, x2, 0` exactly replaces CHERIoTv1's `CGetAddr x1, c2`;
 the latter form, and/or a `YADDRR` mnemonic consistent with <<SCADDR>>,
-may still be usefully provided by an assembler for documeting programmer intent.
+may still be usefully provided by an assembler for documenting programmer intent.
 
 Similarly, CHERIoTv1's `CSub rd, cs1, cs2` instruction for computing
 the (integer) differences between two capabilities' address fields,
