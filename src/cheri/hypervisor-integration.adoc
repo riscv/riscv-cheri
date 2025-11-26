@@ -9,7 +9,7 @@ type-1 or type-2 hypervisor cite:[riscv-priv-spec].
 
 The hypervisor extension is
 generally orthogonal to CHERI; the main requirements, when integrating with
-{cheri_base_ext_name} and {cheri_default_ext_name}, is that address CSRs added
+{cheri_base_ext_name} and {cheri_default_ext_name}, are that address CSRs added
 for hypervisors are extended to YLEN size.
 The remainder of this chapter describes these changes in detail.
 
@@ -28,7 +28,7 @@ VSXL must be read-only as described in xref:mstatus[xrefstyle=short] for
 and {cheri_default_ext_name}, then VSXL behaves as described in
 xref:mstatus_y[xrefstyle=short] for mstatus.SXL.
 
-The VSBE field determines controls the endianness of explicit memory accesses
+The VSBE field controls the endianness of explicit memory accesses
 from VS-mode and implicit memory accesses to VS-level memory management data
 structures. VSBE=0 indicates little endian and VSBE=1 is big endian. VSBE must
 be read-only and equal to MBE when the implementation only supports
@@ -56,7 +56,7 @@ The reset value is 0.
 [#hedeleg,reftext="hedeleg"]
 === Hypervisor Exception Delegation Register (hedeleg)
 
-Bits {cheri_excep_cause_list} of <<hedeleg>> refer to a valid CHERI exceptions and so can be used to
+Bits {cheri_excep_cause_list} of <<hedeleg>> refer to valid CHERI exceptions and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
 [#vsstatus_y,reftext="vsstatus"]
@@ -126,8 +126,7 @@ include::img/vstvalreg.edn[]
 === Virtual Supervisor Thread Identifier Capability (vstidc)
 
 The <<vstidc>> register is used to identify the current software thread in virtual supervisor mode.
-It is used to identify the current software thread in
-As other Virtual Supervisor registers when V=1, <<vstidc>> substitutes
+As with other Virtual Supervisor registers when V=1, <<vstidc>> substitutes
 for <<stidc>>, so that instructions that normally read or modify
 <<stidc>> actually access <<vstidc>> instead.
 When V=0, <<vstidc>> does not directly affect the

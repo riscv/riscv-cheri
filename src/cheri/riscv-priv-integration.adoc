@@ -218,7 +218,7 @@ NOTE: The full details of the CHERI exceptions are in xref:cheri_exception_combs
 ifdef::cheri_standalone_spec[]
 ==== Machine Trap Delegation Register (medeleg)
 
-Bits {cheri_excep_cause_list} of <<medeleg>> refer to a valid CHERI exception and so can be used to
+Bits {cheri_excep_cause_list} of <<medeleg>> refer to valid CHERI exceptions and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
 [[mtval_y]]
@@ -478,7 +478,7 @@ endif::[]
 
 When using a system with {cheri_default_ext_name}, it may be desirable to disable CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
 {cheri_default_ext_name} includes functions to disable explicit access to CHERI
-registers and instructions (hereafter referred to _disabling CHERI_).
+registers and instructions (hereafter referred to as _disabling CHERI_).
 
 NOTE: When _CHERI is disabled_ for a specific privilege level, <<pcc>> and <<ddc>> bounds are _still_ enforced.
 
@@ -512,7 +512,7 @@ The last capability written to <<pcc>> and <<ddc>> before disabling CHERI will b
 ====
 Disabling CHERI prevents low-privileged {cheri_int_mode_name} software
 from interfering with the correct operation of higher-privileged {cheri_int_mode_name} software
-that do not perform <<ddc>> switches on trap entry and return.
+that does not perform <<ddc>> switches on trap entry and return.
 
 Disabling CHERI allows harts supporting CHERI to be fully
 compatible with standard RISC-V, so CHERI instructions, such as <<CRAM>>, that
@@ -596,7 +596,7 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 [#cheri_pte_fault]
 === CHERI page faults
 
-CHERI adds the concept of _CHERI page faults_. They are split into :
+CHERI adds the concept of _CHERI page faults_. They are split into:
 
 * {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld}), and
 * {cheri_excep_name_pte_st} (cause value {cheri_excep_cause_pte_st})
@@ -605,7 +605,7 @@ They are prioritized against other fault types as shown in <<exception-priority-
 
 The PTE.CRW bit allows {cheri_excep_name_pte_st}s to be raised.
 
-CHERI harts which implement Sv39 must also implement a revocation scheme to prevent use-after-free attacks.
+CHERI harts that implement Sv39 must also implement a revocation scheme to prevent use-after-free attacks.
 
 The current revocation scheme (<<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>) also allows {cheri_excep_name_pte_ld}s to be raised.
 
@@ -675,7 +675,7 @@ If the bounds could not be decoded due to the address being invalid, then a _{ch
 
 NOTE: In all cases, if the authorizing capability has bounds that cover all addresses, then the behavior is identical to the normal RISC-V behavior without CHERI.
 
-NOTE: Not requiring to the implementation to decode the bounds for invalid addresses reduces the size of bounds comparators from 64-bits to the supported virtual address width.
+NOTE: Not requiring the implementation to decode the bounds for invalid addresses reduces the size of bounds comparators from 64-bits to the supported virtual address width.
 
 ==== Updating CSRs
 
@@ -689,7 +689,7 @@ To ensure that the bounds of a valid capability cannot be corrupted:
 * If the new address is invalid and the capability bounds do not cover all addresses, then set the {ctag} to zero before writing to the CSR.
 
 NOTE: When the capability's address is invalid and happens to match an invalid address which the CSR
-can hold, then it is implementation defined whether to set the {ctag} to zero.
+can hold, then it is implementation-defined whether to set the {ctag} to zero.
 
 ==== Branches and Jumps
 

@@ -10,7 +10,7 @@ Other standard options to bases are also supported such as E (16-registers), Zfi
 
 === CHERI Overview
 
-CHERI enhances the base ISA to add hardware memory access control.
+CHERI enhances the base ISA by adding hardware memory access control.
 It has an additional memory access mechanism that protects _references to code and data_ (pointers), rather than the _location of code and data_ (integer addresses).
 This mechanism is implemented by providing a new primitive, called a *capability*, that software components can use to implement strongly protected pointers within an address space.
 Capabilities are unforgeable and delegatable tokens of authority that grant software the ability to perform a specific set of operations.
@@ -33,7 +33,7 @@ Protection properties for capabilities include the ISA ensuring that
 capabilities are always derived via valid manipulations of other capabilities
 (_provenance_), that corrupted^1^ in-memory capabilities cannot be dereferenced
 (_integrity_), and that rights associated with capabilities shall only ever be
-equal or less permissive (_monotonicity_). Tampering or modifying capabilities
+equal to or less permissive (_monotonicity_). Tampering or modifying capabilities
 in an attempt to elevate their rights will yield an invalid capability.
 Attempting to dereference via an invalid capability
 will result in a hardware exception.
@@ -55,7 +55,7 @@ improve their security.
 === Capability Registers and Format
 
 {cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
-In addition to widening to YLEN, each register also gains one-bit {ctag} which is defined below.
+In addition to widening to YLEN, each register also gains a one-bit {ctag} which is defined below.
 
 #Begin new since last ARC review#
 
@@ -124,7 +124,7 @@ If the {ctag} is set, the capability is valid and can be dereferenced (contingen
 All registers or memory locations able to hold a capability are YLEN bits wide with an additional hidden {ctag} bit.
 These are referred to as being _YLEN-bit_ in this specification.
 
-The {ctag} cannot be directly set to one by software, it is _not_ a conventionally accessible bit of state.
+The {ctag} cannot be directly set to one by software; it is _not_ a conventionally accessible bit of state.
 If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
 If the rules are followed then the {ctag} will propagate through the instructions that modify, load or store the capability.
 
@@ -139,8 +139,8 @@ Therefore, for capability manipulation in registers:
 
 Capability load/store require the _provenance_ check:
 
-* Any store that wrote the capability to memory was correctly authorized
-* Any load that read the capability from memory was correctly authorized
+* Any store that wrote the capability to memory was correctly authorized.
+* Any load that read the capability from memory was correctly authorized.
 
 When an operation fails a check, either due to software error or malicious intent, then the operation raises an exception or sets the resulting {ctag} to zero.
 
@@ -210,7 +210,7 @@ All smaller capabilities are derived from these.
 The ISA does not allow the bounds (and permissions) of a capability with its {ctag} set to be increased (_monotonicity_).
 
 Bounds can be programmed using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs2` or `imm`) value.
-The granularity constraints means that not all requested combinations of _top_ and _base_ bounds can be encoded exactly.
+The granularity constraints mean that not all requested combinations of _top_ and _base_ bounds can be encoded exactly.
 
 * <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`. Set the {ctag} to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSI>> sets the _base_ to `{cs1}.address`, and the _length_ to the immediate value. Set the {ctag} to zero if the bounds cannot be encoded exactly.
@@ -239,7 +239,7 @@ Software can derive a capability with a new address using instructions such as <
 
 NOTE: <<SCADDR>> writes back a derived capability with a new address field and, if the {ctag} was previously set, sets the {ctag} of the derived capability to one if the resulting capability still has the same bounds interpretation.
 
-NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only come back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
+NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only comes back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
 
 NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv32y_cap_description>>/<<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
 Therefore, the rest of the specification uses the phrase *represented exactly* for this check.
@@ -343,7 +343,7 @@ Sentry capability type::
 It is useful to have *immutable* function pointers within a CHERI software system.
 <<sealed_cap,Sealed capabilities>> are a natural foundation, providing immutability.
 <<JALR_CHERI>> may unseal capabilities of particular, encoding-specified types before installing them to the program counter.
-Capabilities sealed with such a type are are dubbed "sentries" (a portmanteau of "sealed entries").
+Capabilities sealed with such a type are dubbed "sentries" (a portmanteau of "sealed entries").
 <<JALR_CHERI>> may also _seal_ the return pointers it generates with encoding-specified types.
 
 NOTE: Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
@@ -611,7 +611,7 @@ defining the handling in the architecture allows the behavior to be precisely sp
 Implementing these checks is optional unless otherwise noted in instruction descriptions, as integrity failures are most likely due to IP compatibility issues.
 
 NOTE: Currently only {CBLD} _must_ perform an integrity check on an invalid input capability in `{cs2}` before setting the {ctag} of the output.
-This is because this is the only currently defined instruction which sets the `{ctag}` of an invalid capability.
+This is because this is the only currently defined instruction that sets the `{ctag}` of an invalid capability.
 
 === Extended State
 
@@ -666,7 +666,7 @@ A failing check raises a CHERI exception.
 
 On system initialization the `pc` bounds and permissions must be set such that the program can run successfully (e.g., by setting it to a <<root-rx-cap>> capability to ensure _all_ instructions are in bounds).
 
-NOTE: Future ISA extensions should respect these rules so that the checked bits do not need storing in all copies of the <<pcc>> in the implementation.
+NOTE: Future ISA extensions should respect these rules so that the checked bits do not need to be stored in all copies of the <<pcc>> in the implementation.
 
 .Program Counter Capability
 [#pcc-format]
@@ -799,7 +799,7 @@ endif::[]
 
 All CSRs that can hold addresses are extended to YLEN bits.
 
-{cheri_base_ext_name} has three classes of CSR
+{cheri_base_ext_name} has three classes of CSRs
 
 * XLEN-bit CSRs, which do not contain addresses
 ** e.g., _fcsr_ from the "F" extension
@@ -1067,7 +1067,7 @@ All load and store instructions behave as described in <<ldst>> with one fundame
   The base address is unchanged, i.e., using the value from `rs1`.
   The metadata and {ctag} are used to <<sec_cap_checks,authorize the access>>.
 
-* For a load instruction, the lower XLEN bits of the result written to the destination register is the same as in the RV32I/RV64I specification.
+* For a load instruction, the lower XLEN bits of the result written to the destination register are the same as in the RV32I/RV64I specification.
 
 All load and store instructions authorized by `{cs1}` raise exceptions if any of these checks fail:
 
