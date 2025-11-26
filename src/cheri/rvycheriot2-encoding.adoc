@@ -1,18 +1,18 @@
-[#rv32y_cheriot2_cap_description, reftext="{rvy32e_cheriot2_base_name} (CHERIoT V2a)"]
-== The {rvy32e_cheriot2_base_name} Capability Base Extension for {cheri_base32e_ext_name}, (CHERIoT V2a)
+[#rv32y_cheriot2_cap_description, reftext="{rvy32_cheriot2_base_name} (CHERIoT V2a)"]
+== The {rvy32_cheriot2_base_name} Capability Base Extension for {cheri_base32e_ext_name}, (CHERIoT V2a)
 
 This chapter describes a variation on the <<rv32y_cheriot_cap_description>> encoding to support all exponents using the same number of bits.
 This change is backwards compatible for software but enables support for more precise bounds on capabilities larger than 8MiB.
 Due to increased microarchitectural complexity and the limited need for precise alignment on such large capabilities on small systems, implementations may choose to support either encoding.
 
-The changes are limited to the bounds encoding; all other aspects of the capability encoding are identical to {rvy32e_cheriot_base_name}.
+The changes are limited to the bounds encoding; all other aspects of the capability encoding are identical to {rvy32_cheriot_base_name}.
 
 [#section_cap_encoding_cheriot2]
 === Capability Encoding
 
 The components of a capability, except the {ctag}, are encoded as shown in xref:cap_encoding_cheriot2[xrefstyle=short].
 
-.Capability encoding for {rvy32e_cheriot2_base_name}
+.Capability encoding for {rvy32_cheriot2_base_name}
 [#cap_encoding_cheriot2]
 include::img/cap-encoding-cheriot2.edn[]
 
@@ -27,7 +27,7 @@ T[8] can then be reconstructed as follows:
 T[8] = B[8] XOR (E == 31 ? 0 : 1) XOR (T[7:0] < B[7:0])
 ----
 
-The unused exponent values (25 .. 30) are reserved for future use. 
+The unused exponent values (25 .. 30) are reserved for future use.
 Other aspects of bounds decoding remain identical to <<section_cheriot_cap_bounds>>.
 
 Encoding the bounds for a requested base and length is similar to before but without the special cases for exponents greater than 15.
@@ -68,13 +68,14 @@ E = (e == 0 && (T - B)[8] == 0) ? 31 : e
 
 ==== Capability Encoding Parameter Summary
 
-.{rvy32e_cheriot_base_name} parameter summary
-[#rvy32e_cheriot_base_name_param_summary,%autowidth,options=header,]
+.{rvy32_cheriot2_base_name} parameter summary
+[#rvy32_cheriot2_base_name_param_summary,%autowidth,options=header,]
 |==============================================================================
 | Parameter | Value                | Comment
 | mw        | {cap_cheriot_mw_width}  | Mantissa width
 | e         | a                    | All exponents are supported
 | rc        | 0                    | Representable region between base and top only
 | p         | pc                   | Compressed permission encoding
-| as        | 11                   | <<AUIPC>> shift
+| as        | 11                   | <<section_auipc_shift>> shift
+| enc       | 1                    | Encoding variant
 |==============================================================================
