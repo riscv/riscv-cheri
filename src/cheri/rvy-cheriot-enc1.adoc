@@ -1,0 +1,344 @@
+// == The {rvy32e_cheriot_base_name} Capability Base Extension for {cheri_base32e_ext_name}, Version 1.0
+[#rv32y_cheriot_cap_description, reftext="{rvy_cheriot_encoding_suffix}"]
+== The {rvy_cheriot_encoding_suffix} CHERI Capability Encoding Scheme
+
+This section describes an in-memory format and properties of a capability encoding intended for {cheri_base32_ext_name}.
+It is specifically designed to be a suitable substrate for {cheri_base32_ext_name}{cheriot_ext_name} systems.
+
+This _is_ the encoding used for the existing link:https://cheriot.org[CHERIoT] ISA.
+Compared to <<rv32y_cap_description>> it:
+
+1. supports more precise bounds for a given capability length using slightly simpler hardware
+2. adds features for building rich compartmentalization,
+  such as extra permissions and sealing types.
+
+The first of these is achieved by:
+
+- Using two extra bits for the bounds encoding
+- Giving the exponent its own field instead of embedded it in the T and B fields
+- Saving space by reducing the exponent in size by one support and dropping support for exponents in the range 15 to 23.
+This limits the precision for the bounds of large capabilities (>= 8MiB).
+- dropping guaranteed out-of-bounds representability (except "one past the end")
+
+These tradeoffs are aimed at microcontroller implementaions where precise bounds on small capabilities are important to save memory on padding, large capabiliites are unlikely and microarchitectural complexity should be minimised.
+
+[#section_cap_encoding_cheriot]
+=== Capability Encoding
+
+The components of a capability, except the {ctag}, are encoded as shown in xref:cap_encoding_cheriot[xrefstyle=short].
+
+.Capability encoding for {rvy_cheriot_encoding_suffix}
+[#cap_encoding_cheriot]
+include::img/cap-encoding-cheriot.edn[]
+
+[NOTE]
+====
+The reserved bit (the R field) is defined to be 0 in the encoding of the root capabilities given <<sec_cheriot_enc1_roots,below>>,
+and is not mutable by any instruction defined in {cheri_base_ext_name},
+and so will necessarily be 0 in all valid capabilities derived therefrom.
+It is therefore available for use by suitable extensions or derivative encodings.
+====
+
+[#cheriot_encoding_field_summary, reftext="CHERIoT capability fields"]
+[width="100%",options=header,cols="1,5"]
+|==============================================================================
+| Field      | Description
+| R          | Reserved bit, must be zero in valid capabilities and preserved in any value loaded from memory and stored.
+| G          | Global bit, as in <<zylevels1_gl_perm>>.
+| AP         | Architectural Permissions, see <<cheriot-permission-encoding>>.
+| CT         | Sealed object Type, see <<section_cheriot_cap_type>>.
+| E          | Exponent field for bounds encoding, see <<section_cheriot_cap_bounds>>.
+| T          | Top field for bounds encoding, see <<section_cheriot_cap_bounds>>.
+| B          | Base field for bounds encoding, see <<section_cheriot_cap_bounds>>.
+| Address    | The address field as per <<cap_structure>>.
+|==============================================================================
+
+The encoding impacts the following CHERI extensions:
+
+<<section_cheri_hybrid_ext>>::
+This encoding does not support {cheri_default_ext_name}: there is no mode bit so only purecap mode is supported.
+
+<<section_zylevels1>>::
+This encoding supports <<section_zylevels1>>.
+The <<zylevels1_gl_perm,GL>> flag is encoded in the G bit.
+
+ifdef::cheri_standalone_spec[]
+<<section_zyseal>>::
+This encoding supports <<section_zyseal>>.
+The <<zyseal_se_perm,SE>> and <<zyseal_us_perm,US>> permissions are encoded in the AP field.
+endif::[]
+
+==== Capability Encoding Parameter Summary
+
+.{rvy_cheriot_encoding_suffix} parameter summary
+[#rvy_cheriot_encoding_suffix_param_summary,width="100%",options=header,]
+|==============================================================================
+| Parameter | Value                | Comment
+| mw        | {cap_cheriot_mw_width}  | Mantissa width
+| e         | 14                   | Exponent limit before jumping to maximum exponent
+| rc        | 0                    | Representable region between base and top only
+| p         | pc                   | Compressed permission encoding
+| as        | 11                   | <<section_auipc_shift>> shift
+|==============================================================================
+
+.{rvy_cheriot_encoding_suffix} extension summary
+[#rvy_cheriot_encoding_suffix_ext_summary,width="100%",options=header,]
+|==============================================================================
+| Extension                    | Comment
+| <<section_cheri_hybrid_ext>> | Not supported (<<m_bit>> not defined)
+| <<section_zylevels1>>        | Compatible (recommended)
+ifdef::cheri_standalone_spec[]
+| <<section_zyseal>>           | Compatible (recommended)
+endif::[]
+| <<section_rvy_sentry_insn_ext>>              | Not supported (<<sec_cap_type_ambient>> not defined).
+| <<CBLD>>                     | Incompatible due to no ambient sealing types.
+| All RVY versions of other standard extensions | Compatible if the extension is compatible with RV32E
+|==============================================================================
+
+.{rvy_cheriot_encoding_suffix} Feature summary
+[#rvy_cheriot_encoding_suffix_feature_summary,width="100%",options=header,]
+|==============================================================================
+| Feature                      | Comment
+| Representable region         | Between base and top only (inclusive)
+| Permission encodings         | Not all combinations can be represented
+|==============================================================================
+
+[#cheriot-permission-encoding, reftext="CHERIoT permission encoding"]
+==== Permissions Encoding
+
+As with {rvy32_uni_base_name} the permisisons are encoded in a compressed form.
+The encoding herein exactly reflects
+the <<sec_zycheriot_permission_roots>> and
+<<sec_zycheriot_permission_transitions>> of <<sec_zycheriot>>.
+
+The permission encoding space is split into quadrants using P[3:2].
+Each quadrant may include some fixed permissions (indicated with ✔) and some dependent permissions encoded using P[2:0].
+Quadrant 0 is used to encode permissions that authorise sealing (see <<section_zyseal>>) and also the single software-defined permission, `U0`. It can also encode 'no permissions'.
+Quadrant 1 encodes executable capabilities along with the dependent permission <<asr_perm>> and optional permissions <<lm_perm>> and <<zylevels1_lg_perm>>.
+Quadrant 2 is subdivided into octants, with octant 4 encoding combinations of <<r_perm>> and <<w_perm>> without <<c_perm>>
+(with the redundant not-<<r_perm>> and not-<<w_perm>> used to encode write-only with <<c_perm>>).
+Octant 5 encodes read-only capabilities with <<c_perm>> and the dependent permissions <<lm_perm>> and <<zylevels1_lg_perm>>.
+Quadrant 3 encodes permissions with <<r_perm>>, <<w_perm>>, <<c_perm>> and the dependent permissions <<zylevels1_sl_perm>>, <<lm_perm>> and <<zylevels1_lg_perm>>.
+The meaning for bits [2:0] are shown in <<cheriot_perms_encoding>>.
+
+[#cheriot_perms_encoding,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,^1,^1,^1,^1,^1,^1,4",align="center",reftext="CHERIoT permission encoding"]
+|===
+4+| P[4:0] 12+| Decoded Permissions
+| P[4:3] | P[2] | P[1] | P[0] |  R   |  W   |  C   |  SL  |  LM  |  LG  |  X  | ASR  |  SDP0  |  SE  |  US  | Notes
+
+| 00     | SDP0   | SE   | US   |      |      |      |      |      |      |     |      | P[2] | P[1] | P[0] | Sealing
+| 01     | ASR    | LM   | LG   |  ✔   |      |  ✔   |      | P[1] | P[0] |  ✔  | P[2] |      |      |      | Executable
+| 10     | 0      | 0    | 0    |      |  ✔   |  ✔   |      |      |      |     |      |      |      |      | Cap WO
+| 10     | 0      | R    | W    | P[1] | P[0] |      |      |      |      |     |      |      |      |      | Data RW (must have R or W)
+| 10     | 1      | LM   | LG   |  ✔   |      |  ✔   |      | P[1] | P[0] |     |      |      |      |      | Cap RO
+| 11     | SL     | LM   | LG   |  ✔   |  ✔   |  ✔   | P[2] | P[1] | P[0] |     |      |      |      |      | Cap RW
+|===
+
+For example, if P[4:3] = 01 and P[2:0] = 101 then the decoded permissions are <<r_perm>>, <<c_perm>>, <<x_perm>>, <<zylevels1_lg_perm>>, and <<asr_perm>>.
+Note that there is no encoding for an "Infinite" capability with all permissions.
+In particular there is no overlap between the software and sealing permissions
+(`U0`, <<zyseal_se_perm>>, <<zyseal_us_perm>>) and any other permissions
+(recall <<perm_req:zycheriot:mem-nand-ct>> from <<sec_zycheriot_permission_roots>>)
+and <<x_perm>> is mutually exclusive with <<w_perm>>
+(recall <<perm_req:zycheriot:w-nand-x>> from <<sec_zycheriot_permission_roots>>).
+
+To encode a set of permissions resulting from <<CLRPERM>>, the first of the following rules to apply is used:
+
+1. If the permissions include <<x_perm>>, <<r_perm>> and <<c_perm>>, then encode <<asr_perm>>, <<lm_perm>> and <<zylevels1_lg_perm>> using the executable format (P[4:3] = 01).
+2. If the permissions include <<r_perm>>, <<w_perm>> and <<c_perm>> then encode <<zylevels1_sl_perm>>, <<lm_perm>> and <<zylevels1_lg_perm>> using the Cap RW format (P[4:3] = 11).
+3. If the permissions include <<r_perm>> and <<c_perm>> then encode <<lm_perm>> and <<zylevels1_lg_perm>> using the Cap RO format (P[4:2] = 101).
+4. If the permissions include <<w_perm>> and <<c_perm>> then encode using the Cap WO format (P[4:0] = 10000).
+5. If the permissions include <<r_perm>> or <<w_perm>> then encode using the Data RW format (P[4:0] = 100RW).
+6. Encode `U0`, <<zyseal_se_perm>> and <<zyseal_us_perm>> using the sealing format (P[4:3] = 00).
+
+This procedure will automatically apply the rules defined in <<sec_zycheriot_permission_transitions>> to legalize permission sets.
+If any of the requested permissions cannot be represented using the chosen format, then the they are dropped.
+For example, if the requested permissions are <<r_perm>>, <<zylevels1_lg_perm>> and <<x_perm>>, then rule 5 applies and the resulting permissions will be just <<r_perm>>.
+
+The three <<root-cap>> capabilities defined in <<sec_zycheriot_permission_roots>> have permissions encodings as shown in <<cheriot_root_caps>>.
+
+[#cheriot_root_caps,width="100%",options=header,cols="1,1,2",align="center",reftext="CHERIoT root capabilities"]
+|===
+| Root name       | P[4:0] | Permissions
+| Sealing         | 00111  | `U0`, <<zyseal_se_perm>>, <<zyseal_us_perm>>
+| <<root-rx-cap>> | 01111  | <<x_perm>>, <<r_perm>>, <<c_perm>>, <<lm_perm>>, <<zylevels1_lg_perm>>, <<asr_perm>>
+| <<root-rw-cap>> | 11111  | <<w_perm>>, <<r_perm>>, <<c_perm>>, <<lm_perm>>, <<zylevels1_lg_perm>>, <<zylevels1_sl_perm>>
+|===
+
+[#section_cheriot_cap_type]
+==== Capability Type (CT) Encoding
+
+Capabilities in this encoding have a 3-bit field for <<sec_cap_type>> values.
+This is used to encode 15 different sealing types by distinguishing between executable and non-executable sealed capabilities as follows:
+
+[#cheriot_cap_type_encoding,width="100%",options=header,cols="1,1,2",align="center"]
+|===
+| X | CT Value | Decoded Type
+
+| 1 | 000      | 0 (Unsealed)
+| 1 | 001      | 1
+| 1 | 010      | 2
+| 1 | 011      | 3
+| 1 | 100      | 4
+| 1 | 101      | 5
+| 1 | 110      | 6
+| 1 | 111      | 7
+| 0 | 000      | 0 (Unsealed)
+| 0 | 001      | 9
+| 0 | 010      | 10
+| 0 | 011      | 11
+| 0 | 100      | 12
+| 0 | 101      | 13
+| 0 | 110      | 14
+| 0 | 111      | 15
+|===
+
+Recall that <<sec_cap_type>> values {cheriot_sentry_ot_min} (inclusive) through {cheriot_sentry_ot_max} (inclusive)
+are given semantics if the <<sec_zycheriot>> extension is present (see <<sec_zycheriot_sentries>>).
+
+[#section_cheriot_cap_bounds, reftext="CHERIoT Capability Bounds Encoding"]
+==== Bounds (E, B, T) Encoding
+
+The bounds are encoded in similar, but slightly simplified way to <<section_cap_bounds,{rv64y_uni_base_name}>>, with field B and T being substituted into the address at the offset given by the exponent to form the base and top.
+Rather than using an EF field to indicate whether the exponent is zero or contained in the low bits of B and T the exponent is stored  in its own 4-bit field, E.
+Since this is not large enough to store the maximum exponent of 24 required to cover the full 32-bit address space, an E value of 15 decodes as 24 with exponents 15 to 23 being invalid.
+The decoded exponent, e, is given by:
+
+[source]
+----
+e = (E == 15) ? 24 : E
+----
+
+This means that capabilities up to nearly 8 MiB are represented with alignment requirements increasing in powers of two for increasing exponents up to 14, and all larger capabilities must have bounds aligned to 16 MiB.
+<<rv32y_cheriot2_cap_description>> describes an encoding variant that removes this limitation.
+
+For a given exponent the base and top are then computed as:
+
+.Decoding of the XLEN+1 wide top (_t_) bound
+[#cheriot_top_bound_dec]
+include::img/cheriot-top-bound-dec.edn[]
+
+.Decoding of the XLEN wide base (_b_) bound
+[#cheriot_base_bound_dec]
+include::img/cheriot-base-bound-dec.edn[]
+
+where the corrections, c~t~ and c~b~, are given by:
+
+[source]
+----
+A_hi = (A[e + 8 : e]) < B ? 1 : 0
+T_hi = (T < B) ? 1 : 0
+c_b = -A_hi
+c_t = A_hi - T_hi
+----
+
+These corrections work by assuming that the base is in the lower of two 2^e+9^ aligned regions, and that the top and address are always greater than or equal to the base but may be in the higher region provided they are within 2^e+9^ of base.
+These assumptions lead to the representable region being given by:
+
+[source]
+----
+base <= address < base + (1 << (e + 9))
+----
+
+This must be checked by all operations that change the capability address.
+If this check fails the resulting capability will have its {ctag} cleared.
+Note that this means that it is not possible to represent a capability with an address less than the base.
+Depending on the size of the capability some addresses above top may be representable, but in the worst case the highest representable address is equal to top (one byte beyond the end of the dereferenceable region).
+
+===== Encoding bounds
+
+When <<SCBNDS>> is used to set the bounds of a capability the E, B and T fields are computed from the desired base and length as follows:
+
+[source]
+----
+// compute candidate exponent
+e = 23 - count_leading_zeros(length[31 : 9])
+if e > 14 then {
+  e = 24
+}
+
+// extend base and top to XLEN+1 bits
+base33 = 1b0 @ base
+top33 = base33 + (1b0 @ length)
+
+// extract 10-bit from base and top
+b = base33[e + 9 : e]
+t = top33[e + 9 : e]
+
+// round up top if low bits are truncated
+if top33[e - 1 : 0] != 0 {
+  t = t + 1
+}
+
+// in case this caused length overflow use the next exponent
+if t - b >= 1 << (e + 9) {
+  e += 1
+  if e > 14 then {
+    e = 24
+  }
+  b = base33[e + 9 : e]
+  t = top33[e + 9 : e]
+  if top33[e - 1 : 0] != 0 {
+    t = t + 1
+  }
+}
+
+// encode E
+E = (e == 24) ? 15 : e
+// truncate B and T to 9 bits
+B = b[8 : 0]
+T = t[8 : 0]
+----
+
+[#section_cheriot_cap_special_encodings]
+=== Encoding of Special Capabilities
+
+[#section_null_cap_encoding_cheriot]
+==== NULL Capability Encoding
+
+The <<null-cap>> capability is represented with 0 in all fields. This implies
+that it is unsealed, has no permissions and its exponent, base and top are 0.
+
+.Field values of the NULL capability
+[#null-cap-encoding-cheriot,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
+|==============================================================================
+| Field    | Value  | Comment
+
+| {ctag_title} | zero   | Capability is not valid
+| R        | zero   | Reserved bit
+| G        | zero   | Not global
+| AP        | zeros  | Grants no permissions
+| CT       | zeros  | Unsealed
+| E        | zeros  | Exponent
+| T        | zeros  | Top address bits
+| B        | zeros  | Base address bits
+| Address  | zeros  | Capability address
+|==============================================================================
+
+[#sec_cheriot_enc1_roots]
+==== Root Capability Encoding
+
+The encoding for the <<root-rx-cap>> and <<root-rw-cap>> capabilities defined by {cheri_base_ext_name}
+and the sealing root defined by <<sec_zycheriot_permission_roots,{cheriot_ext_name}>>
+have bounds that cover the entire associated address space.
+Root capabilities necessarily have set {ctag}s and are necessarily unsealed,
+<<section_zylevels1>> requires root capabilities to be <<zylevels1_gl_perm,Global>>,
+and we define our root capabilities as having a clear reserved bit (that is, an R field of `0`).
+The encoded fields of root capabilities are shown in <<tab_cheriot_enc1_infinite>>,
+except the P field, which depends on which root capability is being represented.
+
+.Bounds field values of root capabilities
+[#tab_cheriot_enc1_infinite,options=header,align=center,width="90%",cols="25,23,52"]
+|==============================================================================
+| Field         | Value | Comment
+
+| {ctag_title}  | one   | Capability is valid
+| R        | zero   | Reserved bit
+| G        | 1      | Global
+| P        | XXXXX  | Varies as per <<sec_zycheriot_permission_roots>>
+| CT       | zeros  | Unsealed
+| E        | 0xf    | Maximum exponent
+| T        | 0x100  | top = 2^XLEN^
+| B        | 0x000  | base 0
+| Address  | zeros  | Capability address
+|==============================================================================

@@ -87,6 +87,8 @@ endif::support_varxlen[]
 
 :cheri_seal_ext_name: Zyseal
 
+:cheriot_ext_name: Zycheriot
+
 :ctag: capability tag
 :ctag_cap:   Capability tag
 :ctag_title: Capability Tag
@@ -133,6 +135,7 @@ endif::support_varxlen[]
 :cap_cheriot_sdp_width:    1
 :cap_cheriot_perms_width:  5
 :cap_cheriot_exp_width:    4
+:cap_cheriot_exp_range_max: 14
 :cap_cheriot_exp_max:      24
 :cap_cheriot_mw_width:     9
 :cap_cheriot_addr_width:   32
@@ -144,13 +147,21 @@ endif::support_varxlen[]
 :rvy64e_uni_base: {cheri_base64_ext_name}E{rv64y_uni_encoding_suffix}
 :rv32y_uni_base_name: {cheri_base32_ext_name}{rv32y_uni_encoding_suffix}
 :rv32ye_uni_base_name: {cheri_base32_ext_name}E{rv32y_uni_encoding_suffix}
+
 // CHERIoT encoding scheme
-:rvy_cheriot_encoding_suffix: _Lxymw9e14r0as11pc
-:rvy32_cheriot_base_name: {cheri_base32_ext_name}E{rvy_cheriot_encoding_suffix}
-:rvy_cheriot2_encoding_suffix: _Lxymw9r0as11pc
-:rvy32_cheriot2_base_name: {cheri_base32_ext_name}E{rvy_cheriot2_encoding_suffix}
-:rvy_cheriot3_encoding_suffix: _Lxymw9r0as11pcenc2
-:rvy32_cheriot3_base_name: {cheri_base32_ext_name}E{rvy_cheriot3_encoding_suffix}
+// :rvy_cheriot_encoding_suffix: _Lxymw9e14r0as11pc
+// :rvy_cheriot_encoding_suffix: {cheri_base32_ext_name}E{rvy_cheriot_encoding_suffix}
+// :rvy_cheriot2_encoding_suffix: _Lxymw9r0as11pc
+// :rvy_cheriot_encoding2_suffix: {cheri_base32_ext_name}E{rvy_cheriot2_encoding_suffix}
+// :rvy_cheriot3_encoding_suffix: _Lxymw9r0as11pcenc2
+// :rvy32_cheriot3_base_name: {cheri_base32_ext_name}E{rvy_cheriot3_encoding_suffix}
+// :rvy_cheriot_common_base_suffix: _Lymw{cap_cheriot_mw_width}e{cap_cheriot_exp_range_max}r0as11pc
+
+:rvy_cheriot_encoding_suffix: _Lymw9e14r0as11pcencCheriot1
+// :rvy32e_cheriot_base_name: {cheri_base32_ext_name}E{rvy_cheriot_encoding_suffix}
+:rvy_cheriot_encoding2_suffix: _Lymw9ear0as11pcencCheriot2
+// :rvy32e_cheriot_base2_name: {cheri_base32_ext_name}E{rvy_cheriot2_encoding_suffix}
+:rvy_cheriot_encoding3_suffix: _Lymw9ear0as11pcencCheriot3
 
 :cheri_excep_cause_pc:       32
 :cheri_excep_cause_ld:       33
