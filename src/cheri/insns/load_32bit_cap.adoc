@@ -24,7 +24,24 @@ Load a naturally aligned YLEN-bit data value from memory.
 +
 If the PMA is _CHERI {ctag_title}_ then load the associated {ctag}, otherwise set the {ctag} to zero.
 +
+The {ctag} may also be cleared under platform specified conditions.
++
+NOTE: Extensions may also specify conditions which clear the {ctag}.
++
 Use the YLEN-bit data and the {ctag} to determine the value of `{cd}` as specified below.
++
+[NOTE]
+=====
+Platforms may strip loaded {ctag}s for a number of reasons.
+For example:
+
+* The RVY privileged specification permits Physical Memory Attributes (PMAs) that cannot store {ctag}s, as might be the case with MMIO.
+ The {ctag}s transported by <<STORE_CAP>> instructions to these regions are cleared and so will not read back.
+* The MMU of the RVY privileged specification introduces page mappings that always clear loaded {ctag}s even if the loaded location has a set {ctag}.
+ Privileged software can use such mappings to limit capability propagation between virtual address spaces while still allowing for data exchange.
+* CHERIoT platforms use so-called "capability load filters" to allow software (usually shared heap allocators) to ensure that capabilities pointing _to_ deallocated memory cannot be loaded into the register file from memory.
+** A future extension is likely to specify the behavior of the "capability load filter" for embedded CHERI systems.
+=====
 +
 include::malformed_no_check.adoc[]
 +
