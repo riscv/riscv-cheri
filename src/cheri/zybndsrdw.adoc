@@ -1,0 +1,32 @@
+
+[#rvy_bndsrdw_insn_ext,reftext="{rvy_bndsrdw_insn_ext_name}"]
+== "{rvy_bndsrdw_insn_ext_name}" Extension for Bounding to Representable Lengths
+
+#Begin new since last ARC review#
+
+This extension adds a single instruction, <<SCBNDSRD>>,
+which writes capability bounds while
+rounding _down_ to ensure precise representability of the result.
+In contrast to <<SCBNDSR>>,
+it does not alter the requested _lower_ bound (capability base).
+
+[NOTE]
+=====
+This instruction is useful when exposing (byte) buffers across trust domains.
+Given a buffer, an address therein, and a length after that address of elements
+to be revealed to a different trust domain,
+software in the originating trust domain wishes to compute the largest span,
+starting at the cursor and up to the length of elements to be shared,
+that can be precisely represented with a capability.
+Rounding the base _down_ and/or the length _up_ (as with <<SCBNDSR>>) risks
+exposing buffered data in the buffer not suitable for exposure
+to the different trust domain in question.
+While the originating domain _could_ instead make a series of exposures,
+each sufficiently small to be guaranteed to be representable,
+it is a significant improvement to allow capability representation itself
+to determine the largest safe exposure size.
+=====
+
+include::insns/scbndsrd_32bit.adoc[]
+
+#End new since last ARC review#

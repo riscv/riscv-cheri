@@ -558,6 +558,11 @@ if __name__ == "__main__":
                 header=header,
             ),
             InsnTable(
+                extension="{rvy_bndsrdw_insn_ext_name}",
+                filename=output_file(args,  "Zybndsrdw_insns_table_body.adoc"),
+                header=header,
+            ),
+            InsnTable(
                 extension="{rvy_i_mod_ext_name}",
                 filename=output_file(args,  "RVY_I_mod_insns_table_body.adoc"),
                 header=header,
