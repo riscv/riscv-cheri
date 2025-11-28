@@ -196,6 +196,16 @@ When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG and CRGE are in effect.
 
 <<mstatusreg_pte,mstatus>>.UCRG and CRGE also exist. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.UCRG and CRGE respectively.
 
+NOTE: The CRGE bit is added to the <<mstatusreg_pte,mstatus>>, <<vsstatusreg_pte,vsstatus>> and <<sstatusreg_pte,sstatus>> registers in order to allow the S-mode software to explicitly opt in to the revocation extensions.
+Alternatively, the CRGE bit could be made exclusively accessible from M-mode (e.g. in <<menvcfg>>); the S-mode software could use an extension of the SBI interface to opt in to the revocation extensions.
+
+NOTE: The CRGE bit is necessary because the {cheri_priv_crg_ext} defines a different semantic for PTE.CRW=1 PTE.CD=0 PTE.CRG=0 with respect to <<section_priv_cheri_vmem>>.
+In particular, an oblivious software implementation that only sets the PTE.CRW bit would observe one of the following:
+* The PTE.CD bit is set by the hardware when a capability is stored and _Svadu_ is enabled.
+* A {cheri_excep_name_pte_st} trap when _Svade_ is enabled.
+Both these conditions are unexpected according to <<section_priv_cheri_vmem>>.
+The CRGE bit also has the benefit or maintaining matching polarity of the PTE.CD bit with respect to the data Dirty bit (PTE.D), and permit alternative uses by future extensions of the PTE.CD and PTE.CRG reserved bits (e.g. by an alternative revocation extension that re-defines the semantics of CD and CRG).
+
 
 [#mstatusreg_pte]
 .Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
