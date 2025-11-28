@@ -1,6 +1,17 @@
 Determining the final value of `{cd}`::
 If the {ctag} is zero, or the authorizing capability (`{cs1}`) does not grant <<c_perm>> then set `{cd}.tag=0`. In this case the steps below do not apply.
 +
+[NOTE]
+=====
+If the {ctag} is zero, _all_ YLEN bits are transferred to the register without mutation,
+such that, for example, a <<STORE_CAP>> instruction writing the destination register back to memory produces an exact copy.
+That is, the transferred value is not subjected to capability <<section_cap_integrity,integrity>> checks
+and may, if viewed as a capbility, not be derivable from the system's capability roots.
+Especially, if the capability encoding has reserved bits or reserved values within its fields,
+these must be faithfully transported through registers.
+This property is essential for efficient, "capability-oblivious" implementation of C's `memcpy()`.
+=====
++
 If `{cd}.tag=1`, `{cd}` is not sealed and `{cs1}` does not grant <<lm_perm>>, then an implicit <<CLRPERM>> is performed to clear <<w_perm>> and <<lm_perm>> from `{cd}`.
 +
 Extensions may define further circumstances under which implict <<CLRPERM>>-s or other mutation of loaded capabilities may take place.
