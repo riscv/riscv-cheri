@@ -1,7 +1,7 @@
-// [#rv32y_cheriot3_cap_description, reftext="{rvy32_cheriot3_base_name} (CHERIoT V2B)"]
-== The {rvy_cheriot_encoding3_suffix} CHERI Capability Encoding Scheme
+[#rv32y_cheriot_encoding3_description, reftext="{rv32y_cheriot_encoding3_name}"]
+== The {rv32y_cheriot_encoding3_name} CHERI Capability Encoding Scheme
 
-This chapter describes a variation on the <<rv32y_cheriot2_cap_description>> encoding.
+This chapter describes a further variation on the <<rv32y_cheriot_encoding2_description>> encoding.
 It is equivalent in terms of representable bounds, supported features and the number of bits used, but has different microarchitectural properties.
 The only observable difference for software is the encoded metadata bits of capabilities in stored in memory, which is only relevant to specialised system software such as debuggers.
 As such, the decision of which to use should be based on microarchitectural requirements.
@@ -12,11 +12,11 @@ It is included here in order to provide flexibility to implementations.
 
 The components of a capability, except the {ctag}, are encoded as shown in xref:cap_encoding_cheriot3[xrefstyle=short].
 
-.Capability encoding for {rvy32_cheriot3_base_name} (Alternative Version))
+.Capability encoding for {rv32y_cheriot_encoding3_name}
 [#cap_encoding_cheriot3]
 include::img/cap-encoding-cheriot3.edn[]
 
-The only difference from {rvy_cheriot_encoding2_suffix} is that the top field, T, is replaced by a length, L.
+The only difference from {rv32y_cheriot_encoding2_name} is that the top field, T, is replaced by a length, L.
 The 8-bit L is expanded to 9 bits by adding a leading implicit one bit, except in the case of the special exponent 31 where L[8] is zero. Bounds decoding can then proceed as follows:
 
 [source]
@@ -25,7 +25,7 @@ The 8-bit L is expanded to 9 bits by adding a leading implicit one bit, except i
 e = (E == 31) ? 0 : E
 L8 = (e == 31) ? 0 : 1
 
-// Decode base (same as <<rvy_cheriot_encoding_suffix>>)
+// Decode base (same as <<rv32y_cheriot_encoding1_name>>)
 c_b = (A[e + 8 : e]) < B ? -1 : 0
 base = ((A[31 : e + 9] + c_b) @ B) << e
 
@@ -33,20 +33,19 @@ base = ((A[31 : e + 9] + c_b) @ B) << e
 top = base + ((L8 @ L) << e)
 ----
 
-All other aspects of the capability encoding are identical to {rvy_cheriot_encoding2_suffix}.
+All other aspects of the capability encoding are identical to {rv32y_cheriot_encoding2_name}.
 
 ==== Capability Encoding Parameter Summary
 
-The encoding parameters for this encoding are identical to {rvy_cheriot_encoding2_suffix} except for the encoding variant parameter.
+The encoding parameters for this encoding are identical to {rv32y_cheriot_encoding2_name} except for the encoding variant parameter.
 
-.{rvy_cheriot_encoding2_suffix} (Alternative Version) parameter summary
-[#rvy32_cheriot3_base_name_param_summary,%autowidth,options=header,]
+.{rv32y_cheriot_encoding3_name} parameter summary
+[#rv32y_cheriot_encoding3_param_summary,%autowidth,options=header,]
 |==============================================================================
-| Parameter | Value                | Comment
-| mw        | {cap_cheriot_mw_width}  | Mantissa width
-| e         | a                    | All exponents are supported
-| rc        | 0                    | Representable region between base and top only
-| p         | pc                   | Compressed permission encoding
-| as        | 11                   | <<section_auipc_shift>> shift
-| enc       | 2                    | Encoding variant
+| Parameter | Value                  | Comment
+| mw        | {cap_cheriot_mw_width} | Mantissa width
+| e         | a                      | All exponents are supported
+| rc        | 0                      | Representable region between base and top only
+| p         | pc                     | Compressed permission encoding
+| enc       | Cheriot3               | Encoding variant
 |==============================================================================

@@ -1,0 +1,243 @@
+:cheriot_gettop_name: YTOPR
+:cheriot_setbounds_round_down_name: YBNDSRDW
+:cheriot_setbounds_big_imm_name: YBNDSWBI
+
+[#sec_zycheriot_unpriv, reftext={cheriot_unpriv_ext_name}]
+=== The {cheriot_unpriv_ext_name} Unprivileged ISA Extension
+
+This section defines a series of small changes to the
+{cheri_base_ext_name} and {cheri_base_ext_name}E unprivileged base architectures
+that serve to specialize it for microcontroller environments.
+These changes are based on, but are not exactly isomorphic to,
+the prior link:https://cheriot.org[CHERIoT] RV32E-based ISA.
+
+[NOTE]
+=====
+Some of these changes are intended to work in concert with their privileged
+counterparts found in the {cheriot_priv_ext_name} extension.
+=====
+
+==== Required Extensions
+
+{cheriot_unpriv_ext_name} assumes the presence of
+both the <<section_zylevels1>> and <<section_zyseal>> extensions.
+The present specification presumes the *absence*
+of both the <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and
+<<section_rvy_sentry_insn_ext>> extensions.
+
+[NOTE]
+=====
+While {cheriot_unpriv_ext_name} is nominally compatible with
+<<section_cheri_hybrid_ext,{cheri_default_ext_name}>>,
+and particular instantiations may opt to permit disabling CHERI,
+we have not yet found a compelling reason to formally specify this composition.
+=====
+
+[NOTE]
+=====
+While {cheriot_unpriv_ext_name} is nominally compatible with
+<<section_rvy_sentry_insn_ext>>,
+the operating system written for link:https://cheriot.org[CHERIoT]
+has a security model that presumes the absence of ambient sealing,
+and so this specification does not
+define any <<sec_cap_type_ambient,ambiently available>> sentry types.
+=====
+
+==== Refining CHERI Capabilities
+
+===== Software Defined Permissions
+
+{cheriot_unpriv_ext_name} defines SDPLEN,
+the number of software-defined permissions, to be `1`.
+We denote this one user permission as `U0`.
+
+[#sec_zycheriot_unpriv_permission_roots,reftext="Root Permission Sets"]
+===== Root Permission Sets
+
+{cheriot_unpriv_ext_name} defines _three_ <<root-cap>> capability values,
+each of which has a set {ctag}, is unsealed,
+has bounds that span its associated address space, and
+has <<zylevels1_gl_perm>> set.
+That is, they differ only in their granted _permissions_, thus:
+
+* Its <<root-rx-cap>> capability value grants exactly all of
+  <<x_perm,X>>, <<r_perm,R>>, <<c_perm,C>>, <<lm_perm,LM>>, <<asr_perm,ASR>>,
+  and <<zylevels1_lg_perm,LG>>.
+
+* Its <<root-rw-cap>> capability value grants exactly all of
+  <<r_perm,R>>, <<w_perm,W>>, <<c_perm,C>>, <<lm_perm,LM>>,
+  <<zylevels1_lg_perm,LG>>, and <<zylevels1_sl_perm,SL>>.
+
+* It defines a _root sealing_ capability grants exactly all of
+  <<zyseal_se_perm,SE>>, <<zyseal_us_perm,US>>, and `U0`.
+
+This set of root capabilities satisfies the following properties,
+by construction.
+Any further extension which adds or modifies capability permissions
+must ensure that its revised or additional root capabilities do so as well.
+Since all capabilities in the system must trace their provenance
+back to a root capability,
+these properties will necessarily remain true through any series of
+<<CLRPERM>> transitions.
+
+[[perm_req:zycheriot:w-nand-x,w-nand-x]]w-nand-x::
+  At most one of <<x_perm,X>> or <<w_perm,W>> may be set.
+
+[[perm_req:zycheriot:mem-nand-ct,mem-nand-ct]]mem-nand-ct::
+  The <<zyseal_se_perm,SE>>, <<zyseal_us_perm,US>>, and `U0`
+  collectively conflict with
+  either of the <<r_perm,R>> or <<w_perm,W>> permissions.
++
+That is, a capability may grant permissions
+from at most one of these two sets;
+this serves to partition capabilities that refer to memory addresses
+from those that refer to <<sec_cap_type>> values
+(those granting <<zyseal_se_perm,SE>> and/or <<zyseal_us_perm,US>>)
+or uninterpreted integers (those granting `U0`).
+Capabilities granting no permissions from the union of these sets
+are not distinguished.
+
+[#sec_zycheriot_unpriv_permission_transitions,reftext="Permission Transition Constraints"]
+===== Permission Transition Constraints
+
+{cheriot_unpriv_ext_name} requires a {cheri_base_ext_name} base that is using
+a compressed permission scheme
+(that is, one has its `_Ly` `p` parameter set to `pc`).
+
+In addition to the constraints on
+<<sec_permission_transitions,permission transitions>>
+defined across the base {cheri_base_ext_name} ISA
+and the <<section_zylevels1>> extension,
+{cheriot_unpriv_ext_name} adds two additional constraints,
+shown in <<tab_zycheriot_permission_transitions>>.
+
+.{cheriot_unpriv_ext_name} Permission Transition Rules
+[#tab_zycheriot_permission_transitions,float="center",align="center",cols="2,2,4",options="header"]
+|===
+| <<CLRPERM>> Rule            | Permission            | Valid only if
+| {cheriot_unpriv_ext_name}-1 | <<x_perm>>            | <<c_perm>> and <<r_perm>>
+| {cheriot_unpriv_ext_name}-2 | <<zylevels1_sl_perm>> | <<r_perm>>
+|===
+
+[#sec_zycheriot_unpriv_otypes]
+===== Capability Types
+
+{cheriot_unpriv_ext_name} introduces several kinds of
+<<sentry_cap,sentry>> capabilities,
+imposing a degree of control flow integrity,
+by giving architectural semantics to several <<sec_cap_type>> values.
+The presence of, and handling constraints for, these sentry types
+are important to unprivileged software.
+In particular, {cheriot_unpriv_ext_name} uses _five_ <<sec_cap_type>> values
+({cheriot_sentry_ot_min} through {cheriot_sentry_ot_max}, inclusive)
+to modify the behavior of <<JALR_CHERI>>:
+
+* All of these values are defined to be <<sentry_cap>> values.
+  Thus, sealed capabilities with any of these <<sec_cap_type>> values
+  may be passed as inputs to <<JALR_CHERI>>
+  and will be unsealed prior to installation into <<pcc>>.
+
+* Two values, {cheriot_sentry_ot_bd} and {cheriot_sentry_ot_be},
+  are used by <<JALR_CHERI>> to seal the return capability when `rd` is `ra`.
+  The choice between the two depends on privileged machine state.
+  If `{cd}` is not `ra`, then the return capability is not sealed.
+
+* <<JALR_CHERI>> is given conditional behavior
+  based on the register selectors used,
+  as detailed in <<tab_cheriot_unpriv_jalr_regs>>.
+  Prohibited combinations of register selectors and <<sec_cap_type>> value
+  will cause the target <<pcc>> to have a clear {ctag} and so raise a
+  {cheri_excep_name_pc}.
+
+In light of the last rule, we call capabilities granting <<x_perm>> and...
+
+* with a <<sec_cap_type>> value of
+  {cheriot_sentry_ot_fi}, {cheriot_sentry_ot_fd}, or {cheriot_sentry_ot_fe}
+  "forward" sentries.
+
+* with a <<sec_cap_type>> value of
+  {cheriot_sentry_ot_bd} or {cheriot_sentry_ot_be} "backward" sentries.
+
+The {cheriot_priv_ext_name} extension to _privileged_ architecture
+draws further distinction between the various forward and backward types.
+
+.<<JALR_CHERI>> Conditional Behavior
+[#tab_cheriot_unpriv_jalr_regs,width="100%",options=header,halign=center,cols="1,2,4,4"]
+|===
+| {cs1} | {cd}   | Permitted {cs1} <<sec_cap_type>>-s | Comments
+| `ra`  | `null` | {cheriot_sentry_ot_bd}, {cheriot_sentry_ot_be} | Function return
+| ≠`ra` | `null` | 0, {cheriot_sentry_ot_fi} | Tail call
+| any   | ∉{ `null`, `ra` } | 0, {cheriot_sentry_ot_fi} | Code outlining
+| any   | `ra`   | 0, {cheriot_sentry_ot_fi}, {cheriot_sentry_ot_fd}, {cheriot_sentry_ot_fe} | Function call
+|===
+
+[NOTE]
+=====
+All of the <<sentry_cap>> <<sec_cap_type>> values defined herein
+need be encodable only if the capability grants <<x_perm>>,
+as required by <<JALR_CHERI>> of the capability to be installed into <<pcc>>.
+{cheriot_unpriv_ext_name} imposes no architectural requirement for,
+or semantics upon,
+capabilities that do not grant <<x_perm>> and have one of these
+<<sec_cap_type>> values.
+=====
+
+[NOTE]
+=====
+The use of different <<sentry_cap>> <<sec_cap_type>> values
+for "forward" control flow arcs (in which <<JALR_CHERI>> writes a capability)
+and "backward" arcs (in which it does not)
+means that functions cannot return "backwards" to a (forward) function pointer
+and, dually, that a function pointer cannot be subsituted for a return pointer.
+=====
+
+==== New Instructions
+
+////
+==== {cheriot_setbounds_big_imm_name}
+
+[NOTE]
+=====
+TODO: setbounds immediate as an I-type instruction w/ 12-bit immediate rather
+than the base's R-type w/ (scaled) 5-bit immediate, <<SCBNDSI>>.
+See `CSetBoundsImm` in {cheriot_v1_isa}.
+
+Maybe this should be some non-{cheriot_unpriv_ext_name} extension.
+=====
+
+[NOTE]
+=====
+TODO, research required:
+While this instruction exists in the CHERIoT ISA,
+the {cheri_base_ext_name} <<SCBNDSI>> form does not.
+What is the best way to take advantage of having both
+an I-type and R-type instruction available?
+
+Should the I-type instruction's immediate be a length and a shift,
+since our encoding's mantissas are smaller than 12 bits wide?
+
+=====
+////
+
+===== {cheriot_setbounds_round_down_name}
+
+[NOTE]
+=====
+TODO: setbounds register that fixes base and rounds length down for
+representability.
+(Contrast the rounding behavior of <<SCBNDS>>.)
+See `CSetBoundsRoundDown` in {cheriot_v1_isa}.
+
+Maybe this should be some non-{cheriot_unpriv_ext_name} extension.
+=====
+
+===== {cheriot_gettop_name}
+
+[NOTE]
+=====
+TODO: Two-operand instruction that fuses <<GCBASE>>, <<GCLEN>>, and ADD.
+Easy for microarchitecture given how we unpack capabilities in registers.
+See `CGetTop` in {cheriot_v1_isa}.
+
+Maybe this should be some non-{cheriot_unpriv_ext_name} extension.
+=====
