@@ -24,7 +24,7 @@ Copy `{cs2}` into `{cd}`, and then...
 - `{cs1}` has a clear `{ctag}`
 - `{cs1}` does not grant <<zyseal_se_perm>>
 - The address of `{cs1}` is out of bounds
-- The address of `{cs1}` is not a <<sec_cap_type>> value that the capability encoding can encode.
+- The address of `{cs1}` is not a <<sec_cap_type>> value that the capability encoding can encode on the capability in `{cs2}`
 --
 +
 . Set the <<sec_cap_type>> of `{cd}` to the address of `{cs1}`.
@@ -45,6 +45,20 @@ to seal and unseal the sentry types that that encoding defines.
 This is deliberate.
 Software should ensure that the capabilities requisite for such operations are
 attenuated, confined to sufficiently trusted components, and/or destroyed.
+=====
+
+[NOTE]
+=====
+Some capability encodings correlate non-zero <<sec_cap_type>> values
+with other aspects of capabilities, notably permissions.
+That is, some encodings may be able to represent
+a valid capability with a given non-zero <<sec_cap_type>>
+only if other properties of that capability hold,
+such as it granting, or not granting, a particular permission.
+As such, {YSEAL} may clear the {ctag} of the result in `{cd}`
+depending on these other aspects of its `{cs2}` input,
+even if some capabilities can be sealed with
+the type called for by the address of `{cs1}`.
 =====
 
 Included in::
