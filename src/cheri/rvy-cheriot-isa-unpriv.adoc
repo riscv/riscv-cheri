@@ -144,7 +144,7 @@ to modify the behavior of <<JALR_CHERI>>:
   and will be unsealed prior to installation into <<pcc>>.
 
 * Two values, {cheriot_sentry_ot_bd} and {cheriot_sentry_ot_be},
-  are used by <<JALR_CHERI>> to seal the return capability when `rd` is `ra`.
+  are used by <<JALR_CHERI>> and <<JAL_CHERI>> to seal the return capability when `rd` is `ra`.
   The choice between the two depends on privileged machine state.
   If `{cd}` is not `ra`, then the return capability is not sealed.
 
@@ -171,10 +171,9 @@ draws further distinction between the various forward and backward types.
 [#tab_cheriot_unpriv_jalr_regs,width="100%",options=header,halign=center,cols="1,2,4,4"]
 |===
 | {cs1} | {cd}   | Permitted {cs1} <<sec_cap_type>>-s | Comments
-| `ra`  | `null` | {cheriot_sentry_ot_bd}, {cheriot_sentry_ot_be} | Function return
-| ≠`ra` | `null` | 0, {cheriot_sentry_ot_fi} | Tail call
-| any   | ∉{ `null`, `ra` } | 0, {cheriot_sentry_ot_fi} | Code outlining
 | any   | `ra`   | 0, {cheriot_sentry_ot_fi}, {cheriot_sentry_ot_fd}, {cheriot_sentry_ot_fe} | Function call
+| `ra`  | `null` | {cheriot_sentry_ot_bd}, {cheriot_sentry_ot_be} | Function return
+2+| other operands | 0, {cheriot_sentry_ot_fi} | Non-standard control flow (e.g., tail calls)
 |===
 
 [NOTE]
