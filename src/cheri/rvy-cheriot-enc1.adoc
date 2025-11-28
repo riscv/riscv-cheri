@@ -30,6 +30,20 @@ The components of a capability, except the {ctag}, are encoded as shown in xref:
 [#cap_encoding_cheriot]
 include::img/cap-encoding-cheriot.edn[]
 
+[#cheriot_encoding_field_summary, reftext="CHERIoT capability fields"]
+[width="100%",options=header,cols="1,5"]
+|==============================================================================
+| Field      | Description
+| R          | Reserved bit
+| G          | Global bit, as in <<zylevels1_gl_perm,GL>>.
+| P          | Permissions, see <<cheriot-permission-encoding>>.
+| CT         | Sealed object Type, see <<section_cheriot_cap_type>>.
+| E          | Exponent field for bounds encoding, see <<section_cheriot_cap_bounds>>.
+| T          | Top field for bounds encoding, see <<section_cheriot_cap_bounds>>.
+| B          | Base field for bounds encoding, see <<section_cheriot_cap_bounds>>.
+| Address    | The address field as per <<cap_structure>>.
+|==============================================================================
+
 [NOTE]
 ====
 The reserved bit (the R field) is defined to be 0 in the encoding of the root capabilities given <<sec_cheriot_enc1_roots,below>>,
@@ -37,20 +51,6 @@ and is not mutable by any instruction defined in {cheri_base_ext_name},
 and so will necessarily be 0 in all valid capabilities derived therefrom.
 It is therefore available for use by suitable extensions or derivative encodings.
 ====
-
-[#cheriot_encoding_field_summary, reftext="CHERIoT capability fields"]
-[width="100%",options=header,cols="1,5"]
-|==============================================================================
-| Field      | Description
-| R          | Reserved bit, must be zero in valid capabilities and preserved in any value loaded from memory and stored.
-| G          | Global bit, as in <<zylevels1_gl_perm,GL>>.
-| P          | Architectural Permissions, see <<cheriot-permission-encoding>>.
-| CT         | Sealed object Type, see <<section_cheriot_cap_type>>.
-| E          | Exponent field for bounds encoding, see <<section_cheriot_cap_bounds>>.
-| T          | Top field for bounds encoding, see <<section_cheriot_cap_bounds>>.
-| B          | Base field for bounds encoding, see <<section_cheriot_cap_bounds>>.
-| Address    | The address field as per <<cap_structure>>.
-|==============================================================================
 
 The encoding impacts the following CHERI extensions:
 
@@ -142,7 +142,7 @@ The meaning for bits [2:0] are shown in <<cheriot_perms_encoding>>.
 | 01     |<<asr_perm,ASR>>|<<lm_perm,LM>>|<<zylevels1_lg_perm,LG>>
   |  ✔         |                | ✔          |                        | P[1]                | P[0]
   |  ✔         | P[2]           |            |                        |                     | Executable
-| 10     | 0    | 0    | 0   
+| 10     | 0    | 0    | 0
   |            |  ✔             |  ✔         |                        |                     |
   |            |                |            |                        |                     | Cap WO
 | 10     | 0    |<<r_perm,R>>|<<w_perm,W>>
