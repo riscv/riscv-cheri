@@ -7,13 +7,13 @@ endif::[]
 
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
-The {cheri_priv_crg_ext} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG, PTE.CD and <<sstatusreg_pte,sstatus>>.UCRG bits as described below.
+The {cheri_priv_crg_ext} extension is enabled when the <<sstatusreg_pte,sstatus>>.CRGE bit is set.
+When enabled, the extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG, PTE.CD and <<sstatusreg_pte,sstatus>>.UCRG bits as described below.
+When the extension is disabled the PTE.CD, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG bits remain reserved and a future extension may define an alternative function; the PTE.CRW bit is interpreted as defined by <<section_priv_cheri_vmem>>.
 
 NOTE: {cheri_priv_crg_ext} depends on Supervisor-Level ISA and {cheri_base64_ext_name} also being supported.
 
 NOTE: {cheri_priv_crg_ext} is strongly recommended but not mandatory as a future version of this specification may specify an improved method.
-
-NOTE: There is no explicit mechanism for enabling or disabling {cheri_priv_crg_ext}.
 
 NOTE: If software ignores the new PTE bits then there is no change in functionality unless capabilities are accessed.
 
@@ -185,11 +185,11 @@ These cause PTE Accessed and Dirty updates to be done in software, via the excep
 [#xstatus_pte]
 === Extending the Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
 
-The <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) bit as shown.
+The <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) and Capability Read Generation Enable (CRGE) bits as shown.
 
-When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
+When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG and CRGE are in effect.
 
-<<mstatusreg_pte,mstatus>>.UCRG also exists. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.UCRG.
+<<mstatusreg_pte,mstatus>>.UCRG and CRGE also exist. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.UCRG and CRGE respectively.
 
 
 [#mstatusreg_pte]
@@ -228,7 +228,8 @@ When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'MPELP'},
   {bits:  1, name: 'MDT'},
-  {bits: 18, name: 'WPRI'},
+  {bits: 17, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
@@ -259,7 +260,8 @@ When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 27, name: 'WPRI'},
+  {bits: 26, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
@@ -287,7 +289,8 @@ When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
   {bits:  1, name: 'SUM'},
   {bits: 12, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 27, name: 'WPRI'},
+  {bits: 26, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'}
