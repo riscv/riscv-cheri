@@ -22,7 +22,11 @@ NOTE: A future version of this specification may include kernel revocation which
 The minimum level of PTE support is to set CRW and CD to 1 in all PTEs intended for storing
 capabilities (i.e., private anonymous mappings) and leave
 <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow
-capabilities with their tags set to be loaded and stored successfully.
+capabilities with their {ctag}s set to be loaded and stored successfully.
+
+NOTE: When {cheri_priv_crg_ext} is enabled (<<sstatusreg_pte,sstatus>>.CRGE is set), the semantics of PTE.CRW bit is redefined relative to the definition in <<section_priv_cheri_vmem>>.
+The ability to load and store capabilities in the page depends on all of the PTE.CRW, PTE.CD, PTE.CRG bits, which effectively become a single 3-bit field controlling the behavior.
+Therefore, when PTE.CRW is clear, it is not required that future extensions to {cheri_priv_crg_ext}, such as for kernel revocation, cannot store capabilities to a page.
 
 NOTE: Hardware-initiated memory accesses from the page-table walker are not checked by a capability.
 
@@ -84,7 +88,7 @@ NOTE: The {ctag} bit of the stored capability is checked _after_ it is potential
 cleared due to lack of <<c_perm>>.
 
 
-If the CRW bit is clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
+If all the CRW, CD and CRG bits are clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
 
 * When a capability load or AMO instruction is executed, the {ctag} bit of the
   loaded capability is cleared before it is written to the destination register.
