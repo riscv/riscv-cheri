@@ -22,7 +22,7 @@ capabilities (i.e., private anonymous mappings) and leave
 <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow
 capabilities with their {ctag}s set to be loaded and stored successfully.
 
-NOTE: When {cheri_priv_crg_ext} is enabled (<<sstatusreg_pte,sstatus>>.CRGE is set), the semantics of PTE.CRW bit is redefined relative to the definition in <<section_priv_cheri_vmem>>.
+NOTE: When {cheri_priv_crg_ext} is enabled (<<sstatusreg_pte,sstatus>>.CRGE is set), the semantics of PTE.CRW bit are redefined relative to the definition in <<section_priv_cheri_vmem>>.
 The ability to load and store capabilities in the page depends on all of the PTE.CRW, PTE.CD, PTE.CRG bits, which effectively become a single 3-bit field controlling the behavior.
 Therefore, when PTE.CRW is clear, it is not required that future extensions to {cheri_priv_crg_ext}, such as for kernel revocation, cannot store capabilities to a page.
 
@@ -197,7 +197,7 @@ In particular, an oblivious software implementation that only sets the PTE.CRW b
 * The PTE.CD bit is set by the hardware when a capability is stored and _Svadu_ is enabled.
 * A {cheri_excep_name_pte_st} trap when _Svade_ is enabled.
 Both these conditions are unexpected according to <<section_priv_cheri_vmem>>.
-The CRGE bit also has the benefit or maintaining matching polarity of the PTE.CD bit with respect to the data Dirty bit (PTE.D), and permit alternative uses by future extensions of the PTE.CD and PTE.CRG reserved bits (e.g. by an alternative revocation extension that re-defines the semantics of CD and CRG).
+The CRGE bit also has the benefit of maintaining matching polarity of the PTE.CD bit with respect to the data Dirty bit (PTE.D), and permits alternative uses by future extensions of the PTE.CD and PTE.CRG reserved bits (e.g. by an alternative revocation extension that re-defines the semantics of CD and CRG).
 
 
 [#mstatusreg_pte]
