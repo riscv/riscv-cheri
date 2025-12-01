@@ -7,7 +7,10 @@ endif::[]
 
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
+
+#Begin new since last ARC review (added enable/disable bit)#
 The {cheri_priv_crg_ext} extension is enabled when the <<sstatusreg_pte,sstatus>>.CRGE bit is set.
+#End new since last ARC review#
 When enabled, the extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG, PTE.CD and <<sstatusreg_pte,sstatus>>.UCRG bits as described below.
 When the extension is disabled the PTE.CD, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG bits remain reserved and a future extension may define an alternative function; the PTE.CRW bit is interpreted as defined by <<section_priv_cheri_vmem>>.
 
@@ -184,6 +187,7 @@ These cause PTE Accessed and Dirty updates to be done in software, via the excep
 [#xstatus_pte]
 === Extending the Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
 
+#Begin new since last ARC review (added enable/disable bit)#
 The <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) and Capability Read Generation Enable (CRGE) bits as shown.
 
 When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG and CRGE are in effect.
@@ -198,6 +202,7 @@ In particular, an oblivious software implementation that only sets the PTE.CRW b
 * A {cheri_excep_name_pte_st} trap when _Svade_ is enabled.
 Both these conditions are unexpected according to <<section_priv_cheri_vmem>>.
 The CRGE bit also has the benefit of maintaining matching polarity of the PTE.CD bit with respect to the data Dirty bit (PTE.D), and permits alternative uses by future extensions of the PTE.CD and PTE.CRG reserved bits (e.g. by an alternative revocation extension that re-defines the semantics of CD and CRG).
+#End new since last ARC review#
 
 
 [#mstatusreg_pte]
