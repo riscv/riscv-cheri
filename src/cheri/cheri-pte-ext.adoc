@@ -191,7 +191,6 @@ When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG and CRGE are in effect.
 <<mstatusreg_pte,mstatus>>.UCRG and CRGE also exist. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.UCRG and CRGE respectively.
 
 NOTE: The CRGE bit is added to the <<mstatusreg_pte,mstatus>>, <<vsstatusreg_pte,vsstatus>> and <<sstatusreg_pte,sstatus>> registers in order to allow the S-mode software to explicitly opt in to the revocation extensions.
-Alternatively, the CRGE bit could be made exclusively accessible from M-mode (e.g. in <<menvcfg>>); the S-mode software could use an extension of the SBI interface to opt in to the revocation extensions.
 
 NOTE: The CRGE bit is necessary because the {cheri_priv_crg_ext} defines a different semantic for PTE.CRW=1 PTE.CD=0 PTE.CRG=0 with respect to <<section_priv_cheri_vmem>>.
 In particular, an oblivious software implementation that only sets the PTE.CRW bit would observe one of the following:
