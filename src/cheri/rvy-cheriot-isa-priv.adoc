@@ -67,7 +67,7 @@ to place capabilities thereby prohibited in these CSRs.
 
 {cheriot_unpriv_ext_name} introduces several
 <<sentry_cap,sentry>> <<sec_cap_type>> values
-and discusses some aspects of their interaction with `JALR` instructions.
+and discusses some aspects of their interaction with `JALR` and `JAL` instructions.
 {cheriot_priv_ext_name} further equips these <<sec_cap_type>> values
 with privileged architectural side-effects when used with `JALR`.
 In particular, {cheriot_priv_ext_name} uses these <<sec_cap_type>> values
@@ -78,7 +78,8 @@ without granting the right to modify `xstatus.xIE` arbitrarily.
 Functions that are called with a new interrupt stance
 can return to the caller's stance.
 Non-standard control flow transfers such as tail calls and calls to compiler
-outlined functions using a non-standard link register are still possible.
+outlined functions using a non-standard link register are still possible but
+cannot change the interrupt status.
 Beyond the `JALR` behaviors specified by {cheriot_unpriv_ext_name},
 {cheriot_priv_ext_name} further requires that...
 
@@ -86,7 +87,7 @@ Beyond the `JALR` behaviors specified by {cheriot_unpriv_ext_name},
   whose `{cs1}` holds such a capability
   updates the hart's `xstatus.xIE` bit as per <<tab_cheriot_priv_sentry_irq>>.
 
-* A successfully retiring `JALR` whose `{cd}` is `ra` will
+* A successfully retiring `JALR` or `JAL` whose `{cd}` is `ra` will
   seal its written-back return capability based on the hart's `xstatus.xIE` bit
   as of the _prior_ instruction's retirement.
   If that bit is `0`,
