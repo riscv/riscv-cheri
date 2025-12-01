@@ -198,6 +198,7 @@ Software can query the capability bounds:
 * The _length_ is returned by the <<GCLEN>> instruction.
 ** <<GCLEN>> saturates the _length_ to XLEN bits
 * The _top_ is returned by the <<GCTOP>> instruction.
+** If {rvy_topr_insn_ext_name} is implemented, otherwise the _top_ can be calculated using a saturating addition of the <<GCBASE>> and <<GCLEN>> results.
 
 NOTE: A future extension may add an instruction to directly read the _top_ if needed for performance.
 
@@ -926,12 +927,10 @@ These instructions query the bounds and related information.
 |Mnemonic   |Description
 |<<GCBASE>> |Get capability base
 |<<GCLEN>>  |Get capability length
-|<<GCTOP>>  |Get capability top
 |=======================
 
 include::insns/gcbase_32bit.adoc[]
 include::insns/gclen_32bit.adoc[]
-include::insns/gctop_32bit.adoc[]
 
 <<<
 
@@ -1175,3 +1174,17 @@ NOTE: CHERIoT implementations do not use {CBLD}, so this instruction is part of 
 === Added instructions
 
 include::insns/cbld_32bit.adoc[]
+
+[#section_rvy_topr_insn_ext,reftext="{rvy_topr_insn_ext_name}"]
+== "{rvy_topr_insn_ext_name}" Extension for Extracting the Top Bound
+
+#Begin changed since last ARC review#
+
+The {rvy_topr_insn_ext_name} extension adds the <<GCTOP>> instruction to return the top bound of a capability.
+This offers a performance improvement over the software sequence of a saturating add of the results of <<GCBASE>> and <<GCLEN>>, and is useful fo rmemory allacators.
+
+#End changed since last ARC review#
+
+=== Added instructions
+
+include::insns/gctop_32bit.adoc[]
