@@ -34,11 +34,10 @@ NOTE: Hardware-initiated memory accesses from the page-table walker are not chec
 [#cap_revocation]
 === Capability Revocation
 
+Revocation is the process of clearing the {ctag} of capabilities that point to freed memory, to prevent them from being dereferenced and thereby enforcing _temporal memory safety_.
 cite:[cornucopia-reloaded] details algorithms for preventing use-after-free in virtual memory, and non-virtual memory based systems.
-Revocation is the process of clearing the {ctag} of capabilities which point to freed memory, to prevent them from being dereferenced.
-A CHERI system which implements such a scheme is said to support _temporal safety_.
 
-{cheri_priv_crg_ext} adds temporal safety for user pages only.
+{cheri_priv_crg_ext} adds capability revocation for user pages only.
 It uses the <<sstatusreg_pte,sstatus>>.UCRG and PTE.CRG bits to control the revocation epoch, which is used to provide a load barrier to detect when loading from a page which needs sweeping.
 This is indicated by the generation in the PTE mismatching the global one in <<sstatusreg_pte,sstatus>>.UCRG.
 Stored {ctag}s to clean pages are tracked using PTE.CD to record which virtual memory pages contain dirty capabilities, and so will need to be swept.
