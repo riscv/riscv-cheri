@@ -122,7 +122,7 @@ the <<sec_zycheriot_unpriv_permission_roots>> and
 
 The permission encoding space is split into quadrants using P[3:2].
 Each quadrant may include some fixed permissions (indicated with ✔) and some dependent permissions encoded using P[2:0].
-Quadrant 0 is used to encode permissions that authorise sealing (see <<section_zyseal>>) and also the single <<sec_cap_sdp,software-defined permission>>, `U0`. It can also encode 'no permissions'.
+Quadrant 0 is used to encode permissions that authorise sealing (see <<section_zyseal>>) and also the single <<sec_cap_sdp,software-defined permission>>, <<zycheriot_u0_perm,U0>>. It can also encode 'no permissions'.
 Quadrant 1 encodes executable capabilities along with the dependent permission <<asr_perm,ASR>> and optional permissions <<lm_perm,LM>> and <<zylevels1_lg_perm,LG>>.
 Quadrant 2 is subdivided into octants, with octant 4 encoding combinations of <<r_perm,R>> and <<w_perm,W>> without <<c_perm,C>>
 (with the redundant not-<<r_perm,R>> and not-<<w_perm,W>> used to encode write-only with <<c_perm,C>>).
@@ -135,8 +135,8 @@ The meaning for bits [2:0] are shown in <<cheriot_perms_encoding>>.
 4+| P[4:0] 12+| Decoded Permissions
 | P[4:3] | P[2] | P[1] | P[0]
   |<<r_perm,R>>|  <<w_perm,W>>  |<<c_perm,C>>|<<zylevels1_sl_perm,SL>>|<<lm_perm,LM>>       |<<zylevels1_lg_perm,LG>>
-  |<<x_perm,X>>|<<asr_perm,ASR>>|   `U0`     | <<zyseal_se_perm,SE>>  |<<zyseal_us_perm,US>>| Notes
-| 00     | `U0` |<<zyseal_se_perm,SE>>|<<zyseal_us_perm,US>>
+  |<<x_perm,X>>|<<asr_perm,ASR>>|   <<zycheriot_u0_perm,U0>>     | <<zyseal_se_perm,SE>>  |<<zyseal_us_perm,US>>| Notes
+| 00     | <<zycheriot_u0_perm,U0>> |<<zyseal_se_perm,SE>>|<<zyseal_us_perm,US>>
   |            |                |            |                        |                     |
   |            |                | P[2]       | P[1]                   | P[0]                | Sealing
 | 01     |<<asr_perm,ASR>>|<<lm_perm,LM>>|<<zylevels1_lg_perm,LG>>
@@ -171,7 +171,7 @@ To encode a set of permissions resulting from <<CLRPERM>>, the first of the foll
 3. If the permissions include <<r_perm,R>> and <<c_perm,C>> then encode <<lm_perm,LM>> and <<zylevels1_lg_perm,LG>> using the Cap RO format (P[4:2] = 101).
 4. If the permissions include <<w_perm,W>> and <<c_perm,C>> then encode using the Cap WO format (P[4:0] = 10000).
 5. If the permissions include <<r_perm,R>> or <<w_perm,W>> then encode using the Data RW format (P[4:0] = 100RW).
-6. Encode `U0`, <<zyseal_se_perm,SE>> and <<zyseal_us_perm,US>> using the sealing format (P[4:3] = 00).
+6. Encode <<zycheriot_u0_perm,U0>>, <<zyseal_se_perm,SE>> and <<zyseal_us_perm,US>> using the sealing format (P[4:3] = 00).
 
 This procedure will automatically apply the rules defined in <<sec_zycheriot_unpriv_permission_transitions>> to legalize permission sets.
 If any of the requested permissions cannot be represented using the chosen format, then the they are dropped.

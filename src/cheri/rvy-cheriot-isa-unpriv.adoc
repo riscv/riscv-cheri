@@ -45,6 +45,7 @@ define any <<sec_cap_type_ambient,ambiently available>> sentry types.
 
 ==== Refining CHERI Capabilities
 
+[#zycheriot_u0_perm, reftext="CHERIoT U0 Permission"]
 ===== Software Defined Permissions
 
 {cheriot_unpriv_ext_name} defines SDPLEN,
@@ -69,7 +70,7 @@ That is, they differ only in their granted _permissions_, thus:
   <<zylevels1_lg_perm,LG>>, and <<zylevels1_sl_perm,SL>>.
 
 * It defines a _root sealing_ capability grants exactly all of
-  <<zyseal_se_perm,SE>>, <<zyseal_us_perm,US>>, and `U0`.
+  <<zyseal_se_perm,SE>>, <<zyseal_us_perm,US>>, and <<zycheriot_u0_perm,U0>>.
 
 This set of root capabilities satisfies the following properties,
 by construction.
@@ -84,7 +85,7 @@ these properties will necessarily remain true through any series of
   At most one of <<x_perm,X>> or <<w_perm,W>> may be set.
 
 [[perm_req:zycheriot:mem-nand-ct,mem-nand-ct]]mem-nand-ct::
-  The <<zyseal_se_perm,SE>>, <<zyseal_us_perm,US>>, and `U0`
+  The <<zyseal_se_perm,SE>>, <<zyseal_us_perm,US>>, and <<zycheriot_u0_perm,U0>>
   collectively conflict with
   either of the <<r_perm,R>> or <<w_perm,W>> permissions.
 +
@@ -93,7 +94,7 @@ from at most one of these two sets;
 this serves to partition capabilities that refer to memory addresses
 from those that refer to <<sec_cap_type>> values
 (those granting <<zyseal_se_perm,SE>> and/or <<zyseal_us_perm,US>>)
-or uninterpreted integers (those granting `U0`).
+or uninterpreted integers (those granting <<zycheriot_u0_perm,U0>>).
 Capabilities granting no permissions from the union of these sets
 are not distinguished.
 
