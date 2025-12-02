@@ -1,0 +1,66 @@
+<<<
+
+[#SCBNDSRD,reftext="{SCBNDSRD}"]
+=== {SCBNDSRD}
+
+include::new_encoding_note.adoc[]
+
+Synopsis::
+{SCBNDSRD_DESC}
+
+Mnemonic::
+`{scbndsrd_lc} {cd}, {cs1}, rs2`
+
+Encoding::
+include::wavedrom/scbndsrd_32bit.adoc[]
+
+Description::
+Copy the capability from register `{cs1}` to register `{cd}`.
+Set the base address of its bounds to the value of `{cs1}.address`.
++
+Round _down_ the requested length, in `rs2[XLEN-1:0]`, by the smallest amount necessary
+to guarantee that it is precisely representable given this base address.
++
+Set `{cd}.tag=0` if `{cs1}.tag=0`, `{cs1}` is sealed or if `{cd}` 's bounds exceed `{cs1}` 's bounds.
++
+include::malformed_cs1_clear_tag.adoc[]
+
+[NOTE]
+=====
+If the result in `{cd}` has its {ctag} set to one, then its base _is_ `{cs1}.address`, as with <<SCBNDS>>.
+The result in `{cd}` will be zero-length if and only if `rs2[XLEN-1:0]` is zero.
+In practice, capability encodings offer byte-granularity of bounds for capabilities
+of lengths up to some threshold
+between a few hundred and a few thousand bytes, depending on the encoding;
+for requested lengths below this threshold, no rounding is required, and
+otherwise this threshold serves to guarantee a minimum length return from {SCBNDSRD}.
+=====
+
+[NOTE]
+=====
+{SCBNDSRD} finds the largest length `l` that is both
+less than or equal to the requested `rs2[XLEN-1:0]` and
+precisely representable given a particular base address, `b`.
+A length `l` is precisely representable given base `b` if a <<SCBNDS>> instruction...
+
+- whose `rs2` register holds `l` and
+
+- whose `{cs1}` register holds a capability...
+
+-- whose address is `b` and
+
+-- whose bounds cover the entire address space
+
+produces a result in `{cd}` whose {ctag} is set to one.
+This value may be efficiently found, for most capability encoding schemes,
+by counting trailing zeros in the desired base address and
+computing the length that is a maximal mantissa shifted left by that count
+(that is, using the number of trailing zeros in the base address as the value's exponent).
+=====
+
+Included in::
+<<rvy_bndsrdw_insn_table>>
+
+Operation::
++
+TODO
