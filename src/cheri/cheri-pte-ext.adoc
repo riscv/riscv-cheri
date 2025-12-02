@@ -7,40 +7,40 @@ endif::[]
 
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
-The {cheri_priv_crg_ext} extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG, PTE.CD and <<sstatusreg_pte,sstatus>>.UCRG bits as described below.
+
+#Begin new since last ARC review (added enable/disable bit)#
+The {cheri_priv_crg_ext} extension is enabled when the <<sstatusreg_pte,sstatus>>.CRGE bit is set.
+#End new since last ARC review#
+When enabled, the extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG, PTE.CD and <<sstatusreg_pte,sstatus>>.UCRG bits as described below.
+When the extension is disabled the PTE.CD, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG bits remain reserved and a future extension may define an alternative function; the PTE.CRW bit is interpreted as defined by <<section_priv_cheri_vmem>>.
 
 NOTE: {cheri_priv_crg_ext} depends on Supervisor-Level ISA and {cheri_base64_ext_name} also being supported.
 
 NOTE: {cheri_priv_crg_ext} is strongly recommended but not mandatory as a future version of this specification may specify an improved method.
-
-NOTE: There is no explicit mechanism for enabling or disabling {cheri_priv_crg_ext}.
-
-NOTE: If software ignores the new PTE bits then there is no change in functionality unless capabilities are accessed.
 
 NOTE: A future version of this specification may include kernel revocation which may require an <<sstatusreg_pte,sstatus>>.SCRG bit.
 
 The minimum level of PTE support is to set CRW and CD to 1 in all PTEs intended for storing
 capabilities (i.e., private anonymous mappings) and leave
 <<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow
-capabilities with their tags set to be loaded and stored successfully.
+capabilities with their {ctag}s set to be loaded and stored successfully.
+
+NOTE: When {cheri_priv_crg_ext} is enabled (<<sstatusreg_pte,sstatus>>.CRGE is set), the semantics of PTE.CRW bit are redefined relative to the definition in <<section_priv_cheri_vmem>>.
+The ability to load and store capabilities in the page depends on all of the PTE.CRW, PTE.CD, PTE.CRG bits, which effectively become a single 3-bit field controlling the behavior.
+Therefore, when PTE.CRW is clear, it is not required that future extensions to {cheri_priv_crg_ext}, such as for kernel revocation, cannot store capabilities to a page.
 
 NOTE: Hardware-initiated memory accesses from the page-table walker are not checked by a capability.
 
 [#cap_revocation]
 === Capability Revocation
 
-Page table enforcement can accelerate concurrent capability revocation
-for temporal safety.
-Without page table capability protection, a concurrent capability revocation
-sweep must begin by visiting all PTEs to mark them unreadable, henceforth trapping on any
-read to a new page to sweep it clean before proceeding.
-With a page-granularity generational capability read permission, we can
-eliminate the initial permission change of all PTEs.
-In addition, a page-granularity capability write control can eliminate many pages
-from the sweep that are known to not contain capabilities.
-Page-granularity capability-dirty tracking accelerates the detection of capability-clean
-pages, which enables the revocation sweep to skip them during the visit.
+Revocation is the process of clearing the {ctag} of capabilities that point to freed memory, to prevent them from being dereferenced and thereby enforcing _temporal memory safety_.
+cite:[cornucopia-reloaded] details algorithms for preventing use-after-free in virtual memory, and non-virtual memory based systems.
 
+{cheri_priv_crg_ext} adds capability revocation for user pages only.
+It uses the <<sstatusreg_pte,sstatus>>.UCRG and PTE.CRG bits to control the revocation epoch, which is used to provide a load barrier to detect when loading from a page which needs sweeping.
+This is indicated by the generation in the PTE mismatching the global one in <<sstatusreg_pte,sstatus>>.UCRG.
+Stored {ctag}s to clean pages are tracked using PTE.CD to record which virtual memory pages contain dirty capabilities, and so will need to be swept.
 
 [#section_extending_pte]
 === Extending the Page Table Entry Format
@@ -84,7 +84,7 @@ NOTE: The {ctag} bit of the stored capability is checked _after_ it is potential
 cleared due to lack of <<c_perm>>.
 
 
-If the CRW bit is clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
+If all the CRW, CD and CRG bits are clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
 
 * When a capability load or AMO instruction is executed, the {ctag} bit of the
   loaded capability is cleared before it is written to the destination register.
@@ -168,6 +168,7 @@ _{cheri_priv_crg_load_tag_ext}_ implies _{cheri_priv_crg_ext}_.
 |===
 |PTE.CRW | PTE.CD | PTE.CRG | Store/AMO
 | 0      | 0      | 0       | {cheri_excep_name_pte_st} if stored tag is set
+| 0      | 0      | 1       | Reserved
 | 0      | 1      | X       | Reserved
 | 1      | 0      | X       | {cheri_excep_name_pte_st} if stored tag is set, or <<section_hardware_pte_updates, hardware CD update>>
 | 1      | 1      | X       | Normal operation
@@ -185,11 +186,22 @@ These cause PTE Accessed and Dirty updates to be done in software, via the excep
 [#xstatus_pte]
 === Extending the Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
 
-The <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) bit as shown.
+#Begin new since last ARC review (added enable/disable bit)#
+The <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) and Capability Read Generation Enable (CRGE) bits as shown.
 
-When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
+When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG and CRGE are in effect.
 
-<<mstatusreg_pte,mstatus>>.UCRG also exists. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.UCRG.
+<<mstatusreg_pte,mstatus>>.UCRG and CRGE also exist. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.UCRG and CRGE respectively.
+
+NOTE: The CRGE bit is added to the <<mstatusreg_pte,mstatus>>, <<vsstatusreg_pte,vsstatus>> and <<sstatusreg_pte,sstatus>> registers in order to allow the S-mode software to explicitly opt in to the revocation extensions.
+
+NOTE: The CRGE bit is necessary because the {cheri_priv_crg_ext} defines a different semantic for PTE.CRW=1 PTE.CD=0 PTE.CRG=0 with respect to <<section_priv_cheri_vmem>>.
+In particular, an oblivious software implementation that only sets the PTE.CRW bit would observe one of the following:
+* The PTE.CD bit is set by the hardware when a capability is stored and _Svadu_ is enabled.
+* A {cheri_excep_name_pte_st} trap when _Svade_ is enabled.
+Both these conditions are unexpected according to <<section_priv_cheri_vmem>>.
+The CRGE bit also has the benefit of maintaining matching polarity of the PTE.CD bit with respect to the data Dirty bit (PTE.D), and permits alternative uses by future extensions of the PTE.CD and PTE.CRG reserved bits (e.g. by an alternative revocation extension that re-defines the semantics of CD and CRG).
+#End new since last ARC review#
 
 
 [#mstatusreg_pte]
@@ -228,7 +240,8 @@ When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'MPELP'},
   {bits:  1, name: 'MDT'},
-  {bits: 18, name: 'WPRI'},
+  {bits: 17, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
@@ -259,7 +272,8 @@ When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 27, name: 'WPRI'},
+  {bits: 26, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
@@ -287,7 +301,8 @@ When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG is in effect.
   {bits:  1, name: 'SUM'},
   {bits: 12, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 27, name: 'WPRI'},
+  {bits: 26, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'}
