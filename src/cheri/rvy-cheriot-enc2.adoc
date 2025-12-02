@@ -1,0 +1,83 @@
+[#rv32y_cheriot_encoding2_description, reftext="{rv32y_cheriot_encoding2_name}"]
+== The {rv32y_cheriot_encoding2_name} CHERI Capability Encoding Scheme
+
+This chapter describes a variation on the <<rv32y_cheriot_encoding1_description>> encoding to support all exponents using the same number of bits.
+This change is backwards compatible for software but enables support for more precise bounds on capabilities larger than 8MiB.
+Due to increased microarchitectural complexity and the limited need for precise alignment on such large capabilities on small systems, implementations may choose to support either encoding.
+
+The changes are limited to the bounds encoding; all other aspects of the capability encoding are identical to <<rv32y_cheriot_encoding1_description>>.
+
+[#section_cap_encoding_cheriot2]
+=== Capability Encoding
+
+The components of a capability, except the {ctag}, are encoded as shown in xref:cap_encoding_cheriot2[xrefstyle=short].
+
+.Capability encoding for {rv32y_cheriot_encoding2_name}
+[#cap_encoding_cheriot2]
+include::img/cap-encoding-cheriot2.edn[]
+
+The only difference from <<rv32y_cheriot_encoding1_description>> is that the exponent field, E, is grown to 5 bits and the T field is shrunk to 8 bits.
+This allows all exponents from 0 to 24 to be represented directly, with some spare exponents available for other uses.
+To enable the reduced T field to be decoded to a 9-bit value it is assumed that the top bit of the length, L = T - B, is one, similar to normalised floating point numbers.
+To encode small capabilities with exponent zero and lengths less than 256 bytes the special E value, 31, is used to mean L[8] is zero.
+T[8] can then be reconstructed as follows:
+
+[source]
+----
+T[8] = B[8] XOR (E == 31 ? 0 : 1) XOR (T[7:0] < B[7:0])
+----
+
+The unused exponent values (25 .. 30) are reserved for future use.
+Other aspects of bounds decoding remain identical to <<section_cheriot_cap_bounds>>.
+
+Encoding the bounds for a requested base and length is similar to before but without the special cases for exponents greater than 15.
+[source]
+----
+// compute candidate exponent
+e = 23 - count_leading_zeros(length[31:9])
+
+// extend base and top to XLEN+1 bits
+base33 = 1b0 @ base
+top33 = base33 + (1b0 @ length)
+
+// extract 10-bit from base and top
+b = base33[e + 9 : e]
+t = top33[e + 9 : e]
+
+// round up top if low bits are truncated
+if top33[e - 1 : 0] != 0 {
+  t = t + 1
+}
+
+// in case this caused length overflow use the next exponent
+if t - b >= 1 << (e + 9) {
+  e += 1
+  b = base33[e + 9 : e]
+  t = top33[e + 9 : e]
+  if top33[e - 1 : 0] != 0 {
+     t = t + 1
+  }
+}
+
+// truncate B and T to 9 bits
+B = b[8 : 0]
+T = t[8 : 0]
+// encode E
+E = (e == 0 && (T - B)[8] == 0) ? 31 : e
+----
+
+==== Capability Encoding Parameter Summary
+
+This encoding is suitable for use with {cheri_base32_ext_name} base architectures
+whose parametric requirements are no stronger than those given in <<rv32y_cheriot_encoding2_param_summary>>.
+
+.{rv32y_cheriot_encoding2_name} parameter summary
+[#rv32y_cheriot_encoding2_param_summary,%autowidth,options=header,]
+|==============================================================================
+| Parameter | Value                | Comment
+| mw        | {cap_cheriot_mw_width}  | Mantissa width
+| e         | a                    | All exponents are supported
+| rc        | 0                    | Representable region between base and top only
+| p         | pc                   | Compressed permission encoding
+| enc       | Cheriot2             | Encoding variant
+|==============================================================================

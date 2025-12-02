@@ -1,0 +1,58 @@
+[#sec_rvy_microcontrollers]
+== RVY Specializations for Microcontroller Systems
+
+include::./rvy-cheriot-isa-unpriv.adoc[]
+
+=== A {cheri_base32_ext_name}{rvy_cheriot_common_base_suffix} Common Base Architecture
+
+It is intended that {cheriot_unpriv_ext_name} and {cheriot_priv_ext_name}
+be instantiated (in tandem) atop a {cheri_base32_ext_name} base architecture
+that is at least as expressive as {rvy_cheriot_common_base_suffix}
+and in combination with one of the capability encoding schemes discussed below
+(or a future, possibly vendor-specific, capability encoding).
+Software written for this common subset architecture
+will be source compatible across encoding formats
+and with more expressive variants of {cheri_base32_ext_name}.
+
+The parameters set by this common architecture are:
+
+- `mw{cap_cheriot_mw_width}` and `e{cap_cheriot_exp_range_max}`:
+  A mantissa width of {cap_cheriot_mw_width} and
+  expressibility of capability exponents from 0 (inclusive)
+  to {cap_cheriot_exp_range_max} (inclusive).
+  Together, these ensure that capabilities can precisely capture capabilities
+  whose lengths are between 1 and 2^9^ - 1 times a power of 2
+  between 1 (inclusive) and 2^{cap_cheriot_exp_range_max}^ (inclusive) or
+  is 2^{cap_cheriot_exp_max}^.
++
+[NOTE]
+====
+The latter of these is sufficient to represent the entire 32-bit address space
+at a granularity (that is, bounds alignment) of 16MiB.
+====
+
+- `r0`: Software must not presume that taking a capability out of bounds,
+  other than the "one past the end" position required by C,
+  will leave it tagged.
+
+- `as11`: The shift used by <<AUIPC_CHERI>> (and similar instructions) is `11`.
+
+- `pc`: The set of capabiality permissions that can be expressed is subject to
+  compression.  For these bases, the only compression used is a consequence of
+  the roots and permission transition rules found in the base architecture and
+  present extensions (such as {cheriot_unpriv_ext_name}).
+
+TODO: Can we refactor RV32Y's compression scheme out to something like the
+Zycheriot ISA perspective, too?
+
+[NOTE]
+=====
+As a reminder, these parameters constrain the behavior
+of {cheri_base_ext_name} instructions such as <<SCBNDS>> and <<CLRPERM>>.
+=====
+
+include::./rvy-cheriot-enc1.adoc[leveloffset=+1]
+
+include::./rvy-cheriot-enc2.adoc[leveloffset=+1]
+
+include::./rvy-cheriot-enc3.adoc[leveloffset=+1]

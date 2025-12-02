@@ -1,0 +1,201 @@
+[#sec_zycheriot_priv,reftext={cheriot_priv_ext_name}]
+=== The {cheriot_priv_ext_name} Privileged ISA Extension
+
+This section defines a series of small changes to the
+<<section_priv_cheri,{cheri_priv_m_ext}>> privileged architecture
+that serve to specialize it for microcontroller environments.
+These changes are based on, but are not exactly isomorphic to,
+the prior link:https://cheriot.org[CHERIoT] RV32E-based ISA.
+
+==== Required Extensions
+
+{cheriot_priv_ext_name} requires
+its unprivileged counterpart, {cheriot_unpriv_ext_name},
+and builds on <<section_priv_cheri,{cheri_priv_m_ext}>>.
+
+The present specification presumes the *absence* of both
+
+* any execution mode other than M-mode
+  (such as VS, HS, VU, S, or U), and
+
+* the <<section_cheri_disable,{cheri_default_ext_name} privileged extensions>>.
+
+[NOTE]
+=====
+While {cheriot_priv_ext_name} is nominally compatible with
+<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>>,
+and particular instantiations may opt to permit disabling CHERI,
+we have not yet found a compelling reason to formally specify this composition.
+=====
+
+==== CSR Reset States
+
+The {cheri_base_ext_name} base privileged ISA tends to define
+M-mode CSRs' reset values either as <<root-rx-cap>> capabilities or
+as otherwise unspecified values with clear {ctag}s.
+To make available {cheriot_unpriv_ext_name}'s multiple
+//<<sec_zycheriot_unpriv_permission_roots,root>>
+root capability values,
+we redefine two CSRs' reset values:
+
+<<mtidc>>::
+The <<mtidc>> register's reset value is changed to be
+{cheriot_unpriv_ext_name}'s <<root-rw-cap>> capability value (with set {ctag}),
+rather than the unspecified value with zero {ctag} of {cheri_base_ext_name}.
+
+<<mscratch>>::
+The <<mscratch>> register's reset value is changed to be
+{cheriot_unpriv_ext_name}'s _sealing_ capability value (with set {ctag}),
+rather than the unspecified value with zero {ctag} of {cheri_base_ext_name}.
+
+==== Additional CSR Legalization Requirements
+
+All of <<pcc>>, <<mtvec>>, and <<mepc>> will clear their {ctag} if the
+capability they would come to hold after an update
+would be sealed or would not grant <<x_perm>>.
+
+[NOTE]
+=====
+The <<section_priv_cheri,{cheri_priv_m_ext}>> requires that
+<<mtvec>> and <<mepc>> nominally reset to <<root-rx-cap>> capabilities, and
+<<pcc>> must be unsealed and grant <<x_perm>> for successful execution.
+Neither architecture nor software expects to be able
+to place capabilities thereby prohibited in these CSRs.
+=====
+
+==== Capability Types
+
+{cheriot_unpriv_ext_name} introduces several
+<<sentry_cap,sentry>> <<sec_cap_type>> values
+and discusses some aspects of their interaction with `JALR` and `JAL` instructions.
+{cheriot_priv_ext_name} further equips these <<sec_cap_type>> values
+with privileged architectural side-effects when used with `JALR`.
+In particular, {cheriot_priv_ext_name} uses these <<sec_cap_type>> values
+to enforce structured interrupt control,
+by atomically capturing and changing the value of `xstatus.xIE` in `JALR`.
+The purpose of this is to enable calls to short per-core atomic sequences
+without granting the right to modify `xstatus.xIE` arbitrarily.
+Functions that are called with a new interrupt stance
+can return to the caller's stance.
+Non-standard control flow transfers such as tail calls and calls to compiler
+outlined functions using a non-standard link register are still possible but
+cannot change the interrupt status.
+Beyond the `JALR` behaviors specified by {cheriot_unpriv_ext_name},
+{cheriot_priv_ext_name} further requires that...
+
+* Upon successfully retiring, a `JALR` instruction
+  whose `{cs1}` holds such a capability
+  updates the hart's `xstatus.xIE` bit as per <<tab_cheriot_priv_sentry_irq>>.
+
+* A successfully retiring `JALR` or `JAL` whose `{cd}` is `ra` will
+  seal its written-back return capability based on the hart's `xstatus.xIE` bit
+  as of the _prior_ instruction's retirement.
+  If that bit is `0`,
+  the return capability is sealed with {cheriot_sentry_ot_bd};
+  otherwise, {cheriot_sentry_ot_be} is used.
+
+Combining these semantics with those of {cheriot_unpriv_ext_name} lets us give
+convenient mnemonics for the particular <<sec_cap_type>> values
+that these extensions use, as shown in <<tab_cheriot_priv_ot_mnem>>.
+
+.Additional `JALR` Architectural Semantics
+[#tab_cheriot_priv_sentry_irq,width="100%",options=header,halign=center,cols="1,5"]
+|===
+| <<sec_cap_type>>       | IRQs at Retirement (`xstatus.xIE`)
+| {cheriot_sentry_ot_fi} | Unchanged (as is)
+| {cheriot_sentry_ot_fd}, {cheriot_sentry_ot_bd} | Deferred (`0`)
+| {cheriot_sentry_ot_fe}, {cheriot_sentry_ot_be} | Enabled (`1`)
+|===
+
+.Sentry type mnemonics
+[#tab_cheriot_priv_ot_mnem,width="100%",options=header,halign=center,cols="1,5"]
+|===
+| <<sec_cap_type>>       | Name
+| {cheriot_sentry_ot_fi} | Forward interrupt-inheriting
+| {cheriot_sentry_ot_fd} | Forward interrupt-deferring
+| {cheriot_sentry_ot_fe} | Forward interrupt-enabling
+| {cheriot_sentry_ot_bd} | Backward interrupt-deferring
+| {cheriot_sentry_ot_be} | Backward interrupt-enabling
+|===
+
+[NOTE]
+=====
+The degree of control flow integrity provided
+by the rules of {cheriot_unpriv_ext_name} ensures that
+a leaf function entered via a forward interrupt-disabling sentry
+cannot be induced, by a malicious caller, to return to its own entry vector
+(indeed, to return via any forward sentry).
+This ensures that granting untrusted code such a sentry is
+not tantamount to handing it the ability to wedge the machine.
+=====
+
+==== Stack High Watermark CSRs
+
+{cheriot_priv_ext_name} introduces two new XLEN CSRs for each privilege level:
+`xshwm` and `xshwmb`.
+Both are freely read but require <<asr_perm>> for explicit writes from software.
+Writes are WARL, with legal values being addresses with capability alignment
+(that is, multiples of YLEN bits in octet bytes).
+Store instructions targeting addresses
+between the values held in `xshwm` and `xshwmb`
+cause `xshwm` to be updated to the lowest targeted address
+(rounded down to capability alignment).
+
+[NOTE]
+=====
+The intended software use of these CSRs is, as the section title suggests,
+to track the "high watermark" of a thread's C stack
+(that is, the lowest address written to, because "stacks grow down").
+The thread context switching code should context switch these registers,
+having initialized `xshwmb` to the lower bound of the thread's stack capability
+and `xshwm` to its upper bound.
+Privileged stack zeroing code can be used to lower `xshwm`, so that all bytes
+between the addresses held in `xshwm` and `xshwmb` are known to be zero.
+=====
+
+==== Capability Load Filter and The Revocation Bitmap
+
+[NOTE]
+=====
+This section is non-normative,
+as it introduces no new behavior not already permitted by the
+{cheri_base_ext_name} unprivileged architecture.
+It is meant to be informative detail about how CHERIoT platforms
+avail themselves of a particular architectural affordances therein.
+=====
+
+As part of providing _heap temporal_ safety,
+CHERIoT platforms may, as permitted by {cheri_base_ext_name},
+clear tags being transported from memory into CPU registers
+by a `{load_cap_name_lc}` instruction.
+CHERIoT platforms mediate capability loads with a _capability load filter_.
+Software dynamic memory allocators can use this load filter
+to ensure that additional copies of capabilities to deallocated objects
+cannot be constructed (into register files and, so, into memory, too).
+This facilitates particularly straightforward global revocation of pointers to
+freed heap objects.
+
+In implementations to date, this capability load filter is instantiated
+by pairing each memory block(s)
+in which software's dynamic allocation heap(s) are to reside
+with a per-memory-block _revocation bitmap_,
+a bit-vector wherein each bit corresponds to a capability-sized memory granule.
+(That is, with each capability-sized and -aligned region of the primal memory.)
+Such memory block(s) are said to be _revokable_.
+These revocation bitmaps are also exposed (as memory) to software.
+When `{load_cap_name_lc}` transfers a valid capability (one with a set {ctag})
+from memory (revokable or not) into a hart's register file,
+it checks whether the _base_ (lower bound) of that capability is within
+a revokable memory block and, if so,
+fetches the corresponding bit in the associated revocation bitmap.
+If that bit is set, then the {ctag} stored in the hart's register file
+as part of this transfer is cleared.
+
+It is up to each particular CHERIoT platform to define...
+
+* the number, location(s), and size(s) of revokable memory blocks,
+
+* the location(s) of their associated revocation bitmaps, and
+
+* the mapping function
+  between primal memory address and revocation bitmap address and bit index.
