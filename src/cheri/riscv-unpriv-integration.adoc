@@ -253,7 +253,7 @@ image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 ==== Memory space
 
 A hart supporting {cheri_base_ext_name} has a single byte-addressable address
-space of 2^XLEN^ bytes for all memory accesses. Each memory region capable of
+space of 2^MXLEN^ bytes for all memory accesses. Each memory region capable of
 holding a capability also stores a {ctag} bit for each naturally aligned YLEN bits
 (e.g., 16 bytes in RV64), so that capabilities with their {ctag} set can only be
 stored in naturally aligned addresses. {ctag_cap}s must be atomically bound to the
@@ -327,7 +327,7 @@ from those not granting <<x_perm>>;
 the <<x_perm>> in the capability encoding effectively adds
 an additional bit to the <<sec_cap_type>> field.
 (<<rv32y_cap_description>>/<<rv64y_cap_description>> does not avail itself of this option,
-but, for example, the CHERIoT capability encoding does.)
+but, for example, the <<rv32y_cheriot_encoding1_description>> capability encoding does.)
 
 [#sec_cap_type_ambient]
 Ambient sealing type::
@@ -538,7 +538,7 @@ These parameters affect the behavior of <<SCBNDS>>/<<SCBNDSR>> as well as the re
 The mantissa width influences the precision of bounds (much like the mantissa width of floating point numbers defines arithmetic precision).
 * **Maximum exponent (ea or e<N>)**: If _all_ meaningful values of the exponent can be encoded directly in the exponent field this uses `ea`.
 Otherwise `e<N>` describes the largest encodable exponent for a valid capability except for the one used for the whole address space.
-For example, the CHERIoTv1 format uses  `e14` since E=15 is used for full address space capabilities.
+For example, the <<rv32y_cheriot_encoding1_description>> format uses  `e14` since E=15 is used for full address space capabilities.
 The default value for this parameter is `ea` and may be omitted in that case.
 * **Representable region (rc1 or r0)**: The number of mantissa bits used to guarantee representability of out-of-bounds capability values.
 So far two options have been used in commercial implementations: `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, and `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed out-of-bounds range.
@@ -552,6 +552,7 @@ Parameter for in-memory format::
 The default value for this parameter is `enc1` and may be omitted in that case.
 Vendors may define alternate formats where all other parameters are otherwise identical, so this parameter can be used to differentiate such formats.
 Additionally, there is one other value, `enc0`, which means the compiler and/or software must avoid making any assumptions about the in-memory representation.
+
 NOTE: To allow arbitrary characters in the suffix of this parameter it must be the last component of the `_Ly<params>` to avoid ambiguity with other parameters.
 
 NOTE: In general, only very specialized software such as offline crash-dump debuggers need to know the exact memory representation, and all other software can and should use the inspection instructions such as <<GCBASE>>, etc.
@@ -664,9 +665,9 @@ A failing check raises a CHERI exception.
 
 * The {ctag} must be set
 * The capability must not be sealed
-* The capability must grant execute permission
+* The capability must grant <<x_perm>>
 * All bytes of the instruction must be in bounds
-* All <<section_cap_integrity,integrity>> checks passed.
+* All <<section_cap_integrity,integrity>> checks must have passed.
 
 On system initialization the `pc` bounds and permissions must be set such that the program can run successfully (e.g., by setting it to a <<root-rx-cap>> capability to ensure _all_ instructions are in bounds).
 
@@ -855,7 +856,8 @@ Instruction fetches and data memory accesses may result in a fatal exception if 
 * all indirect jumps require <<x_perm>> on the target capability
 
 Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends the PC.
-This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
+
+NOTE: This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
 
 The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
 
@@ -879,9 +881,9 @@ These instructions all include a check that the resulting address can be <<secti
 [#tab_cap_ptr_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic     |Description
-|<<CADDI>>    |Increment capability address by immediate, <<section_cap_representable_check,represented exactly>> check
-|<<CADD>>     |Increment capability address by register, <<section_cap_representable_check,represented exactly>> check
-|<<SCADDR>>   |Replace capability address, <<section_cap_representable_check,represented exactly>> check
+|<<CADDI>>    | {CADDI_DESC}
+|<<CADD>>     | {CADD_DESC}
+|<<SCADDR>>   | {SCADDR_DESC}
 |=======================
 
 include::insns/cadd_32bit.adoc[]
@@ -898,13 +900,13 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 [#tab_cap_manip_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic     |Description
-|<<CLRPERM>>   |AND capability permissions (expand to 1-bit per permission before ANDing)
-|<<CMV>>      |Move capability register
-|<<SCHI>>^1^  |Set metadata and clear {ctag}
-|<<SCBNDSI>>  |Set immediate bounds on capability with rounding, clear {ctag} if rounding is required
-|<<SCBNDS>>   |Set register bounds on capability with rounding, clear {ctag} if rounding is required
-|<<SCBNDSR>>  |Set bounds on capability with rounding up as required
-|<<YSUNSEAL>> |Set {cd} to {cs2} with a zero <<sec_cap_type>> if {cs2} is a sealed subset of {cs1}
+|<<CLRPERM>>  | {CLRPERM_DESC}
+|<<CMV>>      | {CMV_DESC}
+|<<SCHI>>^1^  | {SCHI_DESC}
+|<<SCBNDSI>>  | {SCBNDSI_DESC}
+|<<SCBNDS>>   | {SCBNDS_DESC}
+|<<SCBNDSR>>  | {SCBNDSR_DESC}
+|<<YSUNSEAL>> | {YSUNSEAL_DESC}
 |=======================
 
 ^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
@@ -928,8 +930,8 @@ These instructions query the bounds and related information.
 [#tab_cap_inspection_bounds_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic   |Description
-|<<GCBASE>> |Get capability base
-|<<GCLEN>>  |Get capability length
+|<<GCBASE>> | {GCBASE_DESC}
+|<<GCLEN>>  | {GCLEN_DESC}
 |=======================
 
 include::insns/gcbase_32bit.adoc[]
@@ -945,10 +947,10 @@ These instructions either directly read bit fields from the metadata or {ctag}, 
 [#tab_cap_inspection_fields_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic   |Description
-|<<GCTAG>>  |Get {ctag}
-|<<GCPERM>> |Get capability architectural and software permissions
-|<<GCTYPE>> |Get capability type
-|<<GCHI>>^1^|Get capability metadata
+|<<GCTAG>>  | {GCTAG_DESC}
+|<<GCPERM>> | {GCPERM_DESC}
+|<<GCTYPE>> | {GCTYPE_DESC}
+|<<GCHI>>^1^| {GCHI_DESC}
 |=======================
 
 ^1^ <<GCHI>> is a pseudoinstruction for <<GCHI_BASE>>
@@ -967,9 +969,9 @@ include::insns/gchi_32bit.adoc[]
 [#tab_cap_misc_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
 |Mnemonic   |Description
-|<<SCEQ>>   |Full capability bitwise compare, set result true if all bits (including the {ctag}) are equal
-|<<SCSS>>   |Set result true if {cs1} and {cs1} {ctag}s match and {cs2} bounds and permissions are a subset of {cs1}
-|<<CRAM>>   |Representable Alignment Mask: Return mask to apply to address to get the requested bounds
+|<<SCEQ>>   | {SCEQ_DESC}
+|<<SCSS>>   | {SCSS_DESC}
+|<<CRAM>>   | {CRAM_DESC}
 |=======================
 
 include::insns/sceq_32bit.adoc[]
@@ -1039,7 +1041,7 @@ include::insns/store_32bit_cap.adoc[]
 
 * Whenever an input operand is used as an address (e.g., the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
 * Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead of just XLEN bits.
-  For all other results the high bits of the register are zeroed.
+  For all other results the high bits of the register and the {ctag} are zeroed.
 * Whenever a capability with a new address is returned, the result is _always_ created using the semantics of the <<SCADDR>> instruction.
 
 `ADD` and `ADDI` are not affected by the rule above.
@@ -1081,8 +1083,8 @@ All load and store instructions authorized by `{cs1}` raise exceptions if any of
 ifdef::invalid_address_viol[]
 * The virtual address in `{cs1}` must not be invalid if virtual memory is enabled.
 endif::[]
-* For loads, <<r_perm,read permission>> must be set in `{cs1}`
-* For stores, <<w_perm,write permission>> must be set in `{cs1}`
+* For loads, <<r_perm>> must be set in `{cs1}`
+* For stores, <<w_perm>> must be set in `{cs1}`
 * All <<section_cap_integrity,integrity>> checks on `{cs1}` must pass
 
 ^1^ All load/store encodings are _reserved_ if `{cs1}={creg}0` (since dereferencing <<null-cap>> always faults).
@@ -1125,9 +1127,9 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
 |=======================
 |Mnemonic                   |Description
-|<<AUIPC_CHERI>>            |Add immediate to <<pcc>> address, return capability.
-|<<JAL_CHERI>>              |Jump to <<pcc>>+offset, link and seal capability to {cd}.
-|<<JALR_CHERI>>             |Indirect jump, link and seal capability to {cd}.
+|<<AUIPC_CHERI>>            | {AUIPC_CHERI_DESC}
+|<<JAL_CHERI>>              | {JAL_CHERI_DESC}
+|<<JALR_CHERI>>             | {JALR_CHERI_DESC}
 |=======================
 
 include::insns/auipc_32bit.adoc[]
@@ -1168,6 +1170,7 @@ include::insns/sentry_32bit.adoc[]
 #Begin changed since last ARC review#
 
 The {rvy_bld_insn_ext_name} extension adds the <<CBLD>> instruction to capabilities with a superset authority to validate (i.e. set the {ctag}) of a capability with lesser authority.
+
 NOTE: This instruction can be used to speed up operations such as paging in memory after swap.
 
 NOTE: CHERIoT implementations do not use {CBLD}, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.

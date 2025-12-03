@@ -8,7 +8,7 @@ IMPORTANT: {not_v1_ratification_package}
 
 === Explicit Sealing and Unsealing Operations
 
-The {cheri_base_ext_name} base architecture defines <<sealed_cap>>s.
+The {cheri_base_ext_name} base architecture defines <<sealed_cap, sealed capabilities>>.
 The <<CBLD>>, <<JALR_CHERI>>, and <<YSUNSEAL>> instruction
 and the <<section_rvy_sentry_insn_ext>> extension
 allow platforms to build and consume sealed capabilities in
@@ -92,7 +92,7 @@ as shown in <<zyseal_acperm_bit_field>>.
 <<YSEAL>>:: A `{YSEAL_LC} {cd}, {cs1}, {cs2}` instruction will use the provided
 sealing authority of `{cs1}` to copy the _unsealed_ capability
 in `{cs2}` into `{cd}` and seal it with type `{cs1}.address`,
-assuming `{cs1}` has a set tag, is in bounds, and grants <<zyseal_se_perm>>.
+assuming `{cs1}` has a set {ctag}, is in bounds, and grants <<zyseal_se_perm>>.
 
 <<YUNSEAL>>:: A `{YUNSEAL_LC} {cd}, {cs1}, {cs2}` instruction will use the
 provided unsealing authority of `{cs1}` to copy the sealed capability
