@@ -517,13 +517,13 @@ This capability grants no permissions and any dereference results in raising an 
 === CHERI encoding formats
 CHERI implementations make trade-offs in their "encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
 The CHERI base ISA name is extended with a compact description of these decisions,
-and the definition of all CHERI base ISAs includes sufficient details of a capability encoding format to give enough details to allow execution of all base ISA instructions.
+and the definition of all CHERI base ISAs includes sufficient details of a capability encoding format precisely define the execution behavior of all base ISA instructions.
 
 As a result, the {cheri_base32_ext_name} and {cheri_base64_ext_name} names on their own do not describe the complete base ISAs, but define all the _semantics_ of a {cheri_base_ext_name} machine, where certain behavioral parameters must be filled in by the capability encoding.
 For example, the <<SCBNDSR>> instruction yields a capability with new bounds that are rounded differently depending on the number of bits allocated to the bounds in the capability format.
 Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds than XLEN=32 system and therefore have a larger <<section_cap_representable_check>>.
 
-NOTE: These observable differences in behaviour are similar to floating point numbers where the operations supported are the same for 32-bit vs. 64-bit, but the exact result depends on the representation (e.g. IEEE-754 vs. other floating point formats).
+NOTE: These observable differences in behaviour are similar to floating point numbers where the supported operations and their semantics are the same for all formats, but the exact result depends on the representation (e.g., 16/32/64-bit IEEE-754 or other floating point formats).
 
 The encoding format parameters are specified in the architecture string using a `_Ly<params>` syntax, which can be used by software and/or the compiler to optimize for that specific in-memory format.
 
@@ -535,6 +535,7 @@ The following parameters are currently defined to distinguish existing formats:
 Parameters for bounds precision and representability::
 These parameters affect the behavior of <<SCBNDS>>/<<SCBNDSR>> as well as the representability check that affects the tag-clearing behavior of how far you can go out of bounds with <<SCADDR>>/<<CADD>>.
 * **Mantissa width (mw<N>)**: The mantissa width for the bounds encoding. For example, a format with {cap_rv64_mw_width} bits of mantissa, would use `mw{cap_rv64_mw_width}`.
+The mantissa width influences the precision of bounds (much like the mantissa width of floating point numbers defines arithmetic precision).
 * **Maximum exponent (ea or e<N>)**: If _all_ meaningful values of the exponent can be encoded directly in the exponent field this uses `ea`.
 Otherwise `e<N>` describes the largest encodable exponent for a valid capability except for the one used for the whole address space.
 For example, the CHERIoTv1 format uses  `e14` since E=15 is used for full address space capabilities.
@@ -547,10 +548,11 @@ This parameter defines which permission modifications using <<CLRPERM>> also cle
 * **Permission encoding (ps or pc)**: Whether permissions are encoded using a _simple_ representation of one bit per architectural permission (`ps`) or a _compressed_ encoding that leverages dependencies between permissions and does not allow encoding all possible combinations (`pc`).
 
 Parameter for in-memory format::
-* **In-memory encoding (enc<N>)**: This parameter defines layout of capability metadata fields in memory.
+* **In-memory encoding (enc<suffix>)**: This parameter defines layout of capability metadata fields in memory.
 The default value for this parameter is `enc1` and may be omitted in that case.
 Vendors may define alternate formats where all other parameters are otherwise identical, so this parameter can be used to differentiate such formats.
 Additionally, there is one other value, `enc0`, which means the compiler and/or software must avoid making any assumptions about the in-memory representation.
+NOTE: To allow arbitrary characters in the suffix of this parameter it must be the last component of the `_Ly<params>` to avoid ambiguity with other parameters.
 
 NOTE: In general, only very specialized software such as offline crash-dump debuggers need to know the exact memory representation, and all other software can and should use the inspection instructions such as <<GCBASE>>, etc.
 
