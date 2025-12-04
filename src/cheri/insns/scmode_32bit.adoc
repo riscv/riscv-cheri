@@ -22,13 +22,13 @@ include::wavedrom/scmode.adoc[]
 Description::
 Copy `{cs1}` to `{cd}`.
 +
-Clear `{cd}.tag` if `{cs1}` is sealed.
+Set `{cd}.tag=0` if `{cs1}` is sealed, or if `{cs1}` fails any <<section_cap_integrity,integrity>> check.
 +
-If `{cs1}` grants <<x_perm>> and `{cs1}` 's <<AP-field>> could have been produced by <<CLRPERM>>, then update the <<m_bit>> of `{cd}` to:
+If `{cs1}` grants <<x_perm>> and `{cs1}` passes all <<section_cap_integrity,integrity>> checks, then update the <<m_bit>> of `{cd}` to:
 +
 1. {cheri_cap_mode_name} if the least significant bit of `rs2` is {CAP_MODE_VALUE}, or,
 +
-2. {cheri_int_mode_name} if the least significant bit of `rs2` is {INT_MODE_VALUE}
+2. {cheri_int_mode_name} if the least significant bit of `rs2` is {INT_MODE_VALUE}.
 +
 Otherwise do not update the <<m_bit>>.
 +
