@@ -30,8 +30,6 @@ Operationally, copy `{cs1}` to the target <<pcc>> and then...
 . Compute the target <<pcc>> address in two steps, each using the semantics of the <<SCADDR>> instruction:
 .. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
 .. set bit zero of the target <<pcc>> address to zero.
-<<<<<<< HEAD
-<<<<<<< HEAD
 . Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
 +
 NOTE: All such triples are acceptable to <<rv64y_cap_description>> and <<rv32y_cap_description>>.
@@ -39,26 +37,9 @@ NOTE: All such triples are acceptable to <<rv64y_cap_description>> and <<rv32y_c
 . If the target <<pcc>> is (still) sealed, clear its {ctag}.
 +
 NOTE: This is not possible for <<rv32y_cap_description>>/<<rv64y_cap_description>>, given its two <<sec_cap_type>> values.
-=======
-<<<<<<< HEAD
 . HOOK 1: Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
 . If the target <<pcc>> is a <<sentry_cap>>, then unseal it.
 . If the target <<pcc>> is (still) sealed, clear its {ctag}.
-=======
-. Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
-+
-NOTE: All such triples are acceptable to <<rv64y_cap_description>> and <<rv32y_cap_description>>.
-. If the target <<pcc>> is a <<sentry_cap>> (for <<rv32y_cap_description>>/<<rv64y_cap_description>>: if it has <<sec_cap_type>> `1`), then unseal it.
-. If the target <<pcc>> is (still) sealed, clear its {ctag}.
-+
-NOTE: This is not possible for <<rv32y_cap_description>>/<<rv64y_cap_description>>, given its two <<sec_cap_type>> values.
->>>>>>> 791a4b70 (Minor proofreading improvements (#879))
->>>>>>> ca87a56d (Minor proofreading improvements (#879))
-=======
-. HOOK 1: Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
-. If the target <<pcc>> is a <<sentry_cap>>, then unseal it.
-. If the target <<pcc>> is (still) sealed, clear its {ctag}.
->>>>>>> 23464a0a (make JALR more readable)
 . If `{cd}≠{creg}0`, compute the return capability and install it to `{cd}`:
 .. add the width of this instruction to the current <<pcc>>, and
 .. HOOK 2: if the capability encoding defines <<sentry_cap>> <<sec_cap_type>> values for return pointers, then seal the return capability as specified.
@@ -86,7 +67,7 @@ The above procedure for <<JALR_CHERI>> defines three hooks for use by the capabi
 +
 [NOTE]
 =====
-When a sealed capability (i.e. a sentry) is passed as the input to <<JALR_CHERI>>, its address must have bit zero clear and the instruction must have a zero offset, or the target <<pcc>> will have its {ctag} set to zero, since updates to its address are interpreted with <<SCADDR>> semantics.
+When a sealed capability is passed as the input to <<JALR_CHERI>>, its address must have bit zero clear and the instruction must have a zero offset, or the target <<pcc>> will have its {ctag} set to zero, since updates to its address are interpreted with <<SCADDR>> semantics.
 =====
 NOTE: A future extension may raise an exception on the <<JALR_CHERI>> instruction itself if the target <<pcc>> will raise a {cheri_excep_name_pc} at the target.
 
