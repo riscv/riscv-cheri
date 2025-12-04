@@ -30,13 +30,6 @@ Operationally, copy `{cs1}` to the target <<pcc>> and then...
 . Compute the target <<pcc>> address in two steps, each using the semantics of the <<SCADDR>> instruction:
 .. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
 .. set bit zero of the target <<pcc>> address to zero.
-. Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
-+
-NOTE: All such triples are acceptable to <<rv64y_cap_description>> and <<rv32y_cap_description>>.
-. If the target <<pcc>> is a <<sentry_cap>> (for <<rv32y_cap_description>>/<<rv64y_cap_description>>: if it has <<sec_cap_type>> `1`), then unseal it.
-. If the target <<pcc>> is (still) sealed, clear its {ctag}.
-+
-NOTE: This is not possible for <<rv32y_cap_description>>/<<rv64y_cap_description>>, given its two <<sec_cap_type>> values.
 . HOOK 1: Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
 . If the target <<pcc>> is a <<sentry_cap>>, then unseal it.
 . If the target <<pcc>> is (still) sealed, clear its {ctag}.
@@ -48,10 +41,6 @@ NOTE: This is not possible for <<rv32y_cap_description>>/<<rv64y_cap_description
 . HOOK 3: Apply any capability encoding specified architectural semantics for the type of `{cs1}`.
 +
 The above procedure for <<JALR_CHERI>> defines three hooks for use by the capability encoding:
-
-1. Architectural interpretation of zero or more particular <<sec_cap_type>> values when a capability is passed as the input to <<JALR_CHERI>>.
-   These <<sec_cap_type>> values are, by definition, <<sentry_cap>> types.
-   The "architectural interpretation" for these capabilities necessarily includes unsealing as part of installation but may include other effects as well.
 +
 1. Conditional acceptability of the triple of the two _register selectors_ (`{cd}`, `{cs1}`) used in an instance of the instruction together with the <<sec_cap_type>> value of the capability in `{cs1}`.
 .. NOTE: CHERIoT uses register selectors to distinguish between _forward_ and _backward_ control transfers, and restricts which <<sec_cap_type>> values are acceptable in each case.
