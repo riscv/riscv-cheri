@@ -1151,12 +1151,18 @@ NOTE: A future extension may raise an exception on the branch instruction itself
 
 #Begin changed since last ARC review#
 
-The {rvy_sentry_insn_ext_name} extension adds the <<SENTRY>> instruction to allow sealing arbitrary capabilities
-at a <<sec_cap_type>> value specified by the capability encoding.
+The {rvy_sentry_insn_ext_name} extension:
 
-NOTE: In principle, despite the names, the type used by <<SENTRY>> might not be a <<sentry_cap>> type, though that is not true of the capabilities of <<rv32y_cap_description>>/<<rv64y_cap_description>>.
+. Defines the <<sec_cap_type>> of the sentry type to be type `1`.
+. Adds the <<SENTRY>> instruction to allow sealing capabilities as sentries with <<sec_cap_type>> of `1`.
 
-NOTE: Future extensions to {cheri_base_ext_name} (such as CHERIoT) support additional <<sec_cap_type>> values, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
+=== Interaction with <<JALR_CHERI>>
+
+{rvy_sentry_insn_ext_name} adds sealing and unsealing behavior to <<JALR_CHERI>>:
+
+. For HOOK 1: No action.
+. For HOOK 2: If the capability in {cs1} is sealed with a sentry of type `1`, then unseal before installing in <<pcc>>.
+. For HOOK 3: Seal the return capability as a sentry of type `1`.
 
 #End changed since last ARC review#
 
