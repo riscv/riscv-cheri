@@ -785,7 +785,8 @@ The following values for `uycfg` are defined:
 |0x2          | 0x0    | Reserved for CHERIoT's (RV32-only) encoding
 |===
 
-Future extensions that change capability encoding must define new values.
+NOTE: Future extensions that change capability encoding must define new values.
+
 Extensions that define encodings derived from <<rv32y_cap_description>>/<<rv64y_cap_description>>
 and are generally compatible with this encoding (e.g. they only assign meaning to previously reserved bits) must preserve the Base Encoding field (the bottom 8 bits) as `0x01`.
 
@@ -1138,7 +1139,9 @@ include::insns/jalr_32bit.adoc[]
 
 ==== Changes to BEQ, BNE
 
-For `beq` and `bne` only, if `rs1≥rs2` then the encoding is RESERVED. These encodings are redundant and may be used by future extensions.
+For `beq` and `bne` only, if `rs1≥rs2` then the encoding is RESERVED.
+
+NOTE: These encodings are redundant and may be used by future extensions.
 
 NOTE: Future behavior for these reserved branch encodings may include branching on {ctag} values only, or YLEN-bit compares.
 

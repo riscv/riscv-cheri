@@ -12,7 +12,9 @@ NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features fro
 The {cheri_priv_crg_ext} extension is enabled when the <<sstatusreg_pte,sstatus>>.CRGE bit is set.
 #End new since last ARC review#
 When enabled, the extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG, PTE.CD and <<sstatusreg_pte,sstatus>>.UCRG bits as described below.
-When the extension is disabled the PTE.CD, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG bits remain reserved and a future extension may define an alternative function; the PTE.CRW bit is interpreted as defined by <<section_priv_cheri_vmem>>.
+When the extension is disabled the PTE.CD, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG bits remain reserved.
+
+NOTE: A future extension may define an alternative function for these reserved states; the PTE.CRW bit is interpreted as defined by <<section_priv_cheri_vmem>>.
 
 NOTE: {cheri_priv_crg_ext} depends on Supervisor-Level ISA and {cheri_base64_ext_name} also being supported.
 
