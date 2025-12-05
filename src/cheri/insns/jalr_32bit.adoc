@@ -16,58 +16,33 @@ include::base_isa_extension.adoc[]
 
 #Begin changed since last ARC review#
 
+
 Description::
 Indirect jump to the target capability in `{cs1}` with an address offset.
++
+NOTE: The  description below contains three hooks for extending <<JALR_CHERI>> behavior, used by extensions to give a large degree of extensibility.
+ Unless an extension, such as <<section_rvy_sentry_insn_ext>>, is implemented which explicitly reference any of the hooks, then take no action for any of them.
 +
 Operationally, copy `{cs1}` to the target <<pcc>> and then...
 +
 . Compute the target <<pcc>> address in two steps, each using the semantics of the <<SCADDR>> instruction:
 .. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
 .. set bit zero of the target <<pcc>> address to zero.
-. Clear the {ctag} of the target <<pcc>> if the triple of its <<sec_cap_type>> value, `{cd}`, and `{cs1}` is not acceptable, as defined by the capability encoding.
-+
-NOTE: All such triples are acceptable to <<rv64y_cap_description>> and <<rv32y_cap_description>>.
-. If the target <<pcc>> is a <<sentry_cap>> (for <<rv32y_cap_description>>/<<rv64y_cap_description>>: if it has <<sec_cap_type>> `1`), then unseal it.
-. If the target <<pcc>> is (still) sealed, clear its {ctag}.
-+
-NOTE: This is not possible for <<rv32y_cap_description>>/<<rv64y_cap_description>>, given its two <<sec_cap_type>> values.
+. HOOK 1: Optionally clear the {ctag} of the target <<pcc>> depending on the <<sec_cap_type>> value and the numerical values of `{cd}` and `{cs1}`
+. Unseal the target <<pcc>> if it is a <<sentry_cap>>, or clear the {ctag} if it is any other sealed type.
 . If `{cd}≠{creg}0`, compute the return capability and install it to `{cd}`:
-.. add the width of this instruction to the current <<pcc>>, and
-.. if the capability encoding defines <<sentry_cap>> <<sec_cap_type>> values for return pointers, then seal the return capability as specified.
-+
-NOTE: <<rv32y_cap_description>>/<<rv64y_cap_description>> always seals return capabilities with <<sec_cap_type>> `1`.
+.. add the width of this instruction to the current <<pcc>> using the semantics of the <<SCADDR>> instructions, and
+.. HOOK 2: Optionally seal the return capability as a <<sentry_cap>> with a <<sec_cap_type>> defined by the implemented extensions.
+. HOOK 3: Optionally make other architectural state updates.
 . Jump to the target <<pcc>>.
 +
-NOTE: It is not possible for the target <<pcc>> to be sealed by the time it is jumped to.
-. Apply any capability encoding specified architectural semantics for the type of `{cs1}`.
-+
-NOTE: There are no such additional semantics defined by the capabilities of <<rv32y_cap_description>>/<<rv64y_cap_description>>. +
-
-+
-The above procedure for <<JALR_CHERI>> defines three hooks for use by the capability encoding:
-
-1. Architectural interpretation of zero or more particular <<sec_cap_type>> values when a capability is passed as the input to <<JALR_CHERI>>.
-   These <<sec_cap_type>> values are, by definition, <<sentry_cap>> types.
-   The "architectural interpretation" for these capabilities necessarily includes unsealing as part of installation but may include other effects as well.
-+
-NOTE: For example, CHERIoT offers sentries that update a hart's `mstatus.MIE` field when invoked.
-
-2. A subset of those <<sec_cap_type>> values for use by <<JALR_CHERI>> to seal the return capability installed in the link register.
-   A sentry return capability grants the right to return exactly to the instruction after the caller's call without relative offset.
-   Moreover, a sentry return capability does not grant the callee access to the memory pointed to by the caller's <<pcc>>.
-
-3. Conditional acceptability of the triple of the two _register selectors_ (`{cd}`, `{cs1}`) used in an instance of the instruction together with the <<sec_cap_type>> value of the capability in `{cs1}`.
-+
-NOTE: For <<rv32y_cap_description>>/<<rv64y_cap_description>>, there are no conditions and all such triples are acceptable;
-again the motivation is CHERIoT, which uses register selectors to distinguish between _forward_ and _backward_ control transfers, and restricts which <<sec_cap_type>> values are acceptable in each case.
-
 [NOTE]
 =====
 When a sealed capability is passed as the input to <<JALR_CHERI>>, its address must have bit zero clear and the instruction must have a zero offset, or the target <<pcc>> will have its {ctag} set to zero, since updates to its address are interpreted with <<SCADDR>> semantics.
 =====
-
 NOTE: A future extension may raise an exception on the <<JALR_CHERI>> instruction itself if the target <<pcc>> will raise a {cheri_excep_name_pc} at the target.
-
+NOTE: A sentry defines a secure function entry point, and as such the offset in the JALR instruction must be zero.
+ This is enforced by the use of <<SCADDR>> to add the offset which clears the tag of all sealed capabilities if the offset is non-zero.
 #End changed since last ARC review#
 
 Included in::
