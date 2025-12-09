@@ -51,7 +51,7 @@ and <<misa>>.{CRE}=1, CHERI can be enabled by VS-mode and
 VU-mode. When <<henvcfg_cheri>>.{CRE}=0, CHERI is disabled in VS-mode and
 VU-mode as described in xref:section_cheri_disable[xrefstyle=short].
 
-The reset value is 0.
+The {CRE} bit is reset to 0 for compatibility, so that non-CHERI aware code can run unmodified.
 
 [#hedeleg,reftext="hedeleg"]
 === Hypervisor Exception Delegation Register (hedeleg)
@@ -77,7 +77,6 @@ xref:mstatus_y[xrefstyle=short] for mstatus.UXL.
 === Virtual Supervisor Trap Vector Base Address Capability Register (vstvec)
 
 The `vstvec` register is extended to hold a capability.
-Its reset value is a <<root-rx-cap>> capability.
 
 .Virtual supervisor trap vector base address capability register
 include::img/vstveccreg.edn[]
@@ -90,8 +89,6 @@ virtual supervisor mode.
 
 The `vsscratch` register is extended to hold a capability.
 
-{TAG_RESET_SCSR}
-
 It is not WARL, all capability fields must be implemented.
 
 .Virtual supervisor scratch capability register
@@ -101,7 +98,6 @@ include::img/vsscratchcreg.edn[]
 === Virtual Supervisor Exception Program Counter Capability (vsepc)
 
 The `vsepc` register is extended to hold a capability.
-Its reset value is a <<root-rx-cap>> capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<vsepc_y>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 Additionally, the capability in <<vsepc_y>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction when V=1.
@@ -131,8 +127,6 @@ for <<stidc>>, so that instructions that normally read or modify
 <<stidc>> actually access <<vstidc>> instead.
 When V=0, <<vstidc>> does not directly affect the
 behavior of the machine.
-On reset the {ctag} of <<vstidc>> will be set to 0 and the remainder
-of the data is UNSPECIFIED.
 
 .Virtual supervisor thread identifier capability register
 include::img/vstidcreg.edn[]
