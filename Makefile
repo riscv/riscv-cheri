@@ -192,7 +192,8 @@ build-html: $(DOCS_HTML)
 build-epub: $(DOCS_EPUB)
 build-tags: $(DOCS_NORM_TAGS)
 build-norm-rules: $(NORM_RULES)
-build: build-pdf build-html build-epub build-tags build-norm-rules
+build: build-pdf build-html build-epub build-tags
+# TODO: build-norm-rules
 
 ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON) generate-cheri-tables
 
