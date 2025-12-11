@@ -14,15 +14,12 @@ include::wavedrom/rv64_lui-auipc.adoc[]
 
 include::base_isa_extension.adoc[]
 
-#Begin changed since last ARC review#
 
 Description::
 Form a 32-bit offset from the 20-bit immediate filling the lowest bits with zero;
 the number of places to shift is determined by the capability encoding's choice of
 the <<section_auipc_shift>> value (12, unless otherwise specified by the capability encoding format).
 Take the value of the AUIPC instruction's <<pcc>>, increment its address by the 32-bit offset using the semantics of the <<SCADDR>> instruction and write the result to `{cd}`.
-+
-#End changed since last ARC review#
 +
 include::rep_range_check.adoc[]
 
@@ -35,8 +32,6 @@ sail::execute[clause="AUIPC_capmode(_, _)",part=body,unindent]
 
 [#section_auipc_shift,reftext="AUIPC shift"]
 ==== The AUIPC Shift
-
-#Begin new since last ARC review#
 
 The RISC-V base integer ISA frequently splits signed 32-bit constants
 accross instructions as the addition of a signed 12-bit constant
@@ -95,5 +90,3 @@ NOTE: It is possible for the compiler to generate code that is compatible with a
 //
 // In practice, of course, the toolchain may be able to fold the last ADDYI into the counterpart/subsequent instructions, and may be able to reuse the intermediate result (from ADDY) just like existing toolchains.
 // (CHERIoT making its AUIPC shift 11 means that we can always guarantee that the first step is in bounds, and our toolchain picks the correspondingly different immediates to its AUIPC and counterpart instructions.)
-
-#End new since last ARC review#

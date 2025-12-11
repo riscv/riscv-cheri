@@ -57,8 +57,6 @@ improve their security.
 {cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to YLEN, each register also gains a one-bit {ctag} which is defined below.
 
-#Begin new since last ARC review#
-
 {cheri_base_ext_name} specifies the minimum required fields which the capability format must support, and their semantics.
 However, the precise in-memory representation of the capability metadata is not defined in this chapter since multiple legal (and generally software-compatible) encodings exist.
 On little-endian systems, the memory representation of capabilities always holds the address in the first `XLEN` bytes of memory followed by the metadata.
@@ -83,8 +81,6 @@ However, to allow compilers and/or software library authors to make assumptions 
 * `{rv32y_uni_base_name}_IMAF_Zicsr`, which refers to the encoding format defined in xref:rv32y_cap_description[xrefstyle=full] for {cheri_base32_ext_name}, or
 * `{rv64y_uni_base_name}_IMAF_Zicsr`, which refers to the encoding format defined in xref:rv64y_cap_description[xrefstyle=full] for {cheri_base64_ext_name}
 
-
-#End new since last ARC review#
 
 .CHERI Capability structure
 [#cap_structure]
@@ -197,8 +193,8 @@ Software can query the capability bounds:
 * The _base_ is returned by the <<GCBASE>> instruction.
 * The _length_ is returned by the <<GCLEN>> instruction.
 ** <<GCLEN>> saturates the _length_ to XLEN bits
-* #The _top_ is returned by the <<GCTOP>> instruction.#
-** #If {rvy_topr_insn_ext_name} is implemented, otherwise the _top_ can be calculated using a saturating addition of the <<GCBASE>> and <<GCLEN>> results.#
+* The _top_ is returned by the <<GCTOP>> instruction (if <<section_rvy_topr_insn_ext>> is implemented).
+** Otherwise the _top_ can be calculated using a saturating addition of the <<GCBASE>> and <<GCLEN>> results.
 
 ==== Deriving New Bounds
 
@@ -277,8 +273,6 @@ architecture: normal bounds check rules should be followed.
 [#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
 
-#Begin changed since last ARC review#
-
 This metadata value indicates the type of the capability.
 The sole type defined in the {cheri_base_ext_name} base ISA is `0`.
 The type determines which operations the capability authorizes;
@@ -293,8 +287,6 @@ and the space of capability types.
 The mapping must be able to encode type `0` but has few other requirements.
 It need not, for example, be interpreted as an (un)signed binary rendering of CT values.
 
-#End changed since last ARC review#
-
 [#unsealed_cap,reftext="unsealed capability]
 Unsealed capabilities::
 When `CT=0`, the capability authorizes access to a region of memory as defined by the permissions and bounds.
@@ -304,8 +296,6 @@ Sealed capabilities::
 Capabilities with `CT≠0` are sealed against modification and cannot be dereferenced to access memory.
 Instructions that operate on capabilities will produce a result with a cleared {ctag} if the source capability is sealed and the operation would alter its address, bounds, or permissions.
 Extensions that augment capability metadata must describe their interaction(s) with sealed capabilities.
-
-#Begin new since last ARC review#
 
 Given a capability with `CT=0`,
 deriving a capability with `CT≠0` is termed "sealing"
@@ -346,8 +336,6 @@ Capabilities sealed with such a type are dubbed "sentries" (a portmanteau of "se
 <<JALR_CHERI>> may also _seal_ the return pointers it generates with encoding-specified types.
 
 NOTE: Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
-
-#End new since last ARC review#
 
 NOTE: In addition to using sealed capabilities as sentries for secure entry points, sealed capabilities can also be useful to software as secure software tokens.
  <<YSUNSEAL>> can be used to convert such a token back to an unsealed capability.
@@ -510,9 +498,6 @@ Extensions introducing new permissions may require these to be provided by root 
 A capability with all-zero metadata, a zero {ctag}, and an address of zero is referred to as the _NULL_ capability.
 This capability grants no permissions and any dereference results in raising an exception.
 
-
-#Begin new since last ARC review#
-
 [#sec_cap_encoding_formats]
 === CHERI encoding formats
 CHERI implementations make trade-offs in their "encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
@@ -589,8 +574,6 @@ However, {cheri_base32_ext_name} has insufficient bits available to enable featu
 ifndef::cheri_ratification_v1_only[]
 NOTE: RV32YE (16-register) implementations are recommended to use one of these CHERIoT encodings.
 endif::[]
-
-#End new since last ARC review#
 
 
 [#section_cap_integrity]
@@ -1152,8 +1135,6 @@ NOTE: A future extension may raise an exception on the branch instruction itself
 [#section_rvy_sentry_insn_ext,reftext="{rvy_sentry_insn_ext_name}"]
 == "{rvy_sentry_insn_ext_name}" Extension for Creation of Sentry Capabilities
 
-#Begin changed since last ARC review#
-
 The {rvy_sentry_insn_ext_name} extension:
 
 . Defines one <<sentry_cap>> type, the unrestricted sentry type with a <<sec_cap_type>> of `1`.
@@ -1167,8 +1148,6 @@ NOTE: A future extension may define more restrictive _forward-only_ and _backwar
 
 . For HOOK 2: Seal the return capability as a sentry.
 
-#End changed since last ARC review#
-
 === Added instructions
 
 include::insns/sentry_32bit.adoc[]
@@ -1176,15 +1155,11 @@ include::insns/sentry_32bit.adoc[]
 [#section_rvy_bld_insn_ext,reftext="{rvy_bld_insn_ext_name}"]
 == "{rvy_bld_insn_ext_name}" Extension for Building Capabilities
 
-#Begin changed since last ARC review#
-
 The {rvy_bld_insn_ext_name} extension adds the <<CBLD>> instruction to capabilities with a superset authority to validate (i.e. set the {ctag}) of a capability with lesser authority.
 
 NOTE: This instruction can be used to speed up operations such as paging in memory after swap.
 
 NOTE: CHERIoT implementations do not use {CBLD}, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
-
-#End changed since last ARC review#
 
 === Added instructions
 
@@ -1193,12 +1168,8 @@ include::insns/cbld_32bit.adoc[]
 [#section_rvy_topr_insn_ext,reftext="{rvy_topr_insn_ext_name}"]
 == "{rvy_topr_insn_ext_name}" Extension for Extracting the Top Bound
 
-#Begin changed since last ARC review#
-
 The {rvy_topr_insn_ext_name} extension adds the <<GCTOP>> instruction to return the top bound of a capability.
 This offers a performance improvement over the software sequence of a saturating add of the results of <<GCBASE>> and <<GCLEN>>, and is useful fo rmemory allacators.
-
-#End changed since last ARC review#
 
 === Added instructions
 
