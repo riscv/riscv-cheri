@@ -167,7 +167,7 @@ This bounds encoding scheme is based upon cite:[woodruff2019cheri].
 
 The bounds encode the base and top addresses that constrain memory accesses.
 The capability can be used to access any memory location A in the range base
-&#8804; A < top. The bounds are encoded in a compressed format, so it is not
+{le} A < top. The bounds are encoded in a compressed format, so it is not
 possible to encode any arbitrary combination of base and top addresses. An
 invalid capability with {ctag} cleared is produced when attempting to construct a
 capability that is not _representable_ because its bounds cannot be correctly
@@ -356,7 +356,7 @@ while still allowing the bounds to be correctly decoded.
 ===== Top bound MSB correction
 
 A capability has _infinite_ bounds if its bounds cover the entire address space
-such that the base address _b_=0 and the top address _t_&#8805;2^XLEN^,
+such that the base address _b_=0 and the top address _t_{ge}2^XLEN^,
 i.e., _t_ is an XLEN + 1 bit value. However, _b_ is an
 XLEN-bit value and the size mismatch introduces additional complications
 when decoding, so the following condition is required to correct _t_ for
@@ -375,7 +375,7 @@ capability is larger than E.
 
 NOTE: A capability has infinite bounds if E=CAP_MAX_E and it is not
 malformed (see xref:section_cap_malformed[xrefstyle=short]); this check is
-equivalent to _b_=0 and _t_&#8805;2^XLEN^.
+equivalent to _b_=0 and _t_{ge}2^XLEN^.
 
 [#section_cap_malformed]
 ===== Malformed Capability Bounds
