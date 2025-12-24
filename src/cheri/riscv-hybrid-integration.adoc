@@ -36,6 +36,9 @@ All <<rvy_insn_table>> instructions, and associated CSRs, are available in addit
 The authorizing capability for memory access is <<ddc>> (as opposed to `rs1`).
 That is, all memory accesses, including <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CHERI>>, are implicitly authorized by <<ddc>> and only the memory address is sourced from `rs1`.
 +
+NOTE: It is recommended to authorize the prefetched address of <<PREFETCH_I_CHERI>> against the <<pcc>>.
+ High performance implementations may not have access to the <<pcc>> available to perform this check, as <<pcc>> bounds are not otherwise required in the load/store unit.
++
 NOTE: <<ddc>> is also used to authorize {cheri_base_ext_name} specific memory instructions such as <<LOAD_CAP>> and <<STORE_CAP>>.
 +
 All CSR accesses to YLEN CSRs only access the lower XLEN bits, and, if writing, update the CSR using the semantics of the <<SCADDR>> instruction (see xref:zicsr-section-default[xrefstyle=short]).
