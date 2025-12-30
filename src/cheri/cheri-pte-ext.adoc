@@ -139,17 +139,20 @@ defines an alternative function.
 | 0      | 0      | 0                                       | X     | Clear loaded tag
 | 0      | 0      | 1                                       | X     | Reserved
 | 0      | 1      | X                                       | X     | Reserved
-| 1      | X      | {ne} <<sstatusreg_pte,sstatus>>.UCRG | 1     | {cheri_excep_name_pte_ld}, or {cheri_excep_name_pte_ld} if tag is set for _{cheri_priv_crg_load_tag_ext}_^1^
+| 1      | X      | {ne} <<sstatusreg_pte,sstatus>>.UCRG    | 1     | {cheri_excep_name_pte_ld}, or {cheri_excep_name_pte_ld} if tag is set for _{cheri_priv_crg_load_tag_ext}_^1^
 | 1      | X      | = <<sstatusreg_pte,sstatus>>.UCRG       | 1     | Normal operation
 | 1      | X      | X                                       | 0     | Normal operation^2^
 |===
 
-^1^ The choice here is whether to take data dependent exceptions on load data
- for loads or atomic operations. The default is to take the trap without
- checking the value of the loaded {ctag}. Taking a trap when the {ctag} is not
- set will introduce additional traps during revocation sweeps.
+^1^ The choice here is whether to take data dependent exceptions on loaded capability data
+ for loads or atomic operations to detect dangling pointers which
+ point to quarantined memory.
+ The default is to take the trap without checking the value of the loaded {ctag} if it is possible for the tag to be set.
+ For example, if the authorizing capability is missing <<c_perm>> then the loaded {ctag} cannot be set, and so there is no trap.
+ Taking a trap when the {ctag} is not set in memory
+ will introduce additional unnecessary traps during revocation sweeps.
  If _{cheri_priv_crg_load_tag_ext}_ is implemented then the trap is only taken
- if the loaded {ctag} is set, to reduce software overhead from revocation sweeps.
+ if the loaded {ctag} is actually set, to reduce software overhead from revocation sweeps.
  Checking the loaded tag affects the exception priority, see <<exception-priority>>.
 
 NOTE: _{cheri_priv_crg_load_tag_ext}_ is an optimization for software, and as
