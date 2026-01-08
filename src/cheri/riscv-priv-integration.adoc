@@ -203,15 +203,13 @@ Load/store/AMO access fault
 | .>|4,6 .<|If not higher priority: +
 Load/store/AMO address misaligned
 .>|_Lowest_ .>|*{cheri_excep_cause_pte_ld}* .<|*If not higher priority: +
-{cheri_excep_name_pte_ld}^3^*
+{cheri_excep_name_pte_ld}^2^*
 |===
 
 ^1^ {pcc} bounds are checked against all bytes of fetched instructions.
  If the instructions could not be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
-^2^ The higher priority {cheri_excep_name_pte_ld} covers capability loads or atomics where the loaded {ctag} _is not_ checked ({cheri_priv_crg_ext} is implemented) .
-
-^3^ The lower priority {cheri_excep_name_pte_ld} covers capability loads or atomics where the loaded {ctag} _is_ checked ({cheri_priv_crg_load_tag_ext} is implemented).
+^2^ The priority of {cheri_excep_name_pte_ld} is implementation defined to allow the implementation to choose whether to check the loaded {ctag} or not when taking the exception. See <<section_cheri_priv_crg_ext>>.
 
 NOTE: The full details of the CHERI exceptions are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
