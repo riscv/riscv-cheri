@@ -94,7 +94,8 @@ register keeps track of the processor's current operating state.
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 27, name: 'WPRI'},
+  {bits: 26, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
@@ -120,9 +121,6 @@ to trapping into supervisor mode. When a trap is taken into supervisor
 mode, SPIE is set to SIE, and SIE is set to 0. When an SRET instruction
 is executed, SIE is set to SPIE, then SPIE is set to 1.
 
-The UCRG bit is defined by the <<section_cheri_priv_crg_ext>> extension, for the
-{cheri_base_ext_name} base architecture.
-
 The `sstatus` register is a subset of the `mstatus` register.
 
 [NOTE]
@@ -131,6 +129,10 @@ In a straightforward implementation, reading or writing any field in
 `sstatus` is equivalent to reading or writing the homonymous field in
 `mstatus`.
 ====
+
+===== {cheri_base64_ext_name} in `status` Register
+
+The definitions of the UCRG and CRGE fields are furnished by the {cheri_base64_ext_name} only <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> extension.
 
 ===== Base ISA Control in `sstatus` Register
 
@@ -1627,8 +1629,10 @@ type.
 * Perform the following steps atomically:
 ** Compare _pte_ to the value of the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the values match, set _pte_._a_ to 1 and, if the
-original memory access is a store, also set _pte_._d_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
+original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store and _pte_._crw_ is set^1^, also set _pte_._cd_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the comparison fails, return to step 2.
+
+^1^ capability store dirty tracking is enabled on {cheri_base64_ext_name} if {cheri_priv_crg_ext} is implemented.
 
 . The translation is successful. The translated physical address is
 given as follows:

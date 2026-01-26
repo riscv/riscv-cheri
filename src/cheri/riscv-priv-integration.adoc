@@ -139,8 +139,7 @@ endif::[]
 [#mstatus_y, reftext="mstatus ({cheri_base_ext_name})"]
 ==== Machine Status Registers (mstatus and mstatush)
 
-The *mstatus* and *mstatush* registers operate as described in
-<<mstatus_y>> with two restrictions:
+The *mstatus* and *mstatush* registers have two additional restrictions:
 
 * The <<xlen-control, MXL, SXL and UXL>> fields that control the
 value of XLEN for S-mode and U-mode must be read-only and equal to MXL in {cheri_base_ext_name} implementations.
@@ -438,7 +437,7 @@ There are three levels of support:
 [#cheri_pmas]
 [width="100%",options=header]
 |=========================================================================================
-| PMA                          | Load Behavior    | Store Behavior                      | Comment
+| PMA                        | Load Behavior    | Store Behavior                      | Comment
 | _CHERI {ctag_title}_       | Load {ctag}      | Store {ctag}                        | Tagged memory supporting {ctag}s
 | _CHERI {ctag_title} Strip_ | Load zero {ctag} | Ignore stored {ctag}                | No support for {ctag}s, ignore them
 | _CHERI {ctag_title} Fault_ | Load zero {ctag} | Store/AMO Access Fault on {ctag}^1^ | No support for {ctag}s, trap on storing one
@@ -483,13 +482,6 @@ registers and instructions (hereafter referred to as _disabling CHERI_).
 NOTE: When _CHERI is disabled_ for a specific privilege level, <<pcc>> and <<ddc>> bounds are _still_ enforced.
 
 The {cheri_default_ext_name} extension makes the {CRE} bit of <<misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
-
-//future extensions - currently they must match
-//CHERI is disabled if
-//
-//* XLEN in the current mode is less than MXLEN, or
-//* the endianness in the current mode is not the reset value of <<mstatus_y>>.MBE, or
-//* the effective CHERI-enable for the current privilege is 0.
 
 The effective CHERI-enable for the current privilege is:
 
@@ -577,7 +569,7 @@ Virtual memory support for {cheri_base64_ext_name} requires at least one additio
 
 NOTE: _Sv32_ does not have any spare PTE bits, and so this bit does not exist for RV32.
 
-IMPORTANT: Any {cheri_base64_ext_name} hart that supports Sv39 must also implement the PTE.CRW bit.
+IMPORTANT: Any {cheri_base64_ext_name} hart that supports Sv39 must also implement the _pte.crw_ bit.
 
 [#limit_cap_prop]
 ==== Limiting Capability Propagation
@@ -603,13 +595,9 @@ CHERI adds the concept of _CHERI page faults_. They are split into:
 
 They are prioritized against other fault types as shown in <<exception-priority-cheri>>.
 
-The PTE.CRW bit allows {cheri_excep_name_pte_st}s to be raised.
+The _pte.crw_ bit allows {cheri_excep_name_pte_st}s to be raised.
 
-CHERI harts that implement Sv39 must also implement a revocation scheme to prevent use-after-free attacks.
-
-The current revocation scheme (<<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>) also allows {cheri_excep_name_pte_ld}s to be raised.
-
-NOTE: A future extension may define an improved scheme.
+NOTE: {cheri_excep_name_pte_ld} faults are at present raised only if <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> and Svade are implemented.
 
 ==== Extending the Page Table Entry Format
 
@@ -635,28 +623,18 @@ When the CRW bit is set, capabilities are written as usual.
 
 If the CRW bit is clear then:
 
-* When a capability load or AMO instruction is executed, the {ctag} bit of the
-loaded capability is cleared before it is written to the destination register.
-* A <<cheri_pte_fault,_{cheri_excep_name_pte_st}_>> exception is raised when a capability store or AMO instruction is executed and the {ctag} bit of the to-be-stored capability is set.
+* When a capability load or AMO instruction is executed, the {ctag} of the loaded capability is cleared before it is written to the destination register.
+* When a capability store or AMO instruction is executed, and the to-be-stored {ctag} is set, a <<cheri_pte_fault,_{cheri_excep_name_pte_st}_>> exception is raised.
 
 [[pte_crw_summary]]
-.Summary of memory access behavior depending on CRW in the PTEs
+.Summary of memory access behavior depending on _pte.crw_.
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|PTE.CRW  |Instruction          | Behavior
-| 0       |Capability load      | Set loaded {ctag} to zero
-| 0       |Capability store/AMO | Raise a _{cheri_excep_name_pte_st}_ if the {ctag} of the to-be-stored capability is set
+|_pte.crw_|Instruction          | Behavior
+| 0       |Capability load/AMO  | Set loaded {ctag} to zero
+| 0       |Capability store/AMO | Raise a _{cheri_excep_name_pte_st}_ if the to-be-stored {ctag} is set
 | 1       |Any                  | Normal operation.
 |===
-
-[NOTE]
-====
-The {ctag} bit of the stored capability is checked _after_ it is potentially cleared due to missing permissions.
-Therefore, the behavior in this section isn't relevant if:
-
-* The authorizing capability doesn't have <<c_perm>>.
-* Any extension-specific mediation has already cleared the {ctag} of the to-be-stored capability.
-====
 
 [#section_invalid_addr_conv,reftext="Invalid address conversion"]
 === Invalid Address Handling
