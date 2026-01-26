@@ -89,7 +89,7 @@ NOTE: Checking the value of the {ctag} requires taking data dependent exceptions
  Implementations which already take synchronous traps on loaded data, such as ECC faults, should implement _{cheri_priv_crg_load_tag_ext}_.
  Both choices can be handled correctly by the same software, but {cheri_priv_crg_load_tag_ext} is expected to result in fewer spurious traps.
 
-If the _{cheri_priv_crg_load_tag_ext}_ extension is implemented, implementations are allowed to conservatively fault under certain conditions even if the {ctag} is not set.
+Even if the _{cheri_priv_crg_load_tag_ext}_ extension is implemented, implementations are still allowed to conservatively fault in some situations in which the {ctag} is not set.
 
 [[pte_crw_crg_load_summary]]
 .Summary of capability load _pte.crw_ and _pte.crg_ behavior in the PTEs
@@ -122,10 +122,8 @@ Capability dirty tracking behavior is enabled when, in addition to the rules abo
 Two schemes for this are permitted, and the scheme in use is determined by whether the _Svade_ or _Svadu_ extensions are enabled.
 
 * For _Svade_, take a {cheri_excep_name_pte_st}.
-** This allows software interpretation of this state.
 * For _Svadu_, do a hardware update which sets _pte.cd=1_, following the same rules as setting _pte.a_/_pte.d_.
-** When setting _pte.cd_, the hardware update also sets _pte.a_ and _pte.d_.
-** _pte.cd_ cannot be set speculatively, following the same rule as _pte.d_.
+** When setting _pte.cd_, the hardware update also necessarily sets (or leaves set) _pte.a_ and _pte.d_.
 
 [[pte_crw_cd_store_summary]]
 .Summary of capability store _pte.crw_ and _pte.cd_ behavior in the PTEs
@@ -146,8 +144,8 @@ NOTE: Capability dirty tracking _always_ checks the {ctag} on stored capabilitie
 ==== Minimum support
 
 The minimum level of PTE support is to set _pte.crw_ and _pte.cd_ to 1 in all PTEs intended for storing
-capabilities (i.e., private anonymous mappings) and leave
-`sstatus.UCRG` and _pte.crg_ in all PTEs set to 0, which will allow
+capabilities (e.g., private anonymous mappings) and leave
+`sstatus.UCRG` on all harts and _pte.crg_ in all PTEs set to 0, which will allow
 capabilities to be loaded and stored successfully.
 
 [#xstatus_pte]
