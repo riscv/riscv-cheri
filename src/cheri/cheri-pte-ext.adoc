@@ -5,13 +5,13 @@ NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features fro
 
 The {cheri_priv_crg_ext} extension is enabled when the `sstatus.CRGE` bit is set.
 
-When enabled, the extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from userspace pages.
-Such a facility has been shown to be a useful primitive for system-level implementation of certain forms of capability revocation which, in turn, allow userspace heap allocator software to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
+When enabled, the extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from userspace pages, and to track capabilities stores to pages.
+Such facilities have been shown to provide useful primitives for system-level implementation of certain forms of capability revocation which, in turn, allow userspace heap allocator software to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
 
-It achieves this by adding by adding the _pte.crg_, _pte.cd_ and `sstatus.UCRG` bits as described below`.
-When the extension is disabled the _pte.cd_, _pte.crg_ and `sstatus.UCRG` bits remain reserved.
+It achieves this by adding by adding the _pte.crg_, _pte.cd_ and `Xstatus.UCRG` bits as described below.
+When the extension is disabled the _pte.cd_, _pte.crg_ and `Xstatus.UCRG` bits remain reserved.
 
-NOTE: {cheri_priv_crg_ext} depends on Supervisor-Level ISA and {cheri_base64_ext_name} also being supported.
+NOTE: {cheri_priv_crg_ext} depends on Sv39 and {cheri_base64_ext_name} also being supported.
 
 NOTE: {cheri_priv_crg_ext} is not a mandatory part of the {cheri_base64_ext_name} Privileged ISA, as a future version of this specification may specify an improved method.
 
@@ -53,7 +53,7 @@ the virtual page is permitted.
 
 When `sstatus.CRGE` is clear, the _pte.cd_ and _pte.crg_ bits are reserved and must not be set in any valid PTEs, and the existing rules from <<section_priv_cheri_vmem>> are followed.
 
-When _pte.crw_ and `sstatus.CRGE` are both set then {cheri_priv_crg_ext} adds two primitives for use by software which are enabled when all of the following are true.
+When all of the following are true, {cheri_priv_crg_ext} adds two primitives for use by software:
 
 . `sstatus.CRGE` is set.
 . _pte.crw_ is set.
@@ -63,12 +63,12 @@ When _pte.crw_ and `sstatus.CRGE` are both set then {cheri_priv_crg_ext} adds tw
 ==== {cheri_excep_name_pte_ld}s
 
 
-When _pte.crw_ is set, the local _pte.crg_ bit can be used to trap on capability loads or AMOs when it does not match the value of `sstatus.UCRG`.
+When _pte.crw_ is set, _pte.crg_ can be used to trap on capability loads or AMOs when it does not match the value of `sstatus.UCRG`.
 
 The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the rules above, all of the following are true:
 
 . A capability load or AMO is executed.
-. _pte.crg_ bit does not equal `sstatus.UCRG`.
+. _pte.crg_ does not equal `sstatus.UCRG`.
 . _pte.u_ is set.
 . Any other platform specific rules have not forced the loaded {ctag} to be clear.
 
@@ -79,7 +79,7 @@ There is an additional rule if _{cheri_priv_crg_load_tag_ext}_ is implemented:
 [start=5]
 . The loaded {ctag} is set.
 
-NOTE: Checking the value of the {ctag} requires taking data dependent exceptions on load data for loads or AMOs, and also affects the exception priority, see xref:exception-priority[xrefstyle=short].
+NOTE: Checking the value of the {ctag} requires taking data dependent exceptions on loaded data for loads or AMOs, and also affects the exception priority, see xref:exception-priority[xrefstyle=short].
  Ideally all implementations would trap precisely (taking the {ctag} into account) rather than conservatively (on every capability access).
  However, this information may not be available in all implementations, and therefore both choices are permitted.
  This can be communicated to software by showing presence of the _{cheri_priv_crg_load_tag_ext}_ extension which implies {cheri_priv_crg_ext}.
@@ -114,13 +114,13 @@ virtual page since the last time the _pte.cd_ bit was cleared.
 Capability dirty tracking behavior is enabled when, in addition to the rules above, all of the following are true:
 
 . A capability store or AMO instruction is executed.
-. The {ctag} bit of the capability being stored to memory is set.
-. The _pte.cd_ bit is clear.
+. The to-be-stored {ctag} is set.
+. _pte.cd_ is clear.
 
 Two schemes for this are permitted, and the scheme in use is determined by whether the _Svade_ or _Svadu_ extensions are enabled.
 
 * For _Svade_, take a {cheri_excep_name_pte_st}.
-* For _Svadu_, do a hardware update which sets _pte.cd=1_, following the same rules as setting _pte.a_/_pte.d_.
+* For _Svadu_, do a hardware update which sets _pte.cd=1_, following the same rules as setting _pte.d_.
 ** When setting _pte.cd_, the hardware update also necessarily sets (or leaves set) _pte.a_ and _pte.d_.
 
 [[pte_crw_cd_store_summary]]
@@ -136,8 +136,11 @@ Two schemes for this are permitted, and the scheme in use is determined by wheth
 |===
 
 NOTE: Because the state of _pte.cd=1_ and _pte.crw=0_ is illegal, it is possible for the update of _pte.cd_ to fail if another thread has cleared _pte.crw_.
+ifndef::cheri_standalone_spec[]
+ This follows the standard rules in xref:sv32algorithm[xrefstyle=short].
+endif::[]
 
-Capability dirty tracking _always_ checks the {ctag} on stored capabilities when determining whether to raise the {cheri_excep_cause_pte_st}.
+Capability dirty tracking _always_ checks the {ctag} on stored capabilities when determining whether to raise the {cheri_excep_name_pte_st}.
 
 NOTE: Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_priv_crg_load_tag_ext}, which is why checking the loaded {ctag} is optional behavior.
  However, a future extension may reduce the burden further by removing the check on the stored {ctag}.
@@ -154,7 +157,7 @@ capabilities to be loaded and stored successfully.
 [#xstatus_pte]
 === UCRG, CRGE CSR fields
 
-The `mstatus`, `sstatus` and `vsstatus` CSRs are extended to include the new Capability Read Generation (CRG) and Capability Read Generation Enable (CRGE) bits.
+The `mstatus`, `sstatus` and `vsstatus` CSRs include the new Userspace Capability Read Generation (UCRG) and Capability Read Generation Enable (CRGE) bits.
 
 [#sstatus_crge_note]
 [NOTE]
