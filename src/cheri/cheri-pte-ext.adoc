@@ -139,7 +139,10 @@ Two schemes for this are permitted, and the scheme in use is determined by wheth
 
 NOTE: Because the state of _pte.cd=1_ and _pte.crw=0_ is illegal, it is possible for the update of _pte.cd_ to fail if another thread has cleared _pte.crw_.
 
-NOTE: Capability dirty tracking _always_ checks the {ctag} on stored capabilities, it is not optional as the value of the {ctag} is always available to the microarchitecture.
+Capability dirty tracking _always_ checks the {ctag} on stored capabilities when determining whether to raise the {cheri_excep_cause_pte_st}.
+
+NOTE: Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_priv_crg_load_tag_ext}, which is why checking the loaded {ctag} is optional behavior.
+ However, a future extension may reduce the burden further by removing the check on the stored {ctag}.
 
 ==== Minimum support
 
