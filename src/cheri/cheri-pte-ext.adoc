@@ -60,11 +60,8 @@ When _pte.crw_ and `sstatus.CRGE` are both set then {cheri_priv_crg_ext} adds tw
 . The authorizing capability has <<c_perm>>.
 . The PMA is set to (_CHERI {ctag_title}_).
 
-NOTE: These primitives may be used to implement the load-barrier and store-barrier primitives from cite:[cornucopia-reloaded].
-
 ==== {cheri_excep_name_pte_ld}s
 
-NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
 When _pte.crw_ is set, the local _pte.crg_ bit can be used to trap on capability loads or AMOs when it does not match the value of `sstatus.UCRG`.
 
@@ -106,9 +103,10 @@ Even if the _{cheri_priv_crg_load_tag_ext}_ extension is implemented, implementa
 
 ^1^ A future version of this specification may check an SCRG bit in `sstatus` in this case for trapping on kernel pages.
 
+NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
+
 ==== Capability Dirty Tracking
 
-NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
 
 When _pte.crw_ is set, the _pte.cd_ bit indicates that a capability was stored to the
 virtual page since the last time the _pte.cd_ bit was cleared.
@@ -143,6 +141,8 @@ Capability dirty tracking _always_ checks the {ctag} on stored capabilities when
 
 NOTE: Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_priv_crg_load_tag_ext}, which is why checking the loaded {ctag} is optional behavior.
  However, a future extension may reduce the burden further by removing the check on the stored {ctag}.
+
+NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
 
 ==== Minimum support
 
