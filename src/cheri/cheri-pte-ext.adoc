@@ -142,6 +142,9 @@ ifndef::cheri_standalone_spec[]
  This follows the standard rules in xref:sv32algorithm[xrefstyle=short].
 endif::[]
 
+NOTE: For non-capability data, it is possible for a virtual page to be read-only but also dirty (_pte.w=0, pte.d=1_).
+ The analogous page state is not permitted for capability data as _pte.crw, pte.cd=1_ is _reserved_.
+
 Capability dirty tracking _always_ checks the {ctag} on stored capabilities when determining whether to raise the {cheri_excep_name_pte_st}.
 
 NOTE: Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_priv_crg_load_tag_ext}, which is why checking the loaded {ctag} is optional behavior.
