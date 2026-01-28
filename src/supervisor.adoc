@@ -1633,7 +1633,7 @@ type.
 * Perform the following steps atomically:
 ** Compare _pte_ to the value of the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the values match, set _pte_._a_ to 1 and, if the
-original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store and _pte_._crw_ is set, also set _pte_._cd_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
+original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store with the to-be-stored {ctag} set. and _pte_._crw_ is set, also set _pte_._cd_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the comparison fails, return to step 2.
 
 ^1^ capability store dirty tracking is enabled on {cheri_base64_ext_name} if {cheri_priv_crg_ext} is implemented.
