@@ -1,46 +1,21 @@
 [#section_cheri_priv_crg_ext]
 == "{cheri_priv_crg_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
 
-ifdef::cheri_standalone_spec[]
-WARNING: This chapter will appear in the priv spec. Exact location TBD.
-endif::[]
-
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
+The {cheri_priv_crg_ext} extension is enabled when the `sstatus.CRGE` bit is set.
 
-The {cheri_priv_crg_ext} extension is enabled when the <<sstatusreg_pte,sstatus>>.CRGE bit is set.
-When enabled, the extension adds the ability to perform capability revocation of user mode pages (see <<cap_revocation>>) by adding the PTE.CRG, PTE.CD and <<sstatusreg_pte,sstatus>>.UCRG bits as described below.
-When the extension is disabled the PTE.CD, PTE.CRG and <<sstatusreg_pte,sstatus>>.UCRG bits remain reserved.
+When enabled, the extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from userspace pages, and to track stores of capabilities to pages.
+Such facilities have been shown to provide useful primitives for system-level implementation of certain forms of capability revocation which, in turn, allow userspace heap allocator software to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
 
-NOTE: A future extension may define an alternative function for these reserved states; the PTE.CRW bit is interpreted as defined by <<section_priv_cheri_vmem>>.
+It achieves this by adding by adding the _pte.crg_, _pte.cd_ and `Xstatus.UCRG` bits as described below.
+When the extension is disabled the _pte.cd_, _pte.crg_ and `Xstatus.UCRG` bits remain reserved.
 
-NOTE: {cheri_priv_crg_ext} depends on Supervisor-Level ISA and {cheri_base64_ext_name} also being supported.
+NOTE: {cheri_priv_crg_ext} depends on Sv39 and {cheri_base64_ext_name} also being supported.
 
-NOTE: {cheri_priv_crg_ext} is strongly recommended but not mandatory as a future version of this specification may specify an improved method.
-
-NOTE: A future version of this specification may include kernel revocation which may require an <<sstatusreg_pte,sstatus>>.SCRG bit.
-
-The minimum level of PTE support is to set CRW and CD to 1 in all PTEs intended for storing
-capabilities (i.e., private anonymous mappings) and leave
-<<sstatusreg_pte,sstatus>>.UCRG and CRG in all PTEs set to 0, which will allow
-capabilities with their {ctag}s set to be loaded and stored successfully.
-
-NOTE: When {cheri_priv_crg_ext} is enabled (<<sstatusreg_pte,sstatus>>.CRGE is set), the semantics of PTE.CRW bit are redefined relative to the definition in <<section_priv_cheri_vmem>>.
-The ability to load and store capabilities in the page depends on all of the PTE.CRW, PTE.CD, PTE.CRG bits, which effectively become a single 3-bit field controlling the behavior.
-Therefore, when PTE.CRW is clear, it is not required that future extensions to {cheri_priv_crg_ext}, such as for kernel revocation, cannot store capabilities to a page.
+NOTE: {cheri_priv_crg_ext} is not a mandatory part of the {cheri_base64_ext_name} Privileged ISA, as a future extension may specify an alternative mechanism giving improved software efficiency.
 
 NOTE: Hardware-initiated memory accesses from the page-table walker are not checked by a capability.
-
-[#cap_revocation]
-=== Capability Revocation
-
-Revocation is the process of clearing the {ctag} of capabilities that point to freed memory, to prevent them from being dereferenced and thereby enforcing _temporal memory safety_.
-cite:[cornucopia-reloaded] details algorithms for preventing use-after-free in virtual memory, and non-virtual memory based systems.
-
-{cheri_priv_crg_ext} adds capability revocation for user pages only.
-It uses the <<sstatusreg_pte,sstatus>>.UCRG and PTE.CRG bits to control the revocation epoch, which is used to provide a load barrier to detect when loading from a page which needs sweeping.
-This is indicated by the generation in the PTE mismatching the global one in <<sstatusreg_pte,sstatus>>.UCRG.
-Stored {ctag}s to clean pages are tracked using PTE.CD to record which virtual memory pages contain dirty capabilities, and so will need to be swept.
 
 [#section_extending_pte]
 === Extending the Page Table Entry Format
@@ -71,141 +46,143 @@ include::img/sv48pte_crg.edn[]
 [#sv57pte_crg]
 include::img/sv57pte_crg.edn[]
 
-NOTE: The behavior in this section isn't relevant if:
+=== Software Primitives
 
-. The authorizing capability doesn't have <<c_perm>>, for loads, stores and AMO.
-. Any extension-specific mediation has already cleared the stored tag, for stores and AMOs.
+The _pte.crw_ bit (defined by <<section_priv_cheri_vmem>>) continues to indicate whether loading or storing capabilities to
+the virtual page is permitted.
 
-The CRW bit (defined by {cheri_priv_vmem_ext}) indicates whether reading or writing capabilities with the {ctag} set to
-the virtual page is permitted. When the CRW bit is set, capabilities are written
-as usual, and capability reads are controlled by the CRG bit.
+When `sstatus.CRGE` is clear, the _pte.cd_ and _pte.crg_ bits are reserved and must not be set in any valid PTEs, and the existing rules from <<section_priv_cheri_vmem>> are followed.
 
-NOTE: The {ctag} bit of the stored capability is checked _after_ it is potentially
-cleared due to lack of <<c_perm>>.
+When all of the following are true, {cheri_priv_crg_ext} adds two primitives for use by software:
 
+. `sstatus.CRGE` is set.
+. _pte.crw_ is set.
+. The authorizing capability has <<c_perm>>.
+. The PMA is set to (_CHERI {ctag_title}_).
 
-If all the CRW, CD and CRG bits are clear, the "no capability state", then the existing rules from <<section_priv_cheri_vmem>> are followed:
-
-* When a capability load or AMO instruction is executed, the {ctag} bit of the
-  loaded capability is cleared before it is written to the destination register.
-* When a capability store or AMO instruction is executed and the {ctag} bit
- of the capability being written is set, the implementation raises a
- {cheri_excep_name_pte_st}.
-
-When the CRW bit is set, the "capability state", then the behavior of
-capability loads is controlled by CRG and the behavior of capability stores
-is controlled by CD.
-
-When CRW is set, the CRG bit indicates the current generation of the virtual
-memory page with regards to the ongoing capability revocation cycle.
-The implementation raises {cheri_excep_name_pte_ld} when a capability load
-or AMO instruction is executed and:
-
-* the authorizing capability grants <<c_perm>>,
-* the virtual page's CRG bit does not equal <<sstatusreg_pte,sstatus>>.UCRG, and
-* the virtual page's PTE.U is set.
-
-When the _{cheri_priv_crg_load_tag_ext}_ extension is implemented, the
-{cheri_excep_name_pte_ld} is raised when a capability load or AMO instruction
-satisfies the conditions above and the capability read from memory
-has its {ctag} set.
-
-{cheri_priv_crg_load_tag_ext} implies {cheri_priv_crg_ext}.
+==== {cheri_excep_name_pte_ld}s
 
 
-When CRW is set, the CD bit indicates that a capability was stored to the
-virtual page since the last time the CD bit was cleared.
-When a capability store or AMO instruction is executed, the {ctag} bit
-of the capability being written is set and the CD bit is clear,
-two schemes are permitted (also see <<section_hardware_pte_updates>>):
+When _pte.crw_ is set, _pte.crg_ can be used to trap on capability loads or AMOs when it does not match the value of `sstatus.UCRG`.
 
-* The same behavior as when CRW is clear, allowing software interpretation
- of this state.
-* The implementation sets the CD bit. The PTE update behaves in the same way as
- the D bit update described by the _Svadu_ extension.
+The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the rules above, all of the following are true:
 
-When CRW, CD, and CRG are all clear, the implementation is required to clear
-loaded tags and raise {cheri_excep_name_pte_st} when the stored {ctag} is set.
+. A capability load or AMO is executed.
+.. Where an AMO can raise both faults, {cheri_excep_name_pte_ld} is prioritized above {cheri_excep_name_pte_st}.
+. _pte.crg_ does not equal `sstatus.UCRG`.
+. _pte.u_ is set.
+. Any other platform specific rules have not forced the loaded {ctag} to be clear.
 
-NOTE: Other CD and CRG combinations when CRW=0 are reserved for future extensions.
-The reserved PTE states behave as the CRW=0, CD=0, CRG=0, unless a future extension
-defines an alternative function.
+NOTE: An example of a platform specific rule is a hardware engine clearing {ctag}s in memory after a call to free() to offload the CPU, which may have cleared a {ctag} before the CPU loads it.
+
+There is an additional rule if _{cheri_priv_crg_load_tag_ext}_ is implemented:
+
+[start=5]
+. The loaded {ctag} is set.
+
+NOTE: Checking the value of the {ctag} requires taking data dependent exceptions on loaded data for loads or AMOs, and also affects the exception priority, see xref:exception-priority[xrefstyle=short].
+ Ideally all implementations would trap precisely (taking the {ctag} into account) rather than conservatively (on every capability access).
+ However, this information may not be available in all implementations, and therefore both choices are permitted.
+ This can be communicated to software by showing presence of the _{cheri_priv_crg_load_tag_ext}_ extension which implies {cheri_priv_crg_ext}.
+ Implementations which already take synchronous traps on loaded data, such as ECC faults, should implement _{cheri_priv_crg_load_tag_ext}_.
+ Both choices can be handled correctly by the same software, but {cheri_priv_crg_load_tag_ext} is expected to result in fewer spurious traps.
+
+Even if the _{cheri_priv_crg_load_tag_ext}_ extension is implemented, implementations are still allowed to conservatively fault in some situations in which the {ctag} is not set.
 
 [[pte_crw_crg_load_summary]]
-.Summary of Load CRW and CRG behavior in the PTEs
+.Summary of capability load _pte.crw_ and _pte.crg_ behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
-|PTE.CRW | PTE.CD | PTE.CRG                                 | PTE.U | Load/AMO
-| 0      | 0      | 0                                       | X     | Clear loaded tag
-| 0      | 0      | 1                                       | X     | Reserved
-| 0      | 1      | X                                       | X     | Reserved
-| 1      | X      | {ne} <<sstatusreg_pte,sstatus>>.UCRG | 1     | {cheri_excep_name_pte_ld}, or {cheri_excep_name_pte_ld} if tag is set for _{cheri_priv_crg_load_tag_ext}_^1^
-| 1      | X      | = <<sstatusreg_pte,sstatus>>.UCRG       | 1     | Normal operation
-| 1      | X      | X                                       | 0     | Normal operation^2^
+|_pte.crw_| _pte.cd_| _pte.crg_              | _pte.u_| Load/AMO
+| 0       | 0       | 0                      | X      | Clear loaded {ctag}
+| 0       | 0       | 1                      | X      | Reserved
+| 0       | 1       | X                      | X      | Reserved
+| 1       | X       | {ne} `sstatus.` `UCRG` | 1      | {cheri_excep_name_pte_ld}, or {cheri_excep_name_pte_ld} if {ctag} is set for _{cheri_priv_crg_load_tag_ext}_
+| 1       | X       | = `sstatus.` `UCRG`    | 1      | Normal operation
+| 1       | X       | X                      | 0      | Normal operation^1^
 |===
 
-^1^ The choice here is whether to take data dependent exceptions on load data
- for loads or atomic operations. The default is to take the trap without
- checking the value of the loaded {ctag}. Taking a trap when the {ctag} is not
- set will introduce additional traps during revocation sweeps.
- If _{cheri_priv_crg_load_tag_ext}_ is implemented then the trap is only taken
- if the loaded {ctag} is set, to reduce software overhead from revocation sweeps.
- Checking the loaded tag affects the exception priority, see <<exception-priority>>.
+^1^ A future version of this specification may check an SCRG bit in `sstatus` in this case for trapping on kernel pages.
 
-NOTE: _{cheri_priv_crg_load_tag_ext}_ is an optimization for software, and as
-such implementations are allowed to conservatively fault under certain
-conditions even if the {ctag} is not set.
+NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
-NOTE: Implementations which already take synchronous traps on loaded data, such as ECC faults, should implement _{cheri_priv_crg_load_tag_ext}_ instead of {cheri_priv_crg_ext}.
+==== Capability Dirty Tracking
 
-_{cheri_priv_crg_load_tag_ext}_ implies _{cheri_priv_crg_ext}_.
 
-^2^ A future version of this specification may check an SCRG bit in <<sstatusreg_pte,sstatus>> for kernel revocation.
+When _pte.crw_ is set, the _pte.cd_ bit indicates that a capability was stored to the
+virtual page since the last time the _pte.cd_ bit was cleared.
+
+NOTE: This is akin to the _pte.d_ bit indicating that a store occurred through this PTE since the last time _pte.d_ was cleared.
+
+Capability dirty tracking behavior is enabled when, in addition to the rules above, all of the following are true:
+
+. A capability store or AMO instruction is executed.
+. The to-be-stored {ctag} is set.
+. _pte.cd_ is clear.
+
+Two schemes for this are permitted, and the scheme in use is determined by whether the _Svade_ or _Svadu_ extensions are enabled.
+
+* For _Svade_, take a {cheri_excep_name_pte_st}.
+* For _Svadu_, do a hardware update which sets _pte.cd=1_, following the same rules as setting _pte.d_.
+** When setting _pte.cd_, the hardware update also necessarily sets (or leaves set) _pte.a_ and _pte.d_.
 
 [[pte_crw_cd_store_summary]]
-.Summary of Store CRW and CD behavior in the PTEs
+.Summary of capability store _pte.crw_ and _pte.cd_ behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|PTE.CRW | PTE.CD | PTE.CRG | Store/AMO
-| 0      | 0      | 0       | {cheri_excep_name_pte_st} if stored tag is set
-| 0      | 0      | 1       | Reserved
-| 0      | 1      | X       | Reserved
-| 1      | 0      | X       | {cheri_excep_name_pte_st} if stored tag is set, or <<section_hardware_pte_updates, hardware CD update>>
-| 1      | 1      | X       | Normal operation
+|_pte.crw_|_pte.cd_|_pte.crg_| Store/AMO
+| 0       | 0      | 0       | {cheri_excep_name_pte_st} if the to-be-stored {ctag} is set
+| 0       | 0      | 1       | Reserved
+| 0       | 1      | X       | Reserved
+| 1       | 0      | X       | {cheri_excep_name_pte_st} if the to-be-stored {ctag} is set (_Svade_), or hardware _pte.cd_ update (_Svadu_)
+| 1       | 1      | X       | Normal operation
 |===
 
-[#section_hardware_pte_updates]
-=== Enabling Software or Hardware PTE updates
+NOTE: Because the state of _pte.cd=1_ and _pte.crw=0_ is illegal, it is possible for the update of _pte.cd_ to fail if another thread has cleared _pte.crw_.
+ifndef::cheri_standalone_spec[]
+ This follows the standard rules in xref:sv32algorithm[xrefstyle=short].
+endif::[]
 
-The decision about whether to take exceptions on capability stores with the {ctag} set to a page with PTE.CRW=1 and PTE.CD=0 is determined by whether the _Svade_ and _Svadu_ extensions are enabled.
-These cause PTE Accessed and Dirty updates to be done in software, via the exception handler, or by a hardware mechanism respectively.
+NOTE: For non-capability data, it is possible for a virtual page to be read-only but also dirty (_pte.w=0, pte.d=1_).
+ The analogous page state is not permitted for capability data as _pte.crw=0, pte.cd=1_ is _reserved_.
 
-* If only _Svade_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then take a {cheri_excep_name_pte_st}.
-* If only _Svadu_ is implemented, or enabled through henvcfg.ADUE or menvcfg.ADUE, then do the hardware update of setting PTE.CD=1 as described in <<section_extending_pte>>.
+Capability dirty tracking _always_ checks the {ctag} on stored capabilities when determining whether to raise the {cheri_excep_name_pte_st}.
+
+NOTE: Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_priv_crg_load_tag_ext}, which is why checking the loaded {ctag} is optional behavior.
+ However, a future extension may reduce the burden further by removing the check on the stored {ctag}.
+
+NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
+
+==== Minimum support
+
+The minimum level of PTE support is to set _pte.crw_ and _pte.cd_ to 1 in all PTEs intended for storing
+capabilities (e.g., private anonymous mappings) and leave
+`sstatus.UCRG` on all harts and _pte.crg_ in all PTEs set to 0, which will allow
+capabilities to be loaded and stored successfully.
 
 [#xstatus_pte]
-=== Extending the Supervisor (sstatus) and Virtual Supervisor (vsstatus) Status Registers
+=== UCRG, CRGE CSR fields
 
-The <<sstatusreg_pte,sstatus>> and <<vsstatusreg_pte,vsstatus>> CSRs are extended to include the new Capability Read Generation (CRG) and Capability Read Generation Enable (CRGE) bits as shown.
+The `mstatus`, `sstatus` and `vsstatus` CSRs include the new Userspace Capability Read Generation (UCRG) and Capability Read Generation Enable (CRGE) bits.
 
-When V=1 <<vsstatusreg_pte,vsstatus>>.UCRG and CRGE are in effect.
-
-<<mstatusreg_pte,mstatus>>.UCRG and CRGE also exist. Reading or writing it is equivalent to reading or writing <<sstatusreg_pte,sstatus>>.UCRG and CRGE respectively.
-
-NOTE: The CRGE bit is added to the <<mstatusreg_pte,mstatus>>, <<vsstatusreg_pte,vsstatus>> and <<sstatusreg_pte,sstatus>> registers in order to allow the S-mode software to explicitly opt in to the revocation extensions.
-
+[#sstatus_crge_note]
 [NOTE]
 ====
 
-The CRGE bit is necessary because the {cheri_priv_crg_ext} defines a different semantic for PTE.CRW=1 PTE.CD=0 PTE.CRG=0 with respect to <<section_priv_cheri_vmem>>.
-In particular, an oblivious software implementation that only sets the PTE.CRW bit would observe one of the following:
+The CRGE bit is necessary because {cheri_priv_crg_ext} defines a different semantic for the _pte.crw=1_, _pte.cd=0_ and _pte.crg=0_ state with respect to <<section_priv_cheri_vmem>>.
+In particular, an oblivious software implementation that only sets the _pte.crw_ bit would observe one of the following:
 
-* The PTE.CD bit is set by the hardware when a capability is stored and _Svadu_ is enabled.
+* The _pte.cd_ bit is set by the hardware when a capability is stored and _Svadu_ is enabled.
 * A {cheri_excep_name_pte_st} trap when _Svade_ is enabled.
 
-Both these conditions are unexpected according to <<section_priv_cheri_vmem>>.
-The CRGE bit also has the benefit of maintaining matching polarity of the PTE.CD bit with respect to the data Dirty bit (PTE.D), and permits alternative uses by future extensions of the PTE.CD and PTE.CRG reserved bits (e.g. by an alternative revocation extension that re-defines the semantics of CD and CRG).
+The CRGE bit also has the benefit of maintaining matching polarity of the _pte.cd_ bit with respect to the data Dirty bit (_pte.d_).
+If the behavior of the _pte.crw=1_ _pte.cd=0_ state were defined to match the behavior when {cheri_priv_crg_ext} is not implemented, then _pte.cd_ would need to have 0 meaning dirty, which is inconsistent.
+
+The CRGE bit also permits alternative uses of the _pte.cd_ and _pte.crg_ reserved states by future extensions without worrying about compatibility with <<section_priv_cheri_vmem>> (e.g. by an alternative revocation extension which uses more states).
+
 ====
+
+ifdef::cheri_standalone_spec[]
 
 [#mstatusreg_pte]
 .Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
@@ -311,3 +288,5 @@ The CRGE bit also has the benefit of maintaining matching polarity of the PTE.CD
   {bits:  1, name: 'SD'}
 ], config:{lanes: 4, hspace:1024}}
 ....
+
+endif::[]
