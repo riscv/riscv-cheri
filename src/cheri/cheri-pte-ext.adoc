@@ -68,7 +68,7 @@ When _pte.crw_ is set, _pte.crg_ can be used to trap on capability loads or AMOs
 The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the rules above, all of the following are true:
 
 . A capability load or AMO is executed.
-.. Where an AMO can raise both faults, {cheri_excep_name_pte_ld} is prioritized below {cheri_excep_name_pte_st}.
+.. Where an AMO can raise both faults, {cheri_excep_name_pte_ld} is prioritized above {cheri_excep_name_pte_st}.
 . _pte.crg_ does not equal `sstatus.UCRG`.
 . _pte.u_ is set.
 . Any other platform specific rules have not forced the loaded {ctag} to be clear.

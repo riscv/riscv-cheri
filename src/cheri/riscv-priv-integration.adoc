@@ -597,7 +597,9 @@ They are prioritized against other fault types as shown in <<exception-priority-
 
 The _pte.crw_ bit allows {cheri_excep_name_pte_st}s to be raised.
 
-NOTE: {cheri_excep_name_pte_ld} faults are at present raised only if <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> and Svade are implemented.
+NOTE: {cheri_excep_name_pte_ld} faults are at present raised only if <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> is enabled.
+
+NOTE: {cheri_excep_name_pte_st} faults are raised under more circumstances if <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> and Svade are both enabled.
 
 ==== Extending the Page Table Entry Format
 
@@ -623,8 +625,8 @@ When the CRW bit is set, capabilities are written as usual.
 
 If the CRW bit is clear then, in priority order for AMOs:
 
-* When a capability store or AMO instruction is executed, and the to-be-stored {ctag} is set, a <<cheri_pte_fault,_{cheri_excep_name_pte_st}_>> exception is raised.
 * When a capability load or AMO instruction is executed, the {ctag} of the loaded capability is cleared before it is written to the destination register.
+* When a capability store or AMO instruction is executed, and the to-be-stored {ctag} is set, a <<cheri_pte_fault,_{cheri_excep_name_pte_st}_>> exception is raised.
 
 [[pte_crw_summary]]
 .Summary of memory access behavior depending on _pte.crw_, in priority order for AMOs.
