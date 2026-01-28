@@ -1616,11 +1616,15 @@ __a__=__pte__.__ppn__×PAGESIZE and go to step 2.
 
 . Determine if the requested memory access is allowed by the _pte_._u_ bit, given the current privilege mode and the value of the SUM and MXR fields of the *mstatus* register. If not, stop and raise a page-fault exception corresponding to the original access type.
 
+. Determine if a capability store is allowed by the _pte_._crw_ bit for {cheri_base64_ext_name}. If not, stop and raise a {cheri_excep_name_pte_st} exception.
+
+. Determine if a capability load is allowed by the _pte_._crw_, _pte_._u_, _pte_._crg_ bits for {cheri_base64_ext_name}, given the {cheri_priv_crg_ext} rules. If not, stop and raise a {cheri_excep_name_pte_ld} exception.
+
 . Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits, given the Shadow Stack Memory Protection rules. If not, stop and raise an access-fault exception.
 
 . Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits. If not, stop and raise a page-fault exception corresponding to the original access type.
 
-. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0:
+. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, or if the original memory access is a capability store and _pte_._cd_=0^1^:
 
 * If the Svade extension is implemented, stop and raise a page-fault exception corresponding to the original access type.
 * If a store to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE would violate a PMA or PMP check,
@@ -1629,7 +1633,7 @@ type.
 * Perform the following steps atomically:
 ** Compare _pte_ to the value of the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the values match, set _pte_._a_ to 1 and, if the
-original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store and _pte_._crw_ is set^1^, also set _pte_._cd_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
+original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store and _pte_._crw_ is set, also set _pte_._cd_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the comparison fails, return to step 2.
 
 ^1^ capability store dirty tracking is enabled on {cheri_base64_ext_name} if {cheri_priv_crg_ext} is implemented.

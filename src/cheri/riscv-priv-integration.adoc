@@ -621,18 +621,18 @@ include::img/sv57pte_crw.edn[]
 The CRW bit indicates whether reading or writing capabilities with the {ctag} set to the virtual page is permitted.
 When the CRW bit is set, capabilities are written as usual.
 
-If the CRW bit is clear then:
+If the CRW bit is clear then, in priority order for AMOs:
 
-* When a capability load or AMO instruction is executed, the {ctag} of the loaded capability is cleared before it is written to the destination register.
 * When a capability store or AMO instruction is executed, and the to-be-stored {ctag} is set, a <<cheri_pte_fault,_{cheri_excep_name_pte_st}_>> exception is raised.
+* When a capability load or AMO instruction is executed, the {ctag} of the loaded capability is cleared before it is written to the destination register.
 
 [[pte_crw_summary]]
-.Summary of memory access behavior depending on _pte.crw_.
+.Summary of memory access behavior depending on _pte.crw_, in priority order for AMOs.
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
 |_pte.crw_|Instruction          | Behavior
-| 0       |Capability load/AMO  | Set loaded {ctag} to zero
 | 0       |Capability store/AMO | Raise a _{cheri_excep_name_pte_st}_ if the to-be-stored {ctag} is set
+| 0       |Capability load/AMO  | Set loaded {ctag} to zero
 | 1       |Any                  | Normal operation.
 |===
 
