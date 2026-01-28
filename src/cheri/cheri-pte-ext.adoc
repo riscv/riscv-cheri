@@ -5,7 +5,7 @@ NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features fro
 
 The {cheri_priv_crg_ext} extension is enabled when the `sstatus.CRGE` bit is set.
 
-When enabled, the extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from userspace pages, and to track capabilities stores to pages.
+When enabled, the extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from userspace pages, and to track stores of capabilities to pages.
 Such facilities have been shown to provide useful primitives for system-level implementation of certain forms of capability revocation which, in turn, allow userspace heap allocator software to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
 
 It achieves this by adding by adding the _pte.crg_, _pte.cd_ and `Xstatus.UCRG` bits as described below.
@@ -48,7 +48,7 @@ include::img/sv57pte_crg.edn[]
 
 === Software Primitives
 
-The _pte.crw_ bit (defined by <<section_priv_cheri_vmem>>) indicates whether loading or storing capabilities to
+The _pte.crw_ bit (defined by <<section_priv_cheri_vmem>>) continues to indicate whether loading or storing capabilities to
 the virtual page is permitted.
 
 When `sstatus.CRGE` is clear, the _pte.cd_ and _pte.crg_ bits are reserved and must not be set in any valid PTEs, and the existing rules from <<section_priv_cheri_vmem>> are followed.
