@@ -1624,7 +1624,7 @@ __a__=__pte__.__ppn__×PAGESIZE and go to step 2.
 
 . Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits. If not, stop and raise a page-fault exception corresponding to the original access type.
 
-. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, or if the original memory access is a capability store and _pte_._cd_=0^1^:
+. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, or if the original memory access is a capability store with the to-be-stored {ctag} set and _pte_._cd_=0^1^:
 
 * If the Svade extension is implemented, stop and raise a page-fault exception corresponding to the original access type.
 * If a store to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE would violate a PMA or PMP check,
