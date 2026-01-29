@@ -23,7 +23,7 @@ The encoding diagram above of the capability format includes some fields which d
 
 <<section_cheri_hybrid_ext>>::
 When {cheri_default_ext_name} is supported, capabilities include an <<m_bit>> (bit 52).
-If not supported the <<m_bit>> is reserved and reads as zero.
+If the capability does not grant <<x_perm>> or {cheri_default_ext_name} is not supported, the <<m_bit>> is always _reserved_ and so must be zero in valid capabilities.
 
 <<section_zylevels1>>::
 If <<section_zylevels1>> is available, bits 6 and 7 of the `AP` field are allocated, otherwise they must always be set to one for any valid capability.
