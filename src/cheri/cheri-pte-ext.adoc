@@ -1,6 +1,8 @@
 [#section_cheri_priv_crg_ext]
 == "{cheri_priv_crg_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
 
+{not_v1_ratification_package}
+
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
 The {cheri_priv_crg_ext} extension is enabled when the `sstatus.CRGE` bit is set.
@@ -62,32 +64,29 @@ When all of the following are true, {cheri_priv_crg_ext} adds two primitives for
 
 ==== {cheri_excep_name_pte_ld}s
 
-
 When _pte.crw_ is set, _pte.crg_ can be used to trap on capability loads or AMOs when it does not match the value of `sstatus.UCRG`.
 
 The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the rules above, all of the following are true:
 
 . A capability load or AMO is executed.
-.. Where an AMO can raise both faults, {cheri_excep_name_pte_ld} is prioritized above {cheri_excep_name_pte_st}.
 . _pte.crg_ does not equal `sstatus.UCRG`.
 . _pte.u_ is set.
 . Any other platform specific rules have not forced the loaded {ctag} to be clear.
+. The loaded {ctag} is set.
+
+{cheri_excep_name_pte_ld} is prioritized below {cheri_excep_name_pte_st} as shown in <<exception-priority-cheri>>, as AMOs can raise both.
 
 NOTE: An example of a platform specific rule is a hardware engine clearing {ctag}s in memory after a call to free() to offload the CPU, which may have cleared a {ctag} before the CPU loads it.
 
-There is an additional rule if _{cheri_priv_crg_load_tag_ext}_ is implemented:
+The {cheri_excep_name_pte_ld} _must_ be taken if the loaded {ctag} is set.
+The {cheri_excep_name_pte_ld} _may_ be taken if the loaded {ctag} is not set.
+This gives a range of valid implementations.
 
-[start=5]
-. The loaded {ctag} is set.
-
-NOTE: Checking the value of the {ctag} requires taking data dependent exceptions on loaded data for loads or AMOs, and also affects the exception priority, see xref:exception-priority[xrefstyle=short].
+NOTE: Checking the value of the {ctag} requires taking data dependent exceptions on loaded data for loads or AMOs.
  Ideally all implementations would trap precisely (taking the {ctag} into account) rather than conservatively (on every capability access).
  However, this information may not be available in all implementations, and therefore both choices are permitted.
- This can be communicated to software by showing presence of the _{cheri_priv_crg_load_tag_ext}_ extension which implies {cheri_priv_crg_ext}.
- Implementations which already take synchronous traps on loaded data, such as ECC faults, should implement _{cheri_priv_crg_load_tag_ext}_.
- Both choices can be handled correctly by the same software, but {cheri_priv_crg_load_tag_ext} is expected to result in fewer spurious traps.
-
-Even if the _{cheri_priv_crg_load_tag_ext}_ extension is implemented, implementations are still allowed to conservatively fault in some situations in which the {ctag} is not set.
+ Implementations which already take synchronous traps on loaded data, such as ECC faults, should check the loaded {ctag}.
+ The same software is tolerant of raising the trap when the {ctag} is not set, but checking the {ctag} is expected to result in fewer spurious traps.
 
 [[pte_crw_crg_load_summary]]
 .Summary of capability load _pte.crw_ and _pte.crg_ behavior in the PTEs
@@ -97,7 +96,7 @@ Even if the _{cheri_priv_crg_load_tag_ext}_ extension is implemented, implementa
 | 0       | 0       | 0                      | X      | Clear loaded {ctag}
 | 0       | 0       | 1                      | X      | Reserved
 | 0       | 1       | X                      | X      | Reserved
-| 1       | X       | {ne} `sstatus.` `UCRG` | 1      | {cheri_excep_name_pte_ld}, or {cheri_excep_name_pte_ld} if {ctag} is set for _{cheri_priv_crg_load_tag_ext}_
+| 1       | X       | {ne} `sstatus.` `UCRG` | 1      | {cheri_excep_name_pte_ld} if {ctag} is set
 | 1       | X       | = `sstatus.` `UCRG`    | 1      | Normal operation
 | 1       | X       | X                      | 0      | Normal operation^1^
 |===
@@ -107,7 +106,6 @@ Even if the _{cheri_priv_crg_load_tag_ext}_ extension is implemented, implementa
 NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
 ==== Capability Dirty Tracking
-
 
 When _pte.crw_ is set, the _pte.cd_ bit indicates that a capability was stored to the
 virtual page since the last time the _pte.cd_ bit was cleared.
@@ -148,8 +146,8 @@ NOTE: For non-capability data, it is possible for a virtual page to be read-only
 
 Capability dirty tracking _always_ checks the {ctag} on stored capabilities when determining whether to raise the {cheri_excep_name_pte_st}.
 
-NOTE: Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_priv_crg_load_tag_ext}, which is why checking the loaded {ctag} is optional behavior.
- However, a future extension may reduce the burden further by removing the check on the stored {ctag}.
+NOTE: Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_excep_name_pte_ld}, which is why checking the loaded {ctag} is optional behavior.
+ However, a future extension may reduce the burden further by removing the check on the to-be-stored {ctag}.
 
 NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
 

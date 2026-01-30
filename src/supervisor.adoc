@@ -132,7 +132,7 @@ In a straightforward implementation, reading or writing any field in
 
 ===== {cheri_base64_ext_name} in `sstatus` Register
 
-The definitions of the UCRG and CRGE fields are furnished by the {cheri_base64_ext_name} only <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> extension.
+The definitions of the UCRG and CRGE fields are furnished by the {cheri_base64_ext_name} only {cheri_priv_crg_ext} extension.
 
 ===== Base ISA Control in `sstatus` Register
 
@@ -1616,9 +1616,7 @@ __a__=__pte__.__ppn__×PAGESIZE and go to step 2.
 
 . Determine if the requested memory access is allowed by the _pte_._u_ bit, given the current privilege mode and the value of the SUM and MXR fields of the *mstatus* register. If not, stop and raise a page-fault exception corresponding to the original access type.
 
-. Determine if the requested memory access is allowed for {cheri_base64_ext_name} when {cheri_priv_crg_ext} is enabled, by the _pte_._crw_, _pte_._u_, _pte_._crg_ bits and the UCRG fields of the *status* register, given the rules in <<pte_crw_crg_load_summary>>. If not, stop and raise a {cheri_excep_name_pte_ld} exception.
-
-. Determine if the requested memory access is allowed for {cheri_base64_ext_name} by the _pte_._crw_ bit given the rules in <<pte_crw_summary>>. If not, stop and raise a {cheri_excep_name_pte_st} exception.
+. Determine if the requested capability store is allowed by the _pte_._crw_ bit for {cheri_base64_ext_name} given the {cheri_priv_crg_ext} rules. If not, stop and raise a {cheri_excep_name_pte_st} exception.
 
 . Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits, given the Shadow Stack Memory Protection rules. If not, stop and raise an access-fault exception.
 
