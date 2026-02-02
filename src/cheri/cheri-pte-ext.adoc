@@ -1,13 +1,13 @@
 [#section_cheri_priv_crg_ext]
 == "{cheri_priv_crg_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
 
-#This section is currently WIP and not suitable for freeze, but remains part of the v1.0 ratificaation package#
+#This section is currently WIP and not suitable for freeze, but remains part of the v1.0 ratification package#
 
 NOTE: _Sv32_ (for RV32) does not have any spare PTE bits, and so no features from this chapter can be implemented.
 
 The {cheri_priv_crg_ext} extension is enabled when the `sstatus.CRGE` bit is set.
 
-When enabled, the extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from userspace pages, and to track stores of capabilities to pages.
+The extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from userspace pages, and to track stores of capabilities to pages.
 Such facilities have been shown to provide useful primitives for system-level implementation of certain forms of capability revocation which, in turn, allow userspace heap allocator software to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
 
 It achieves this by adding by adding the _pte.crg_, _pte.cd_ and `Xstatus.UCRG` bits as described below.
@@ -111,12 +111,7 @@ Implementations which already take synchronous traps on loaded data, such as ECC
 
 NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
-==== {cheri_excep_name_pte_st}s
-
-{cheri_excep_name_pte_st}s are used for:
-
-* Detecting capability writes to pages without capability read/write permission permission (_pte.crw=0_).
-* Capability dirty tracking for pages with capability read/write permission permission that are capability clean (_pte.crw=1_, _pte.cd=0_).
+==== Capability Dirty Tracking
 
 When _pte.crw_ is set, the _pte.cd_ bit indicates that a capability was stored to the
 virtual page since the last time the _pte.cd_ bit was cleared.
@@ -151,7 +146,7 @@ or hardware _pte.cd_ update (_Svadu_)^1^
 [NOTE]
 ====
 
-Because the state of _pte.cd=1_ and _pte.crw=0_ is _reserved:
+Because the state of _pte.cd=1_ and _pte.crw=0_ is _reserved_:
 
 *  It is possible for the update of _pte.cd_ to fail if another thread has cleared _pte.crw_.
 ifndef::cheri_standalone_spec[]
