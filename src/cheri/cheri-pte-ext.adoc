@@ -82,11 +82,17 @@ The {cheri_excep_name_pte_ld} _must_ be taken if the loaded {ctag} is set.
 The {cheri_excep_name_pte_ld} _may_ be taken if the loaded {ctag} is not set.
 This gives a range of valid implementations.
 
-NOTE: Checking the value of the {ctag} requires taking data dependent exceptions on loaded capabilities for loads or AMOs.
- Ideally all implementations would trap precisely (taking the {ctag} into account) rather than conservatively (on every capability access).
- However, this information may not be available in all implementations, and therefore flexibility is permitted.
- Implementations which already take synchronous traps on loaded data, such as ECC faults, should check the loaded {ctag}.
- The software is required to be tolerant of raising the trap when the {ctag} is not set, resulting in potentially spurious traps.
+[NOTE]
+====
+
+Checking the value of the {ctag} requires taking data dependent exceptions on loaded capabilities for loads or AMOs.
+Ideally all implementations would trap precisely (taking the {ctag} into account in all cases) rather than conservatively (trapping more often, potentially on every loaded capability).
+However, the loaded {ctag} may not be available in all implementations when determining whether to raise the exception, and therefore flexibility is permitted.
+As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set, potentially resulting in spurious traps from pages which have _pte.crw=1_, and so are likely to store valid capabilities.
+
+Implementations which already take synchronous traps on loaded data, such as ECC faults, are recommended to check the loaded {ctag} when determining whether to raise the fault.
+
+====
 
 [[pte_crw_crg_load_summary]]
 .Summary of capability load _pte.crw_ and _pte.crg_ behavior in the PTEs
@@ -138,22 +144,47 @@ Two schemes for this are permitted, and the scheme in use is determined by wheth
 | 0       | 0      | 1       | Reserved
 | 0       | 1      | X       | Reserved
 | 1       | 0      | X       | {cheri_excep_name_pte_st} if the to-be-stored {ctag} is set (_Svade_) +
-or hardware _pte.cd_ update (_Svadu_)
+or hardware _pte.cd_ update (_Svadu_)^1^
 | 1       | 1      | X       | Normal operation
 |===
 
-NOTE: Because the state of _pte.cd=1_ and _pte.crw=0_ is _reserved_, , it is possible for the update of _pte.cd_ to fail if another thread has cleared _pte.crw_.
+[NOTE]
+====
+
+Because the state of _pte.cd=1_ and _pte.crw=0_ is _reserved:
+
+*  It is possible for the update of _pte.cd_ to fail if another thread has cleared _pte.crw_.
 ifndef::cheri_standalone_spec[]
  This follows the standard rules in xref:sv32algorithm[xrefstyle=short].
 endif::[]
+* For non-capability data, it is possible for a virtual page to be read-only but also dirty (_pte.w=0, pte.d=1_).
+ The analogous page state is not permitted for capability data.
 
-NOTE: For non-capability data, it is possible for a virtual page to be read-only but also dirty (_pte.w=0, pte.d=1_).
- The analogous page state is not permitted for capability data as the state of _pte.cd=1_ and _pte.crw=0_ is _reserved_, .
+====
 
-Capability dirty tracking _always_ checks the {ctag} on stored capabilities when determining whether to raise the {cheri_excep_name_pte_st}.
+The capability dirty tracking is resolved during memory translation, but there are cases it is not known if there will be a {ctag} stored to memory or not at this point.
+Capability dirty tracking _must_ be triggered when there is a stored {ctag}, and _may_ be triggered in the following case where it is not known if there will be a stored {ctag} during translation.
 
-NOTE: Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_excep_name_pte_ld}, which is why checking the loaded {ctag} is optional behavior.
+* <<STORE_COND_CAP>> triggers capability dirty tracking if the {ctag} is set in {cs2}, even if the store fails.
+
+[NOTE]
+====
+
+_pte.cd_ must always be set when there is a stored {ctag} to a virtual page so that software knows which pages have had capabilities stored to them.
+It may be set too often, which may cause software to examine the page to check for capabilities when none are present.
+This is a situation software is required to handle anyway, as it is always possible for all capabilities in a page to be overwritten by non-capability data.
+In this case the _pte.cd_ bit will still be set.
+
+Future AMOs fall into this category:
+
+* For future AMOCAS{LD_ST_DOT_CAP}, it is not known whether the store will happen until the load has executed and the compare has been done. Therefore, AMOCAS{LD_ST_DOT_CAP} is likely to trigger capability dirty tracking if the {ctag} is set in {cs2}.
+* For future AMOADD{LD_ST_DOT_CAP}, the stored {ctag} depends upon the loaded {ctag} which is not known during translation and also on the execution of the <<CADD>>.
+ Therefore, AMOADD{LD_ST_DOT_CAP}, is likely to always trigger capability dirty tracking.
+
+Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_excep_name_pte_ld}, which is why checking the loaded {ctag} is optional behavior.
  However, a future extension may reduce the burden further by removing the check on the to-be-stored {ctag}.
+
+====
 
 NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
 
