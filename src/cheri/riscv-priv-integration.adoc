@@ -166,53 +166,51 @@ The new exception codes and priorities are listed in
 xref:mcauses[xrefstyle=short] and xref:exception-priority-cheri[xrefstyle=short] respectively.
 
 [[exception-priority-cheri]]
-.Synchronous exception priority in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
-[float="center",align="center",cols="<1,>1,<8",options="header"]
+.Synchronous exception priority in decreasing priority order for {cheri_base_ext_name}.
+[%autowidth,float="center",align="center",cols="<,>,<",options="header",]
 |===
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
-| .>|*{cheri_excep_cause_pc}* .<|*Prior to instruction address translation:* +
-*{cheri_excep_name_pc} due to {pcc} checks ({ctag}, execute permission, bounds^1^)*
+| .>|{cheri_excep_cause_pc} .<|Prior to instruction address translation: +
+{cheri_excep_name_pc} due to {pcc} checks ({ctag}, sealed, execute permission, bounds^1^)
 | .>|12, 1 .<|During instruction address translation: +
 First encountered page fault or access fault
 | .>|1 .<|With physical address for instruction: +
 Instruction access fault
 
 | .>|2 +
-*{cheri_excep_cause_pc}* +
+{cheri_excep_cause_pc} +
 0 +
 8,9,11 +
 3 +
 3 .<|Illegal instruction +
-*{cheri_excep_name_pc} due to {pcc} <<asr_perm>> clear* +
+{cheri_excep_name_pc} due to {pcc} <<asr_perm>> clear +
 Instruction address misaligned +
 Environment call +
 Environment break +
 Load/store/AMO address breakpoint
 
-| .>|*{cheri_excep_cause_ls_list}* .<|*Prior to address translation for an explicit memory access:* +
-*{cheri_excep_name_ld}, {cheri_excep_name_st} due to capability checks ({ctag}, sealed, permissions, bounds)*
-| .>|4,6 .<|*Load/store/AMO capability address misaligned* +
-Optionally: +
+| .>|{cheri_excep_cause_ls_list} .<|Prior to address translation for an explicit memory access: +
+{cheri_excep_name_ld}, {cheri_excep_name_st} due to capability checks ({ctag}, sealed, permissions, bounds)
+| .>|4,6 .<|Load/store/AMO capability address misaligned +
+
+| .>|4,6 .<|Optionally: +
 Load/store/AMO address misaligned
-| .>|*{cheri_excep_cause_pte_ld}, {cheri_excep_cause_pte_st},* 13, 15, 5, 7 .<|During address translation for an explicit memory access: +
-First encountered *{cheri_excep_name_pte_ld}^2^, {cheri_excep_name_pte_st}*, page fault or access fault
+| .>|{cheri_excep_cause_pte_st}, 13, 15, 5, 7 .<|During address translation for an explicit memory access: +
+First encountered {cheri_excep_name_pte_st}, page fault or access fault
 | .>|5,7 .<|With physical address for an explicit memory access: +
 Load/store/AMO access fault
-| .>|4,6 .<|If not higher priority: +
+.>| .>|4,6 .<|If not higher priority: +
 Load/store/AMO address misaligned
-.>|_Lowest_ .>|*{cheri_excep_cause_pte_ld}* .<|*If not higher priority: +
-{cheri_excep_name_pte_ld}^3^*
+.>|_Lowest_ .>|{cheri_excep_cause_pte_ld} .<|{cheri_excep_name_pte_ld}^2^
 |===
 
 ^1^ {pcc} bounds are checked against all bytes of fetched instructions.
  If the instructions could not be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
-^2^ The higher priority {cheri_excep_name_pte_ld} covers capability loads or atomics where the loaded {ctag} _is not_ checked ({cheri_priv_crg_ext} is implemented) .
+^2^ {cheri_excep_name_pte_ld} is the lowest priority as determining whether to raise the exception may include checking the loaded {ctag}.
 
-^3^ The lower priority {cheri_excep_name_pte_ld} covers capability loads or atomics where the loaded {ctag} _is_ checked ({cheri_priv_crg_load_tag_ext} is implemented).
-
-NOTE: The full details of the CHERI exceptions are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
+NOTE: The full details of {cheri_excep_name_pc}, {cheri_excep_name_ld} and {cheri_excep_name_st} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
 ifdef::cheri_standalone_spec[]
 ==== Machine Trap Delegation Register (medeleg)
@@ -586,9 +584,9 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 ^*^ _allocated using mmap_
 
 [#cheri_pte_fault]
-=== CHERI page faults
+=== CHERI virtual memory related faults
 
-CHERI adds the concept of _CHERI page faults_. They are split into:
+CHERI adds the concept of CHERI virtual memory related faults. They are split into:
 
 * {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld}), and
 * {cheri_excep_name_pte_st} (cause value {cheri_excep_cause_pte_st})
@@ -597,9 +595,9 @@ They are prioritized against other fault types as shown in <<exception-priority-
 
 The _pte.crw_ bit allows {cheri_excep_name_pte_st}s to be raised.
 
-NOTE: {cheri_excep_name_pte_ld} faults are at present raised only if <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> is enabled.
+NOTE: {cheri_excep_name_pte_ld} faults are at present raised only if  {cheri_priv_crg_ext} is enabled.
 
-NOTE: {cheri_excep_name_pte_st} faults are raised under more circumstances if <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> and Svade are both enabled.
+NOTE: {cheri_excep_name_pte_st} faults are raised under more circumstances if  {cheri_priv_crg_ext} and Svade are both enabled.
 
 ==== Extending the Page Table Entry Format
 
@@ -625,8 +623,8 @@ When the CRW bit is set, capabilities are written as usual.
 
 If the CRW bit is clear then, in priority order for AMOs:
 
-* When a capability load or AMO instruction is executed, the {ctag} of the loaded capability is cleared before it is written to the destination register.
 * When a capability store or AMO instruction is executed, and the to-be-stored {ctag} is set, a <<cheri_pte_fault,_{cheri_excep_name_pte_st}_>> exception is raised.
+* When a capability load or AMO instruction is executed, the {ctag} of the loaded capability is cleared before it is written to the destination register.
 
 [[pte_crw_summary]]
 .Summary of memory access behavior depending on _pte.crw_, in priority order for AMOs.
