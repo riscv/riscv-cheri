@@ -1,5 +1,5 @@
 [#sec_zycheriot_priv,reftext={cheriot_priv_ext_name}]
-=== The {cheriot_priv_ext_name} Privileged ISA Extension
+== The "{cheriot_priv_ext_name}" Privileged ISA Extension
 
 This section defines a series of small changes to the
 <<section_priv_cheri,{cheri_priv_m_ext}>> privileged architecture
@@ -7,7 +7,7 @@ that serve to specialize it for microcontroller environments.
 These changes are based on, but are not exactly isomorphic to,
 the prior link:https://cheriot.org[CHERIoT] RV32E-based ISA.
 
-==== Required Extensions
+=== Required Extensions
 
 {cheriot_priv_ext_name} requires
 its unprivileged counterpart, {cheriot_unpriv_ext_name},
@@ -28,7 +28,7 @@ and particular instantiations may opt to permit disabling CHERI,
 we have not yet found a compelling reason to formally specify this composition.
 =====
 
-==== CSR Reset States
+=== CSR Reset States
 
 The {cheri_base_ext_name} base privileged ISA tends to define
 M-mode CSRs' reset values either as <<root-rx-cap>> capabilities or
@@ -48,7 +48,7 @@ The <<mscratch>> register's reset value is changed to be
 {cheriot_unpriv_ext_name}'s _sealing_ capability value (with set {ctag}),
 rather than the unspecified value with zero {ctag} of {cheri_base_ext_name}.
 
-==== Additional CSR Legalization Requirements
+=== Additional CSR Legalization Requirements
 
 All of <<pcc>>, <<mtvec>>, and <<mepc>> will clear their {ctag} if the
 capability they would come to hold after an update
@@ -63,7 +63,7 @@ Neither architecture nor software expects to be able
 to place capabilities thereby prohibited in these CSRs.
 =====
 
-==== Capability Types
+=== Capability Types
 
 {cheriot_unpriv_ext_name} introduces several
 <<sentry_cap,sentry>> <<sec_cap_type>> values
@@ -129,7 +129,7 @@ This ensures that granting untrusted code such a sentry is
 not tantamount to handing it the ability to wedge the machine.
 =====
 
-==== Stack High Watermark CSRs
+=== Stack High Watermark CSRs
 
 {cheriot_priv_ext_name} introduces two new XLEN CSRs for each privilege level:
 `xshwm` and `xshwmb`.
@@ -153,7 +153,7 @@ Privileged stack zeroing code can be used to lower `xshwm`, so that all bytes
 between the addresses held in `xshwm` and `xshwmb` are known to be zero.
 =====
 
-==== Capability Load Filter and The Revocation Bitmap
+=== Capability Load Filter and The Revocation Bitmap
 
 [NOTE]
 =====
