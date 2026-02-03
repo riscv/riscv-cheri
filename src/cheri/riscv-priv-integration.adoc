@@ -451,6 +451,14 @@ Memory regions that do not have the _CHERI {ctag_title}_ PMA do not require stor
 CHERI checks are made on the effective address according to the current translation scheme.
 I.e., on the virtual address if translation is enabled or the physical address if translation is disabled.
 
+The {cheri_base_ext_name} field is reserved in the RV64 PTE formats (e.g. <<sv39pte>>) for use by {cheri_base64_ext_name} extensions.
+If the field is all zeroes then:
+
+* all capability loads set the loaded {ctag} to zero
+* all capability stores with the to-be-stored {ctag} set raise a {cheri_excep_name_pte_st}.
+
+As {cheri_base32_ext_name} has no field allocated in the PTE, capability loads and stores operate as normal.
+
 Implicit memory accesses made by the page table walker are not subject to CHERI checks.
 
 NOTE: A future extension may add CHERI checks to the page table walker.

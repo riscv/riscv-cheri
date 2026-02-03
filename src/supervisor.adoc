@@ -94,8 +94,7 @@ register keeps track of the processor's current operating state.
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 26, name: 'WPRI'},
-  {bits:  1, name: 'CRGE'},
+  {bits: 27, name: 'WPRI'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
@@ -132,7 +131,7 @@ In a straightforward implementation, reading or writing any field in
 
 ===== {cheri_base64_ext_name} in `sstatus` Register
 
-The definitions of the UCRG and CRGE fields are furnished by the {cheri_base64_ext_name} only <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> extension.
+The definitions of the UCRG field is furnished by the {cheri_base64_ext_name} only <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> extension.
 
 ===== Base ISA Control in `sstatus` Register
 
@@ -1616,13 +1615,13 @@ __a__=__pte__.__ppn__×PAGESIZE and go to step 2.
 
 . Determine if the requested memory access is allowed by the _pte_._u_ bit, given the current privilege mode and the value of the SUM and MXR fields of the *mstatus* register. If not, stop and raise a page-fault exception corresponding to the original access type.
 
-. Determine if the requested capability store is allowed by the _pte_._crw_ bit for {cheri_base64_ext_name} given the {cheri_priv_crg_ext} rules. If not, stop and raise a {cheri_excep_name_pte_st} exception.
+. For {cheri_base64_ext_name} only: determine if the requested capability store is allowed given the {cheri_priv_crg_ext} rules. If not, or if {cheri_priv_crg_ext} is not implemented, stop and raise a {cheri_excep_name_pte_st} exception.
 
 . Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits, given the Shadow Stack Memory Protection rules. If not, stop and raise an access-fault exception.
 
 . Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits. If not, stop and raise a page-fault exception corresponding to the original access type.
 
-. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, or if the original memory access is a capability store with the to-be-stored {ctag} set and _pte_._cd_=0^1^:
+. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, or if the original memory access is a capability store with the to-be-stored {ctag} set and _pte_._yd_=0^1^:
 
 * If the Svade extension is implemented, stop and raise a page-fault exception corresponding to the original access type.
 * If a store to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE would violate a PMA or PMP check,
@@ -1631,10 +1630,10 @@ type.
 * Perform the following steps atomically:
 ** Compare _pte_ to the value of the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the values match, set _pte_._a_ to 1 and, if the
-original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store with the to-be-stored {ctag} set. and _pte_._crw_ is set, also set _pte_._cd_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
+original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store with the to-be-stored {ctag} set, and _pte_._syen_ is set, also set _pte_._yd_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the comparison fails, return to step 2.
 
-^1^ capability store dirty tracking is enabled on {cheri_base64_ext_name} if {cheri_priv_crg_ext} is implemented.
+^1^ capability dirty tracking is enabled on {cheri_base64_ext_name} if {cheri_priv_crg_ext} is implemented and _pte_._syen_=1.
 
 . The translation is successful. The translated physical address is
 given as follows:
@@ -1802,12 +1801,21 @@ forward compatibility, or else a page-fault exception is raised. Bits
 <<svpbmt>>. If Svpbmt is not implemented, bits 62-61 remain
 reserved and must be zeroed by software for forward compatibility, or
 else a page-fault exception is raised.
-#The CRW bit is reserved for {cheri_priv_vmem_ext}.#
-#If {cheri_priv_vmem_ext} is not implemented, the CRW bit remains reserved and must be zeroed by software for forward compatibility, or else a page-fault exception is raised.#
-Bits #59-54# are reserved for
+Bits
+Bits 60-59 are reserved for
 future standard use and, until their use is defined by some standard
 extension, must be zeroed by software for forward compatibility. If any
 of these bits are set, a page-fault exception is raised.
+58-55 are reserved for use by the {cheri_base64_ext_name} architecture, specifically by the
+{cheri_priv_crg_ext} extension in <<section_cheri_priv_crg_ext>>.
+If {cheri_priv_crg_ext} is not implemented,
+bits 58-55 remain
+reserved and must be zeroed by software for forward compatibility, or
+else a page-fault exception is raised.
+Bit 54 is reserved for
+future standard use and, until its use is defined by some standard
+extension, must be zeroed by software for forward compatibility. If
+this bit is set, a page-fault exception is raised.
 
 
 [NOTE]
