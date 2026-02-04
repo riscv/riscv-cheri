@@ -51,8 +51,8 @@ The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the r
 
 . A capability load or AMO is executed.
 . _pte_._{pte_cap_r_name_lc}_ is set.
-. if _pte_._u=1_ _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.{revocation_u}`.
-. if _pte_._u=0_ _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.{revocation_s}`.
+. if _pte_._u=1_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.{revocation_u}`.
+. if _pte_._u=0_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.{revocation_s}`.
 . Any other platform specific rules have not forced the loaded {ctag} to be clear.
 . The loaded {ctag} is set.
 
@@ -91,7 +91,7 @@ Implementations which already take synchronous traps on loaded data, such as ECC
 
 ^1^ The loaded {ctag}.
 
-^2^ if _pte_._u=1_ `sstatus.{revocation_u}` else `sstatus.{revocation_s}`.
+^2^ if _pte_._u=1_, `sstatus.{revocation_u}` else `sstatus.{revocation_s}`.
 
 NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
@@ -161,10 +161,7 @@ NOTE: Capability dirty tracking may be used to implement the store-barrier primi
 
 ==== Minimum support
 
-The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1 and _pte_._{pte_cap_w_name_lc}_=1 in all PTEs intended for storing
-capabilities (e.g., private anonymous mappings) and leave
-`sstatus.{revocation_u}`, `sstatus.{revocation_s}` on all harts and _pte_._{pte_cap_crg_pte_name_lc}_ in all PTEs set to 0, which will enable
-capabilities to be loaded and stored successfully.
+The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.{revocation_u}`=0 and `sstatus.{revocation_s}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
 
 ifdef::cheri_standalone_spec[]
 

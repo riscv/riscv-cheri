@@ -133,7 +133,7 @@ In a straightforward implementation, reading or writing any field in
 
 ===== {cheri_base64_ext_name} in `sstatus` Register
 
-The definition of the {revocation_u}, {revocation_s}, {revocation_enable} fields is furnished by the {cheri_base64_ext_name} only <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> extension.
+The definitions of the {revocation_u}, {revocation_s}, {revocation_enable} fields are furnished by the {cheri_base64_ext_name} only <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> extension.
 
 ===== Base ISA Control in `sstatus` Register
 
@@ -1634,14 +1634,14 @@ type.
 ** If the values match, set _pte_._a_ to 1 and, if the
 original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store with the to-be-stored {ctag} set, also set _pte_._{pte_cap_dirty_name_lc}_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the comparison fails, return to step 2.
-
-^1^ If {cheri_priv_crg_ext} is enabled, then this condition causes capability dirty tracking.
-
 . The translation is successful. The translated physical address is
 given as follows:
 * _pa.pgoff_ = _va.pgoff_.
 * If _i_>0, then this is a superpage translation and __pa.ppn__[__i__-1:0] = __va.vpn__[__i__-1:0].
 * _pa.ppn_[LEVELS-1:__i__] = _pte_._ppn_[LEVELS-1:__i__].
+
+^1^ If {cheri_priv_crg_ext} is enabled ({cheri_base64_ext_name} only), then this condition causes capability dirty tracking.
+
 
 All implicit accesses to the address-translation data structures in this
 algorithm are performed using width PTESIZE.
