@@ -83,10 +83,10 @@ Implementations which already take synchronous traps on loaded data, such as ECC
 |_pte_._{pte_cap_r_name_lc}_|_pte_._{pte_cap_crg_pte_name_lc}_           | tag^1^| Load Capability Behavior
 | 0                         | 0                      |   X   | Clear loaded {ctag}
 | 0                         | 1                      |   X   | Normal operation
-| 1                         | {ne} `sstatus.xCRG`^2^ |   0   | Implementation defined choice of +
+| 1                         | {ne} `sstatus.{revocation_x}`^2^ |   0   | Implementation defined choice of +
 {cheri_excep_name_pte_ld} or normal operation
-| 1                         | {ne} `sstatus.xCRG`^2^ |   1   | {cheri_excep_name_pte_ld}
-| 1                         | = `sstatus.xCRG`^2^    |   X   | Normal operation
+| 1                         | {ne} `sstatus.{revocation_x}`^2^ |   1   | {cheri_excep_name_pte_ld}
+| 1                         | = `sstatus.{revocation_x}`^2^    |   X   | Normal operation
 |===
 
 ^1^ The loaded {ctag}.
