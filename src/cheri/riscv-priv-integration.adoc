@@ -467,19 +467,19 @@ The definition of the {cheri_base_ext_name} field is as follows:
 [#cheri_pte_rvy_default]
 [width="100%",options=header]
 |=========================================================================================
-| Bit                                 | Name       | Comment
-| _pte_._{cheri_base_ext_name_lc}[3]_ | _pte_._ye_ | Enable capability (Y) access
-| _pte_._{cheri_base_ext_name_lc}[2]_ | _reserved_ | Reserved
-| _pte_._{cheri_base_ext_name_lc}[1]_ | _reserved_ | Reserved
-| _pte_._{cheri_base_ext_name_lc}[0]_ | _reserved_ | Reserved
+| Bit                                   | Name                          | Comment
+| _pte_._{rv64y_pte4_field_name_lc}[3]_ | _pte_._{pte_cap_rw_name_lc}_ | Enable capability (Y) access
+| _pte_._{rv64y_pte4_field_name_lc}[2]_ | _reserved_                    | Reserved
+| _pte_._{rv64y_pte4_field_name_lc}[1]_ | _reserved_                    | Reserved
+| _pte_._{rv64y_pte4_field_name_lc}[0]_ | _reserved_                    | Reserved
 |=========================================================================================
 
-If _pte_._ye_=0 then:
+If _pte_._{pte_cap_rw_name_lc}_=0 then:
 
 * All capability loads set the loaded {ctag} to zero
 * All capability stores with the to-be-stored {ctag} set raise a {cheri_excep_name_pte_st}.
 
-If _pte_._ye_=1 then:
+If _pte_._{pte_cap_rw_name_lc}_=1 then:
 
 * All capability loads and capability stores operate as normal.
 

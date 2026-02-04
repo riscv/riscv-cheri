@@ -95,9 +95,9 @@ register keeps track of the processor's current operating state.
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
   {bits: 25, name: 'WPRI'},
-  {bits:  1, name: 'CRGE'},
-  {bits:  1, name: 'SCRG'},
-  {bits:  1, name: 'UCRG'},
+  {bits:  1, name: '{revocation_enable}'},
+  {bits:  1, name: '{revocation_s}'},
+  {bits:  1, name: '{revocation_u}'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
@@ -133,7 +133,7 @@ In a straightforward implementation, reading or writing any field in
 
 ===== {cheri_base64_ext_name} in `sstatus` Register
 
-The definition of the UCRG, SCRG, CRGE fields is furnished by the {cheri_base64_ext_name} only <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> extension.
+The definition of the {revocation_u}, {revocation_s}, {revocation_enable} fields is furnished by the {cheri_base64_ext_name} only <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> extension.
 
 ===== Base ISA Control in `sstatus` Register
 
@@ -1617,13 +1617,13 @@ __a__=__pte__.__ppn__×PAGESIZE and go to step 2.
 
 . Determine if the requested memory access is allowed by the _pte_._u_ bit, given the current privilege mode and the value of the SUM and MXR fields of the *mstatus* register. If not, stop and raise a page-fault exception corresponding to the original access type.
 
-. For {cheri_base64_ext_name} only: determine if the requested capability store is allowed by the _pte_._{cheri_base_ext_name_lc}_ field. If not, stop and raise a {cheri_excep_name_pte_st} exception.
+. For {cheri_base64_ext_name} only: determine if the requested capability store is allowed by the _pte_._{rv64y_pte4_field_name_lc}_ field. If not, stop and raise a {cheri_excep_name_pte_st} exception.
 
 . Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits, given the Shadow Stack Memory Protection rules. If not, stop and raise an access-fault exception.
 
 . Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits. If not, stop and raise a page-fault exception corresponding to the original access type.
 
-. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, or if the original memory access is a capability store with the to-be-stored {ctag} set and _pte_._yd_=0^1^:
+. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, or if the original memory access is a capability store with the to-be-stored {ctag} set and _pte_._{pte_cap_dirty_name_lc}_=0^1^:
 
 * If the Svade extension is implemented, stop and raise a page-fault exception corresponding to the original access type.
 * If a store to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE would violate a PMA or PMP check,
@@ -1632,10 +1632,10 @@ type.
 * Perform the following steps atomically:
 ** Compare _pte_ to the value of the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the values match, set _pte_._a_ to 1 and, if the
-original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store with the to-be-stored {ctag} set, and _pte_._sye_^1^ is set, also set _pte_._yd_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
+original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store with the to-be-stored {ctag} set, and _pte_._{pte_cap_w_name_lc}_^1^ is set, also set _pte_._{pte_cap_dirty_name_lc}_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
 ** If the comparison fails, return to step 2.
 
-^1^ capability dirty tracking is enabled on {cheri_base64_ext_name} if {cheri_priv_crg_ext} is implemented and _pte_._sye_=1.
+^1^ capability dirty tracking is enabled on {cheri_base64_ext_name} if {cheri_priv_crg_ext} is implemented and _pte_._{pte_cap_w_name_lc}_=1.
 
 . The translation is successful. The translated physical address is
 given as follows:
