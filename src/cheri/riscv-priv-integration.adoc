@@ -445,24 +445,43 @@ There are three levels of support:
 
 Memory regions that do not have the _CHERI {ctag_title}_ PMA do not require storage for {ctag}s.
 
-[#section_vm]
-=== Virtual Memory
+[#section_rvy_vm]
+=== Virtual Memory for {cheri_base_ext_name}
 
 CHERI checks are made on the effective address according to the current translation scheme.
 I.e., on the virtual address if translation is enabled or the physical address if translation is disabled.
-
-The {cheri_base_ext_name} field is reserved in the RV64 PTE formats (e.g. <<sv39pte>>) for use by {cheri_base64_ext_name} extensions.
-If the field is all zeroes then:
-
-* all capability loads set the loaded {ctag} to zero
-* all capability stores with the to-be-stored {ctag} set raise a {cheri_excep_name_pte_st}.
-
-As {cheri_base32_ext_name} has no field allocated in the PTE, capability loads and stores operate as normal.
 
 Implicit memory accesses made by the page table walker are not subject to CHERI checks.
 
 NOTE: A future extension may add CHERI checks to the page table walker.
 
+==== The _pte_._{cheri_base_ext_name_lc}_ field for capability flow control
+
+As {cheri_base32_ext_name} has no field allocated in the PTE, capability loads and stores operate as normal.
+Therefore the {cheri_base_ext_name} field is reserved in the RV64 PTE formats only (e.g. <<sv39pte>>) for use by {cheri_base64_ext_name} extensions.
+The principle is that extensions, such as <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> may redefine the usage of the {cheri_base_ext_name} field by adding an enable bit into `Xstatus`.
+
+The definition of the {cheri_base_ext_name} field is as follows:
+
+.Definition of the _pte_._{cheri_base_ext_name_lc}_ field
+[#cheri_pte_rvy_default]
+[width="100%",options=header]
+|=========================================================================================
+| Bit                                 | Name       | Comment
+| _pte_._{cheri_base_ext_name_lc}[3]_ | _pte_._ye_ | Enable capability (Y) access
+| _pte_._{cheri_base_ext_name_lc}[2]_ | _reserved_ | Reserved
+| _pte_._{cheri_base_ext_name_lc}[1]_ | _reserved_ | Reserved
+| _pte_._{cheri_base_ext_name_lc}[0]_ | _reserved_ | Reserved
+|=========================================================================================
+
+If _pte_._ye_=0 then:
+
+* All capability loads set the loaded {ctag} to zero
+* All capability stores with the to-be-stored {ctag} set raise a {cheri_excep_name_pte_st}.
+
+If _pte_._ye_=1 then:
+
+* All capability loads and capability stores operate as normal.
 
 === Modified Trap-Return Instructions Behavior
 

@@ -4,45 +4,51 @@
 This extension specifies use of the {cheri_base_ext_name} field from the PTE formats (e.g., see <<sv39pte>>).
 {cheri_priv_crg_ext} implies Sv39.
 
+The {cheri_priv_crg_ext} extension is enabled when the `sstatus.CRGE` bit is set.
+
+NOTE: The enable bit is required to redefine the usage of the _pte_._{cheri_base_ext_name_lc}_ field.
+
 The extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from userspace pages, and to track stores of capabilities to pages.
 Such facilities have been shown to provide useful primitives for system-level implementation of certain forms of capability revocation which, in turn, allow userspace heap allocator software to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
+Additionally, the extension allows tracking of kernel space pages for guarding against use-after-reallocation within the OS kernel.
 
-The 4-bit {cheri_base_ext_name} field is sub-divided into four 1-bit fields, two controlling capability loads (including the capability loaded during an AMO) and two controlling capability stores (again, including the capability stored as part of an AMO).
+The 4-bit _pte_._{cheri_base_ext_name_lc}_  field is sub-divided into four 1-bit fields, two controlling capability loads (including the capability loaded during an AMO) and two controlling capability stores (again, including the capability stored as part of an AMO).
 
-[[svucrg_rvy_field_breakdown]]
+[[svycrg_rvy_field_breakdown]]
 .Breakdown of the 4-bit _pte_._{cheri_base_ext_name_lc}_ field.
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
 | Bit                                | Name           | Comment
 3+| *Capability load/AMO fields*
-|_pte_._{cheri_base_ext_name_lc}[0]_ | _pte_._lyen_   | Load capability enable
+|_pte_._{cheri_base_ext_name_lc}[0]_ | _pte_._lye_    | Load capability enable
 |_pte_._{cheri_base_ext_name_lc}[1]_ | _pte_._lycrg_  | Load capability read generation
 3+| *Capability store/AMO fields*
-|_pte_._{cheri_base_ext_name_lc}[2]_ | _pte_._syen_   | Store capability enable
+|_pte_._{cheri_base_ext_name_lc}[2]_ | _pte_._sye_    | Store capability enable
 |_pte_._{cheri_base_ext_name_lc}[3]_ | _pte_._yd_     | Capability dirty bit
 |===
 
-NOTE: {cheri_priv_crg_ext} is not a mandatory part of the {cheri_base64_ext_name} Privileged ISA, as a future extension may specify an alternative mechanism giving improved software efficiency.
+NOTE: {cheri_priv_crg_ext} is not a mandatory part of the {cheri_base64_ext_name} Privileged ISA, as a future extension may specify an alternative usage for the _pte_._{cheri_base_ext_name_lc}_ field allowing a different mechanism giving improved software efficiency.
 
 === Software Primitives
 
 When all of the following are true, {cheri_priv_crg_ext} adds two primitives for use by software:
 
+. `sstatus.CRGE` is set.
 . The authorizing capability has <<c_perm>>.
 . The PMA is set to (_CHERI {ctag_title}_).
 
 ==== {cheri_excep_name_pte_ld}s
 
-_pte.lyen_ is used to allow capability loads or AMOs to write a {ctag} to {cd}.
+_pte_._lye_ is used to enable capability loads or AMOs to write a {ctag} to {cd}.
 
-When _pte.lyen_ is set, _pte.lycrg_ can be used to trap on capability loads or AMOs when it does not match the value of `sstatus.UCRG`.
+When _pte_._lye_ is set, _pte_._lycrg_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation (CRG) value which is represented by the value of `sstatus.UCRG` for userspace pages (_pte_._u=1_) or `sstatus.SCRG` for kernel pages (_pte_._u=0_).
 
 The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the rules above, all of the following are true:
 
 . A capability load or AMO is executed.
-. _pte.lyen_ is set.
-. _pte.lycrg_ does not equal `sstatus.UCRG`.
-. _pte.u_ is set.
+. _pte_._lye_ is set.
+. if _pte_._u=1_ _pte_._lycrg_ does not equal `sstatus.UCRG`.
+. if _pte_._u=0_ _pte_._lycrg_ does not equal `sstatus.SCRG`.
 . Any other platform specific rules have not forced the loaded {ctag} to be clear.
 . The loaded {ctag} is set.
 
@@ -60,83 +66,81 @@ This gives a range of valid implementations.
 Checking the value of the {ctag} requires taking data dependent exceptions on loaded capabilities for loads or AMOs.
 Ideally all implementations would trap precisely (taking the {ctag} into account in all cases) rather than conservatively (trapping more often, potentially on every loaded capability).
 However, the loaded {ctag} may not be available in all implementations when determining whether to raise the exception, and therefore flexibility is permitted.
-As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set, potentially resulting in spurious traps from pages which have _pte.lyen=1_, and so are likely to store valid capabilities.
+As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set, potentially resulting in spurious traps from pages which have _pte_._lye=1_, and so are likely to store valid capabilities.
 
 Implementations which already take synchronous traps on loaded data, such as ECC faults, are recommended to check the loaded {ctag} when determining whether to raise the fault.
 
 ====
 
-[[pte_lyen_lycrg_load_summary]]
-.Summary of capability load _pte.lyen_ and _pte.lycrg_ behavior in the PTEs
-[%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
+[[pte_lye_lycrg_load_summary]]
+.Summary of capability load _pte_._lye_ and _pte_._lycrg_ behavior in the PTEs
+[%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|_pte.lyen_| _pte.lycrg_         | _pte.u_|tag^1^| Load Capability Behavior
-| 0        | 0                   | X      |  X   | Clear loaded {ctag}
-| 0        | 1                   | X      |  X   | Normal operation
-| 1        | X                   | 0      |  X   | Normal operation^2^
-| 1        | {ne} `sstatus.UCRG` | 1      |  0   | Implementation defined choice of +
+|_pte_._lye_| _pte_._lycrg_          | tag^1^| Load Capability Behavior
+| 0         | 0                      |   X   | Clear loaded {ctag}
+| 0         | 1                      |   X   | Normal operation
+| 1         | {ne} `sstatus.xCRG`^2^ |   0   | Implementation defined choice of +
 {cheri_excep_name_pte_ld} or normal operation
-| 1        | {ne} `sstatus.UCRG` | 1      |  1   | {cheri_excep_name_pte_ld}
-| 1        | = `sstatus.UCRG`    | 1      |  X   | Normal operation
+| 1         | {ne} `sstatus.xCRG`^2^ |   1   | {cheri_excep_name_pte_ld}
+| 1         | = `sstatus.xCRG`^2^    |   X   | Normal operation
 |===
 
 ^1^ The loaded {ctag}.
 
-^2^ A future version of this specification may check an SCRG bit in `sstatus` in this case for trapping on kernel pages.
+^2^ if _pte_._u=1_ `sstatus.UCRG` else `sstatus.SCRG`.
 
 NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
 ==== Capability Dirty Tracking
 
-When _pte.syen_ is clear, capability stores or AMOs where the to-be-stored {ctag} is set will raise a {cheri_excep_name_pte_st} fault.
+When _pte_._sye_ is clear, capability stores or AMOs where the to-be-stored {ctag} is set will raise a {cheri_excep_name_pte_st} fault.
 
-When _pte.syen_ is set, capability stores to the virtual page are permitted.
-In addition, the _pte.yd_ bit indicates that a capability was stored to the virtual page since the last time the _pte.yd_ bit was cleared.
+When _pte_._sye_ is set, capability stores to the virtual page are permitted.
+In addition, the _pte_._yd_ bit indicates that a capability was stored to the virtual page since the last time the _pte_._yd_ bit was cleared.
 
-NOTE: This is akin to the _pte.d_ bit indicating that a store occurred through this PTE since the last time _pte.d_ was cleared.
+NOTE: This is akin to the _pte_._d_ bit indicating that a store occurred through this PTE since the last time _pte_._d_ was cleared.
 
 Capability dirty tracking behavior is enabled when, in addition to the rules above, all of the following are true:
 
 . A capability store or AMO instruction is executed.
 . The to-be-stored {ctag} is set.
-. _pte_._syen_ is set.
+. _pte_._sye_ is set.
 . _pte_._yd_ is clear.
 
 Two schemes for capability dirty tracking are permitted, and the scheme in use is determined by whether the _Svade_ or _Svadu_ extensions are enabled.
 
 * For _Svade_, take a {cheri_excep_name_pte_st}.
-* For _Svadu_, do a hardware update which sets _pte.yd=1_, following the same rules as setting _pte.d_.
-** When setting _pte.yd_, the hardware update also necessarily sets (or leaves set) _pte.a_ and _pte.d_.
+* For _Svadu_, do a hardware update which sets _pte_._yd=1_, following the same rules as setting _pte_._d_.
+** When setting _pte_._yd_, the hardware update also necessarily sets (or leaves set) _pte_._a_ and _pte_._d_.
 
 
-[[pte_syen_yd_store_summary]]
-.Summary of capability store _pte.syen_ and _pte.yd_ behavior in the PTEs
+[[pte_sye_yd_store_summary]]
+.Summary of capability store _pte_._sye_ and _pte_._yd_ behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|_pte.syen_|_pte.yd_|tag^1^| Store Capability Behavior
+|_pte_._sye_|_pte_._yd_|tag^1^| Store Capability Behavior
 | 0        | 0      |  0   | Normal operation
-| 0        | 0      |  1   | {cheri_excep_name_pte_st}
-| 0        | 1      |  X   | Normal operation
+| 0        | 1      |  X   | {cheri_excep_name_pte_st}
 | 1        | 0      |  0   | Normal operation
 | 1        | 0      |  1   | {cheri_excep_name_pte_st} (_Svade_) or +
-hardware _pte.yd_ update (_Svadu_)
+hardware _pte_._yd_ update (_Svadu_)
 | 1        | 1      |  X   | Normal operation
 |===
 
 ^1^ The to-be-stored {ctag}.
 
 The capability dirty tracking is resolved during memory translation, but there are cases it is not known if there will be a {ctag} stored to memory or not at this point.
-Capability dirty tracking _must_ be triggered when _pte.syen=1_ and _pte.yd=0_ and the to-be-stored {ctag} is set, and _may_ be triggered in the following case where it is not known if there will be a stored {ctag} during translation.
+Capability dirty tracking _must_ be triggered when _pte_._sye=1_ and _pte_._yd=0_ and the to-be-stored {ctag} is set, and _may_ be triggered in the following case where it is not known if there will be a stored {ctag} during translation:
 
 * SC{LD_ST_DOT_CAP} triggers capability dirty tracking if the {ctag} is set in {cs2}, even if the store fails.
 
 [NOTE]
 ====
 
-_pte.yd_ must always be set when there is a stored {ctag} to a virtual page so that software knows which pages have had capabilities stored to them.
+_pte_._yd_ must always be set when there is a stored {ctag} to a virtual page so that software knows which pages have had capabilities stored to them.
 It may be set too often, which may cause software to examine the page to check for capabilities when none are present.
 This is a situation software is required to handle anyway, as it is always possible for all capabilities in a page to be overwritten by non-capability data.
-In this case the _pte.yd_ bit will still be set.
+In this case the _pte_._yd_ bit will still be set.
 
 Future AMOs fall into this category:
 
@@ -153,9 +157,9 @@ NOTE: Capability dirty tracking may be used to implement the store-barrier primi
 
 ==== Minimum support
 
-The minimum level of PTE support is to set _pte.lyen=1_ and _pte.syen=1_ in all PTEs intended for storing
+The minimum level of PTE support is to set _pte_._lye=1_ and _pte_._sye=1_ in all PTEs intended for storing
 capabilities (e.g., private anonymous mappings) and leave
-`sstatus.UCRG` on all harts and _pte.lycrg_ in all PTEs set to 0, which will allow
+`sstatus.UCRG`, `sstatus.SCRG` on all harts and _pte_._lycrg_ in all PTEs set to 0, which will enable
 capabilities to be loaded and stored successfully.
 
 ifdef::cheri_standalone_spec[]
@@ -163,7 +167,7 @@ ifdef::cheri_standalone_spec[]
 [#xstatus_pte]
 === UCRG CSR field
 
-The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Read Generation (UCRG) bit.
+The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Read Generation (UCRG) bit, the Supervisor version (SCRG) and the enable bit (CRGE).
 
 [#mstatusreg_pte]
 .Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
@@ -201,7 +205,9 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'MPELP'},
   {bits:  1, name: 'MDT'},
-  {bits: 18, name: 'WPRI'},
+  {bits: 16, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
+  {bits:  1, name: 'SCRG'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
@@ -232,7 +238,9 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 27, name: 'WPRI'},
+  {bits: 25, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
+  {bits:  1, name: 'SCRG'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
@@ -260,7 +268,9 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
   {bits:  1, name: 'SUM'},
   {bits: 12, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 27, name: 'WPRI'},
+  {bits: 25, name: 'WPRI'},
+  {bits:  1, name: 'CRGE'},
+  {bits:  1, name: 'SCRG'},
   {bits:  1, name: 'UCRG'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'}
