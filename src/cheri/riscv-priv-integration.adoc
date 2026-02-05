@@ -205,7 +205,7 @@ Load/store/AMO address misaligned
 .>|_Lowest_ .>|{cheri_excep_cause_pte_ld} .<|{cheri_excep_name_pte_ld}^2^
 |===
 
-^1^ {pcc} bounds are checked against all bytes of fetched instructions.
+^1^ <<pcc>> bounds are checked against all bytes of fetched instructions.
  If the instructions could not be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
 ^2^ {cheri_excep_name_pte_ld} is the lowest priority as determining whether to raise the exception may include checking the loaded {ctag}.
@@ -442,6 +442,7 @@ There are three levels of support:
 |=========================================================================================
 
 ^1^ The access fault is triggered on all capability stores or atomics such as <<STORE_CAP>> or <<AMOSWAP_CAP>> when <<c_perm>> and <<w_perm>> are granted and the {ctag} is set to one.
+ For SC{LD_ST_DOT_CAP}, the access fault is raised if the {ctag} is set in {cs2} and the store fails.
 
 Memory regions that do not have the _CHERI {ctag_title}_ PMA do not require storage for {ctag}s.
 
@@ -753,9 +754,9 @@ AUIPC (RVY)::
 CSRRW (RVY)::
    See the unprivileged manual for the behavior of CSRRW for RVY.
 
-[#AMOSWAP_CAP, reftext="AMOSWAP.{LD_ST_DOT_CAP}"]
+[#AMOSWAP_CAP, reftext="AMOSWAP{LD_ST_DOT_CAP}"]
 AMOSWAP.Y::
-   See the unprivileged manual for the definition of AMOSWAP.Y.
+   See the unprivileged manual for the definition of AMOSWAP{LD_ST_DOT_CAP}.
 
 [#STORE_CAP, reftext="{STORE_CAP_NAME}"]
 SY::
