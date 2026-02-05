@@ -44,18 +44,18 @@ When all of the following are true, {cheri_priv_crg_ext} adds two primitives for
 
 * {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld})
 
-{cheri_excep_name_pte_ld} is prioritized below {cheri_excep_name_pte_st} as shown in <<exception-priority-cheri>>, as AMOs can raise both.
+In the case of AMOs which could trigger both a {cheri_excep_name_pte_st}, due to storing a valid {ctag}, and also a {cheri_excep_name_pte_ld}, the {cheri_excep_name_pte_st} takes priority as shown in <<exception-priority-cheri>>
 
 _pte_._{pte_cap_r_name_lc}_ is used to enable capability loads or AMOs to write a {ctag} to {cd}.
 
-When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value which is represented by the value of `sstatus.{revocation_u}` for userspace pages (_pte_._u=1_) or `sstatus.{revocation_s}` for kernel pages (_pte_._u=0_).
+When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value which is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
 
 The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the rules above, all of the following are true:
 
 . A capability load or AMO is executed.
 . _pte_._{pte_cap_r_name_lc}_ is set.
-. if _pte_._u=1_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.{revocation_u}`.
-. if _pte_._u=0_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.{revocation_s}`.
+. if _pte_._u=1_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.U{pte_cap_crg_pte_name}`.
+. if _pte_._u=0_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.S{pte_cap_crg_pte_name}`.
 . The loaded {ctag} is set^1^.
 .. The {cheri_excep_name_pte_ld} _must_ be taken if the loaded {ctag} is set.
 .. The {cheri_excep_name_pte_ld} _may_ be taken if the loaded {ctag} is not set.
@@ -84,15 +84,15 @@ Implementations which already take synchronous traps on loaded data, such as ECC
 |_pte_._{pte_cap_r_name_lc}_|_pte_._{pte_cap_crg_pte_name_lc}_ | tag^1^| Load Capability Behavior
 | 0                         | 0                                |   X   | Clear loaded {ctag}
 | 0                         | 1                                |   X   | Normal operation
-| 1                         | {ne} `sstatus.{revocation_x}`^2^ |   0   | Implementation defined choice of +
+| 1                         | {ne} `sstatus.x{pte_cap_crg_pte_name}`^2^ |   0   | Implementation defined choice of +
 {cheri_excep_name_pte_ld} or normal operation
-| 1                         | {ne} `sstatus.{revocation_x}`^2^ |   1   | {cheri_excep_name_pte_ld}
-| 1                         | = `sstatus.{revocation_x}`^2^    |   X   | Normal operation
+| 1                         | {ne} `sstatus.x{pte_cap_crg_pte_name}`^2^ |   1   | {cheri_excep_name_pte_ld}
+| 1                         | = `sstatus.x{pte_cap_crg_pte_name}`^2^    |   X   | Normal operation
 |===
 
 ^1^ The loaded {ctag}.
 
-^2^ if _pte_._u=1_, `sstatus.{revocation_u}` else `sstatus.{revocation_s}`.
+^2^ if _pte_._u=1_, `sstatus.U{pte_cap_crg_pte_name}` else `sstatus.S{pte_cap_crg_pte_name}`.
 
 NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
@@ -162,14 +162,14 @@ NOTE: Capability dirty tracking may be used to implement the store-barrier primi
 
 ==== Minimum support
 
-The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.{revocation_u}`=0 and `sstatus.{revocation_s}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
+The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
 
 ifdef::cheri_standalone_spec[]
 
 [#xstatus_pte]
-=== {revocation_u} CSR field
+=== U{pte_cap_crg_pte_name} CSR field
 
-The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Read Generation ({revocation_u}) bit, the Supervisor version ({revocation_s}) and the enable bit ({revocation_enable}).
+The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({revocation_enable}).
 
 [#mstatusreg_pte]
 .Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
@@ -209,8 +209,8 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
   {bits:  1, name: 'MDT'},
   {bits: 16, name: 'WPRI'},
   {bits:  1, name: '{revocation_enable}'},
-  {bits:  1, name: '{revocation_s}'},
-  {bits:  1, name: '{revocation_u}'},
+  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
@@ -242,8 +242,8 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
   {bits:  2, name: 'UXL[1:0]'},
   {bits: 25, name: 'WPRI'},
   {bits:  1, name: '{revocation_enable}'},
-  {bits:  1, name: '{revocation_s}'},
-  {bits:  1, name: '{revocation_u}'},
+  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
@@ -272,8 +272,8 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
   {bits:  2, name: 'UXL[1:0]'},
   {bits: 25, name: 'WPRI'},
   {bits:  1, name: '{revocation_enable}'},
-  {bits:  1, name: '{revocation_s}'},
-  {bits:  1, name: '{revocation_u}'},
+  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'}
 ], config:{lanes: 4, hspace:1024}}
