@@ -47,7 +47,7 @@ When all of the following are true, {cheri_priv_crg_ext} adds two primitives for
 
 * {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld})
 
-It is prioritized against other fault types as shown in <<exception-priority-cheri>>.
+{cheri_excep_name_pte_ld} is prioritized below {cheri_excep_name_pte_st} as shown in <<exception-priority-cheri>>, as AMOs can raise both.
 
 _pte_._{pte_cap_r_name_lc}_ is used to enable capability loads or AMOs to write a {ctag} to {cd}.
 
@@ -59,16 +59,14 @@ The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the r
 . _pte_._{pte_cap_r_name_lc}_ is set.
 . if _pte_._u=1_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.{revocation_u}`.
 . if _pte_._u=0_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.{revocation_s}`.
+. The loaded {ctag} is set^1^.
+.. The {cheri_excep_name_pte_ld} _must_ be taken if the loaded {ctag} is set.
+.. The {cheri_excep_name_pte_ld} _may_ be taken if the loaded {ctag} is not set.
 . Any other platform specific rules have not forced the loaded {ctag} to be clear.
-. The loaded {ctag} is set.
-
-{cheri_excep_name_pte_ld} is prioritized below {cheri_excep_name_pte_st} as shown in <<exception-priority-cheri>>, as AMOs can raise both.
 
 NOTE: An example of a platform specific rule is a hardware engine clearing {ctag}s in memory after a call to free() to offload the CPU, which may have cleared a {ctag} before the CPU loads it.
 
-The {cheri_excep_name_pte_ld} _must_ be taken if the loaded {ctag} is set.
-The {cheri_excep_name_pte_ld} _may_ be taken if the loaded {ctag} is not set.
-This gives a range of valid implementations.
+^1^ Allowing flexibility about checking the loaded {ctag} gives a range of valid implementations.
 
 [NOTE]
 ====
@@ -86,9 +84,9 @@ Implementations which already take synchronous traps on loaded data, such as ECC
 .Summary of capability load _pte_._{pte_cap_r_name_lc}_ and _pte_._{pte_cap_crg_pte_name_lc}_ behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|_pte_._{pte_cap_r_name_lc}_|_pte_._{pte_cap_crg_pte_name_lc}_           | tag^1^| Load Capability Behavior
-| 0                         | 0                      |   X   | Clear loaded {ctag}
-| 0                         | 1                      |   X   | Normal operation
+|_pte_._{pte_cap_r_name_lc}_|_pte_._{pte_cap_crg_pte_name_lc}_ | tag^1^| Load Capability Behavior
+| 0                         | 0                                |   X   | Clear loaded {ctag}
+| 0                         | 1                                |   X   | Normal operation
 | 1                         | {ne} `sstatus.{revocation_x}`^2^ |   0   | Implementation defined choice of +
 {cheri_excep_name_pte_ld} or normal operation
 | 1                         | {ne} `sstatus.{revocation_x}`^2^ |   1   | {cheri_excep_name_pte_ld}
