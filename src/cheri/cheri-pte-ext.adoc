@@ -43,6 +43,12 @@ When all of the following are true, {cheri_priv_crg_ext} adds two primitives for
 
 ==== {cheri_excep_name_pte_ld}s
 
+{cheri_priv_crg_ext} defines a new fault type:
+
+* {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld})
+
+It is prioritized against other fault types as shown in <<exception-priority-cheri>>.
+
 _pte_._{pte_cap_r_name_lc}_ is used to enable capability loads or AMOs to write a {ctag} to {cd}.
 
 When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value which is represented by the value of `sstatus.{revocation_u}` for userspace pages (_pte_._u=1_) or `sstatus.{revocation_s}` for kernel pages (_pte_._u=0_).
