@@ -220,20 +220,6 @@ ifdef::cheri_standalone_spec[]
 Bits {cheri_excep_cause_list} of <<medeleg>> refer to valid CHERI exceptions and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
-[[mtval_y]]
-==== Machine Trap Value Register (mtval)
-
-ifdef::cheri_v9_annotations[]
-WARNING: *CHERI v9 Note:* Encoding and values changed, and generally were
-simplified.
-endif::[]
-
-For all CHERI faults, <<mtval>> is written with the MXLEN-bit effective address which caused the fault.
-
-.Machine trap value register
-[#mtval-format]
-include::img/mtvalreg.edn[]
-
 ==== "Smstateen/Ssstateen" Integration
 The TID bit in `mstateen0` controls access to the <<stidc>> CSR.
 
@@ -339,13 +325,6 @@ The new exception code is listed in xref:scauses[xrefstyle=short].
 The behavior and usage of <<scause>> otherwise remains as described in xref:scause[xrefstyle=short].
 
 See <<mcause_y>> for the new exceptions priorities when {cheri_base_ext_name} is implemented.
-
-[[stval-cheri]]
-==== Supervisor Trap Value Register (stval)
-
-<<stval>> is updated following the same rules as <<mtval_y>> for CHERI exceptions
-and <<cheri_pte_fault,CHERI page faults>> which are delegated to HS-mode or S-mode.
-
 
 ==== "Smstateen/Ssstateen" Integration
 The TID (thread ID) bit in `sstateen0` controls access to the <<utidc>> CSR.
