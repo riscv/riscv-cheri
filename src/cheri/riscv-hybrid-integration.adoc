@@ -39,7 +39,7 @@ That is, all memory accesses, including <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CH
 The prefetched address of <<PREFETCH_I_CHERI>> _should_ be authorized against <<pcc>>, but the check _may_ be avoided in the implementation.
 
 NOTE: High performance implementations may not have access to the <<pcc>> to authorize the access, as <<pcc>> bounds are not otherwise required in the load/store unit.
- Therefore this check is non-architectural and only a recommendation.
+Since instruction prefetches cannot be used to violate memory safety and only impact side-channel resistence, this check is a strong recommendation rather than mandatory.
 +
 NOTE: <<ddc>> is also used to authorize {cheri_base_ext_name} specific memory instructions such as <<LOAD_CAP>> and <<STORE_CAP>>.
 +
