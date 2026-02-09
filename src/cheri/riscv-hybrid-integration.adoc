@@ -36,8 +36,8 @@ All <<rvy_insn_table>> instructions, and associated CSRs, are available in addit
 The authorizing capability for memory access is <<ddc>> (as opposed to `rs1`).
 That is, all memory accesses, including <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CHERI>>, are implicitly authorized by <<ddc>> and only the memory address is sourced from `rs1`.
 +
-The prefetched address of <<PREFETCH_I_CHERI>> _should_ be authorized against <<pcc>>, but the check _may_ be avoided in the implementation.
-
+The prefetched address of <<PREFETCH_I_CHERI>> _should_ be authorized against <<pcc>>, but the check _may_ be avoided in the implementation, or the memory access associated with the prefetch _may_ not be issued if the address cannot be correctly authorized.
++
 NOTE: High performance implementations may not have access to the <<pcc>> to authorize the access, as <<pcc>> bounds are not otherwise required in the load/store unit.
 Since instruction prefetches cannot be used to violate memory safety and only impact side-channel resistence, this check is a strong recommendation rather than mandatory.
 +

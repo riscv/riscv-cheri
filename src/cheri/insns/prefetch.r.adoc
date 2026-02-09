@@ -32,10 +32,17 @@ encoding is only valid if imm[4:0]=0. The authorizing capability for this
 operation is `{cs1}`. This instruction does not throw any exceptions. However,
 following the rules from xref:rv32y[xrefstyle=short], this instruction does not
 perform a prefetch if it is not authorized by `{cs1}`.
-
++
 :prefetch_insn: PREFETCH.R
 :prefetch_perm: <<r_perm>>
 include::prefetch_cap_checks.adoc[]
+
+[NOTE]
+====
+_If the checks above pass, an implementation may opt to cache a copy of the cache block in a cache
+accessed by a data read in order to improve memory access latency, but this
+behavior is not required._
+====
 
 Prerequisites::
 Zicbop, {cheri_base_ext_name}
