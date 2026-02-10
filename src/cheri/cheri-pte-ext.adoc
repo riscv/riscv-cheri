@@ -5,7 +5,7 @@ This extension specifies use of the {rv64y_pte4_field_name_lc} field from the PT
 
 {cheri_priv_crg_ext} implies Sv39.
 
-The {cheri_priv_crg_ext} extension is enabled when the `sstatus.{revocation_enable}` bit is set.
+The {cheri_priv_crg_ext} extension is enabled when the `sstatus.{pte_cap_fc_enable}` bit is set.
 
 NOTE: The enable bit is required to redefine the usage of the _pte_._{rv64y_pte4_field_name_lc}_ field.
 
@@ -34,7 +34,7 @@ NOTE: {cheri_priv_crg_ext} is not a mandatory part of the {cheri_base64_ext_name
 
 When all of the following are true, {cheri_priv_crg_ext} adds two primitives for use by software:
 
-. `sstatus.{revocation_enable}` is set.
+. `sstatus.{pte_cap_fc_enable}` is set.
 . The authorizing capability has <<c_perm>>.
 . The PMA is set to (_CHERI {ctag_title}_).
 
@@ -169,7 +169,7 @@ ifdef::cheri_standalone_spec[]
 [#xstatus_pte]
 === U{pte_cap_crg_pte_name} CSR field
 
-The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({revocation_enable}).
+The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({pte_cap_fc_enable}).
 
 [#mstatusreg_pte]
 .Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
