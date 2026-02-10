@@ -558,6 +558,9 @@ NOTE: A future extension may add CHERI checks to the page table walker.
 [#limit_cap_prop]
 === Limiting Capability Propagation
 
+[NOTE]
+====
+
 Page table enforcement can allow the operating system to limit the flow of capabilities between processes.
 It is highly desirable that a process should only possess capabilities that have been issued for that address space by the operating system.
 Unix processes may share memory for efficient communication, but capability pointers must not be shared across these channels into a foreign address space.
@@ -568,6 +571,8 @@ Such a change would not be transparent to the program.
 Such sharing through virtual memory is on the page granularity, so preventing capability writes with a PTE permission is a natural solution.
 
 ^*^ _allocated using mmap_
+
+====
 
 [#cheri_pte_fault]
 === {cheri_excep_name_pte_st}
