@@ -584,10 +584,10 @@ CHERI enforces the following rules for all valid capabilities:
 . The capability metadata does not have any bits, or fields set to a reserved value.
 .. An example of a reserved field value is permissions which cannot be legally produced by <<CLRPERM>>.
 
-In all cases the capability could not have been legally created, and so either:
+Since a capability with the {ctag} set that fails integrity checks could not have been legally created, such a failure indicates either
 
-* There has been a corruption of capability state due to memory or logic faults
-* There is an incompatible or faulty CHERI IP within the system
+* state corruption due to memory or logic faults, or
+* the presence of incompatible or faulty CHERI IP within the system.
 
 NOTE: These checks are much less rigorous than parity or ECC protection, and are only
 used to detect simple problems with the capability metadata.
