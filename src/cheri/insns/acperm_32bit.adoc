@@ -33,9 +33,9 @@ NOTE: Future extensions may include hardwired permission bits, in which case the
 . Encode the resulting architectural permissions as specified by the encoding in use.
   This may involve iteratively applying the rules in <<sec_permission_transitions>>,
   as well as any rules added by extensions or the capability encoding,
-  until a fixed point is reached -- specifically, capability metadata (such as
-  a set of permissions or the <<M-bit>>) that cannot be further reduced by any rule.
-  Note that encodings may specify other encoding procedures.
+  until a fixed point is reached, arriving at a set of permissions not further reduced by any rule.
+  Any permission-dependent capability metadata is to be updated to reflect any permissions removed by this procedure.
+  Note that encodings may specify procedures for computing the new permission set; while these must be idempotent and respect the rules of <<sec_permission_transitions>>, they need not be of the form "iterate to fixed point".
 +
 IMPORTANT: Depending on the base ISA and supported extensions, some combinations of permissions cannot be encoded or are not useful.
 In these cases, <<CLRPERM>> will return a minimal sets of permissions, which may be no permissions.
