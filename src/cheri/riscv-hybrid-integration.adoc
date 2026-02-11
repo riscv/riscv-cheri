@@ -79,6 +79,10 @@ and attempting to update this field may be a no-op.
 
 IMPORTANT: Since indirect jumps copy the full target capability into <<pcc>>, it allows indirect jumps to change between modes (see <<sec_changing_cheri_execution_mode>>).
 
+When executing <<CLRPERM>>, if <<x_perm>> is removed when the <<m_bit>> is set, and the capability encoding still permits representing the <<m_bit>>, then the <<m_bit>> must be set to zero.
+
+NOTE: Only <<rv64y_cap_description>> encodes the <<m_bit>> when <<x_perm>> is not granted.
+
 //#I don't understand this statement, as <<MODESW_CAP>> can be executed at any time#
 //The <<m_bit>> of the <<pcc>>, may be overridden by the execution environment which may not grant permission to enter {cheri_cap_mode_name}.
 
