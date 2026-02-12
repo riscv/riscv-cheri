@@ -10,7 +10,7 @@ The {cheri_priv_crg_ext} extension is enabled when the `sstatus.{pte_cap_fc_enab
 NOTE: The enable bit is required to redefine the usage of the _pte_._{rv64y_pte4_field_name_lc}_ field.
 
 The extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from pages and to track stores of capabilities to pages.
-Applied to userspace pages, such facilities have been shown to be useful primitives for system-level implementation of certain forms of capability revocation which, in turn, allow userspace heap allocator software to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
+Applied to userspace pages, this has been shown to allow the operating system to implement capability revocation schemes, which allow userspace memory allocators to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
 Applied to kernel pages, they are analogously useful within an OS kernel.
 
 The 4-bit _pte_._{rv64y_pte4_field_name_lc}_  field is sub-divided into four 1-bit fields, two controlling capability loads (including the capability loaded during an AMO) and two controlling capability stores (again, including the capability stored as part of an AMO).
