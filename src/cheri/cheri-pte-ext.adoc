@@ -36,7 +36,7 @@ When all of the following are true, {cheri_priv_crg_ext} adds two related archie
 . The authorizing capability has <<c_perm>>.
 . The PMA is set to (_CHERI {ctag_title}_).
 
-==== {cheri_excep_name_pte_ld}s
+=== {cheri_excep_name_pte_ld}s
 
 {cheri_priv_crg_ext} defines a new fault type:
 
@@ -88,7 +88,7 @@ Implementations which already take synchronous traps on loaded data, such as ECC
 
 NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
-==== Capability Dirty Tracking
+=== Capability Dirty Tracking
 
 When _pte_._{pte_cap_w_name_lc}_ is clear, capability stores or AMOs where the to-be-stored {ctag} is set will raise a {cheri_excep_name_pte_st} fault.
 
@@ -152,8 +152,6 @@ Checking the stored {ctag} is less of a burden to the implementation than checki
 ====
 
 NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
-
-==== Minimum support
 
 NOTE: The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
 
