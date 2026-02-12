@@ -73,9 +73,9 @@ Implementations which already take synchronous traps on loaded data, such as ECC
 .Summary of capability load _pte_._{pte_cap_r_name_lc}_ and _pte_._{pte_cap_crg_pte_name_lc}_ behavior in the PTEs
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
-|_pte_._{pte_cap_r_name_lc}_|_pte_._{pte_cap_crg_pte_name_lc}_ | tag^1^| Load Capability Behavior
-| 0                         | 0                                |   X   | Clear loaded {ctag}
-| 0                         | 1                                |   X   | Normal operation
+|_pte_._{pte_cap_r_name_lc}_|_pte_._{pte_cap_crg_pte_name_lc}_          | tag^1^| Load Capability Behavior
+| 0                         | 0                                         |   X   | Clear loaded {ctag}
+| 0                         | 1                                         |   X   | Normal operation
 | 1                         | {ne} `sstatus.x{pte_cap_crg_pte_name}`^2^ |   0   | Implementation defined choice of +
 {cheri_excep_name_pte_ld} or normal operation
 | 1                         | {ne} `sstatus.x{pte_cap_crg_pte_name}`^2^ |   1   | {cheri_excep_name_pte_ld}
@@ -116,9 +116,8 @@ Two schemes for capability dirty tracking are permitted, and the scheme in use i
 [%autowidth,float="center",align="center",cols="<,<,<,<",options="header"]
 |===
 |_pte_._{pte_cap_w_name_lc}_|_pte_._{pte_cap_dirty_name_lc}_|tag^1^| Store Capability Behavior
-| 0        | 0      |  0   | Normal operation
-| 0        | 0      |  1   | {cheri_excep_name_pte_st}
-| 0        | 1      |  X   | {cheri_excep_name_pte_st}
+| 0        | X      |  0   | Normal operation
+| 0        | X      |  1   | {cheri_excep_name_pte_st}
 | 1        | 0      |  0   | Normal operation
 | 1        | 0      |  1   | {cheri_excep_name_pte_st} (_Svade_) or +
 hardware _pte_._{pte_cap_dirty_name_lc}_ update (_Svadu_)
