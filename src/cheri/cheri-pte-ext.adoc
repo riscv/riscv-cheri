@@ -9,7 +9,7 @@ The {cheri_priv_crg_ext} extension is enabled when the `sstatus.{pte_cap_fc_enab
 
 NOTE: The enable bit is required to redefine the usage of the _pte_._{rv64y_pte4_field_name_lc}_ field.
 
-The extension adds the ability for supervisor-mode software to quickly front-run loads of capabilities from pages and to track stores of capabilities to pages.
+The extension adds the ability for supervisor-mode software to quickly enable trapping loads of capabilities from all pages of memory, incrementally allow loads of capabilities from such pages, and track stores of capabilities to all pages of memory.
 Applied to userspace pages, this has been shown to allow the operating system to implement capability revocation schemes, which allow userspace memory allocators to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
 Applied to kernel pages, they can similarly be used against use-after-reallocation within the kernel itself.
 
@@ -21,18 +21,16 @@ The 4-bit _pte_._{rv64y_pte4_field_name_lc}_  field is sub-divided into four 1-b
 |===
 | Bit                                  | Name                                | Comment
 3+| *Capability load/AMO fields*
-|_pte_._{rv64y_pte4_field_name_lc}[0]_ | _pte_._{pte_cap_r_name_lc}_         | Capability read enable
+|_pte_._{rv64y_pte4_field_name_lc}[0]_ | _pte_._{pte_cap_r_name_lc}_         | Capability readable
 |_pte_._{rv64y_pte4_field_name_lc}[1]_ | _pte_._{pte_cap_crg_pte_name_lc}_   | Capability read generation
 3+| *Capability store/AMO fields*
-|_pte_._{rv64y_pte4_field_name_lc}[2]_ | _pte_._{pte_cap_w_name_lc}_         | Capability write enable
-|_pte_._{rv64y_pte4_field_name_lc}[3]_ | _pte_._{pte_cap_dirty_name_lc}_     | Capability dirty bit
+|_pte_._{rv64y_pte4_field_name_lc}[2]_ | _pte_._{pte_cap_w_name_lc}_         | Capability writable
+|_pte_._{rv64y_pte4_field_name_lc}[3]_ | _pte_._{pte_cap_dirty_name_lc}_     | Capability dirty
 |===
 
-NOTE: {cheri_priv_crg_ext} is not a mandatory part of the {cheri_base64_ext_name} Privileged ISA, as a future extension may specify an alternative usage for the _pte_._{rv64y_pte4_field_name_lc}_ field allowing a different mechanism giving improved software efficiency.
+NOTE: {cheri_priv_crg_ext} is a separate extension and not part of the {cheri_base64_ext_name} Privileged ISA, as a future extension may specify an alternative usage for the _pte_._{rv64y_pte4_field_name_lc}_ field allowing a different mechanism giving improved software efficiency.
 
-=== Software Primitives
-
-When all of the following are true, {cheri_priv_crg_ext} adds two primitives for use by software:
+When all of the following are true, {cheri_priv_crg_ext} adds two related archiectural features, {cheri_excep_name_pte_ld}s and Capability Dirty Tracking:
 
 . `sstatus.{pte_cap_fc_enable}` is set.
 . The authorizing capability has <<c_perm>>.
@@ -56,19 +54,13 @@ The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the r
 . _pte_._{pte_cap_r_name_lc}_ is set.
 . if _pte_._u=1_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.U{pte_cap_crg_pte_name}`.
 . if _pte_._u=0_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.S{pte_cap_crg_pte_name}`.
-. The loaded {ctag} is set^1^.
-.. The {cheri_excep_name_pte_ld} _must_ be taken if the loaded {ctag} is set.
-.. The {cheri_excep_name_pte_ld} _may_ be taken if the loaded {ctag} is not set.
+. Optionally, the loaded {ctag} is set^1^.
 . Any other platform specific rules have not forced the loaded {ctag} to be clear.
-
-NOTE: An example of a platform specific rule is a hardware engine clearing {ctag}s in memory after a call to free() to offload the CPU, which may have cleared a {ctag} before the CPU loads it.
-
-^1^ Allowing flexibility about checking the loaded {ctag} gives a range of valid implementations.
 
 [NOTE]
 ====
 
-Checking the value of the {ctag} requires taking data dependent exceptions on loaded capabilities for loads or AMOs.
+^1^Checking the value of the {ctag} requires taking data dependent exceptions on loaded capabilities for loads or AMOs.
 Ideally all implementations would trap precisely (taking the {ctag} into account in all cases) rather than conservatively (trapping more often, potentially on every loaded capability).
 However, the loaded {ctag} may not be available in all implementations when determining whether to raise the exception, and therefore flexibility is permitted.
 As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set, potentially resulting in spurious traps from pages which have _pte_._{pte_cap_r_name_lc}=1_, and so are likely to store valid capabilities.
@@ -92,7 +84,7 @@ Implementations which already take synchronous traps on loaded data, such as ECC
 
 ^1^ The loaded {ctag}.
 
-^2^ if _pte_._u=1_, `sstatus.U{pte_cap_crg_pte_name}` else `sstatus.S{pte_cap_crg_pte_name}`.
+^2^ if _pte_._u=1_, `sstatus.U{pte_cap_crg_pte_name}`, else `sstatus.S{pte_cap_crg_pte_name}`.
 
 NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
@@ -163,7 +155,7 @@ NOTE: Capability dirty tracking may be used to implement the store-barrier primi
 
 ==== Minimum support
 
-The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
+NOTE: The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
 
 ifdef::cheri_standalone_spec[]
 
