@@ -8,6 +8,7 @@ This extension specifies use of the {rv64y_pte4_field_name_lc} field from the PT
 The {cheri_priv_crg_ext} extension is enabled when the `sstatus.{pte_cap_fc_enable}` bit is set.
 
 NOTE: The enable bit is required to redefine the usage of the _pte_._{rv64y_pte4_field_name_lc}_ field.
+ It is a separate extension and not part of the {cheri_base64_ext_name} Privileged ISA, to allow future extensions to specify an alternative uses for the _pte_._{rv64y_pte4_field_name_lc}_ field.
 
 The extension adds the ability for supervisor-mode software to quickly enable trapping loads of capabilities from all pages of memory, incrementally allow loads of capabilities from such pages, and track stores of capabilities to all pages of memory.
 Applied to userspace pages, this has been shown to allow the operating system to implement capability revocation schemes, which allow userspace memory allocators to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
@@ -27,8 +28,6 @@ The 4-bit _pte_._{rv64y_pte4_field_name_lc}_  field is sub-divided into four 1-b
 |_pte_._{rv64y_pte4_field_name_lc}[2]_ | _pte_._{pte_cap_w_name_lc}_         | Capability writable
 |_pte_._{rv64y_pte4_field_name_lc}[3]_ | _pte_._{pte_cap_dirty_name_lc}_     | Capability dirty
 |===
-
-NOTE: {cheri_priv_crg_ext} is a separate extension and not part of the {cheri_base64_ext_name} Privileged ISA, as a future extension may specify an alternative usage for the _pte_._{rv64y_pte4_field_name_lc}_ field allowing a different mechanism giving improved software efficiency.
 
 When all of the following are true, {cheri_priv_crg_ext} adds two related archiectural features, {cheri_excep_name_pte_ld}s and Capability Dirty Tracking:
 
