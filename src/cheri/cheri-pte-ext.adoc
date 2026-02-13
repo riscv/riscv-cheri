@@ -130,6 +130,7 @@ The capability dirty tracking is resolved during memory translation, but there a
 Capability dirty tracking _must_ be triggered when _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_dirty_name_lc}_=0 and the to-be-stored {ctag} is set, and _may_ be triggered in the following case where it is not known if there will be a stored {ctag} during translation:
 
 * SC{LD_ST_DOT_CAP} triggers capability dirty tracking if the {ctag} is set in {cs2}, even if the store fails.
+  This matches the semantics of SC.* with regard to  _pte_._d_.
 
 [NOTE]
 ====
