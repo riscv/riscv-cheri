@@ -441,8 +441,8 @@ There are three levels of support:
 | _CHERI {ctag_title} Fault_ | Load zero {ctag} | Store/AMO Access Fault on {ctag}^1^ | No support for {ctag}s, trap on storing one
 |=========================================================================================
 
-^1^ The access fault is triggered on all capability stores or atomics such as <<STORE_CAP>> or <<AMOSWAP_CAP>> when <<c_perm>> and <<w_perm>> are granted and the {ctag} is set to one.
- For SC{LD_ST_DOT_CAP}, the access fault is raised if the {ctag} is set in {cs2} even when the store fails.
+^1^ The access fault is triggered on all capability stores or atomics such as <<STORE_CAP>> or <<AMOSWAP_CAP>> when <<c_perm>> and <<w_perm>> are granted and the to-be-stored {ctag} is set to one.
+ For SC{LD_ST_DOT_CAP}, the access fault is raised if the to-be-stored {ctag} is set in {cs2} even when the store fails.
 
 Memory regions that do not have the _CHERI {ctag_title}_ PMA do not require storage for {ctag}s.
 
