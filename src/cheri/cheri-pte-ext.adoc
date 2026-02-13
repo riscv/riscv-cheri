@@ -1,14 +1,11 @@
 [#section_cheri_priv_crg_ext]
 == "{cheri_priv_crg_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
 
-This extension specifies use of the {rv64y_pte4_field_name_lc} field from the PTE formats (e.g., see <<sv39pte>>).
+This extension specifies use of the {rv64y_pte4_field_name} field from the PTE formats (e.g., see <<sv39pte>>).
 
 {cheri_priv_crg_ext} implies Sv39.
 
 The {cheri_priv_crg_ext} extension is enabled when the `sstatus.{pte_cap_fc_enable}` bit is set.
-
-NOTE: The enable bit is required to redefine the usage of the _pte_._{rv64y_pte4_field_name_lc}_ field.
- It is a separate extension and not part of the {cheri_base64_ext_name} Privileged ISA, to allow future extensions to specify an alternative uses for the _pte_._{rv64y_pte4_field_name_lc}_ field.
 
 The extension adds the ability for supervisor-mode software to quickly enable trapping loads of capabilities from all pages of memory, incrementally allow loads of capabilities from such pages, and track stores of capabilities to all pages of memory.
 Applied to userspace pages, this has been shown to allow the operating system to implement capability revocation schemes, which allow userspace memory allocators to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
@@ -29,11 +26,11 @@ The 4-bit _pte_._{rv64y_pte4_field_name_lc}_  field is sub-divided into four 1-b
 |_pte_._{rv64y_pte4_field_name_lc}[3]_ | _pte_._{pte_cap_dirty_name_lc}_     | Capability dirty
 |===
 
-When all of the following are true, {cheri_priv_crg_ext} adds two related archiectural features, {cheri_excep_name_pte_ld}s and Capability Dirty Tracking:
+When all of the following are true, {cheri_priv_crg_ext} adds two related architectural features, {cheri_excep_name_pte_ld}s and Capability Dirty Tracking:
 
 . `sstatus.{pte_cap_fc_enable}` is set.
 . The authorizing capability has <<c_perm>>.
-. The PMA is set to (_CHERI {ctag_title}_).
+. The PMA is set to _CHERI {ctag_title}_.
 
 === {cheri_excep_name_pte_ld}s
 
@@ -43,7 +40,10 @@ When all of the following are true, {cheri_priv_crg_ext} adds two related archie
 
 In the case of AMOs which could trigger both a {cheri_excep_name_pte_st}, due to storing a valid {ctag}, and also a {cheri_excep_name_pte_ld}, the {cheri_excep_name_pte_st} takes priority as shown in <<exception-priority-cheri>>
 
-_pte_._{pte_cap_r_name_lc}_ is used to enable capability loads or AMOs to write a {ctag} to {cd}.
+_pte_._{pte_cap_r_name_lc}_ and _pte_._{pte_cap_crg_pte_name_lc}_ are used to enable capability loads or AMOs to write a {ctag} to {cd}.
+
+When _pte_._{pte_cap_r_name_lc}_ is clear, _pte_._{pte_cap_crg_pte_name_lc}_ controls whether capabilities can write a {ctag} to {cd}.
+When clear {ctag}s cannot be written to {cd}, and when set, they can.
 
 When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value which is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
 
