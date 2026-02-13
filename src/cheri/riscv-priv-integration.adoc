@@ -359,23 +359,23 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 4+| *All instructions have these exception checks first*
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> {ctag} is zero
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> is sealed
-| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not have <<x_perm>>
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not grant <<x_perm>>
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of current instruction out of <<pcc>> bounds^1^
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> failed any <<section_cap_integrity,integrity>> check.
 4+| *CSR/Xret additional exception check*
-| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | Illegal instruction | {cheri_excep_name_pc} | <<pcc>> does not have <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>> or <<CBO_INVAL_CHERI>>
+| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | 2 | Illegal instruction | <<pcc>> does not grant <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>> or <<CBO_INVAL_CHERI>>
 4+| *Load additional exception checks*
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` {ctag} is zero
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not have <<r_perm>>
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not grant <<r_perm>>
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^1^
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
 | Capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` {ctag} is zero
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
-| All stores,  CBO.ZERO                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have <<w_perm>>
-| All atomics, CBO.CLEAN, CBO.FLUSH, CBO.INVAL   | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not have both <<r_perm>> and <<w_perm>>
+| All stores,  CBO.ZERO                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant <<w_perm>>
+| All atomics, CBO.CLEAN, CBO.FLUSH, CBO.INVAL   | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant both <<r_perm>> and <<w_perm>>
 | All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^1^
 | CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^1^
 | CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^1^
