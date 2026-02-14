@@ -11,7 +11,7 @@ The extension adds the ability for supervisor-mode software to quickly enable tr
 Applied to userspace pages, this has been shown to allow the operating system to implement capability revocation schemes, which allow userspace memory allocators to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
 Applied to kernel pages, they can similarly be used against use-after-reallocation within the kernel itself.
 
-The 4-bit _pte_._{rv64y_pte4_field_name_lc}_  field is sub-divided into four 1-bit fields, two controlling capability loads (including the capability loaded during an AMO) and two controlling capability stores (again, including the capability stored as part of an AMO).
+The 4-bit _pte_._{rv64y_pte4_field_name_lc}_  field is subdivided into four 1-bit fields, two controlling capability loads (including the capability loaded during an AMO) and two controlling capability stores (again, including the capability stored as part of an AMO).
 
 [[svycrg_rvy_field_breakdown]]
 .Breakdown of the 4-bit _pte_._{rv64y_pte4_field_name_lc}_ field.
@@ -38,14 +38,14 @@ When all of the following are true, {cheri_priv_crg_ext} adds two related archit
 
 * {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld})
 
-In the case of AMOs which could trigger both a {cheri_excep_name_pte_st}, due to storing a valid {ctag}, and also a {cheri_excep_name_pte_ld}, the {cheri_excep_name_pte_st} takes priority as shown in <<exception-priority-cheri>>
+In the case of AMOs that could trigger both a {cheri_excep_name_pte_st}, due to storing a valid {ctag}, and a {cheri_excep_name_pte_ld}, the {cheri_excep_name_pte_st} takes priority as shown in <<exception-priority-cheri>>
 
 _pte_._{pte_cap_r_name_lc}_ and _pte_._{pte_cap_crg_pte_name_lc}_ are used to enable capability loads or AMOs to write a {ctag} to {cd}.
 
 When _pte_._{pte_cap_r_name_lc}_ is clear, _pte_._{pte_cap_crg_pte_name_lc}_ controls whether capabilities can write a {ctag} to {cd}.
 When clear {ctag}s cannot be written to {cd}, and when set, they can.
 
-When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value which is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
+When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value that is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
 
 The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the rules above, all of the following are true:
 
@@ -62,9 +62,9 @@ The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the r
 ^1^Checking the value of the {ctag} requires taking data dependent exceptions on loaded capabilities for loads or AMOs.
 Ideally all implementations would trap precisely (taking the {ctag} into account in all cases) rather than conservatively (trapping more often, potentially on every loaded capability).
 However, the loaded {ctag} may not be available in all implementations when determining whether to raise the exception, and therefore flexibility is permitted.
-As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set, potentially resulting in spurious traps from pages which have _pte_._{pte_cap_r_name_lc}=1_, and so are likely to store valid capabilities.
+As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set, potentially resulting in spurious traps from pages that have _pte_._{pte_cap_r_name_lc}=1_, and so are likely to store valid capabilities.
 
-Implementations which already take synchronous traps on loaded data, such as ECC faults, are recommended to check the loaded {ctag} when determining whether to raise the fault.
+Implementations that already take synchronous traps on loaded data, such as ECC faults, are recommended to check the loaded {ctag} when determining whether to raise the fault.
 
 ====
 
@@ -106,7 +106,7 @@ Capability dirty tracking behavior is enabled when, in addition to the rules abo
 Two schemes for capability dirty tracking are permitted, and the scheme in use is determined by whether the _Svade_ or _Svadu_ extensions are enabled.
 
 * For _Svade_, take a {cheri_excep_name_pte_st}.
-* For _Svadu_, do a hardware update which sets _pte_._{pte_cap_dirty_name_lc}=1_, following the same rules as setting _pte_._d_.
+* For _Svadu_, do a hardware update that sets _pte_._{pte_cap_dirty_name_lc}=1_, following the same rules as setting _pte_._d_.
 ** When setting _pte_._{pte_cap_dirty_name_lc}_, the hardware update also necessarily sets (or leaves set) _pte_._a_ and _pte_._d_.
 
 
@@ -125,25 +125,25 @@ hardware _pte_._{pte_cap_dirty_name_lc}_ update (_Svadu_)
 
 ^1^ The to-be-stored {ctag}.
 
-The capability dirty tracking is resolved during memory translation, but there are cases it is not known if there will be a {ctag} stored to memory or not at this point.
+The capability dirty tracking is resolved during memory translation, but there are cases where it is not known if there will be a {ctag} stored to memory or not at this point.
 Capability dirty tracking _must_ be triggered when _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_dirty_name_lc}_=0 and the to-be-stored {ctag} is set, and _may_ be triggered in the following case where it is not known if there will be a stored {ctag} during translation:
 
 * SC{LD_ST_DOT_CAP} triggers capability dirty tracking if the {ctag} is set in {cs2}, even if the store fails.
-  This matches the semantics of SC.* with regard to  _pte_._d_.
+  This matches the semantics of SC.* with regard to _pte_._d_.
 
 [NOTE]
 ====
 
-_pte_._{pte_cap_dirty_name_lc}_ must always be set when there is a stored {ctag} to a virtual page so that software knows which pages have had capabilities stored to them.
+_pte_._{pte_cap_dirty_name_lc}_ must always be set when a capability with a valid {ctag} is written to a virtual page so that software knows which pages have had capabilities stored to them.
 It may be set too often, which may cause software to examine the page to check for capabilities when none are present.
 This is a situation software is required to handle anyway, as it is always possible for all capabilities in a page to be overwritten by non-capability data.
 In this case the _pte_._{pte_cap_dirty_name_lc}_ bit would still be set.
 
 Future AMOs fall into this category:
 
-* For future AMOCAS{LD_ST_DOT_CAP}, it is not known whether the store will happen until the load has executed and the compare has been done.
+* For future AMOCAS{LD_ST_DOT_CAP}, it is not known whether the store will happen until the load has executed, and the compare has been done.
   Therefore, AMOCAS{LD_ST_DOT_CAP} is likely to trigger capability dirty tracking if the {ctag} is set in {cs2}.
-* For future AMOADD{LD_ST_DOT_CAP}, the stored {ctag} depends upon the loaded {ctag} which is not known during translation and also on the execution of the {CADD}.
+* For future AMOADD{LD_ST_DOT_CAP}, the stored {ctag} depends upon the loaded {ctag} which is not known during translation and on the execution of the {CADD}.
  Therefore, AMOADD{LD_ST_DOT_CAP}, is likely to always trigger capability dirty tracking.
 
 Checking the stored {ctag} is less of a burden to the implementation than checking the loaded {ctag} for {cheri_excep_name_pte_ld}, which is why checking the loaded {ctag} is optional behavior.

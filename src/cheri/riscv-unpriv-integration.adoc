@@ -57,7 +57,7 @@ improve their security.
 {cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to YLEN, each register also gains a one-bit {ctag} which is defined below.
 
-{cheri_base_ext_name} specifies the minimum required fields which the capability format must support, and their semantics.
+{cheri_base_ext_name} specifies the minimum required fields that the capability format must support, and their semantics.
 However, the precise in-memory representation of the capability metadata is not defined in this chapter since multiple legal (and generally software-compatible) encodings exist.
 On little-endian systems, the memory representation of capabilities always holds the address in the first `XLEN` bytes of memory followed by the metadata.
 
@@ -70,7 +70,7 @@ For more details on the currently available formats see <<sec_cap_encoding_forma
 [NOTE]
 ====
 Depending on the target domain different capability requirements exist, but for XLEN=32 there are insufficient bits available in the capability metadata to define one common format for all use cases.
-For example, a small embedded controller with limited address space of a few megabytes may need to make different tradeoffs than an auxiliary core within a larger SoC with many gigabytes of address space, and a accelerator using the {cheri_base_ext_name} ISA may need yet another set of features.
+For example, a small embedded controller with limited address space of a few megabytes may need to make different tradeoffs than an auxiliary core within a larger SoC with many gigabytes of address space, and an accelerator using the {cheri_base_ext_name} ISA may need yet another set of features.
 Therefore, multiple capability encodings with observable (but generally uninteresting) behavior differences need to be defined.
 While the in-memory bit pattern of capabilities across these systems as well as the precision of bounds may differ, software that does not depend on the raw bits in memory is source (and often also binary) compatible with these different capability encodings.
 ====
@@ -107,7 +107,7 @@ The lower XLEN bits of a capability encode the address of where the capability p
 This is also referred to as the integer part of the capability.
 For registers that are extended but currently hold non-capability data, all other fields are typically zero.
 
-NOTE: Future extensions may add 2*XLEN-bit operations to make use of the wide registers for efficient handling of 2*XLEN-bit non-capability data.
+NOTE: Future extensions may add `2*XLEN`-bit operations to make use of the wide registers for efficient handling of `2*XLEN`-bit non-capability data.
 
 [#cap_valid_tag,reftext="{ctag}"]
 ==== {ctag_title}
