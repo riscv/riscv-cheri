@@ -1057,9 +1057,10 @@ normally read or modify `sstatus` actually access `vsstatus` instead.
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 26, name: 'WPRI'},
-  {bits:  1, name: 'CRGE'},
-  {bits:  1, name: 'UCRG'},
+  {bits: 25, name: 'WPRI'},
+  {bits:  1, name: '{pte_cap_fc_enable}'},
+  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'SD'},
 ], config:{lanes: 4, hspace:1024}}
@@ -2204,6 +2205,9 @@ compatibility for software.
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
 
+| .>|{cheri_excep_cause_pc} .<|Prior to instruction address translation: +
+{nbsp}{nbsp}{nbsp}{cheri_excep_name_pc} due to {pcc} checks ({ctag}, sealed, execute permission, bounds)
+
 | .>|12, 20, 1 |During instruction address translation: +
 {nbsp}{nbsp}{nbsp}First encountered page fault, guest-page fault, or access
 fault
@@ -2213,28 +2217,35 @@ fault
 
 | |2 +
 22 +
+{cheri_excep_cause_pc} +
 0 +
 8, 9, 10, 11 +
 3 +
 3|Illegal instruction +
 Virtual instruction +
+{cheri_excep_name_pc} due to {pcc} <<asr_perm>> clear +
 Instruction address misaligned +
 Environment call +
 Environment break +
 {nbsp}{nbsp}{nbsp}Load/store/AMO address breakpoint
 
+| |{cheri_excep_cause_ls_list} |Prior to address translation for an explicit memory access: +
+{nbsp}{nbsp}{nbsp}{cheri_excep_name_ld}, {cheri_excep_name_st} due to capability checks ({ctag}, sealed, permissions, bounds)
+| |4,6 |Load/store/AMO capability address misaligned +
+
 | .>|4,6 |Optionally: +
 {nbsp}{nbsp}{nbsp}Load/store/AMO address misaligned
 
-| .>|13, 15, 21, 23, 5, 7 |During address translation for an explicit memory access: +
-{nbsp}{nbsp}{nbsp}First encountered page fault, guest-page fault,
+| .>|{cheri_excep_cause_pte_st}, 13, 15, 21, 23, 5, 7 |During address translation for an explicit memory access: +
+{nbsp}{nbsp}{nbsp}First encountered {cheri_excep_name_pte_st}, page fault, guest-page fault,
 or access fault
 
 | .>|5, 7 |With physical address for an explicit memory access: +
 {nbsp}{nbsp}{nbsp}Load/store/AMO access fault
 
-.>|_Lowest_ .>|4, 6 |If not higher priority: +
+.>||4, 6 |If not higher priority: +
 {nbsp}{nbsp}{nbsp}Load/store/AMO address misaligned
+|_Lowest_ |{cheri_excep_cause_pte_ld} |{cheri_excep_name_pte_ld}
 |===
 
 If an instruction may raise multiple synchronous exceptions, the

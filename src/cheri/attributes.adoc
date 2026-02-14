@@ -17,6 +17,7 @@ endif::[]
 :cheri_base32_ext_name:    RV32Y
 :cheri_base32e_ext_name:   RV32YE
 :cheri_base_ext_name:      RVY
+:cheri_base_ext_name_lc:   pass:quotes[rvy]
 // CHERI extension adding support for integer pointer mode (and mode bit)
 :cheri_default_ext_name:   Zyhybrid
 :cheri_priv_m_ext: Machine-Level ISA ({cheri_base_ext_name})
@@ -78,9 +79,36 @@ endif::support_varxlen[]
 // Extension for supporting lr/sc.[bh]
 :lr_sc_bh_ext_name:     Zabhlrsc
 
-// Extension for CHERI CRG bits
-:cheri_priv_crg_ext:          Svucrg
-:cheri_priv_crg_load_tag_ext: Svucrglct
+// Extension for CHERI MMU-based revocation
+//PTE bits
+:rv64y_pte4_field_name:    pass:quotes[RVY]
+:rv64y_pte4_field_name_lc: pass:quotes[rvy]
+
+//combined load/store enable
+:pte_cap_rw_name:          pass:quotes[Y]
+:pte_cap_rw_name_lc:       pass:quotes[y]
+
+//revocation extension
+:pte_cap_r_name:           pass:quotes[YR]
+:pte_cap_r_name_lc:        pass:quotes[yr]
+
+:pte_cap_w_name:           pass:quotes[YW]
+:pte_cap_w_name_lc:        pass:quotes[yw]
+
+:pte_cap_dirty_name:       pass:quotes[YD]
+:pte_cap_dirty_name_lc:    pass:quotes[yd]
+
+:pte_cap_fc_name:          pass:quotes[RG]
+:pte_cap_fc_name_lc:       pass:quotes[rg]
+
+:pte_cap_crg_pte_name:     Y{pte_cap_fc_name}
+:pte_cap_crg_pte_name_lc:  y{pte_cap_fc_name_lc}
+
+:pte_cap_fc_enable:        {pte_cap_crg_pte_name}E
+:pte_cap_fc_enable_lc:     {pte_cap_crg_pte_name}e
+
+//extension name
+:cheri_priv_crg_ext:       Svy{pte_cap_fc_name_lc}
 
 // Extension for capability levels (flow control)
 :cheri_levels1_ext_name:             Zylevels1
@@ -172,8 +200,7 @@ endif::support_varxlen[]
 :cheri_excep_name_pc:        CHERI Instruction Access Fault
 :cheri_excep_name_ld:        CHERI Load Access Fault
 :cheri_excep_name_st:        CHERI Store/AMO Access Fault
-:cheri_excep_name_pte:       CHERI Page Fault
-:cheri_excep_name_pte_ld:    CHERI Load Page Fault
+:cheri_excep_name_pte_ld:    CHERI Load Capability Fault
 :cheri_excep_name_pte_st:    CHERI Store/AMO Page Fault
 
 :cheri_excep_desc_ytag:      Authorizing {ctag} is set to 0.

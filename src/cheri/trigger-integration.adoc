@@ -12,54 +12,55 @@ shown in xref:trigger-exception-priority[xrefstyle=short].
 Debug triggers are higher priority than CHERI exceptions to allow debug.
 
 [[trigger-exception-priority]]
-.Synchronous exception priority (including triggers) in decreasing priority order. Entries added in {cheri_base_ext_name} are in *bold*
-[float="center",align="center",cols="<1,>1,<4,<2",options="header"]
+.Synchronous exception priority in decreasing priority order.
+[align="center",float="center", cols="^1,<1,<2,<2", options="header"]
 |===
-|Priority |Exc. Code |Description |Trigger
-|_Highest_ |3 +
+| Priority | Exception Code | Description | Trigger
+| _Highest_
+| 3 +
 3 +
 3 +
-3 | | etrigger +
+3
+|
+| etrigger +
 icount +
 itrigger +
-mcontrol/mcontrol6 after (on previous instruction)
-
-| .>|3 .<|Instruction address breakpoint |mcontrol/mcontrol6 execute address before
-| .>|*{cheri_excep_cause_pc}* .<|*Prior to instruction address translation:* +
-*{cheri_excep_name_pc} due to {pcc} checks (tag, execute permission, and bounds)* |
-| .>|12, 1 .<|During instruction address translation: +
-First encountered page fault or access fault |
-| .>|1 .<|With physical address for instruction: +
-Instruction access fault |
-
-| .>|3 .<| |mcontrol/mcontrol6 execute data before
-
-| .>|2 +
+mcontrol/mcontrol6 after (on previous instruction) +
+|| 3 | Instruction address breakpoint | mcontrol/mcontrol6 execute address before
+| .>|{cheri_excep_cause_pc} .<|Prior to instruction address translation: +
+{cheri_excep_name_pc} due to {pcc} checks ({ctag}, sealed, execute permission, bounds^1^)|
+|| 12, 20, 1 | During instruction address translation: First encountered page fault, guest-page fault, or access fault |
+|| 1 | With physical address for instruction: Instruction access fault |
+|| 3 || mcontrol/mcontrol6 execute data before
+|| 2 +
+{cheri_excep_cause_pc} +
+22 +
 0 +
-8,9,11 +
-3 .<|Illegal instruction +
+8, 9, 10, 11 +
+3 +
+3 +
+| Illegal instruction +
+{cheri_excep_name_pc} due to {pcc} <<asr_perm>> clear +
+Virtual instruction +
 Instruction address misaligned +
 Environment call +
-Environment break |
+Environment break +
+Load/Store/AMO address breakpoint
+.>| mcontrol/mcontrol6 load/store address before, store data before
 
-| .>|3 .<|Load/store/AMO address breakpoint |mcontrol/mcontrol6 load/store address before
-| .>|3 .<| |mcontrol/mcontrol6 store data before
+| .>|{cheri_excep_cause_ls_list} .<|Prior to address translation for an explicit memory access: +
+{cheri_excep_name_ld}, {cheri_excep_name_st} due to capability checks ({ctag}, sealed, permissions, bounds) |
+| .>|4,6 .<|Load/store/AMO capability address misaligned |
 
-| .>|*{cheri_excep_cause_ls_list}* .<|*Prior to address translation for an explicit memory access:* +
-*Load/store/AMO capability address misaligned* +
-*{cheri_excep_name_ld}, {cheri_excep_name_st} due to capability checks (tag, sealed, permissions and bounds)* |
+|| 4, 6 | Optionally: Load/Store/AMO address misaligned |
 
-| .>|4,6 .<|Optionally: +
-Load/store/AMO address misaligned |
-| .>|*{cheri_excep_cause_pte_ld}*, *{cheri_excep_cause_pte_st}*, 5, 7 .<|During address translation for an explicit memory access: +
-First encountered *{cheri_excep_name_pte_ld}, {cheri_excep_name_pte_st}*, page fault or access fault |
-| .>|5,7 .<|With physical address for an explicit memory access: +
-Load/store/AMO access fault |
-|  .>|4,6 .<|If not higher priority: +
-Load/store/AMO address misaligned |
-| .>|*{cheri_excep_cause_pte_ld}* .<|If not higher priority: +
-*{cheri_excep_name_pte_ld}* ^3^ |
-|_Lowest_ .>|3 .<| |mcontrol/mcontrol6 load data before
+||{cheri_excep_cause_pte_st}, 13, 15, 21, 23, 5, 7 | During address translation for an explicit
+memory access: First encountered {cheri_excep_name_pte_st}, page fault, guest-page fault, or access
+fault |
+|| 5, 7 | With physical address for an explicit memory access: Load/store/AMO access fault |
+|| 4, 6 | If not higher priority: Load/store/AMO address misaligned |
+|| {cheri_excep_cause_pte_ld} |{cheri_excep_name_pte_ld} |
+| _Lowest_ | 3 || mcontrol/mcontrol6 load data before
 |===
 
 NOTE: See the notes beneath <<exception-priority>> for details about <<section_priv_cheri_vmem,CHERI load page fault>> priority.
