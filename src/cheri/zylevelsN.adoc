@@ -8,6 +8,7 @@ before it was trimmed for Zylevels1.
 ZylevelsN introduces a multi-level _Information Flow Control_ mechanism to CHERI.
 It is mutually exclusive with the less general Zylevels1.
 
+[#cheri_lvlbits,reftext="LVLBITS"]
 === Parameters
 
 This extension is parametric in the number of bits used to encode capability "level", `LVLBITS`.
@@ -76,11 +77,11 @@ TODO
 
 TODO
 
-If `{cd}.tag=1`, `{cd}` is not sealed and `{cs1}` does not grant <<el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<section_cap_level>> of `{cd}` to the level of `{cs1}` and to remove <<el_perm>>.
+If `{cd}.tag=1`, `{cd}` is not sealed and `{cs1}` does not grant <<zylevelsN_el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<zylevelsN_cl_field>> of `{cd}` to the level of `{cs1}` and to remove <<zylevelsN_el_perm>>.
 +
-If `{cd}.tag=1`, `{cd}` is sealed and `{cs1}` does not grant <<el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<section_cap_level>> of `{cd}` to the level of `{cs1}`
+If `{cd}.tag=1`, `{cd}` is sealed and `{cs1}` does not grant <<zylevelsN_el_perm>>, then an implicit <<CLRPERM>> is performed restricting the <<zylevelsN_cl_field>> of `{cd}` to the level of `{cs1}`
 +
-NOTE: Missing <<el_perm>> also affects the level of sealed capabilities since notionally the <<section_cap_level>> of a capability is not a permission but rather a data flow label attached to the loaded value.
+NOTE: Missing <<zylevelsN_el_perm>> also affects the level of sealed capabilities since notionally the <<zylevelsN_cl_field>> of a capability is not a permission but rather a data flow label attached to the loaded value.
 
 === Interaction with <<STORE_CAP>> and <<zalrsc_cheri>>
 
@@ -122,22 +123,22 @@ endif::[]
 
 [#section_ext_cheri_multiple_levels]
 === Extending {cheri_1levels_ext_name} to more than two levels
-When `<<cheri_lvlbits>> > 1`, the behavior of <<CLRPERM>> can no longer use masking to adjust the <<section_cap_level>> or <<sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
-The <<section_cap_level,CL>> field of the resulting capability is set to `min(rs2[CL], {cs1}[CL])`  (equivalent to `rs2[CL] & {cs1}[CL]` for `<<cheri_lvlbits>>=1`).
-Similarly, <<sl_perm>> is set to `min(rs2[SL], {cs1}[SL])` (equivalent to `rs2[SL] & {cs1}[SL]` for `<<cheri_lvlbits>>=1`).
+When `<<cheri_lvlbits>> > 1`, the behavior of <<CLRPERM>> can no longer use masking to adjust the <<zylevelsN_cl_field>> or <<zylevelsN_sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
+The <<zylevelsN_cl_field,CL>> field of the resulting capability is set to `min(rs2[CL], {cs1}[CL])`  (equivalent to `rs2[CL] & {cs1}[CL]` for `<<cheri_lvlbits>>=1`).
+Similarly, <<zylevelsN_sl_perm>> is set to `min(rs2[SL], {cs1}[SL])` (equivalent to `rs2[SL] & {cs1}[SL]` for `<<cheri_lvlbits>>=1`).
 
-When storing capabilities, the <<sl_perm>> checks need to perform a `<<cheri_lvlbits>>`-wide integer comparison instead of just testing a single bit.
+When storing capabilities, the <<zylevelsN_sl_perm>> checks need to perform a `<<cheri_lvlbits>>`-wide integer comparison instead of just testing a single bit.
 Considering for an example `<<cheri_lvlbits>>=2`:
 
 [options=header,grid=rows,cols="2,3,6"]
 |===
-|<<sl_perm>> | Permitted for levels| Resulting semantics
+|<<zylevelsN_sl_perm>> | Permitted for levels| Resulting semantics
 |3 | As low as `~0b11=0` | Authorizes stores of capabilities with any level
 |2 | As low as `~0b10=1` | Strip {ctag} for level 0 (most _local_), keep for 1,2,3
 |1 | As low as `~0b01=2` | Strip {ctag} for level 0&1, keep for 2&3
 |0 | As low as `~0b00=3` | Strip {ctag} for level 0,1,2, i.e., only the most _global_ can be stored
 |===
 
-NOTE: While this extra negation is non-intuitive, it is required such that <<CLRPERM>> can use a monotonically decreasing operation for both <<section_cap_level,CL>> <<sl_perm>>.
+NOTE: While this extra negation is non-intuitive, it is required such that <<CLRPERM>> can use a monotonically decreasing operation for both <<zylevelsN_cl_field,CL>> <<zylevelsN_sl_perm>>.
 
-NOTE: The layout of the <<CLRPERM>> input / <<GCPERM>> result is not yet defined, but existing bits will not be moved around so the <<sl_perm,SL>>/<<section_cap_level,CL>> fields will be non-contiguous.
+NOTE: The layout of the <<CLRPERM>> input / <<GCPERM>> result is not yet defined, but existing bits will not be moved around so the <<zylevelsN_sl_perm,SL>>/<<zylevelsN_cl_field,CL>> fields will be non-contiguous.
