@@ -13,8 +13,7 @@ The ability to choose between these two behaviors is referred to as switching be
 
 {cheri_default_ext_name} also adds a new unprivileged CSR: the default data capability, <<ddc>>. <<ddc>> is used to authorize all data memory accesses when executing RVI/RVE code.
 
-NOTE: Together with <<pcc>>, <<ddc>> allows confining code runs to a compartment (also called a _sandbox_), where all data memory and instruction memory accesses are bounded to fixed memory regions. These compartments have full binary compatibility with all existing ratified RISC-V base architectures and extensions,
-i.e. non-CHERI-aware programs which execute unmodified.
+NOTE: Together with <<pcc>>, <<ddc>> allows confining code runs to a compartment (also called a _sandbox_), where all data memory and instruction memory accesses are bounded to fixed memory regions. These compartments have full binary compatibility with all existing ratified RISC-V base architectures and extensions, i.e., non-CHERI-aware programs that execute unmodified.
 Provided that the privileged execution environment has set up <<ddc>> and <<pcc>> appropriately, non-CHERI-aware programs will execute unmodified (as long as they don't attempt to access memory out of the defined bounds).
 
 {cheri_base_ext_name} implementations which support {cheri_default_ext_name} are typically referred to as CHERI Hybrid, whereas implementations which do not support {cheri_default_ext_name} are typically referred to as CHERI purecap.
@@ -27,7 +26,7 @@ The two execution modes are:
 {cheri_int_mode_name}::
 Executing with the RVI (or RVE) base ISA.
 +
-NOTE: If RVC encodings are supported, load/store encodings will revert back to their non-CHERI encodings, such as <<C_LOAD_CAP_SP>> reverting to C.FLWSP for RV32F. This behavior is summarized in <<insn_remapping_16bit_rv32_a>>, <<insn_remapping_16bit_rv32_b>>, <<insn_remapping_16bit_rv64_a>> and <<insn_remapping_16bit_rv64_b>>.
+NOTE: If RVC encodings are supported, load/store encodings will revert to their non-CHERI encodings, such as <<C_LOAD_CAP_SP>> reverting to C.FLWSP for RV32F. This behavior is summarized in <<insn_remapping_16bit_rv32_a>>, <<insn_remapping_16bit_rv32_b>>, <<insn_remapping_16bit_rv64_a>> and <<insn_remapping_16bit_rv64_b>>.
 +
 NOTE: Instructions which are _modified_ on an {cheri_base_ext_name} architecture (see <<{rvy_i_mod_file_name}>>) _revert to their standard behavior_.
 +
