@@ -64,12 +64,12 @@ requires the CHERI RISC-V hart to support {cheri_base_ext_name} and
 
 The _<<cheri_execution_mode>>_ is determined by a bit in the metadata of the <<pcc>> called the <<m_bit>>.
 {cheri_default_ext_name} adds a new _<<cheri_execution_mode>>_ field (M) to the capability format.
-This field needs to be present only in capabilities granting <<X-permission>>,
+This field needs to be present only in capabilities granting <<x_perm>>,
 as it is only ever architecturally interpreted on the capability resident in <<pcc>>.
 
 NOTE: While the <<m_bit>> can also be read/written explicitly using <<GCMODE>>/<<SCMODE>>, it only affects machine state once installed into <<pcc>>.
 
-Capabilities not granting <<X-permission>> may or may not have a defined M field,
+Capabilities not granting <<x_perm>> may or may not have a defined M field,
 and attempting to update this field may be a no-op.
 {cheri_default_ext_name} is compatible only with capability encodings that specify transport of the M-bit (see <<rv32y_cap_description>> and <<rv64y_cap_description>>, for examples).
 
