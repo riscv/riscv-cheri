@@ -2,7 +2,6 @@
 
 import abc
 import os
-import shutil
 import csv
 import argparse
 
