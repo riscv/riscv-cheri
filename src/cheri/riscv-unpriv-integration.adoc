@@ -154,7 +154,8 @@ Examples of such invalid operations include writing only the integer portion (th
 ==== {ctag_cap}s in memory
 
 {ctag_cap}s are tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
-The {ctag} is set to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand which is permitted to set the {ctag} to one (see <<c_perm>>), and that the stored capability data has its {ctag} set.
+The {ctag} is set to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand.
+For example, the <<STORE_CAP>> instruction may set the {ctag} to one if all the instruction's prerequisites are met, but <<ldst,SW>> will always set the {ctag} to zero.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
 
