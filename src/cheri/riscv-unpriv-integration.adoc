@@ -5,8 +5,8 @@ ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the unpriv spec after the RV32I chapter.
 endif::[]
 
-This chapter describes the {cheri_base32_ext_name} and {cheri_base64_ext_name} base capability instruction sets, that extend the RV32I and RV64I instruction sets with CHERI.
-Other standard options to bases are also supported such as E (16-registers), Zfinx and endianness.
+This chapter introduces several new bases that are informally collectively called {cheri_base_ext_name} (e.g., {cheri_base32_ext_name}, {cheri_base64_ext_name}), that extend the RV32 and RV64 instruction sets with CHERI.
+The CHERI bases can be composed with other standard options to bases such as E (16-registers), Zfinx and endianness.
 
 === CHERI Overview
 
@@ -120,18 +120,18 @@ If the {ctag} is set, the capability is valid and can be dereferenced (contingen
 All registers or memory locations able to hold a capability are YLEN bits wide with an additional hidden {ctag} bit.
 These are referred to as being _YLEN-bit_ in this specification.
 
-The {ctag} cannot be directly set to one by software; it is _not_ a conventionally accessible bit of state.
+The {ctag} cannot be directly set by software; it is _not_ a conventionally accessible bit of state.
 If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
 If the rules are followed then the {ctag} will propagate through the instructions that modify, load or store the capability.
 
-Therefore, for capability manipulation in registers:
+Therefore, whenever an instruction writes a capability with the {ctag} set to a register:
 
-* Any instruction that wrote the capability to a register had at least one {ctag} set in its input operands.
+* At least one {ctag} must have been set in the input operands.
 ** This is the _provenance_ check.
-* Any instruction that wrote the capability to a register requested a legal operation that does not increase bounds or permissions, and set the {ctag} on the output.
+* The requested operation must have been legal and does not increase bounds or permissions.
 ** This is the _monotonicity_ check.
-* Any instruction that wrote the capability to a register detected corrupted values.
-** This is the _integrity_ check.
+* The instruction may have checked that none of the input capability were corrupted.
+** This is the _integrity_ check. Only some instructions must perform this check, see <<section_cap_integrity>>.
 
 Capability load/store require the _provenance_ check:
 
@@ -140,10 +140,13 @@ Capability load/store require the _provenance_ check:
 
 When an operation fails a check, either due to software error or malicious intent, then the operation raises an exception or sets the resulting {ctag} to zero.
 
+For a capability to be valid, the {ctag} must be set, otherwise a capability is invalid.
+
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
 All capabilities derived from invalid capabilities are themselves invalid, i.e., their {ctag}s are zero.
 
-NOTE: When the {ctag} is zero, the register or memory location may be used to store non-capability data.
+NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be cleared.
+When the {ctag} associated with the memory location is zero, the location contains non-capability data.
 
 ==== {ctag_cap}s in registers
 
@@ -172,24 +175,24 @@ Every capability has two memory address bounds: _base_ representing the lowest a
 
 * The _base_ is XLEN bits and is _inclusive_.
 * The _top_ is (XLEN+1)-bits and is _exclusive_.
-** The extra bit is required to allow the bounds to include the top byte of memory.
++
+NOTE: _Inclusive top_, with XLEN bits, was considered but rejected in favor of the _exclusive top_ (with an additional bit to allow covering the entire address space).
+  Using _exclusive top_ allows representing a zero-length capability starting at address zero, which is not possible with _inclusive top_ unless you introduce a special value for `-1`.
+
 * The _length_ is (XLEN+1)-bits and is defined to be _top - base_.
 
 Therefore a memory location `A` in the range `base {le} A < top` is within bounds, and so valid to access.
-
-NOTE: Inclusive _top_, with XLEN bits, was considered but rejected in favor of the exclusive _top_.
 
 NOTE: Checking every byte of every executed instruction and every byte of every data memory access is fundamental to the memory safety which CHERI provides.
 In a typical load/store unit, the expansion of the bounds from `{cs1}` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
 
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
-
 One bounds encoding format based upon cite:[woodruff2019cheri] is defined in <<section_cap_bounds>>.
 
-NOTE: Capability encoding formats are free to define their own bounds encoding scheme.
+NOTE: Future CHERI bases may use encoding formats with different bounds encoding schemes (see <<sec_cap_encoding_formats>>).
 
-Software can query the capability bounds:
+Software can query the bounds of a capability held in a general-purpose register using the following instructions:
 
 * The _base_ is returned by the <<GCBASE>> instruction.
 * The _length_ is returned by the <<GCLEN>> instruction.
@@ -205,7 +208,9 @@ All smaller capabilities are derived from these.
 
 The ISA does not allow the bounds (and permissions) of a capability with its {ctag} set to be increased (_monotonicity_).
 
-Bounds can be programmed using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions, which set the current address to be the _base_ bound and the _length_ to be the operand (`rs2` or `imm`) value.
+The <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions generate new capabilities from a source capability and a length operand (`rs2` or `imm`).
+The resulting capability has its address set as the _base_ bound and its length as requested, subject to encoding granularity constraints.
+These instructions write the newly generated capability to the destination register.
 The granularity constraints mean that not all requested combinations of _top_ and _base_ bounds can be encoded exactly.
 
 * <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`. Set the {ctag} to zero if the bounds cannot be encoded exactly.
@@ -222,12 +227,26 @@ The number of shared bits depends on the exponent, see xref:section_cap_bounds[x
 [#section_rep_check_concept]
 ==== Representability and Updating the Address
 
-Because the CHERI Concentrate cite:[woodruff2019cheri] encoding scheme for memory bounds shares the upper bits of the address with the bounds, not all out-of-bounds pointers can be represented.
+Software sometimes uses out-of-bounds pointers, for example, to represent a one-past-the end pointer to an array in C (`arr + size`).
+To support this pattern, CHERI must allow these out-of-bounds pointers to be held in capabilities while still protecting the bounds and integrity.
+Because the CHERI Concentrate cite:[woodruff2019cheri] encoding scheme for memory bounds shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
+This range is known as the *representable region*.
+The relationship between the bounds and the representable region is illustrated in <<cap_bounds_map>>.
+
+NOTE: While the C standard only requires one-past-the-end pointers to be valid, real-world software has been observed to (temporarily) create pointers that point multiple bytes past the end or even before the start.
+  To maximize software compatibility, the bounds representation was designed to allow for out-of-bounds pointers.
+
+[#cap_bounds_map]
+.Memory address bounds and representable region encoded within a capability
+image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
+
+E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
+
+The maximum range of address values that the pointer can take without changing the interpretation of bounds is defined by the <<section_cap_representable_check,representable region>>.
 
 NOTE: The historic, uncompressed CHERI-MIPS 256-bit capability encoding had separate 64-bit values for the base and top memory bounds, and another for metadata fields.
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
-The maximum range of address values that the pointer can take without changing the interpretation of bounds is defined by the <<section_cap_representable_check,representable region>>.
 Since deriving a new capability with a different address could change the meaning of the bounds, all such derived capabilities (e.g., deriving the next <<pcc>> capability from the existing <<pcc>> via control-flow instructions or sequential execution) and instructions that return valid derived capabilities, must check that the new address is within the representable region defined by the source capability.
 If the interpretation of bounds _has_ changed, then the {ctag} of the derived capability is set to zero, so that it is invalid for use.
 
@@ -239,13 +258,6 @@ NOTE: Existing software sometimes temporarily moves pointers outside of arrays, 
 
 NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv32y_cap_description>>/<<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
 Therefore, the rest of the specification uses the phrase *represented exactly* for this check.
-
-The bounds and representable region (or space) for <<rv32y_cap_description>>/<<rv64y_cap_description>> are illustrated in <<cap_bounds_map>>.
-E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
-
-[#cap_bounds_map]
-.Memory address bounds encoded within a capability
-image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
 ==== Memory space
 
@@ -274,23 +286,29 @@ architecture: normal bounds check rules should be followed.
 [#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
 
-This metadata value indicates the type of the capability.
-The sole type defined in the {cheri_base_ext_name} base ISA is `0`.
-The type determines which operations the capability authorizes;
-extensions to {cheri_base_ext_name} will define additional types and
-give additional semantics for capabilities with such types.
-
-Which capability types a given CHERI platform supports is a function
-of the extensions and capability encoding format in use.
-The capability encoding additionally specifies a mapping between
-some bits within the capability format (usually described as "the CT field")
-and the space of capability types.
+This metadata value indicates the type of the capability and determines which operations the capability authorizes.
+Which capability types a given CHERI platform supports is a function of the extensions and capability encoding format in use.
+The capability encoding specifies a mapping between some bits within the capability format (usually described as "the CT field") and the capability types.
 The mapping must be able to encode type `0` but has few other requirements.
 It need not, for example, be interpreted as an (un)signed binary rendering of CT values.
+Standard capability type mapping is shown in <<table_capability_types>>.
 
-[#unsealed_cap,reftext="unsealed capability]
+[#table_capability_types]
+.Capability type mapping in the {rv32y_uni_base_name}/{rv64y_uni_base_name} bases
+[width="80%",options=header,align=left,cols="1,1,5"]
+|===
+| Type Name | Integer Value | Description
+| Unsealed  | 0             | Unsealed capability granting access to memory
+| Sentry    | 1             | Immutable sealed entry point
+|===
+
+NOTE: The integer value in the table above defines the architectural capability type (i.e., the result of the <<GCTYPE>> instruction) but does not need to be encoded that way in memory.
+Other base ISAs may provide different type mappings, but the value `0` must always represent an unsealed capability.
+
+[#unsealed_cap,reftext="unsealed capability"]
 Unsealed capabilities::
 When `CT=0`, the capability authorizes access to a region of memory as defined by the permissions and bounds.
+All CHERI systems must support unsealed capabilities.
 
 [#sealed_cap,reftext="sealed capability"]
 Sealed capabilities::
@@ -311,7 +329,7 @@ for types not defined above.
 
 Capability encodings may also make the set of <<sec_cap_type>> values
 that may be used to seal a particular capability
-depend on the the permissions granted by that capability.
+depend on the permissions granted by that capability.
 For example, it can be a useful space optimization to differentiate
 the <<sec_cap_type>> values for capabilities granting <<x_perm>>
 from those not granting <<x_perm>>;
@@ -332,9 +350,11 @@ the type with which it seals capabilities is considered ambiently available.
 Sentry capability type::
 It is useful to have *immutable* function pointers within a CHERI software system.
 <<sealed_cap,Sealed capabilities>> are a natural foundation, providing immutability.
-<<JALR_CHERI>> may unseal capabilities of particular, encoding-specified types before installing them to the program counter.
+The <<JALR_CHERI>> instruction may unseal capabilities of particular, encoding-specified types before installing them into the <<pcc>>.
 Capabilities sealed with such a type are dubbed "sentries" (a portmanteau of "sealed entries").
-<<JALR_CHERI>> may also _seal_ the return pointers it generates with encoding-specified types.
+The <<JALR_CHERI>> instruction may also _seal_ the return pointers it generates with encoding-specified types.
+
+#TODO: ARC COMMENT: "sentries" is a bad choice for a shortened form of "sealed entries" as the standard english or even CS connotation of sentry doesn't match with a sealed entry.#
 
 NOTE: Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
 
@@ -342,7 +362,7 @@ NOTE: In addition to using sealed capabilities as sentries for secure entry poin
  <<YSUNSEAL>> can be used to convert such a token back to an unsealed capability.
  A future extension may add an unseal instruction for performance.
 
-NOTE: The {cheri_base_ext_name} ISA does not make any use of non-zero `CT` values.
+NOTE: The set of {cheri_base_ext_name} base ISAs do not make any use of non-zero `CT` values.
  The capability encoding format only needs to encode `CT` information if any extensions (such as {rvy_sentry_insn_ext_name}) are present which support non-zero `CT` values.
 
 [#AP-field, reftext="AP-field"]
@@ -351,11 +371,14 @@ NOTE: The {cheri_base_ext_name} ISA does not make any use of non-zero `CT` value
 This metadata field encodes architecturally defined permissions of the capability.
 Permissions grant access subject to the <<cap_valid_tag>> being set, the capability being unsealed, and bounds checks passing.
 Any operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP and PMAs, even if the capability grants sufficient permissions.
-The permissions currently defined in {cheri_base_ext_name} are listed below.
+The permissions defined in {cheri_base_ext_name} are listed in <<ap_field_summary>>.
+All capability formats must support at least this set of permissions.
+Extensions building on top of {cheri_base_ext_name} may define additional permissions:
+// For some reason I get `possible invalid reference: section_zylevels1` if I use a plain <<section_zylevels1>> here... (the link works in the pdf but the reftext is not expanded).
+an example of such an extension is <<section_zylevels1,{cheri_levels1_ext_name}>>.
+The in-memory format of these permissions depends on the capability encoding.
 
 Permissions can be cleared when deriving a new capability value (using <<CLRPERM>>) but they can never be added.
-
-NOTE: This is the minimum set of permissions which a capability format must support. The in-memory format will depend on the capability encoding.
 
 .AP-field summary
 [#ap_field_summary,width="100%",options=header,halign=center,cols="2,2,5"]
@@ -401,10 +424,19 @@ endif::[]
 
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to all privileged CSRs, some unprivileged CSRs and some privileged instructions.
-In {cheri_base_ext_name}, the only affected CSR is the unprivileged <<utidc>> CSR, which requires <<asr_perm>> for writing, but not for reading.
-ASR permission is used for additional permission checks by some instructions from other extensions such as <<Zicbom>>.
-
 <<asr_perm>> permission checks always use the permission in the <<pcc>>.
+
+In the unprivileged {cheri_base_ext_name} ISA, the following are affected by <<asr_perm>>:
+
+* **Thread ID CSRs:** The <<utidc>> CSR requires <<asr_perm>> for writing but not for reading.
+* **Instructions:** <<CBO_INVAL_CHERI>> requires <<asr_perm>> in the <<pcc>>.
+
+In the privileged {cheri_base_ext_name} ISA, the following are affected by <<asr_perm>>:
+
+* **Instructions:** <<MRET_CHERI>>, <<SRET_CHERI>>, <<DRET_CHERI>> require <<asr_perm>> in the <<pcc>> .
+* **CSRs:** The privileged <<stidc>>, <<vstidc>>, and <<mtidc>> CSRs require <<asr_perm>> for writing, but not for reading (if access is permitted in the current privilege mode).
+  All other privileged CSRs require <<asr_perm>> in the <<pcc>> for any access.
+  Access to debug CSRs requires <<asr_perm>>.
 
 NOTE: This permission is important in privileged execution environments.
   Removing this permission allows constraining privileged software to a sandbox that cannot be subverted by changing privileged state.
@@ -579,13 +611,13 @@ endif::[]
 [#section_cap_integrity]
 === Integrity of Capabilities
 
-CHERI enforces the following rules for all valid capabilities:
+CHERI enforces the following rules (integrity checks) for all valid capabilities :
 
 . The bounds are not <<section_cap_malformed,malformed>>.
 . The capability metadata does not have any bits, or fields set to a reserved value.
 .. An example of a reserved field value is permissions which cannot be legally produced by <<CLRPERM>>.
 
-Since a capability with the {ctag} set that fails integrity checks could not have been legally created, such a failure indicates either
+If any of the above rules do not hold for a capability with the {ctag} set, it indicates either:
 
 * State corruption due to memory or logic faults, or
 * The presence of incompatible or faulty CHERI IP within the system.
@@ -593,13 +625,15 @@ Since a capability with the {ctag} set that fails integrity checks could not hav
 NOTE: These checks are much less rigorous than parity or ECC protection, and are only
 used to detect simple problems with the capability metadata.
 
+Performing these checks is optional except for instructions that are defined to accept arbitrary input bit patterns and can write an output with the {ctag} set.
+All instructions that require integrity checks have this noted in the instruction description.
+
+NOTE: Currently <<CBLD>> is the only defined instruction that sets the `{ctag}` on an arbitrary bit pattern and therefore _must_ perform an integrity check on the input capability in `{cs2}`.
+For all other instructions, performing these checks is optional unless the hart implements additional reliability features (since malformed capabilities with the {ctag} set cannot exist under normal operating conditions).
+
 NOTE: Even though valid capabilities which fail the integrity check could not have been legally generated by the local hart,
 defining the handling in the architecture allows the behavior to be precisely specified for all 2^(YLEN+1)^ input values.
 
-Implementing these checks is optional unless otherwise noted in instruction descriptions, as integrity failures are most likely due to IP compatibility issues.
-
-NOTE: Currently only {CBLD} _must_ perform an integrity check on an invalid input capability in `{cs2}` before setting the {ctag} of the output.
-This is because this is the only currently defined instruction that sets the `{ctag}` of an invalid capability.
 
 === Extended State
 
@@ -669,7 +703,7 @@ It also adds the XLEN-bit CSR shown in xref:csrnames-added-x[xrefstyle=short]
 endif::[]
 
 [[csrnames-added-y]]
-.Unprivileged capability CSRs added in {cheri_base_ext_name}
+.Capability CSRs added in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
 |YLEN CSR|Permissions|Description
@@ -679,7 +713,7 @@ endif::[]
 ifdef::cheri_xycfg_csr[]
 
 [[csrnames-added-x]]
-.Unprivileged integer CSRs added in {cheri_base_ext_name}
+.Integer CSRs added in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
 |XLEN CSR|Permissions|Description
@@ -691,7 +725,7 @@ endif::[]
 [#utidc,reftext="utidc"]
 ===== User Thread Identifier Capability (utidc)
 
-The <<utidc>> register is used to identify the current software thread in user mode.
+The <<utidc>> register is an unprivileged CSR used to identify the current software thread.
 Any operation that modifies <<utidc>> raises an exception unless the <<asr_perm>> is set in the current <<pcc>>.
 
 NOTE: While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
@@ -700,6 +734,7 @@ Therefore, this specification offers an additional CSR that facilitates a truste
 .User thread identifier capability register
 include::img/utidcreg.edn[]
 
+#TODO: ARC COMMENT: This description of compartments is confusing and seems to mix  kernel mode thread switching and user mode compartment switching?  Not clear why utidc is needed.#
 [NOTE]
 =====
 #The following should probably move to a programmers guide#
@@ -802,8 +837,7 @@ When accessing CSRs these rules are followed:
 . Accesses to XLEN-bit CSRs are as specified by Zicsr
 . Accesses to YLEN-bit CSRs and extended CSRs, using CSRRW will:
 .. Read YLEN bits
-.. Write YLEN bits, and will write the {ctag} to zero if:
-... any <<section_cap_integrity,integrity>> check fails
+.. Write YLEN bits, and will write the {ctag} to zero if any <<section_cap_integrity,integrity>> check fails
 . Accesses to YLEN-bit CSRs and extended CSRs, using instructions other than CSRRW will:
 .. Read YLEN bits
 .. Write an XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value
@@ -1166,7 +1200,7 @@ NOTE: CHERIoT implementations do not use {CBLD}, so this instruction is part of 
 include::insns/cbld_32bit.adoc[]
 
 [#section_rvy_topr_insn_ext,reftext="{rvy_topr_insn_ext_name}"]
-== "{rvy_topr_insn_ext_name}" Extension for Extracting the Top Bound
+== "{rvy_topr_insn_ext_name}" Extension for Extracting the Top Bound for Memory Allocators
 
 The {rvy_topr_insn_ext_name} extension adds the <<GCTOP>> instruction to return the top bound of a capability.
 This offers a performance improvement over the software sequence of a saturating add of the results of <<GCBASE>> and <<GCLEN>>, and is useful for memory allocators.
