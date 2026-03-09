@@ -58,10 +58,12 @@ improve their security.
 In addition to widening to YLEN, each register also gains a one-bit {ctag} which is defined below.
 
 {cheri_base_ext_name} specifies the minimum required fields that the capability format must support, and their semantics.
-However, the precise in-memory representation of the capability metadata is not defined in this chapter since multiple legal (and generally software-compatible) encodings exist.
-On little-endian systems, the memory representation of capabilities always holds the address in the first `XLEN` bytes of memory followed by the metadata.
+All current {cheri_base64_ext_name} bases are little endian and therefore the memory representation of capabilities always holds the address in the first `XLEN` bytes of memory followed by the metadata.
+There are multiple legal (and generally software-compatible) encodings for the in-memory representation of the capability metadata, and they are described later in this chapter.
 
-NOTE: So far, no big-endian implementations of {cheri_base_ext_name} exist, but it is likely that such systems would switch the order of metadata and address in memory for consistency (even though having the address first is better for software compatibility).
+// Can uncomment/update once BE bases exist.
+// Note: LE/BE will be part of the L* base name.
+// NOTE: So far, no big-endian implementations of {cheri_base_ext_name} exist, but it is likely that such systems would switch the order of metadata and address in memory for consistency (even though having the address first is better for software compatibility).
 
 {cheri_base_ext_name} is designed to be highly extensible, and therefore must allow multiple metadata encoding formats to exist.
 Specific encoding formats may support different ISA extensions, and add new architectural permissions.
@@ -76,7 +78,7 @@ While the in-memory bit pattern of capabilities across these systems as well as 
 ====
 
 It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid in-memory encodings.
-However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, these are encoded via an `_Ly<params>` suffix to the base ISA name such as:
+However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, these are encoded via a `LY<params>` suffix to the base ISA name such as:
 
 * `{rv32y_uni_base_name}_IMAF_Zicsr`, which refers to the encoding format defined in xref:rv32y_cap_description[xrefstyle=full] for {cheri_base32_ext_name}, or
 * `{rv64y_uni_base_name}_IMAF_Zicsr`, which refers to the encoding format defined in xref:rv64y_cap_description[xrefstyle=full] for {cheri_base64_ext_name}
@@ -501,18 +503,19 @@ This capability grants no permissions and any dereference results in raising an 
 [#sec_cap_encoding_formats]
 === CHERI encoding formats
 CHERI implementations make trade-offs in their "encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
-The CHERI base ISA name is extended with a compact description of these decisions,
-and the definition of all CHERI base ISAs includes sufficient details of a capability encoding format precisely define the execution behavior of all base ISA instructions.
+The CHERI base ISA name includes a compact description of these decisions,
+and the definition of all CHERI base ISAs includes sufficient details of a capability encoding format to precisely define the execution behavior of all base ISA instructions.
 
-As a result, the {cheri_base32_ext_name} and {cheri_base64_ext_name} names on their own do not describe the complete base ISAs, but define all the _semantics_ of a {cheri_base_ext_name} machine, where certain behavioral parameters must be filled in by the capability encoding.
+We use the names {cheri_base32_ext_name} and {cheri_base64_ext_name} to refer generically to CHERI base ISAs, which share common semantics but have different metadata encodings.
+The {cheri_base32_ext_name} and {cheri_base64_ext_name} names on their own do not describe the complete base ISAs, but define all the _semantics_ of a {cheri_base_ext_name} machine, where certain behavioral parameters must be filled in by the capability encoding.
 For example, the <<SCBNDSR>> instruction yields a capability with new bounds that are rounded differently depending on the number of bits allocated to the bounds in the capability format.
 Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds than XLEN=32 system and therefore have a larger <<section_cap_representable_check>>.
 
 NOTE: These observable differences in behaviour are similar to floating point numbers where the supported operations and their semantics are the same for all formats, but the exact result depends on the representation (e.g., 16/32/64-bit IEEE-754 or other floating point formats).
 
-The encoding format parameters are specified in the architecture string using a `_Ly<params>` syntax, which can be used by software and/or the compiler to optimize for that specific in-memory format.
+The encoding format parameters are specified in the architecture string using a `LY<params>` syntax, which can be used by software and/or the compiler to optimize for that specific in-memory format.
 
-NOTE: The base `_L<encoding_parameters>` encoding format scheme is designed to separate the aspects of capability encoding that influence the behavior of {cheri_base_ext_name} instructions from the rest.
+NOTE: The base `L<encoding_parameters>` encoding format scheme is designed to separate the aspects of capability encoding that influence the behavior of {cheri_base_ext_name} instructions from the rest.
 The intent is to simplify the future development of more (possibly domain-specific) encoding formats while also more directly conveying compatibility of architectural bases.
 
 The following parameters are currently defined to distinguish existing formats:
@@ -535,24 +538,24 @@ This parameter defines which permission modifications using <<CLRPERM>> also cle
 Parameter for in-memory format::
 * **In-memory encoding (enc<suffix>)**: This parameter defines layout of capability metadata fields in memory.
 The default value for this parameter is `enc1` and may be omitted in that case.
-Vendors may define alternate formats where all other parameters are otherwise identical, so this parameter can be used to differentiate such formats.
+Custom formats may define alternate layouts where all other parameters are otherwise identical, so this parameter can be used to differentiate such formats.
 Additionally, there is one other value, `enc0`, which means the compiler and/or software must avoid making any assumptions about the in-memory representation.
 
-NOTE: To allow arbitrary characters in the suffix of this parameter it must be the last component of the `_Ly<params>` to avoid ambiguity with other parameters.
+NOTE: Base names have strict ordering rules for components, unlike extension names.
 
 NOTE: In general, only very specialized software such as offline crash-dump debuggers need to know the exact memory representation, and all other software can and should use the inspection instructions such as <<GCBASE>>, etc.
 
 Other parameters::
-These other parameters are not used by the formats currently set forward for ratification but are being used in vendor extensions on top of {cheri_base_ext_name}.
+These other parameters are not used by the formats currently set forward for ratification but are being used in custom extensions on top of {cheri_base_ext_name}.
 * **<<AUIPC_CHERI>> shift (as<N>)**: The shift amount used in the {cheri_base_ext_name} variant of <<AUIPC_CHERI>>. This is 12 (as in RVI) unless specified otherwise.
 
-As with other extensions, a version number suffix may be added to the `_Ly` string to identify a new version with the same parameters but different in-memory representation.
+As with other extensions, a version number suffix may be added to the `LY` string to identify a new version with the same parameters but different in-memory representation.
 Any newer version must be forwards compatible with any existing software using the same parameters.
-Custom capability encoding formats may be implemented for vendor-specific non-standard implementations (their name suffix should start with `_Lxy`).
+Custom capability encoding formats may be implemented (their name suffix should start with `LYX`).
 
 IMPORTANT: Any future capability encoding formats must provide all the capability guarantees listed in this chapter and must undergo formal verification of these properties before being proposed for ratification.
 
-IMPORTANT: The behavior of all {cheri_base_ext_name} instructions is fully defined by the parameters in the `_Ly` string.
+IMPORTANT: The behavior of all {cheri_base_ext_name} instructions is fully defined by the parameters in the `LY` string.
 Therefore, any implementation with matching parameters is binary compatible (assuming the same extensions are implemented).
 
 The currently known {cheri_base_ext_name} base capability encoding formats are listed below:
@@ -562,7 +565,9 @@ The currently known {cheri_base_ext_name} base capability encoding formats are l
 
 NOTE: It is expected that the actual {cheri_base_ext_name} instantiation is chosen using a profile rather than a full architecture string and therefore the unwieldy suffix should rarely be user-visible.
 
-For {cheri_base64_ext_name}, the number of spare bits in the capability encoding ensure sufficient future extensibility and therefore no vendor-defined formats exist.
+For RV64, the number of spare bits in the capability encoding ensure sufficient future extensibility and therefore no custom formats exist.
+As there is only a single format, RV64Y and the longer-form base name RV64LIY can be used as aliases for {rv64y_uni_base_name}.
+
 However, {cheri_base32_ext_name} has insufficient bits available to enable features for all target domains, so in addition to the <<rv32y_cap_description, {rv32y_uni_base_name}>> further {cheri_base32_ext_name}-extending capability formats exist:
 
 * The CHERIoT encodings (with `{rvy_cheriot_common_base_suffix}` parameters) optimized for smaller devices: <<rv32y_cheriot_encoding1_description>>, <<rv32y_cheriot_encoding2_description>>, and <<rv32y_cheriot_encoding3_description>>.
@@ -1131,6 +1136,15 @@ NOTE: Future behavior for these reserved branch encodings may include branching 
 If the target of a taken branch lies outside the bounds of <<pcc>>, the next instruction fetch will raise an exception.
 
 NOTE: A future extension may raise an exception on the branch instruction itself if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
+
+
+:leveloffset: +1
+
+include::rvy64-encoding.adoc[]
+
+include::rvy32-encoding.adoc[]
+
+:leveloffset: -1
 
 [#section_rvy_sentry_insn_ext,reftext="{rvy_sentry_insn_ext_name}"]
 == "{rvy_sentry_insn_ext_name}" Extension for Creation of Sentry Capabilities
