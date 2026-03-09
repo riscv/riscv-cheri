@@ -140,6 +140,8 @@ Capability load/store require the _provenance_ check:
 
 When an operation fails a check, either due to software error or malicious intent, then the operation raises an exception or sets the resulting {ctag} to zero.
 
+For a capability to be valid, the {ctag} must be set, otherwise a capability is invalid.
+
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
 All capabilities derived from invalid capabilities are themselves invalid, i.e., their {ctag}s are zero.
 
@@ -348,7 +350,7 @@ the type with which it seals capabilities is considered ambiently available.
 Sentry capability type::
 It is useful to have *immutable* function pointers within a CHERI software system.
 <<sealed_cap,Sealed capabilities>> are a natural foundation, providing immutability.
-The <<JALR_CHERI>> instruction may unseal capabilities of particular, encoding-specified types before installing them to the program counter.
+The <<JALR_CHERI>> instruction may unseal capabilities of particular, encoding-specified types before installing them into the <<pcc>>.
 Capabilities sealed with such a type are dubbed "sentries" (a portmanteau of "sealed entries").
 The <<JALR_CHERI>> instruction may also _seal_ the return pointers it generates with encoding-specified types.
 
