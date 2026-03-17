@@ -1029,8 +1029,8 @@ NOTE: An access fault is raised instead of a misaligned exception since these in
 
 All memory accesses, of any type, require permission from the authorizing capability in `{cs1}`.
 
-* All loads require <<r_perm>>, otherwise they raise an exception
-* All stores require <<w_perm>>, otherwise they raise an exception
+* All loads require <<r_perm>>, otherwise they raise an exception.
+* All stores require <<w_perm>>, otherwise they raise an exception.
 
 //NOTE: Misaligned capability memory accesses cannot be emulated.
 //  To transfer YLEN misaligned bits without a {ctag}, use integer loads and stores.
@@ -1111,16 +1111,14 @@ endif::[]
 All load instructions, except for the {cheri_base_ext_name} <<LOAD_CAP>>, always zero the {ctag} and metadata of the result register.
 
 All store instructions, except for the {cheri_base_ext_name} <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
-
 Therefore, misaligned stores may clear up to two associated {ctag} bits.
 
 The changed interpretation of the base register also applies to all loads, stores and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
-
 *Under {cheri_base_ext_name} _all_ loads and stores are authorized by `{cs1}`.*
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.,:
 
-* Floating-point loads and stores
+* Floating-point loads and stores.
 * <<section_cheri_vector_integration,Vector load and stores>>.
 * Atomic memory accesses, see <<zaamo_cheri>> and <<zalrsc_cheri>>.
 
@@ -1140,7 +1138,7 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 * <<JALR_CHERI>> copies `{cs1}` into the <<pcc>>, and increments the address field with the offset.
   In this case, e.g., `new_{pcc} = {SCADDR}({cs1}, offset)`
 
-These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.,:
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
 
 .Changed RISC-V base ISA PC relative instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
