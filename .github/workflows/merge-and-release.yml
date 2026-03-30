@@ -55,6 +55,26 @@ jobs:
           name: riscv-cheri-${{ env.SHORT_SHA }}.epub
           path: ${{ github.workspace }}/build/riscv-cheri.epub
 
+      # Upload the riscv-cheri-full PDF file
+      - name: Upload riscv-cheri-full.pdf
+        if: steps.build_files.outcome == 'success'
+        uses: actions/upload-artifact@v7
+        with:
+          name: riscv-cheri-full-${{ env.SHORT_SHA }}.pdf
+          path: ${{ github.workspace }}/build/riscv-cheri-full.pdf
+      - name: Upload riscv-cheri-full.html
+        if: steps.build_files.outcome == 'success'
+        uses: actions/upload-artifact@v7
+        with:
+          name: riscv-cheri-full-${{ env.SHORT_SHA }}.html
+          path: ${{ github.workspace }}/build/riscv-cheri-full.html
+      - name: Upload riscv-cheri-full.epub
+        if: steps.build_files.outcome == 'success'
+        uses: actions/upload-artifact@v7
+        with:
+          name: riscv-cheri-full-${{ env.SHORT_SHA }}.epub
+          path: ${{ github.workspace }}/build/riscv-cheri-full.epub
+
     # Upload the riscv-privileged PDF file
       - name: Upload riscv-privileged.pdf
         if: steps.build_files.outcome == 'success'
@@ -121,6 +141,9 @@ jobs:
             ${{ github.workspace }}/build/riscv-cheri.pdf
             ${{ github.workspace }}/build/riscv-cheri.html
             ${{ github.workspace }}/build/riscv-cheri.epub
+            ${{ github.workspace }}/build/riscv-cheri-full.pdf
+            ${{ github.workspace }}/build/riscv-cheri-full.html
+            ${{ github.workspace }}/build/riscv-cheri-full.epub
             ${{ github.workspace }}/build/riscv-privileged.pdf
             ${{ github.workspace }}/build/riscv-privileged.html
             ${{ github.workspace }}/build/riscv-privileged.epub
