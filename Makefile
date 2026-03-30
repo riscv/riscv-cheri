@@ -19,7 +19,7 @@
 #   docker pull ghcr.io/riscv/riscv-docs-base-container-image:latest
 #
 
-DOCS := riscv-privileged riscv-unprivileged riscv-cheri
+DOCS := riscv-privileged riscv-unprivileged riscv-cheri riscv-cheri-full
 
 RELEASE_TYPE ?= draft
 GIT_SHORT_HASH ?= -$(shell git rev-parse --short HEAD || true)
