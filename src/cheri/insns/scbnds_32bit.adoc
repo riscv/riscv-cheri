@@ -45,22 +45,9 @@ Set `{cd}.tag=0` if the requested bounds cannot be encoded exactly.
 +
 include::malformed_cs1_clear_tag.adoc[]
 +
-<<SCBNDSI>> uses the following formula to determine the requested length:
+<<SCBNDSI>> uses the following formula to determine the requested length, so that the value of zero is mapped to a useful value:
 
-* `((imm[7:0] + 257) << imm[9:8]) - 256`
-
-[NOTE]
-====
-This formula does not actually require two additions in decode as it expands to the following:
-[%autowidth]
-|===
-|`imm[9:8]`|Resulting immediate   | Immediate range
-|0         |`(imm[7:0]<<0) + 1`   | 1, 2, ..., 255, 256
-|1         |`(imm[7:0]<<1) + 258` | 258, 260, ..., 766, 768
-|2         |`(imm[7:0]<<2) + 772` | 772, 776, ..., 1788, 1792
-|3         |`(imm[7:0]<<3) + 1800`| 1800, 1808, ..., 3832, 3840
-|===
-====
+* `if (imm[7:0]==0) 256 : imm[7:0]`
 
 Included in::
 <<rvy_insn_table>>
