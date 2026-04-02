@@ -61,7 +61,7 @@ class InsnTable(table):
         super().__init__(filename, header)
         self.extension = extension
         if other_cols is None:
-            other_cols = ["{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+            other_cols = ["Function"]
         self.other_cols = other_cols
         self.indices = [self.header.index(col) for col in self.other_cols]
         self._mnemonic_col_idx = self.header.index("Mnemonic")
@@ -475,9 +475,9 @@ class csr_exevectors(table):
             self.file.write(outStr+'\n')
 
     def check(self,row):
-        return row[self.header.index("Code Pointer")] == "✔" or \
-            row[self.header.index("Unseal On Execution")] == "✔" or \
-            row[self.header.index("Data Pointer")] == "✔"
+        return (row[self.header.index("Code Pointer")] == "✔" or
+            row[self.header.index("Unseal On Execution")] == "✔" or
+            row[self.header.index("Data Pointer")] == "✔")
 
 def parse_cmdline_args():
     parser = argparse.ArgumentParser(description="Generate tables for CHERI ISA specification")

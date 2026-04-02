@@ -331,9 +331,12 @@ expands to `fld rd, offset(x2)`.
 <<C_LOAD_CAP_SP>> is an {cheri_base_ext_name}-only instruction that loads a
 capability from memory into capability
 register _{cd}_. It computes its effective address by adding the
-_zero_-extended offset, scaled by 8 (for {cheri_base32_ext_name}),
-or 16 (for {cheri_base64_ext_name}) to the capability stack pointer, `{creg}2`. It
-expands to `{load_cap_name_lc} {creg_ref}d, offset({creg}2)`.
+_zero_-extended offset, scaled by
+ifndef::cheri_ratification_v1_only[]
+8 (for {cheri_base32_ext_name}), or
+endif::[]
+16 (for {cheri_base64_ext_name}) to the capability stack pointer, `{creg}2`. It
+expands to `{load_cap_name_lc} {creg}d, offset({creg}2)`.
 
 include::images/wavedrom/c-sp-load-store-css.edn[]
 [[c-sp-load-store-css]]
@@ -365,8 +368,11 @@ expands to `fsd rs2, offset(x2)`.
 <<C_STORE_CAP_SP>> is an {cheri_base_ext_name}-only instruction that stores a
 capability in capability register _{cs2}_
 to memory. It computes an effective address by adding the
-_zero_-extended offset, scaled by 8 (for {cheri_base32_ext_name}),
-or 16 (for {cheri_base64_ext_name}), to the stack pointer, `{creg}2`. It
+_zero_-extended offset, scaled by
+ifndef::cheri_ratification_v1_only[]
+8 (for {cheri_base32_ext_name}), or
+endif::[]
+16 (for {cheri_base64_ext_name}), to the stack pointer, `{creg}2`. It
 expands to `{store_cap_name_lc} {cs2}, offset({creg}2)`.
 
 [NOTE]
@@ -446,8 +452,11 @@ _zero_-extended offset, scaled by 8, to the base address in register
 <<C_LOAD_CAP>> is an {cheri_base_ext_name} only instruction that loads a
 capability from memory into register `_{cd}′_`
 It computes an effective address by adding the
-_zero_-extended offset, scaled by 8 ({cheri_base32_ext_name})
-or 16 ({cheri_base64_ext_name}),
+_zero_-extended offset, scaled by
+ifndef::cheri_ratification_v1_only[]
+8 ({cheri_base32_ext_name}) or
+endif::[]
+16 ({cheri_base64_ext_name}),
 to the base address in register `_{cs1}′_`. It expands to
 `{c_load_cap_name_lc} {cd}′, offset({cs1}′)`.
 
@@ -486,12 +495,17 @@ register `_rs1′_`. It expands to
 <<C_STORE_CAP>> is an {cheri_base_ext_name} only instruction that stores a
 capability in register `_{cs2}′_` to memory.
 It computes an effective address by adding the
-_zero_-extended offset, scaled by 8 ({cheri_base32_ext_name})
-or 16 ({cheri_base64_ext_name}),
+_zero_-extended offset, scaled by
+ifndef::cheri_ratification_v1_only[]
+8 ({cheri_base32_ext_name}) or
+endif::[]
+16 ({cheri_base64_ext_name}),
 to the base address in register `_{cs1}′_`. It expands to
 `{c_store_cap_name_lc} {cs2}′, offset({cs1}′)`
 
 ==== Compressed Load and Store summary
+
+ifndef::cheri_ratification_v1_only[]
 
 <<insn_remapping_16bit_rv32_a>> and <<insn_remapping_16bit_rv32_b>> summarize
 load/store encoding mappings for RV32 architectures.
@@ -499,6 +513,8 @@ load/store encoding mappings for RV32 architectures.
 ==== RV32I / {cheri_base32_ext_name}
 
 include::cheri/rv32c_mapping_table.adoc[]
+
+endif::[]
 
 <<<
 ==== RV64I / {cheri_base64_ext_name}

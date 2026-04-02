@@ -26,7 +26,11 @@ The two execution modes are:
 {cheri_int_mode_name}::
 Executing with the RVI (or RVE) base ISA.
 +
-NOTE: If RVC encodings are supported, load/store encodings will revert to their non-CHERI encodings, such as <<C_LOAD_CAP_SP>> reverting to C.FLWSP for RV32F. This behavior is summarized in <<insn_remapping_16bit_rv32_a>>, <<insn_remapping_16bit_rv32_b>>, <<insn_remapping_16bit_rv64_a>> and <<insn_remapping_16bit_rv64_b>>.
+NOTE: If RVC encodings are supported, load/store encodings will revert to their non-CHERI encodings, such as <<C_LOAD_CAP>> reverting to C.FSD for RV64/{cheri_base64_ext_name}. This behavior is summarized in
+ifndef::cheri_ratification_v1_only[]
+<<insn_remapping_16bit_rv32_a>>, <<insn_remapping_16bit_rv32_b>>,
+endif::[]
+<<insn_remapping_16bit_rv64_a>> and <<insn_remapping_16bit_rv64_b>>.
 +
 NOTE: Instructions which are _modified_ on an {cheri_base_ext_name} architecture (see <<{rvy_i_mod_file_name}>>) _revert to their standard behavior_.
 +
@@ -71,7 +75,7 @@ NOTE: While the <<m_bit>> can also be read/written explicitly using <<GCMODE>>/<
 
 Capabilities not granting <<x_perm>> may or may not have a defined M field,
 and attempting to update this field may be a no-op.
-{cheri_default_ext_name} is compatible only with capability encodings that specify transport of the M-bit (see <<rv32y_cap_description>> and <<rv64y_cap_description>>, for examples).
+{cheri_default_ext_name} is compatible only with capability encodings that specify transport of the M-bit (see <<rv64y_cap_description>>, for example).
 
 * Mode (M)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
 * Mode (M)={INT_MODE_VALUE} indicates {cheri_int_mode_name}.
@@ -177,7 +181,7 @@ include::img/ddcreg.edn[]
 [#zicsr-section-default]
 === Changes to Zicsr Instructions
 
-When in {cheri_int_mode_name}, there is a special rule for updating extended CSRs (e.g., <<jvt_y>>).
+When in {cheri_int_mode_name}, there is a special rule for updating extended CSRs (e.g., JVT when Zcmt becomes available for RVY).
 These are CSRs that are XLEN-wide for RVI/RVE but YLEN-wide for {cheri_base_ext_name}.
 
 * Writing an extended CSR writes the address field (XLEN bits) only, and the full CSR is updated using the semantics of the <<SCADDR>> instruction.
@@ -204,9 +208,9 @@ YLEN-wide CSRs are accessed identically in either <<cheri_execution_mode>>.
 
 ^1^ e.g., <<utidc>>
 
-^2^ e.g., <<jvt_y>>
+^2^ e.g., JVT when Zcmt becomes available for RVY
 
-ifdef::cheri_ratification_v1_only[]
+ifndef::cheri_ratification_v1_only[]
 ifndef::cheri_standalone_spec[]
 NOTE: `jvt` depends on Zcmt, and the {cheri_base32_ext_name} version of this standard extension is not available yet.
 

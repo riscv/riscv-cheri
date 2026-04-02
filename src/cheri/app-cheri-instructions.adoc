@@ -3,11 +3,11 @@
 
 include::cheri_isa_tables.adoc[]
 
-ifdef::cheri_standalone_spec[]
+ifndef::cheri_ratification_v1_only[]
 
 === "Zcmp", "Zcmt" ({cheri_base_ext_name})
 
-IMPORTANT: {not_v1_ratification_package}
+IMPORTANT: {not_v1_ratification_package_stable}
 
 [#ZCMP_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
 === "Zcmp" Standard Extension For Code-Size Reduction
@@ -95,7 +95,7 @@ Many mnemonics have been renamed since v0.9.5 of the specification as shown in <
 [#ISA_renames_095]
 [width="100%",options=header,cols="2,2,2",]
 |==============================================================================
-include::generated/old_and_new_mnemonics_table_body.adoc[]
+include::{generated_dir}/old_and_new_mnemonics_table_body.adoc[]
 |==============================================================================
 
 Some instructions have been added as shown in <<ISA_added_095>>.
@@ -104,10 +104,8 @@ Some instructions have been added as shown in <<ISA_added_095>>.
 [#ISA_added_095]
 [width="100%",options=header,cols="2,2,2",]
 |==============================================================================
-include::generated/new_instructions_table_body.adoc[]
+include::{generated_dir}/new_instructions_table_body.adoc[]
 |==============================================================================
-
-WARNING: {YSEAL} and {YUNSEAL} are not included in the v1.0 ratification package.
 
 [NOTE]
 ====
@@ -125,7 +123,7 @@ WARNING: {YSEAL} and {YUNSEAL} are not included in the v1.0 ratification package
 [NOTE]
 ====
 
-The following changes are for forwards compatibility with {cheriot_unpriv_ext_name}:
+The following changes are for forwards compatibility with CHERIoT:
 
 . Capability encodings and extensions are now the naming authorities for capability types (only 0/unsealed exists in the base architecture).
 . Capability encoding formats are now in separate base parameterizations.

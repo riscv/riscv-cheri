@@ -19,7 +19,7 @@
 #   docker pull ghcr.io/riscv/riscv-docs-base-container-image:latest
 #
 
-DOCS := riscv-privileged riscv-unprivileged riscv-cheri
+DOCS := riscv-privileged riscv-unprivileged riscv-cheri riscv-cheri-full
 
 RELEASE_TYPE ?= draft
 GIT_SHORT_HASH ?= -$(shell git rev-parse --short HEAD || true)
@@ -149,18 +149,24 @@ REQUIRES := --require=asciidoctor-bibtex \
 # the Sail code and can be embedded. We don't vendor it
 # into this repo since it's quite large (~4MB).
 SAIL_ASCIIDOC_JSON_URL_FILE = riscv_RV64.json.url
-CHERI_GEN_DIR = $(SRC_DIR)/cheri/generated
-SAIL_ASCIIDOC_JSON = $(CHERI_GEN_DIR)/riscv_RV64.json
+CHERI_GEN_DIR_V1        = $(SRC_DIR)/cheri/generated_v1
+CHERI_GEN_DIR_FULL      = $(SRC_DIR)/cheri/generated
+#only need one JSON file - put in the the FULL directory
+SAIL_ASCIIDOC_JSON      = $(CHERI_GEN_DIR_FULL)/riscv_RV64.json
 
-.PHONY: all build clean build-docs build-pdf build-html build-epub build-tags build-norm-rules docker-pull-latest generate generate-cheri-tables
+.PHONY: all build clean build-docs build-pdf build-html build-epub build-tags build-norm-rules docker-pull-latest generate generate-cheri-tables-v1 generate-cheri-tables-full
 
 all: build
 
-$(CHERI_GEN_DIR):
+$(CHERI_GEN_DIR_V1):
 	mkdir -p "$@"
+
+$(CHERI_GEN_DIR_FULL):
+	mkdir -p "$@"
+
 # Download the Sail JSON. The URL is stored in a file so if the URL changes
 # Make will know to download it again.
-$(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE) | $(CHERI_GEN_DIR)
+$(SAIL_ASCIIDOC_JSON): $(SAIL_ASCIIDOC_JSON_URL_FILE) | $(CHERI_GEN_DIR_FULL)
 	@curl --location '$(shell cat $<)' --output $@
 
 generate: $(SAIL_ASCIIDOC_JSON)
@@ -168,11 +174,32 @@ generate: $(SAIL_ASCIIDOC_JSON)
 # Rule to generate all the src/generated/*.adoc from the CSVs using a Python script.
 CHERI_CSV_DIR = $(SRC_DIR)/cheri/csv
 GEN_SCRIPT    = $(SRC_DIR)/cheri/scripts/generate_tables.py
+
+CHERI_CSR_CSV_V1   = $(CHERI_CSV_DIR)/CHERI_CSR_ratification_v1.csv
+CHERI_ISA_CSV_V1   = $(CHERI_CSV_DIR)/CHERI_ISA_ratification_v1.csv
+CHERI_CSR_CSV_FULL = $(CHERI_CSV_DIR)/CHERI_CSR.csv
+CHERI_ISA_CSV_FULL = $(CHERI_CSV_DIR)/CHERI_ISA.csv
+
+# Determine which CSV files to use based on the target being built
+# If building riscv-cheri-full, use the base CSV files; otherwise use ratification v1
+CHERI_CSR_CSV      = $(CHERI_CSR_CSV_V1)
+CHERI_ISA_CSV      = $(CHERI_ISA_CSV_V1)
+CHERI_GEN_DIR      = $(CHERI_GEN_DIR_V1)
+
+# Override for riscv-cheri-full targets
+$(BUILD_DIR)/riscv-cheri-full.pdf $(BUILD_DIR)/riscv-cheri-full.html $(BUILD_DIR)/riscv-cheri-full.epub: CHERI_CSR_CSV = $(CHERI_CSR_CSV_FULL)
+$(BUILD_DIR)/riscv-cheri-full.pdf $(BUILD_DIR)/riscv-cheri-full.html $(BUILD_DIR)/riscv-cheri-full.epub: CHERI_ISA_CSV = $(CHERI_ISA_CSV_FULL)
+$(BUILD_DIR)/riscv-cheri-full.pdf $(BUILD_DIR)/riscv-cheri-full.html $(BUILD_DIR)/riscv-cheri-full.epub: CHERI_GEN_DIR = $(CHERI_GEN_DIR_FULL)
 # There is no need to declare all generated inputs as dependencies of the pdf
 # targets since the outputs only change if either the CSV or python changes.
-generate-cheri-tables: $(CHERI_CSV_DIR)/CHERI_CSR.csv $(CHERI_CSV_DIR)/CHERI_ISA.csv $(GEN_SCRIPT) | $(CHERI_GEN_DIR)
+generate-cheri-tables-v1: $(CHERI_CSR_CSV_V1) $(CHERI_ISA_CSV_V1) $(GEN_SCRIPT) $(SAIL_ASCIIDOC_JSON) | $(CHERI_GEN_DIR_V1)
 	@echo "  GEN $@"
-	@$(GEN_SCRIPT) -o $(CHERI_GEN_DIR) --csr $(CHERI_CSV_DIR)/CHERI_CSR.csv --isa $(CHERI_CSV_DIR)/CHERI_ISA.csv
+	@$(GEN_SCRIPT) -o $(CHERI_GEN_DIR_V1) --csr $(CHERI_CSR_CSV_V1) --isa $(CHERI_ISA_CSV_V1)
+
+#generate again - this time with experimental extensions included
+generate-cheri-tables-full: $(CHERI_CSR_CSV_FULL) $(CHERI_ISA_CSV_FULL) $(GEN_SCRIPT) $(SAIL_ASCIIDOC_JSON) | $(CHERI_GEN_DIR_FULL)
+	@echo "  GEN $@"
+	@$(GEN_SCRIPT) -o $(CHERI_GEN_DIR_FULL) --csr $(CHERI_CSR_CSV_FULL) --isa $(CHERI_ISA_CSV_FULL)
 
 # Check if the docs-resources/global-config.adoc file exists. If not, the user forgot to check out submodules.
 ifeq ("$(wildcard docs-resources/global-config.adoc)","")
@@ -189,7 +216,7 @@ build-norm-rules: $(NORM_RULES)
 build: build-pdf build-html build-epub build-tags
 # TODO: build-norm-rules
 
-ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON) generate-cheri-tables
+ALL_SRCS := $(shell git ls-files $(SRC_DIR)) $(SAIL_ASCIIDOC_JSON) generate-cheri-tables-v1 generate-cheri-tables-full
 
 # All normative rule definition input YAML files tracked under Git (ensure you at least stage new files).
 NORM_RULE_DEF_FILES := $(shell git ls-files '$(NORM_RULE_DEF_DIR)/*.yaml')
@@ -237,4 +264,6 @@ docker-pull-latest:
 clean:
 	@echo "Cleaning up generated files..."
 	rm -rf $(BUILD_DIR)
+	rm -rf $(CHERI_GEN_DIR_V1)
+	rm -rf $(CHERI_GEN_DIR_FULL)
 	@echo "Cleanup completed."
