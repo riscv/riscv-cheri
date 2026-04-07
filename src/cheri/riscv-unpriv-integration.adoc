@@ -6,9 +6,8 @@ WARNING: This chapter will appear in the unpriv spec after the RV32I chapter.
 endif::[]
 
 This chapter introduces a new base ISA called {cheri_base64_ext_name} that extends the RV64 instruction set with CHERI.
-The {cheri_base_ext_name} base can be composed with other standard options to bases such as E (16-registers), Zfinx and endianness.
 In the future, 32-bit bases ({cheri_base32_ext_name}) will also be defined with near identically behavior but a different in-memory representation, so this chapter uses the term {cheri_base_ext_name} to refer to the behavior common between all bases.
-
+The {cheri_base_ext_name} base can be composed with other standard options to bases such as E (16-registers), Zfinx and endianness.
 
 === CHERI Overview
 
@@ -89,6 +88,10 @@ Specific encoding formats may support different ISA extensions, and add new arch
 The lower XLEN bits of a capability encode the address of where the capability points.
 This is also referred to as the integer part of the capability.
 For registers that are extended but currently hold non-capability data, all other fields are typically zero.
+
+ifndef::cheri_ratification_v1_only[]
+NOTE: Future extensions may add `2*XLEN`-bit operations to make use of the wide registers for efficient handling of `2*XLEN`-bit non-capability data.
+endif::[]
 
 [#cap_valid_tag,reftext="{ctag}"]
 ==== {ctag_title}
@@ -542,7 +545,7 @@ These parameters affect the behavior of <<SCBNDS>>/<<SCBNDSR>> as well as the re
 The mantissa width influences the precision of bounds (much like the mantissa width of floating point numbers defines arithmetic precision).
 * **Maximum exponent (ea or e<N>)**: If _all_ meaningful values of the exponent can be encoded directly in the exponent field this uses `ea`.
 Otherwise `e<N>` describes the largest encodable exponent for a valid capability except for the one used for the whole address space.
-For example, the CHERIoT capabilty encoding formats use  `e14` since it uses a four-bit exponent field that can encode only the values 0 through 14 and 24 (which, with its 9-bit mantissas, is sufficient to provide an encoding of bounds that cover the whole address space).
+For example, the CHERIoT capability encoding formats use  `e14` since it uses a four-bit exponent field that can encode only the values 0 through 14 and 24 (which, with its 9-bit mantissas, is sufficient to provide an encoding of bounds that cover the whole address space).
 The default value for this parameter is `ea` and may be omitted in that case.
 * **Representable region (rc1 or r0)**: The number of mantissa bits used to guarantee representability of out-of-bounds capability values.
 So far two options have been used in commercial implementations: `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, and `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed out-of-bounds range.
@@ -560,7 +563,7 @@ Additionally, there is one other value, `enc0`, which means the compiler and/or 
 NOTE: In general, only very specialized software such as offline crash-dump debuggers need to know the exact memory representation, and all other software can and should use the inspection instructions such as <<GCBASE>>, etc.
 
 Other parameters::
-
+These other parameters are not used by the formats currently set forward for ratification but are being used in custom extensions on top of {cheri_base_ext_name}.
 * **<<AUIPC_CHERI>> shift (as<N>)**: The shift amount used in the {cheri_base_ext_name} variant of <<AUIPC_CHERI>>. This is 12 (as in RVI) unless specified otherwise. Also see <<section_auipc_shift>>.
 
 As with other extensions, a version number suffix may be added to the `LY` string to identify a new version with the same parameters but different in-memory representation.
@@ -572,13 +575,18 @@ IMPORTANT: Any future capability encoding formats must provide all the capabilit
 IMPORTANT: The behavior of all {cheri_base_ext_name} instructions is fully defined by the parameters in the `LY` string.
 Therefore, any implementation with matching parameters is binary compatible (assuming the same extensions are implemented).
 
-The currently defined {cheri_base64_ext_name} base capability encoding format is:
+The {cheri_base64_ext_name} base capability encoding format is based on University of Cambridge CHERI v9 cite:[cheri-v9-spec]: <<rv64y_cap_description, {rv64y_uni_base_name}>>
 
-* For {cheri_base64_ext_name}, the capability encoding format based on University of Cambridge CHERI v9 cite:[cheri-v9-spec]: <<rv64y_cap_description, {rv64y_uni_base_name}>>
+ifndef::cheri_ratification_v1_only[]
+For {cheri_base32_ext_name}, the capability encoding format is also based on University of Cambridge CHERI v9 cite:[cheri-v9-spec]: <<rv32y_cap_description, {rv32y_uni_base_name}>>
+endif::[]
 
 NOTE: It is expected that the actual {cheri_base_ext_name} instantiation is chosen using a profile rather than a full architecture string and therefore the unwieldy suffix should rarely be user-visible.
 
 For RV64, the number of spare bits in the capability encoding ensure sufficient future extensibility and therefore no custom formats exist.
+
+
+NOTE: {cheri_base32_ext_name} has insufficient bits available to enable features for all target domains, so multiple {cheri_base32_ext_name}-extending capability formats must exist.
 
 [#section_cap_integrity]
 === Integrity of Capabilities
@@ -1158,18 +1166,15 @@ While the in-memory bit pattern of capabilities across these systems as well as 
 The {rv32y_uni_base_name} follows the same rules as {rv64y_uni_base_name}, and sets different parameter values.
 It also encodes the AP field to use fewer bits.
 
-Further {cheri_base32_ext_name}-extending capability formats exist, which currently are the CHERIoT formats.
-
-NOTE: RV32YE (16-register) implementations are recommended to use one of these CHERIoT encodings.
-
-NOTE: Further domain specialized capability encoding formats are expected in the future.
-
 The currently defined RV32 capability encoding formats are:
 
 * <<rv32y_cap_description>>
 * <<rv32y_cheriot_encoding1_description>>
 * <<rv32y_cheriot_encoding2_description>>
 * <<rv32y_cheriot_encoding3_description>>
+
+NOTE: Further domain specialized capability encoding formats are expected in the future.
+
 
 include::rvy32-encoding.adoc[]
 
