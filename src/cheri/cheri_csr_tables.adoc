@@ -3,7 +3,7 @@
 
 #this section includes debug CSRs#
 
-ifdef::cheri_ratification_v1_only[]
+ifndef::cheri_ratification_v1_only[]
 
 ifndef::cheri_standalone_spec[]
 
@@ -29,14 +29,14 @@ endif::[]
 [#aliased_CSRs]
 [width="100%",options=header,cols="1,1"]
 |==============================================================================
-include::generated/csr_aliases_table_body.adoc[]
+include::{generated_dir}/csr_aliases_table_body.adoc[]
 |==============================================================================
 
 .Action taken on writing to extended CSRs
 [#extended_CSR_writing]
 [width="100%",options=header,cols="1,2,2"]
 |==============================================================================
-include::generated/csr_alias_action_table_body.adoc[]
+include::{generated_dir}/csr_alias_action_table_body.adoc[]
 |==============================================================================
 
 ^*^ The vector range check is to ensure that vectored entry to the handler is within bounds of the capability written to `__x__tvec`.
@@ -53,7 +53,7 @@ is only possible when {cheri_default_ext_name} is implemented.
 [#new_cap_CSR_writing]
 [width="100%",options=header,cols="1,2,2"]
 |==============================================================================
-include::generated/new_csr_write_action_table_body.adoc[]
+include::{generated_dir}/new_csr_write_action_table_body.adoc[]
 |==============================================================================
 
 XLEN bits of YLEN-wide CSRs added in {cheri_default_ext_name} are
@@ -69,7 +69,7 @@ NOTE: Implementations which allow misa.C to be writable need to legalize `__x__e
 [#CSR_exevectors]
 [width="100%",options=header,cols="1,1,1,1"]
 |==============================================================================
-include::generated/csr_exevectors_table_body.adoc[]
+include::{generated_dir}/csr_exevectors_table_body.adoc[]
 |==============================================================================
 
 Some CSRs store code pointers or data pointers as shown in xref:CSR_exevectors[xrefstyle=short].
@@ -85,7 +85,7 @@ The tables below show all YLEN-wide CSRs.
 [#all_capability_CSRs]
 [width="100%",options=header,cols="2,1,1,2,2,4"]
 |==============================================================================
-include::generated/csr_permission_table_body.adoc[]
+include::{generated_dir}/csr_permission_table_body.adoc[]
 |==============================================================================
 
 Where reset values are specified in <<all_capability_CSRs>>, they are typically a maximum possible value.
@@ -94,10 +94,14 @@ For example, a <<root-rx-cap>> as specified for <<mtvec_y>> is the maximum, the 
 {cheri_priv_m_ext} and {cheri_priv_s_ext} extend the CSRs listed in
 xref:dcsrnames-renamed[xrefstyle=short],
 xref:mcsrnames-renamed[xrefstyle=short],
-xref:scsrnames-renamed[xrefstyle=short],
-xref:vscsrnames-renamed[xrefstyle=short] and
-xref:ucsrnames-renamed[xrefstyle=short] from the base RISC-V ISA and its
-extensions.
+xref:scsrnames-renamed[xrefstyle=short]
+ifdef::cheri_ratification_v1_only[]
+, and xref:vscsrnames-renamed[xrefstyle=short]
+endif::[]
+ifndef::cheri_ratification_v1_only[]
+, xref:vscsrnames-renamed[xrefstyle=short] and xref:ucsrnames-renamed[xrefstyle=short]
+endif::[]
+from the base RISC-V ISA and its extensions.
 
 NOTE: If {cheri_default_ext_name} is supported then the <<cheri_execution_mode>> determines whether YLEN or XLEN bits are returned (see <<CSRRW_CHERI>>).
 
@@ -105,14 +109,14 @@ NOTE: If {cheri_default_ext_name} is supported then the <<cheri_execution_mode>>
 .Extended debug-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
-include::generated/csr_renamed_purecap_mode_d_table_body.adoc[]
+include::{generated_dir}/csr_renamed_purecap_mode_d_table_body.adoc[]
 |===
 
 [[mcsrnames-renamed]]
 .Extended machine-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
-include::generated/csr_renamed_purecap_mode_m_table_body.adoc[]
+include::{generated_dir}/csr_renamed_purecap_mode_m_table_body.adoc[]
 |===
 
 [NOTE]
@@ -128,22 +132,25 @@ from which it can derive a capability to the address in this register.
 .Extended supervisor-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
-include::generated/csr_renamed_purecap_mode_s_table_body.adoc[]
+include::{generated_dir}/csr_renamed_purecap_mode_s_table_body.adoc[]
 |===
 
 [[vscsrnames-renamed]]
 .Extended virtual supervisor-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
-include::generated/csr_renamed_purecap_mode_vs_table_body.adoc[]
+include::{generated_dir}/csr_renamed_purecap_mode_vs_table_body.adoc[]
 |===
 
+// NOTE: This table only includes jvt_y
+ifndef::cheri_ratification_v1_only[]
 [[ucsrnames-renamed]]
 .Extended user-mode CSRs in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<,<,<",options="header"]
 |===
-include::generated/csr_renamed_purecap_mode_u_table_body.adoc[]
+include::{generated_dir}/csr_renamed_purecap_mode_u_table_body.adoc[]
 |===
+endif::[]
 
 ifndef::cheri_standalone_spec[]
 

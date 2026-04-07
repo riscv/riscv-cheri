@@ -41,6 +41,15 @@ class table(abc.ABC):
             os.remove(self.filename)
         self.file = open(self.filename, 'w')
         self.header = header
+        self.ratification_idx = header.index("initial_ratification")
+
+    def write_row(self, row: list[str], outStr: str):
+        if row[self.ratification_idx] == "post-v1":
+            self.file.write("ifndef::cheri_ratification_v1_only[]\n")
+            self.file.write(outStr + '\n')
+            self.file.write("endif::[]\n")
+        else:
+            self.file.write(outStr + '\n')
 
     def __del__(self):
         self.file.close()
@@ -61,7 +70,7 @@ class InsnTable(table):
         super().__init__(filename, header)
         self.extension = extension
         if other_cols is None:
-            other_cols = ["{cheri_base32_ext_name}", "{cheri_base64_ext_name}", "Function"]
+            other_cols = ["Function"]
         self.other_cols = other_cols
         self.indices = [self.header.index(col) for col in self.other_cols]
         self._mnemonic_col_idx = self.header.index("Mnemonic")
@@ -74,7 +83,7 @@ class InsnTable(table):
             outStr = '|' + insn_xref(row[self._mnemonic_col_idx])
             for i in self.indices:
                outStr += '|' + row[i]
-            self.file.write(outStr + '\n')
+            self.write_row(row, outStr)
 
     def check(self, row: list[str]):
         return row[self._extension_col_idx] == self.extension
@@ -99,7 +108,7 @@ class illegal_insns(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("illegal insn if (1)")] != ""
@@ -123,7 +132,7 @@ class old_and_new_mnemonics(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Old mnemonic")] != "N/A" and row[self.header.index("Old mnemonic")] != "same"
@@ -147,7 +156,7 @@ class new_instructions(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Old mnemonic")] == "N/A"
@@ -171,7 +180,7 @@ class csr_aliases(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] != ""
@@ -203,7 +212,7 @@ class csr_renamed_purecap_mode_d(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "D"
@@ -227,7 +236,7 @@ class csr_added_legacy(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] == "" and "{cheri_default_ext_name}" == row[self.header.index("Prerequisites")].strip()
@@ -251,7 +260,7 @@ class csr_added_purecap_mode_d(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "D"
@@ -276,7 +285,7 @@ class csr_renamed_purecap_mode_m(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "M"
@@ -300,7 +309,7 @@ class csr_added_purecap_mode_m(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "M"
@@ -324,7 +333,7 @@ class csr_renamed_purecap_mode_s(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "S"
@@ -348,7 +357,7 @@ class csr_renamed_purecap_mode_vs(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "VS"
@@ -372,7 +381,7 @@ class csr_added_purecap_mode_s(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "S"
@@ -396,7 +405,7 @@ class csr_renamed_purecap_mode_u(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "U"
@@ -420,7 +429,7 @@ class csr_alias_action(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("Alias")] != ""
@@ -448,7 +457,7 @@ class csr_perms(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
         return row[self.header.index("YLEN CSR")] != ""
@@ -472,12 +481,12 @@ class csr_exevectors(table):
                     outStr += '|' + insn_xref(row[i])
                 else:
                     outStr += '|'+row[i]
-            self.file.write(outStr+'\n')
+            self.write_row(row, outStr)
 
     def check(self,row):
-        return row[self.header.index("Code Pointer")] == "✔" or \
-            row[self.header.index("Unseal On Execution")] == "✔" or \
-            row[self.header.index("Data Pointer")] == "✔"
+        return (row[self.header.index("Code Pointer")] == "✔" or
+            row[self.header.index("Unseal On Execution")] == "✔" or
+            row[self.header.index("Data Pointer")] == "✔")
 
 def parse_cmdline_args():
     parser = argparse.ArgumentParser(description="Generate tables for CHERI ISA specification")

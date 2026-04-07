@@ -237,4 +237,5 @@ docker-pull-latest:
 clean:
 	@echo "Cleaning up generated files..."
 	rm -rf $(BUILD_DIR)
+	rm -rf $(CHERI_GEN_DIR)
 	@echo "Cleanup completed."

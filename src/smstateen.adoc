@@ -256,8 +256,14 @@ whether they really do.
 The JVT bit controls access to the `jvt` CSR provided by the Zcmt extension.
 
 If the base architecture is {cheri_base_ext_name} then
-the TID bit in `mstateen0` controls access to the <<stidc>>, <<vstidc>>, and <<utidc>> CSRs.
+the TID bit in `mstateen0` controls access to the <<stidc>>,
+ifndef::cheri_ratification_v1_only[]
+<<vstidc>>,
+endif::[]
+and <<utidc>> CSRs.
+ifndef::cheri_ratification_v1_only[]
 The TID bit in `hstateen0` controls access to the <<stidc>> (really <<vstidc>>) CSR.
+endif::[]
 The TID bit in `sstateen0` controls access to the <<utidc>> CSR.
 
 The SE0 bit in `mstateen0` controls access to the `hstateen0`, `hstateen0h`,

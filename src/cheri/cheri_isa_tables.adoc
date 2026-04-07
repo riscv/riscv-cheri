@@ -7,9 +7,9 @@ The following sections detail the list of added/modified instructions per extens
 
 .{cheri_base_ext_name} added instructions
 [#{rvy_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_file_name}.adoc[]
+include::{generated_dir}/{rvy_file_name}.adoc[]
 |==============================================================================
 
 [#rvy_i_mod_insn_table, reftext="{rvy_i_mod_ext_name}"]
@@ -20,9 +20,9 @@ In general, this is restricted to changing whether input/output operands read/wr
 
 .{rvy_i_mod_ext_name} instructions
 [#{rvy_i_mod_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_i_mod_file_name}.adoc[]
+include::{generated_dir}/{rvy_i_mod_file_name}.adoc[]
 |==============================================================================
 
 
@@ -34,9 +34,9 @@ In general, this is restricted to changing whether input/output operands read/wr
 
 .{rvy_zicsr_mod_ext_name} instructions
 [#{rvy_zicsr_mod_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_zicsr_mod_file_name}.adoc[]
+include::{generated_dir}/{rvy_zicsr_mod_file_name}.adoc[]
 |==============================================================================
 
 [#rvy_sentry_insn_table, reftext="{rvy_sentry_insn_ext_name}"]
@@ -46,9 +46,9 @@ include::generated/{rvy_zicsr_mod_file_name}.adoc[]
 
 .{rvy_sentry_insn_ext_name} instruction extension
 [#{rvy_sentry_insn_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_sentry_insn_file_name}.adoc[]
+include::{generated_dir}/{rvy_sentry_insn_file_name}.adoc[]
 |==============================================================================
 
 [#rvy_bld_insn_table, reftext="{rvy_bld_insn_ext_name}"]
@@ -58,9 +58,9 @@ include::generated/{rvy_sentry_insn_file_name}.adoc[]
 
 .{rvy_bld_insn_ext_name} instruction extension
 [#{rvy_bld_insn_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_bld_insn_file_name}.adoc[]
+include::{generated_dir}/{rvy_bld_insn_file_name}.adoc[]
 |==============================================================================
 
 [#rvy_topr_insn_table, reftext="{rvy_topr_insn_ext_name}"]
@@ -70,10 +70,12 @@ include::generated/{rvy_bld_insn_file_name}.adoc[]
 
 .{rvy_topr_insn_ext_name} instruction extension
 [#{rvy_topr_insn_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_topr_insn_file_name}.adoc[]
+include::{generated_dir}/{rvy_topr_insn_file_name}.adoc[]
 |==============================================================================
+
+ifndef::cheri_ratification_v1_only[]
 
 [#rvy_bndsrdw_insn_table, reftext="{rvy_bndsrdw_insn_ext_name}"]
 === {rvy_bndsrdw_insn_ext_name}
@@ -82,10 +84,12 @@ include::generated/{rvy_topr_insn_file_name}.adoc[]
 
 .{rvy_bndsrdw_insn_ext_name} instruction extension
 [#{rvy_bndsrdw_insn_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_bndsrdw_insn_file_name}.adoc[]
+include::{generated_dir}/{rvy_bndsrdw_insn_file_name}.adoc[]
 |==============================================================================
+
+endif::[]
 
 [#rvy_zca_insn_table, reftext="{rvy_zca_ext_name}"]
 === {rvy_zca_ext_name}
@@ -95,9 +99,9 @@ They are incompatible with Zcf (RV32) and Zcd (RV64).
 
 .{rvy_zca_ext_name} instruction extension
 [#{rvy_zca_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_zca_file_name}.adoc[]
+include::{generated_dir}/{rvy_zca_file_name}.adoc[]
 |==============================================================================
 
 ifdef::cheri_standalone_spec[]
@@ -128,16 +132,19 @@ NOTE: {C_MV_CAP_LC} is renamed from `c.mv` to avoid ambiguity in disassembly.
 
 .{rvy_zca_mod_ext_name} instruction extension
 [#{rvy_zca_mod_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_zca_mod_file_name}.adoc[]
+include::{generated_dir}/{rvy_zca_mod_file_name}.adoc[]
 |==============================================================================
 
 include::insns/addi16sp_16bit.adoc[]
 include::insns/addi4spn_16bit.adoc[]
 include::insns/cmv_16bit.adoc[]
 include::insns/jr_16bit.adoc[]
+ifndef::cheri_ratification_v1_only[]
+//RV32Y only
 include::insns/jal_16bit.adoc[]
+endif::[]
 include::insns/jalr_16bit.adoc[]
 
 <<<
@@ -149,9 +156,9 @@ Specifying {cheri_base_ext_name} and Zalrsc adds atomic capability load and stor
 
 .{rvy_zalrsc_ext_name} instruction extension
 [#{rvy_zalrsc_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_zalrsc_file_name}.adoc[]
+include::{generated_dir}/{rvy_zalrsc_file_name}.adoc[]
 |==============================================================================
 
 ifdef::cheri_standalone_spec[]
@@ -167,9 +174,9 @@ Specifying {cheri_base_ext_name} and Zaamo gives {rvy_zaamo_ext_name} functional
 
 .{rvy_zaamo_ext_name} instruction extension
 [#{rvy_zaamo_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_zaamo_file_name}.adoc[]
+include::{generated_dir}/{rvy_zaamo_file_name}.adoc[]
 |==============================================================================
 
 ifdef::cheri_standalone_spec[]
@@ -184,9 +191,9 @@ Specifying {cheri_base_ext_name} and Zba gives {rvy_zba_ext_name} functionality,
 
 .{rvy_zba_ext_name} instruction extension
 [#{rvy_zba_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_zba_file_name}.adoc[]
+include::{generated_dir}/{rvy_zba_file_name}.adoc[]
 |==============================================================================
 
 NOTE: There is no {cheri_base_ext_name} equivalent for `add.uw` as only having the integer version is sufficient.
@@ -206,9 +213,9 @@ Specifying {cheri_base_ext_name} and Zicbom gives {rvy_zicbom_mod_ext_name} func
 
 .{rvy_zicbom_mod_ext_name} instruction extension
 [#{rvy_zicbom_mod_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_zicbom_mod_file_name}.adoc[]
+include::{generated_dir}/{rvy_zicbom_mod_file_name}.adoc[]
 |==============================================================================
 
 ifdef::cheri_standalone_spec[]
@@ -226,9 +233,9 @@ Specifying {cheri_base_ext_name} and Zicboz gives {rvy_zicboz_mod_ext_name} func
 
 .{rvy_zicboz_mod_ext_name} instruction extension
 [#{rvy_zicboz_mod_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_zicboz_mod_file_name}.adoc[]
+include::{generated_dir}/{rvy_zicboz_mod_file_name}.adoc[]
 |==============================================================================
 
 ifdef::cheri_standalone_spec[]
@@ -244,9 +251,9 @@ Specifying {cheri_base_ext_name} and Zicbop gives {rvy_zicbop_mod_ext_name} func
 
 .{rvy_zicbop_mod_ext_name} instruction extension
 [#{rvy_zicbop_mod_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_zicbop_mod_file_name}.adoc[]
+include::{generated_dir}/{rvy_zicbop_mod_file_name}.adoc[]
 |==============================================================================
 
 ifdef::cheri_standalone_spec[]
@@ -264,7 +271,7 @@ An {cheri_base_ext_name} core which supports {cheri_default_ext_name} adds the i
 
 .{cheri_default_ext_name} instruction extension
 [#{rvy_hybrid_file_name}]
-[width="100%",options=header,cols="2,1,1,5",]
+[width="100%",options=header,cols="2,5",]
 |==============================================================================
-include::generated/{rvy_hybrid_file_name}.adoc[]
+include::{generated_dir}/{rvy_hybrid_file_name}.adoc[]
 |==============================================================================

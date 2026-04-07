@@ -149,6 +149,7 @@ Please cite as: “The RISC-V Instruction Set Manual, Volume I: User-Level ISA, 
 Version 20191214-draft”, Editors Andrew Waterman and Krste Asanović, RISC-V Foundation,
 December 2019._
 
+:cheri_ratification_v1_only: 1
 include::cheri/attributes.adoc[]
 //the colophon allows for a section after the preamble that is part of the frontmatter and therefore not assigned a page number.
 include::colophon.adoc[]
@@ -161,8 +162,10 @@ include::zifencei.adoc[]
 include::zicsr.adoc[]
 include::cheri/riscv-unpriv-integration.adoc[]
 include::cheri/zylevels1.adoc[]
+ifndef::cheri_ratification_v1_only[]
 include::cheri/zybndsrdw.adoc[]
 include::cheri/zyseal.adoc[]
+endif::[]
 // Reduce the build time to only include the base spec+CHERI changes
 ifndef::minimal_cheri_changes_doc[]
 include::counters.adoc[]
@@ -202,7 +205,9 @@ include::unpriv-cfi.adoc[]
 include::zilsd.adoc[]
 endif::[]
 include::cheri/riscv-hybrid-integration.adoc[]
+ifndef::cheri_ratification_v1_only[]
 include::cheri/rvy-cheriot-unpriv.adoc[]
+endif::[]
 ifndef::minimal_cheri_changes_doc[]
 include::rv-32-64g.adoc[]
 include::naming.adoc[]
