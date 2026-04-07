@@ -1,12 +1,14 @@
-[[rv64y]]
-== {cheri_base64_ext_name} Base Capability Instruction Set, Version 1.0
+[[rvy]]
+== {cheri_base_ext_name} Base Capability Instruction Set, Version 1.0
 
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the unpriv spec after the RV32I chapter.
 endif::[]
 
 This chapter introduces a new base ISA called {cheri_base64_ext_name} that extends the RV64 instruction set with CHERI.
-The {cheri_base64_ext_name} base can be composed with other standard options to bases such as E (16-registers), Zfinx and endianness.
+The {cheri_base_ext_name} base can be composed with other standard options to bases such as E (16-registers), Zfinx and endianness.
+In the future, 32-bit bases ({cheri_base32_ext_name}) will also be defined with near identically behavior but a different in-memory representation, so this chapter uses the term {cheri_base_ext_name} to refer to the behavior common between all bases.
+
 
 === CHERI Overview
 
@@ -57,8 +59,8 @@ improve their security.
 {cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to YLEN, each register also gains a one-bit {ctag} which is defined below.
 
-{cheri_base64_ext_name} specifies the minimum required fields that the capability format must support, and their semantics.
-All current {cheri_base64_ext_name} bases are little endian and therefore the memory representation of capabilities always holds the address in the first `XLEN` bytes of memory followed by the metadata.
+{cheri_base_ext_name} specifies the minimum required fields that the capability format must support, and their semantics.
+All current {cheri_base_ext_name} bases are little endian and therefore the memory representation of capabilities always holds the address in the first `XLEN` bytes of memory followed by the metadata.
 
 {cheri_base_ext_name} is designed to be highly extensible, and therefore must allow multiple metadata encoding formats to exist.
 Specific encoding formats may support different ISA extensions, and add new architectural permissions.
@@ -453,6 +455,10 @@ Capability encoding formats may impose additional constraints to reduce the numb
 | [[perm_req:base:asr:x,base-3]]base-3      | <<asr_perm>> | <<x_perm>>
 |===
 
+ifndef::cheri_ratification_v1_only[]
+When using <<rv64y_cap_description,{rv64y_uni_base_name}>> and <<rv32y_cap_description,{rv32y_uni_base_name}>> the complete set of rules with and without <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>> are shown in <<clrperm-rules-no-zylevels1>> and <<clrperm-rules-zylevels1>>.
+endif::[]
+
 [#SDP-field, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
@@ -520,9 +526,10 @@ The {cheri_base64_ext_name} name on its own does not describe the complete base 
 For example, the <<SCBNDSR>> instruction yields a capability with new bounds that are rounded differently depending on the number of bits allocated to the bounds in the capability format.
 Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds than XLEN=32 system and therefore have a larger <<section_cap_representable_check>>.
 
-NOTE: These observable differences in behaviour are similar to floating point numbers where the supported operations and their semantics are the same for all formats, but the exact result depends on the representation (e.g., 16/32/64-bit IEEE-754 or other floating point formats).
+NOTE: These observable differences in behavior are similar to floating point numbers where the supported operations and their semantics are the same for all formats, but the exact result depends on the representation (e.g., 16/32/64-bit IEEE-754 or other floating point formats).
 
-The encoding format parameters are specified in the architecture string using a `LY<params>` syntax, which can be used by software and/or the compiler to optimize for that specific in-memory format.
+It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid in-memory encodings.
+However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, these are encoded via an `LY<params>` suffix to the base ISA name.
 
 NOTE: The base `L<encoding_parameters>` encoding format scheme is designed to separate the aspects of capability encoding that influence the behavior of {cheri_base_ext_name} instructions from the other aspects defined by the encoding format.
 The intent is to simplify the future development of more (possibly domain-specific) encoding formats while also more directly conveying compatibility of architectural bases.
@@ -1139,13 +1146,14 @@ ifndef::cheri_ratification_v1_only[]
 [[rv32y]]
 == {cheri_base32_ext_name} Base Capability Instruction Set, Version 1.0
 
-<<rv64y>> introduced the CHERI base ISA and the {rv64y_uni_base_name} encoding format, as the only defined {cheri_base64_ext_name} format.
+<<rvy>> introduced the CHERI base ISA and the {rv64y_uni_base_name} encoding format, as the only defined {cheri_base64_ext_name} format.
 
 {cheri_base32_ext_name} inherits all details from {cheri_base64_ext_name}, and, sets XLEN=32, YLEN=64.
 
-{cheri_base32_ext_name} has multiple encoding formats however, due to the limit metadata space.
-
-{cheri_base32_ext_name} has insufficient bits available to enable features for all target domains, and so multiple capability encoding formats are available.
+Depending on the target domain different capability requirements exist, but for XLEN=32 there are insufficient bits available in the capability metadata to define one common format for all use cases.
+For example, a small embedded controller with limited address space of a few megabytes may need to make different tradeoffs than an auxiliary core within a larger SoC with many gigabytes of address space, and an accelerator using the {cheri_base_ext_name} ISA may need yet another set of features.
+Therefore, multiple capability encodings with observable (but generally uninteresting) behavior differences need to be defined.
+While the in-memory bit pattern of capabilities across these systems as well as the precision of bounds may differ, software that does not depend on the raw bits in memory is source (and often also binary) compatible with these different capability encodings.
 
 The {rv32y_uni_base_name} follows the same rules as {rv64y_uni_base_name}, and sets different parameter values.
 It also encodes the AP field to use fewer bits.
@@ -1162,17 +1170,6 @@ The currently defined RV32 capability encoding formats are:
 * <<rv32y_cheriot_encoding1_description>>
 * <<rv32y_cheriot_encoding2_description>>
 * <<rv32y_cheriot_encoding3_description>>
-
-[NOTE]
-====
-Depending on the target domain different capability requirements exist, but for XLEN=32 there are insufficient bits available in the capability metadata to define one common format for all use cases.
-For example, a small embedded controller with limited address space of a few megabytes may need to make different tradeoffs than an auxiliary core within a larger SoC with many gigabytes of address space, and an accelerator using the {cheri_base_ext_name} ISA may need yet another set of features.
-Therefore, multiple capability encodings with observable (but generally uninteresting) behavior differences need to be defined.
-While the in-memory bit pattern of capabilities across these systems as well as the precision of bounds may differ, software that does not depend on the raw bits in memory is source (and often also binary) compatible with these different capability encodings.
-====
-
-It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid in-memory encodings.
-However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, these are encoded via an `LY<params>` suffix to the base ISA name such as:
 
 include::rvy32-encoding.adoc[]
 
