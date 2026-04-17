@@ -14,12 +14,12 @@ include::wavedrom/ct-unconditional-2.adoc[]
 
 include::base_isa_extension.adoc[]
 
-
+ifndef::cheri_ratification_v1_only[]
 Description::
 Indirect jump to the target capability in `{cs1}` with an address offset.
 +
 NOTE: The  description below contains three hooks for extending <<JALR_CHERI>> behavior, used by extensions to give a large degree of extensibility.
- Unless an extension, such as <<section_rvy_sentry_insn_ext>>, is implemented which explicitly reference any of the hooks, then take no action for any of them.
+ Unless an instruction, such as <<SENTRY>>, is implemented which explicitly reference any of the hooks, then take no action for any of them.
 +
 Operationally, copy `{cs1}` to the target <<pcc>> and then...
 +
@@ -29,10 +29,26 @@ Operationally, copy `{cs1}` to the target <<pcc>> and then...
 . HOOK 1: Optionally clear the {ctag} of the target <<pcc>> depending on the <<sec_cap_type>> value and the numerical values of `{cd}` and `{cs1}`
 . Unseal the target <<pcc>> if it is a <<sentry_cap>>, or clear the {ctag} if it is any other sealed type.
 . If `{cd}≠{creg}0`, compute the return capability and install it to `{cd}`:
-.. add the width of this instruction to the current <<pcc>> using the semantics of the <<SCADDR>> instructions, and
+.. add the width of this instruction to the current <<pcc>> using the semantics of the <<SCADDR>> instruction, and
 .. HOOK 2: Optionally seal the return capability as a <<sentry_cap>> with a <<sec_cap_type>> defined by the implemented extensions.
 . HOOK 3: Optionally make other architectural state updates.
 . Jump to the target <<pcc>>.
+endif::[]
+ifdef::cheri_ratification_v1_only[]
+Description::
+Indirect jump to the target capability in `{cs1}` with an address offset.
++
+Operationally, copy `{cs1}` to the target <<pcc>> and then...
++
+. Compute the target <<pcc>> address in two steps, each using the semantics of the <<SCADDR>> instruction:
+.. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
+.. set bit zero of the target <<pcc>> address to zero.
+. Unseal the target <<pcc>> if it is a <<sentry_cap>>.
+. If `{cd}≠{creg}0`, compute the return capability and install it to `{cd}`:
+.. add the width of this instruction to the current <<pcc>> using the semantics of the <<SCADDR>> instruction, and
+.. Seal the return capability as a <<sentry_cap>>.
+. Jump to the target <<pcc>>.
+endif::[]
 +
 [NOTE]
 =====

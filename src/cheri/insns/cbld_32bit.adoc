@@ -21,10 +21,13 @@ include::wavedrom/cbld.adoc[]
 
 Description::
 Copy `{cs2}` to `{cd}`.
+ifndef::cheri_ratification_v1_only[]
 +
+//CHERIoT specific
 If `{cd}.ct` (that is, its <<sec_cap_type>>) is
 neither 0 nor an <<sec_cap_type_ambient,ambient>> type, then
 set `{cd}.ct` to 0.
+endif::[]
 +
 Set `{cd}.tag=1` if:
 +
@@ -39,18 +42,21 @@ Otherwise, set `{cd}.tag=0`
 
 NOTE: The <<section_cap_integrity,integrity>> check on `{cs2}` is required to prevent authorising a capability with a lack of integrity.
  The <<section_cap_integrity,integrity>> check on `{cs1}` is optional.
-
+ifndef::cheri_ratification_v1_only[]
 NOTE: <<CBLD>> will construct a sealed capability only if its type is <<sec_cap_type_ambient,ambiently available>>.
+endif::[]
 
 NOTE: <<CBLD>> is typically used alongside <<SCHI>> to build
 capabilities from integer values.
+
+NOTE: <<CBLD>> can be used to speed up operations such as paging in memory after swap.
 
 NOTE: When `{cs1}` is `{creg}0` <<CBLD>> will copy `{cs2}` to `{cd}` and clear `{cd}.tag`.
 However future extensions may add additional behavior to update currently reserved fields,
 and so software should not assume `{cs1}==0` to be a pseudo-instruction for {ctag} clearing.
 
 Included in::
-<<rvy_bld_insn_table>>
+<<rvy_insn_table>>
 
 Operation::
 +

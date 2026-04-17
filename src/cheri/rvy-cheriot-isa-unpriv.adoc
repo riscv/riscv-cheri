@@ -22,8 +22,9 @@ counterparts found in the {cheriot_priv_ext_name} extension.
 {cheriot_unpriv_ext_name} assumes the presence of
 both the <<section_zylevels1>> and <<section_zyseal>> extensions.
 The present specification presumes the *absence*
-of both the <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and
-<<section_rvy_sentry_insn_ext>> extensions.
+of both the <<SENTRY>> and
+<<CBLD>> instruction from <<rvy_insn_table>>.
+It also redefines the values allocated in the <<sentry_cap>> field.
 
 [NOTE]
 =====
@@ -36,7 +37,7 @@ we have not yet found a compelling reason to formally specify this composition.
 [NOTE]
 =====
 While {cheriot_unpriv_ext_name} is nominally compatible with
-<<section_rvy_sentry_insn_ext>>,
+<<SENTRY>>,
 the operating system written for link:https://cheriot.org[CHERIoT]
 has a security model that presumes the absence of ambient sealing,
 and so this specification does not
