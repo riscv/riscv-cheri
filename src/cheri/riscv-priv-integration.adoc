@@ -556,44 +556,16 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 ====
 
 [#cheri_pte_fault]
-=== {cheri_excep_name_pte_st}
+=== {cheri_excep_name_pte_st}, {cheri_excep_name_pte_ld}
 
-{cheri_base64_ext_name} adds the the following new fault type:
+{cheri_base64_ext_name} adds the following fault types:
 
 * {cheri_excep_name_pte_st} (cause value {cheri_excep_cause_pte_st})
+* {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld})
 
-It is prioritized against other fault types as shown in <<exception-priority-cheri>>.
+They are prioritized against other fault types as shown in <<exception-priority-cheri>>.
 
-=== The _pte_._{cheri_base_ext_name_lc}_ field for capability flow control
-
-[NOTE]
-====
-As {cheri_base32_ext_name} has no field allocated in the PTE, capability loads and stores operate as normal.
-Therefore the {cheri_base_ext_name} field is reserved in the RV64 PTE formats only (e.g. <<sv39pte>>) for use by {cheri_base64_ext_name} extensions.
-The principle is that extensions, such as <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> may redefine the usage of the {cheri_base_ext_name} field by adding an enable bit into `Xstatus`.
-====
-
-The definition of the {cheri_base_ext_name} field is as follows:
-
-.Definition of the _pte_._{cheri_base_ext_name_lc}_ field
-[#cheri_pte_rvy_default]
-[width="100%",options=header]
-|=========================================================================================
-| Bit                                   | Name                          | Comment
-| _pte_._{rv64y_pte4_field_name_lc}[3]_ | _pte_._{pte_cap_rw_name_lc}_  | Enable capability (Y) access
-| _pte_._{rv64y_pte4_field_name_lc}[2]_ | _reserved_                    | _reserved_
-| _pte_._{rv64y_pte4_field_name_lc}[1]_ | _reserved_                    | _reserved_
-| _pte_._{rv64y_pte4_field_name_lc}[0]_ | _reserved_                    | _reserved_
-|=========================================================================================
-
-If _pte_._{pte_cap_rw_name_lc}_=0 then:
-
-* All capability loads set the loaded {ctag} to zero
-* All capability stores with the to-be-stored {ctag} set raise a {cheri_excep_name_pte_st}.
-
-If _pte_._{pte_cap_rw_name_lc}_=1 then:
-
-* All capability loads and capability stores operate as normal.
+include::cheri-pte-ext.adoc[]
 
 [#section_invalid_addr_conv,reftext="Invalid address conversion"]
 === Invalid Virtual Address Handling

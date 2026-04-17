@@ -1,14 +1,11 @@
+[NOTE]
+====
+As {cheri_base32_ext_name} has no field allocated in the PTE, capability loads and stores operate as normal.
+Therefore the {cheri_base_ext_name} field is reserved in the RV64 PTE formats only (e.g. <<sv39pte>>) for use by {cheri_base64_ext_name} extensions.
+The principle is that future extensions, may redefine the usage of the {cheri_base_ext_name} field by adding an enable bit into `Xstatus`.
+====
 
-[#section_cheri_priv_crg_ext]
-== "{cheri_priv_crg_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
-
-This extension specifies use of the {rv64y_pte4_field_name} field from the PTE formats (e.g., see <<sv39pte>>).
-
-{cheri_priv_crg_ext} implies Sv39.
-
-The {cheri_priv_crg_ext} extension is enabled when the `sstatus.{pte_cap_fc_enable}` bit is set.
-
-The extension adds the ability for supervisor-mode software to quickly enable trapping loads of capabilities from all pages of memory, incrementally allow loads of capabilities from such pages, and track stores of capabilities to all pages of memory.
+The _pte_._{cheri_base_ext_name_lc}_ field adds the ability for supervisor-mode software to quickly enable trapping loads of capabilities from all pages of memory, incrementally allow loads of capabilities from such pages, and track stores of capabilities to all pages of memory.
 Applied to userspace pages, this has been shown to allow the operating system to implement capability revocation schemes, which allow userspace memory allocators to deterministically guard against use-after-reallocation cite:[cornucopia-reloaded].
 Applied to kernel pages, they can similarly be used against use-after-reallocation within the kernel itself.
 
@@ -27,17 +24,14 @@ The 4-bit _pte_._{rv64y_pte4_field_name_lc}_  field is subdivided into four 1-bi
 |_pte_._{rv64y_pte4_field_name_lc}[3]_ | _pte_._{pte_cap_dirty_name_lc}_     | Capability dirty
 |===
 
-When all of the following are true, {cheri_priv_crg_ext} adds two related architectural features, {cheri_excep_name_pte_ld}s and Capability Dirty Tracking:
+When both of the following are true, the _pte_._{rv64y_pte4_field_name_lc}_  field adds two related architectural features, {cheri_excep_name_pte_ld}s and Capability Dirty Tracking:
 
-. `sstatus.{pte_cap_fc_enable}` is set.
 . The authorizing capability has <<c_perm>>.
 . The PMA is set to _CHERI {ctag_title}_.
 
-=== {cheri_excep_name_pte_ld}s
+==== {cheri_excep_name_pte_ld}s
 
-{cheri_priv_crg_ext} defines a new fault type:
-
-* {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld})
+When _pte_._{pte_cap_r_name_lc}=1_, capability loads may raise a {cheri_excep_name_pte_ld}.
 
 In the case of AMOs that could trigger both a {cheri_excep_name_pte_st}, due to storing a valid {ctag}, and a {cheri_excep_name_pte_ld}, the {cheri_excep_name_pte_st} takes priority as shown in <<exception-priority-cheri>>
 
@@ -88,7 +82,7 @@ Implementations that already take synchronous traps on loaded data, such as ECC 
 
 NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
 
-=== Capability Dirty Tracking
+==== Capability Dirty Tracking
 
 When _pte_._{pte_cap_w_name_lc}_ is clear, capability stores or AMOs where the to-be-stored {ctag} is set will raise a {cheri_excep_name_pte_st} fault.
 
@@ -161,7 +155,7 @@ ifdef::cheri_standalone_spec[]
 [#xstatus_pte]
 === U{pte_cap_crg_pte_name} CSR field
 
-The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({pte_cap_fc_enable}).
+The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit and the Supervisor version (S{pte_cap_crg_pte_name}).
 
 [#mstatusreg_pte]
 .Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
@@ -199,8 +193,7 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
   {bits:  1, name: 'WPRI'},
   {bits:  1, name: 'MPELP'},
   {bits:  1, name: 'MDT'},
-  {bits: 16, name: 'WPRI'},
-  {bits:  1, name: '{pte_cap_fc_enable}'},
+  {bits: 17, name: 'WPRI'},
   {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'WPRI'},
@@ -232,8 +225,7 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
   {bits:  1, name: 'SDT'},
   {bits:  7, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 25, name: 'WPRI'},
-  {bits:  1, name: '{pte_cap_fc_enable}'},
+  {bits: 26, name: 'WPRI'},
   {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'WPRI'},
@@ -262,8 +254,7 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
   {bits:  1, name: 'SUM'},
   {bits: 12, name: 'WPRI'},
   {bits:  2, name: 'UXL[1:0]'},
-  {bits: 25, name: 'WPRI'},
-  {bits:  1, name: '{pte_cap_fc_enable}'},
+  {bits: 26, name: 'WPRI'},
   {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
   {bits:  1, name: 'WPRI'},
