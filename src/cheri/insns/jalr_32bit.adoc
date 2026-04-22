@@ -28,11 +28,11 @@ Operationally, copy `{cs1}` to the target <<pcc>> and then...
 .. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
 .. set bit zero of the target <<pcc>> address to zero.
 ifndef::cheri_ratification_v1_only[]
-. HOOK 1: Optionally clear the {ctag} of the target <<pcc>> depending on the <<sec_cap_type>> value and the numerical values of `{cd}` and `{cs1}`
+. HOOK 1: Optionally set the {ctag} to zero of the target <<pcc>> depending on the <<sec_cap_type>> value and the numerical values of `{cd}` and `{cs1}`
 endif::[]
 . Unseal the target <<pcc>> if it is a <<sentry_cap>>.
 ifndef::cheri_ratification_v1_only[]
-. Clear the {ctag} of the target <<pcc>> if it is any other sealed type.
+. Set the {ctag} to zero of the target <<pcc>> if it is any other sealed type.
 endif::[]
 . If `{cd}≠{creg}0`, compute the return capability and install it to `{cd}`:
 .. add the width of this instruction to the current <<pcc>> using the semantics of the <<SCADDR>> instruction, and
