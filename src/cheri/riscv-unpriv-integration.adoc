@@ -674,7 +674,7 @@ and associated {ctag}s, as shown in <<base_cap_registers>>.
 // The register can be referred to either way - as `{creg}1` accessing all YLEN bits or as `{creg}1` accessing only the address field (i.e., the lower XLEN bits).
 // For the ABI register names the `y` prefix is added, e.g., `{abi_creg}sp` to refer to all YLEN bits, and so the assembler can refer to either `sp` or `{abi_creg}sp` depending on the instruction operand.
 
-The zero register is extended with zero metadata and a zero {ctag}: this is called the <<null-cap>> capability.
+The zero register (`x0`) is extended with zero metadata and a zero {ctag}: this is called the <<null-cap>> capability.
 
 [#pcc,reftext="{pcc}"]
 ==== The Program Counter Capability (`{pcc}`)
@@ -840,6 +840,8 @@ All CSRs that can hold addresses are extended to YLEN bits.
 ** e.g., _jvt_ from the "Zcmt" extension
 * YLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
 ** e.g., <<utidc>>
+
+NOTE: Zcmt is not yet available for {cheri_base_arch_name}.
 
 When accessing CSRs these rules are followed:
 
