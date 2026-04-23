@@ -8,7 +8,9 @@ endif::[]
 {cheri_default_ext_name} is an optional extension to {cheri_base_ext_name} which adds the ability to dynamically change the base architecture of the hart between CHERI ({cheri_base_ext_name}) and standard RISC-V (RV32[IE]/RV64[IE]).
 
 The ability to choose between these two behaviors is referred to as switching between _CHERI Execution Modes_.
-The mode is controlled by a new bit allocated in the capability metadata (the <<p_bit>>) and <<p_bit>> in the <<pcc>> controls the current CHERI Execution Mode.
+The mode is controlled by a new bit allocated in the capability metadata (the <<p_bit>>) and the <<p_bit>> in the <<pcc>> controls the current CHERI Execution Mode.
+
+NOTE: The <<p_bit>> determines how pointers are represented, either as _Addresses_ or as _Capabilities_.
 
 {cheri_default_ext_name} adds the instructions shown in <<{rvy_hybrid_file_name}>> which add the ability to query and update the current mode.
 
