@@ -26,8 +26,8 @@ Operationally, copy `{cs1}` to the target <<pcc>> and then...
 . Compute the target <<pcc>> address in two steps, each using the semantics of the <<SCADDR>> instruction:
 .. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
 .. set bit zero of the target <<pcc>> address to zero.
-. HOOK 1: Optionally clear the {ctag} of the target <<pcc>> depending on the <<sec_cap_type>> value and the numerical values of `{cd}` and `{cs1}`
-. Unseal the target <<pcc>> if it is a <<sentry_cap>>, or clear the {ctag} if it is any other sealed type.
+. HOOK 1: Optionally set the {ctag} of the target <<pcc>> to zero depending on the <<sec_cap_type>> value and the numerical values of `{cd}` and `{cs1}`
+. Unseal the target <<pcc>> if it is a <<sentry_cap>>, or set the {ctag} to zero if it is any other sealed type.
 . If `{cd}≠{creg}0`, compute the return capability and install it to `{cd}`:
 .. add the width of this instruction to the current <<pcc>> using the semantics of the <<SCADDR>> instructions, and
 .. HOOK 2: Optionally seal the return capability as a <<sentry_cap>> with a <<sec_cap_type>> defined by the implemented extensions.
