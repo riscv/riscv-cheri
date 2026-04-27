@@ -20,13 +20,19 @@ Description::
 Copy `{cs1}` to `{cd}`.
 +
 Set the capability type (<<sec_cap_type>>) of `{cd}` to
-the <<sec_cap_type_ambient,ambient>> value specified by the capability encoding
-given the permissions granted by the capability in `{cs1}`.
+ifdef::cheri_ratification_v1_only[]
+the value `1`, representing a sentry type.
+endif::[]
+ifndef::cheri_ratification_v1_only[]
+the <<sec_cap_type_ambient,ambient>> value specified by the capability encoding given the permissions granted by the capability in `{cs1}`.
+endif::[]
 +
 Set `{cd}.tag=0` if `{cs1}` is sealed.
++
+NOTE: If a capability encoding format does not support <<sec_cap_type>> of `1` then this instruction is _reserved_.
 
 Included in::
-<<rvy_sentry_insn_table>>
+<<rvy_insn_table>>
 
 Operation::
 +
