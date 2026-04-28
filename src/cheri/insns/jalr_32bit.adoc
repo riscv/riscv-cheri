@@ -14,33 +14,41 @@ include::wavedrom/ct-unconditional-2.adoc[]
 
 include::base_isa_extension.adoc[]
 
-
 Description::
 Indirect jump to the target capability in `{cs1}` with an address offset.
 +
+ifndef::cheri_ratification_v1_only[]
 NOTE: The  description below contains three hooks for extending <<JALR_CHERI>> behavior, used by extensions to give a large degree of extensibility.
- Unless an extension, such as <<section_rvy_sentry_insn_ext>>, is implemented which explicitly reference any of the hooks, then take no action for any of them.
+ Unless an instruction, such as <<SENTRY>>, is implemented which explicitly reference any of the hooks, then take no action for any of them.
 +
+endif::[]
 Operationally, copy `{cs1}` to the target <<pcc>> and then...
 +
 . Compute the target <<pcc>> address in two steps, each using the semantics of the <<SCADDR>> instruction:
 .. Increment the address of the target <<pcc>> by the sign-extended 12-bit `offset`, and
 .. set bit zero of the target <<pcc>> address to zero.
-. HOOK 1: Optionally clear the {ctag} of the target <<pcc>> depending on the <<sec_cap_type>> value and the numerical values of `{cd}` and `{cs1}`
-. Unseal the target <<pcc>> if it is a <<sentry_cap>>, or clear the {ctag} if it is any other sealed type.
+ifndef::cheri_ratification_v1_only[]
+. HOOK 1: Optionally set the {ctag} to zero of the target <<pcc>> depending on the <<sec_cap_type>> value and the numerical values of `{cd}` and `{cs1}`
+endif::[]
+. Unseal the target <<pcc>> if it is a <<sentry_cap>>.
+ifndef::cheri_ratification_v1_only[]
+. Set the {ctag} to zero of the target <<pcc>> if it is any other sealed type.
+endif::[]
 . If `{cd}≠{creg}0`, compute the return capability and install it to `{cd}`:
-.. add the width of this instruction to the current <<pcc>> using the semantics of the <<SCADDR>> instructions, and
+.. add the width of this instruction to the current <<pcc>> using the semantics of the <<SCADDR>> instruction, and
+ifndef::cheri_ratification_v1_only[]
 .. HOOK 2: Optionally seal the return capability as a <<sentry_cap>> with a <<sec_cap_type>> defined by the implemented extensions.
 . HOOK 3: Optionally make other architectural state updates.
+endif::[]
 . Jump to the target <<pcc>>.
 +
-[NOTE]
-=====
-When a sealed capability is passed as the input to <<JALR_CHERI>>, its address must have bit zero clear and the instruction must have a zero offset, or the target <<pcc>> will have its {ctag} set to zero, since updates to its address are interpreted with <<SCADDR>> semantics.
-=====
+NOTE: Future {cheri_base_ext_name} extensions are permitted to introduce additional restrictions on the behaviour of JALR, by extending the number of available values in the <<sec_cap_type>> field in the capability encoding format.
+ One such example is CHERIoT differentiating between a forward and backward edge <<sentry_cap>>.
++
+NOTE: When any sealed capability is passed as the input to <<JALR_CHERI>>, its address must have bit zero clear and the instruction must have a zero offset, or the target <<pcc>> will have its {ctag} set to zero, since updates to its address are interpreted with the semantics of the <<SCADDR>> instruction.
+ As such, a <<sentry_cap>> defines a secure function entry point, and as such the offset in the JALR instruction must be zero.
++
 NOTE: A future extension may raise an exception on the <<JALR_CHERI>> instruction itself if the target <<pcc>> will raise a {cheri_excep_name_pc} at the target.
-NOTE: A sentry defines a secure function entry point, and as such the offset in the JALR instruction must be zero.
- This is enforced by the use of <<SCADDR>> to add the offset which clears the tag of all sealed capabilities if the offset is non-zero.
 
 Included in::
 <<rvy_i_mod_insn_table>>
