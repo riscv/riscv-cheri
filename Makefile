@@ -168,11 +168,18 @@ generate: $(SAIL_ASCIIDOC_JSON)
 # Rule to generate all the src/generated/*.adoc from the CSVs using a Python script.
 CHERI_CSV_DIR = $(SRC_DIR)/cheri/csv
 GEN_SCRIPT    = $(SRC_DIR)/cheri/scripts/generate_tables.py
+GEN_WAVEDROMS_SCRIPT = $(SRC_DIR)/cheri/scripts/generate_all_wavedroms.py
+GEN_ALLOCATIONS_SCRIPT = $(SRC_DIR)/cheri/scripts/generate_custom3_adoc.py
 # There is no need to declare all generated inputs as dependencies of the pdf
 # targets since the outputs only change if either the CSV or python changes.
-generate-cheri-tables: $(CHERI_CSV_DIR)/CHERI_CSR.csv $(CHERI_CSV_DIR)/CHERI_ISA.csv $(GEN_SCRIPT) | $(CHERI_GEN_DIR)
+generate-cheri-tables: $(CHERI_CSV_DIR)/CHERI_CSR.csv $(CHERI_CSV_DIR)/CHERI_ISA.csv $(GEN_SCRIPT) $(GEN_WAVEDROMS_SCRIPT) $(GEN_ALLOCATIONS_SCRIPT) | $(CHERI_GEN_DIR)
 	@echo "  GEN $@"
 	@$(GEN_SCRIPT) -o $(CHERI_GEN_DIR) --csr $(CHERI_CSV_DIR)/CHERI_CSR.csv --isa $(CHERI_CSV_DIR)/CHERI_ISA.csv
+	@python3 $(GEN_WAVEDROMS_SCRIPT) -o $(CHERI_GEN_DIR)/rvy_wavedroms.adoc \
+		--encoding-overview-bytefield $(CHERI_GEN_DIR)/rvy_encoding_overview.adoc \
+		--encoding-overview-table $(CHERI_GEN_DIR)/rvy_encoding_overview_table.adoc \
+		--encoding-overview-wavedrom $(CHERI_GEN_DIR)/rvy_encoding_overview_wavedrom.adoc
+	@python3 $(GEN_ALLOCATIONS_SCRIPT) -o $(CHERI_GEN_DIR)/custom3_allocations.adoc
 
 # Check if the docs-resources/global-config.adoc file exists. If not, the user forgot to check out submodules.
 ifeq ("$(wildcard docs-resources/global-config.adoc)","")
