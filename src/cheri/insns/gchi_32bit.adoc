@@ -10,16 +10,13 @@ Mnemonic::
 `{gchi_base_lc} rd, rs1, shamt`
 
 Encoding::
-include::wavedrom/gchi.adoc[]
+include::wavedrom/srliy.adoc[]
 
 Description::
 Logical right shift of Y register `rs1` to `rd`, zero-filling the upper bits of the result.
 
-NOTE: Currently the only valid shift distance is XLEN places, a future extension may add an arbitrary shift distance.
-
-ifndef::cheri_ratification_v1_only[]
-NOTE: For {cheri_base32_ext_name}, `{gchi_base_lc} rd, rs1, 32` has an identical encoding and operation to the RV64 instruction `srli rd, rs1, 32`.
-endif::[]
+NOTE: The only valid shift amount is `XLEN` (i.e., <<GCHI>>).
+A future extension may add an arbitrary shift distance.
 
 Included in::
 <<rvy_insn_table>>
@@ -46,7 +43,9 @@ Mnemonic::
 `{gchi_lc} rd, {cs1}`
 
 Encoding::
-`{gchi_lc} rd, {cs1}` is a pseudoinstruction for `{gchi_base_lc} rd, rs1, XLEN`
+include::wavedrom/gchi.adoc[]
+
+NOTE: `{gchi_lc} rd, {cs1}` is a pseudo instruction for a `XLEN`-wide right shift (<<GCHI_BASE>>).
 
 Description::
 Copy the metadata (bits [YLEN-1:XLEN]) of capability `{cs1}` into `rd`.
