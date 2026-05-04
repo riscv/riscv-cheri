@@ -29,13 +29,13 @@ Mnemonics ({cheri_base64_ext_name})::
 Encoding::
 [wavedrom, , svg,subs=attributes+]
 ....
-{reg:[
-    { bits:  7, name: 0x33, attr: ['OP'] },
-    { bits:  5, name: '{cd}' },
-    { bits:  3, name: 'func3', attr: ['{SH1ADD_CHERI}=011', '{SH2ADD_CHERI}=101', '{SH3ADD_CHERI}=000', 'rv64: {SH4ADD_CHERI}=111'] },
-    { bits:  5, name: 'rs1' },
-    { bits:  5, name: '{cs2}' },
-    { bits:  7, name: 0x10 },
+{reg: [
+  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},
+  {bits:  5, name: '{cd}',       attr: ['5', 'dest'],             type: 2},
+  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},
+  {bits:  5, name: 'rs1',        attr: ['5', 'src1'],             type: 4},
+  {bits:  5, name: '{cs2}',      attr: ['5', 'src2'],             type: 4},
+  {bits:  7, name: 'funct7',     attr: ['7', '{SH1ADD_CHERI}=0000101', '{SH2ADD_CHERI}=0001101', '{SH3ADD_CHERI}=0010101', '{SH4ADD_CHERI}=0011101'], type: 3},
 ]}
 ....
 
