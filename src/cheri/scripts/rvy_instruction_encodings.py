@@ -39,10 +39,10 @@ class Funct3(Enum):
 
 class Custom3Funct3(Funct3):
     REGULAR = 0b000, "R-Type (3-op and 1/2-op)", "RVY-R"
-    YADDI = 0b001, "YADDI", "{CADDI}"
-    LY = 0b010, "LY", "{LOAD_CAP_NAME}"
-    SY = 0b011, "SY", "{STORE_CAP_NAME}"
-    AMO = 0b100, "AMO", "RVY-AMO"
+    LY = 0b001, "LY", "{LOAD_CAP_NAME}"
+    SY = 0b010, "SY", "{STORE_CAP_NAME}"
+    AMO = 0b011, "AMO", "RVY-AMO"
+    YADDI = 0b100, "YADDI", "{CADDI}"
     MISC = 0b101, "MISC IMM (SRLIY/YBNDSWI)", "RVY-MISC"
     RES6 = 0b110, "*Unallocated*", "RVY-RES6"
     RES7 = 0b111, "*Unallocated*", "RVY-RES7"
