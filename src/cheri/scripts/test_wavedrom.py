@@ -149,9 +149,9 @@ def test_modesw_merge(insn_map):
     expected = [
         "{reg: [",
         "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
-        "  {bits:  5, name: 'rd=x0',      attr: ['5', 'rd=x0'],            type: 2},",
+        "  {bits:  5, name: '{cd}=x0',    attr: ['5', '{cd}=x0'],          type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
-        "  {bits:  5, name: 'rs1',        attr: ['5', 'src1'],             type: 3},",
+        "  {bits:  5, name: '{cs1}=x0',   attr: ['5', '{cs1}=x0'],         type: 4},",
         "  {bits:  5, name: 'rs2',        attr: ['5', '{MODESW_CAP}=00000', '{MODESW_INT}=00001'], type: 3},",
         "  {bits:  7, name: 'funct7',     attr: ['7', '{SCMODE}=0110011'], type: 3},",
         "]}",
