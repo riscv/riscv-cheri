@@ -361,7 +361,7 @@ endif::[]
 
 ifdef::cheri_ratification_v1_only[]
 
-Control-flow integrity is achieved using <<JALR_CHERI>>:
+If <<{rvy_sentry_insn_ext_name}>> is implemented, control-flow integrity is achieved using <<JALR_CHERI>>:
 
 * <<JALR_CHERI>> _unseals_ <<sentry_cap, sentry capabilities>> before installing them into the <<pcc>>.
 * <<JALR_CHERI>> _seals_ the return pointers it generates as <<sentry_cap, sentry capabilities>> before writing them to `{cd}`.
@@ -1226,9 +1226,22 @@ NOTE: A future extension may define more restrictive _forward-only_ and _backwar
 
 === Interaction with <<JALR_CHERI>>
 
-{rvy_sentry_insn_ext_name} adds sealing and unsealing behavior to <<JALR_CHERI>>:
+{rvy_sentry_insn_ext_name} adds sealing and unsealing behavior to <<JALR_CHERI>>.
 
+ifdef::cheri_ratification_v1_only[]
+* If `{cs1}` is _sealed_ then _unseal_ it before installing in <<pcc>> (see <<sec_cap_type>>).
+* Seal the capability written to `{cd}` as a <<sentry_cap>>.
+endif::[]
+
+ifndef::cheri_ratification_v1_only[]
 . For HOOK 2: Seal the return capability as a sentry.
+endif::[]
+
+NOTE: When any sealed capability is passed as the input to <<JALR_CHERI>>, its address must have bit zero clear and the instruction must have a zero offset, or the target <<pcc>> will have its {ctag} set to zero, since updates to its address are interpreted with the semantics of the <<SCADDR>> instruction.
+ As such, a <<sentry_cap>> defines a secure function entry point, and as such the offset in the JALR instruction must be zero.
+
+NOTE: Future {cheri_base_ext_name} extensions are permitted to introduce additional restrictions on the behaviour of <<JALR_CHERI>>, by extending the number of available values in the <<sec_cap_type>> field in the capability encoding format.
+ One such example is CHERIoT differentiating between a forward and backward edge <<sentry_cap>>.
 
 === Added instructions
 
