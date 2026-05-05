@@ -1,4 +1,4 @@
-An {cheri_base_ext_name} core imports _all_ instructions from RVI and adds new instructions for CHERI functionality.
+An {cheri_base_ext_name} core supports _all_ instructions from RVI and adds new instructions for CHERI functionality.
 Additionally, some RVI instruction (as well as instructions defined in other extensions) have modified behavior.
 The following sections detail the list of added/modified instructions per extension.
 
@@ -15,9 +15,6 @@ include::{generated_dir}/{rvy_file_name}.adoc[]
 [#rvy_i_mod_insn_table, reftext="{rvy_i_mod_ext_name}"]
 === {rvy_i_mod_ext_name}
 
-The following RVI instructions have _modified_ behavior due to adding CHERI functionality.
-In general, this is restricted to changing whether input/output operands read/write XLEN or YLEN bits.
-
 .{rvy_i_mod_ext_name} instructions
 [#{rvy_i_mod_file_name}]
 [width="100%",options=header,cols="2,5",]
@@ -29,9 +26,6 @@ include::{generated_dir}/{rvy_i_mod_file_name}.adoc[]
 [#rvy_zicsr_mod_insn_table, reftext="{rvy_zicsr_mod_ext_name}"]
 === {rvy_zicsr_mod_ext_name}
 
-The following RVI instructions have _modified_ behavior due to adding CHERI functionality.
-In general, this is restricted to changing whether input/output operands read/write XLEN or YLEN bits.
-
 .{rvy_zicsr_mod_ext_name} instructions
 [#{rvy_zicsr_mod_file_name}]
 [width="100%",options=header,cols="2,5",]
@@ -39,39 +33,12 @@ In general, this is restricted to changing whether input/output operands read/wr
 include::{generated_dir}/{rvy_zicsr_mod_file_name}.adoc[]
 |==============================================================================
 
-[#rvy_sentry_insn_table, reftext="{rvy_sentry_insn_ext_name}"]
-=== {rvy_sentry_insn_ext_name}
-
-{rvy_sentry_insn_ext_name} adds the {SENTRY} instruction.
-
-.{rvy_sentry_insn_ext_name} instruction extension
-[#{rvy_sentry_insn_file_name}]
-[width="100%",options=header,cols="2,5",]
-|==============================================================================
-include::{generated_dir}/{rvy_sentry_insn_file_name}.adoc[]
-|==============================================================================
-
-ifndef::cheri_ratification_v1_only[]
-
-[#rvy_bndsrdw_insn_table, reftext="{rvy_bndsrdw_insn_ext_name}"]
-=== {rvy_bndsrdw_insn_ext_name}
-
-{rvy_bndsrdw_insn_ext_name} adds the {SCBNDSRD} instruction.
-
-.{rvy_bndsrdw_insn_ext_name} instruction extension
-[#{rvy_bndsrdw_insn_file_name}]
-[width="100%",options=header,cols="2,5",]
-|==============================================================================
-include::{generated_dir}/{rvy_bndsrdw_insn_file_name}.adoc[]
-|==============================================================================
-
-endif::[]
-
 [#rvy_zca_insn_table, reftext="{rvy_zca_ext_name}"]
 === {rvy_zca_ext_name}
 
 These 16-bit instructions are supported by any {cheri_base_ext_name} core that includes the standard C extension.
-They are incompatible with Zcf (RV32) and Zcd (RV64).
+
+Zcf (RV32) and Zcd (RV64) are incompatible with {cheri_base_ext_name}.
 
 .{rvy_zca_ext_name} instruction extension
 [#{rvy_zca_file_name}]
@@ -172,7 +139,8 @@ Specifying {cheri_base_ext_name} and Zba gives {rvy_zba_ext_name} functionality,
 include::{generated_dir}/{rvy_zba_file_name}.adoc[]
 |==============================================================================
 
-NOTE: There is no {cheri_base_ext_name} equivalent for `add.uw` as only having the integer version is sufficient.
+NOTE: There is currently no {cheri_base_ext_name} equivalent for `add.uw`.
+ A future extension may add such an instruction.
 
 ifdef::cheri_standalone_spec[]
 // For the integrated build, these instruction listings are in the Zba chapter.
@@ -238,6 +206,34 @@ include::insns/prefetch.r.adoc[]
 include::insns/prefetch.w.adoc[]
 
 <<<
+endif::[]
+
+[#rvy_sentry_insn_table, reftext="{rvy_sentry_insn_ext_name}"]
+=== {rvy_sentry_insn_ext_name}
+
+{rvy_sentry_insn_ext_name} adds the {SENTRY} instruction.
+
+.{rvy_sentry_insn_ext_name} instruction extension
+[#{rvy_sentry_insn_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_sentry_insn_file_name}.adoc[]
+|==============================================================================
+
+ifndef::cheri_ratification_v1_only[]
+
+[#rvy_bndsrdw_insn_table, reftext="{rvy_bndsrdw_insn_ext_name}"]
+=== {rvy_bndsrdw_insn_ext_name}
+
+{rvy_bndsrdw_insn_ext_name} adds the {SCBNDSRD} instruction.
+
+.{rvy_bndsrdw_insn_ext_name} instruction extension
+[#{rvy_bndsrdw_insn_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_bndsrdw_insn_file_name}.adoc[]
+|==============================================================================
+
 endif::[]
 
 [#rvy_hybrid_insn_table, reftext="{cheri_default_ext_name}"]
