@@ -1230,7 +1230,7 @@ NOTE: A future extension may define more restrictive _forward-only_ and _backwar
 
 ifdef::cheri_ratification_v1_only[]
 * If `{cs1}` is _sealed_ then _unseal_ it before installing in <<pcc>> (see <<sec_cap_type>>).
-* Seal the capability written to `{cd}` as a <<sentry_cap>>.
+* The <<pcc>> of the next instruction is _sealed_ as a <<sentry_cap>> then then written to `{cd}`.
 endif::[]
 
 ifndef::cheri_ratification_v1_only[]
@@ -1242,6 +1242,15 @@ NOTE: When any sealed capability is passed as the input to <<JALR_CHERI>>, its a
 
 NOTE: Future {cheri_base_ext_name} extensions are permitted to introduce additional restrictions on the behaviour of <<JALR_CHERI>>, by extending the number of available values in the <<sec_cap_type>> field in the capability encoding format.
  One such example is CHERIoT differentiating between a forward and backward edge <<sentry_cap>>.
+
+=== Interaction with <<JAL_CHERI>>
+
+{rvy_sentry_insn_ext_name} adds unsealing behavior to <<JAL_CHERI>>.
+
+ifdef::cheri_ratification_v1_only[]
+* The <<pcc>> of the next instruction is _sealed_ as a <<sentry_cap>> then then written to `{cd}`.
+endif::[]
+
 
 === Added instructions
 

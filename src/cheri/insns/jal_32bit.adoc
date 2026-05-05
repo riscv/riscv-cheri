@@ -14,13 +14,14 @@ Encoding::
 include::wavedrom/ct-unconditional.adoc[]
 
 Description::
-Jump to the target <<pcc>>.
-+
-Increment <<pcc>>.address by the sign-extended offset to form the target <<pcc>>.
-The <<pcc>> of the next instruction is sealed and written to `{cd}`.
-+
-Both address increments use the semantics of the <<SCADDR>> instruction to determine the result.
 
+Direct jump with an address offset.
++
+. The target address is obtained by adding the sign-extended 20-bit J-immediate to the register `{cs1}`.
+. The target <<pcc>> is obtained by applying the target address to the <<pcc>> of the JAL instruction, using the semantics of the <<SCADDR>> instruction.
+. Jump to the target <<pcc>>.
+. The <<pcc>> of the next instruction is written to `{cd}`.
++
 NOTE: A future extension may raise an exception on the branch instruction itself if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
   Performing the <<pcc>> bounds check at the branch source instead of on instruction fetch is helpful for debugging and can simplify the implementation of CPUs with very short pipelines.
 
