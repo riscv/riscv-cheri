@@ -397,7 +397,7 @@ If <<c_perm>> is missing then the {ctag}s for capability loads and stores are re
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
 +
-The permission stripping behavior _only_ applies to loaded capabilities that have their {ctag} set and are not sealed.
+The permission stripping behavior _only_ applies to loaded capabilities with their {ctag} set and that are not sealed after all other checks.
 This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
@@ -908,6 +908,7 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 |<<SCBNDS>>   | {SCBNDS_DESC}
 |<<SCBNDSR>>  | {SCBNDSR_DESC}
 |<<YSUNSEAL>> | {YSUNSEAL_DESC}
+|<<CBLD>>     | {CBLD_DESC}
 |=======================
 
 ^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
@@ -919,6 +920,7 @@ include::insns/schi_32bit.adoc[]
 include::insns/scbnds_32bit.adoc[]
 include::insns/scbndsr_32bit.adoc[]
 include::insns/ysunseal_32bit.adoc[]
+include::insns/cbld_32bit.adoc[]
 
 <<<
 
@@ -1206,16 +1208,3 @@ NOTE: A future extension may define more restrictive _forward-only_ and _backwar
 === Added instructions
 
 include::insns/sentry_32bit.adoc[]
-
-[#section_rvy_bld_insn_ext,reftext="{rvy_bld_insn_ext_name}"]
-== "{rvy_bld_insn_ext_name}" Extension for Building Capabilities
-
-The {rvy_bld_insn_ext_name} extension adds the <<CBLD>> instruction to capabilities with a superset authority to validate (i.e. set the {ctag}) of a capability with lesser authority.
-
-NOTE: This instruction can be used to speed up operations such as paging in memory after swap.
-
-NOTE: CHERIoT implementations do not use {CBLD}, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
-
-=== Added instructions
-
-include::insns/cbld_32bit.adoc[]
