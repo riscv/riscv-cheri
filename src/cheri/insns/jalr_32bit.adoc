@@ -20,25 +20,24 @@ Indirect jump to the target capability in `{cs1}` with an address offset.
 NOTE: The  description below includes behavior depending on the implemented <<sec_cap_type>> values.
  See the notes below the description.
 +
-. The target address is obtained by adding the sign-extended 12-bit I-immediate to the register `{cs1}`, then setting the least-significant bit of the result to zero.
-. The target <<pcc>> is obtained by applying the target address to `{cs1}` using the semantics of the <<SCADDR>> instruction.
-. Clear the {ctag} of the target <<pcc>> depending on the <<sec_cap_type>> value and the numerical values of `{cd}` and `{cs1}`^1^.
-. Set the {ctag} of the target <<pcc>> to zero if it is sealed and not a <<sentry_cap>>^1^.
-. Unseal the target <<pcc>> if it is a <<sentry_cap>>.
-. The <<pcc>> of the next instruction is sealed as a <<sentry_cap>> and written to `{cd}`.
+. `{cs1}` is written to the target <<pcc>>.
+. If `{cd}` is the link register, `{cs1}` is _sealed_ and `{cs1}` is not a _forward-edge_ <<sentry_cap>>, then set the {ctag} of the target <<pcc>> to zero.
+. If `{cd}=x0`, `{cs1}` is the link register, `{cs1}` is _sealed_ and `{cs1}` is not a _backward-edge_ <<sentry_cap>>, then set the {ctag} of the target <<pcc>> to zero.
+. Unseal the target <<pcc>> if it is any <<sentry_cap>>.
+. The target address is obtained by adding the sign-extended 12-bit I-immediate to `{cs1}.address`, then setting the least-significant bit of the result to zero.
+. Set the address of the target <<pcc>> to the target address using the semantics of the <<SCADDR>> instruction.
+. The <<pcc>> of the next instruction is sealed as a _backward-edge_ <<sentry_cap>> and written to `{cd}`.
 . Jump to the target <<pcc>>.
 +
-NOTE: If the only supported <<sec_cap_type>> is zero, then _sealing_ and _unsealing_ have no effect.
+NOTE: If the only supported <<sec_cap_type>> is zero, then no <<sentry_cap, sentry capabilities>> exist, and so _sealing_ and _unsealing_ have no effect.
  This behavior requires non-zero <<sec_cap_type>> values to be implemented, such as by the <<section_rvy_sentry_insn_ext>> extension.
 +
-NOTE: ^1^ These statements are only relevant if <<sec_cap_type>> values of greater than `1` are supported.
- They are to permit future {cheri_base_ext_name} extensions to introduce additional restrictions on the behaviour of <<JALR_CHERI>> by extending the number of available values in the <<sec_cap_type>> field in the capability encoding format.
- One such example is CHERIoT differentiating between a forward and backward edge <<sentry_cap>>.
-+
 NOTE: When any sealed capability is passed as the input to <<JALR_CHERI>>, its address must have bit zero clear and the instruction must have a zero offset, or the target <<pcc>> will have its {ctag} set to zero, since updates to its address are interpreted with the semantics of the <<SCADDR>> instruction.
- As such, a <<sentry_cap>> defines a secure function entry point, and as such the offset in the JALR instruction must be zero.
+ As such, a <<sentry_cap>> defines a secure function entry point and so the offset in the JALR instruction must be zero.
 +
 NOTE: A future extension may raise an exception on the <<JALR_CHERI>> instruction itself if the target <<pcc>> will raise a {cheri_excep_name_pc} at the target.
++
+NOTE: The standard software calling convention uses 'x1' as the link register.
 
 Included in::
 <<rvy_i_mod_insn_table>>
