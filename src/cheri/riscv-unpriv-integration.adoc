@@ -279,17 +279,21 @@ architecture: normal bounds check rules should be followed.
 This metadata value indicates the type of the capability and determines which operations the capability authorizes.
 Which capability types a given CHERI platform supports is a function of the extensions and <<sec_cap_encoding_formats>> in use.
 The capability encoding specifies a mapping between some bits within the capability format (usually described as "the CT field") and the capability types.
-The capability encoding must be able to encode type `0`.
-The standard capability type mapping is shown in <<table_capability_types>>, which is in use in all capability encoding formats unless otherwise specified.
+
+The capability encoding must be able to encode type `0` (_unsealed_) and at least one non-zero type to implement control-flow integrity.
+
+The standard capability type mapping is shown in <<table_capability_types>>.
 
 [#table_capability_types]
-.Capability type mapping in the {rv64y_uni_base_name} base
+.Default capability type mapping
 [width="80%",options=header,align=left,cols="1,1,5"]
 |===
 | Type Name      | Integer Value | Description
 | Unsealed       | 0             | _Unsealed_ capability granting access to memory
 | <<sentry_cap>> | 1             | Immutable _sealed_ entry point
 |===
+
+<<sec_cap_type>> of 1 is enabled by the <<section_rvy_sentry_insn_ext>> extension.
 
 NOTE: Capabilities sealed with a <<sec_cap_type>> of type `1` are dubbed "sentries" (a portmanteau of "sealed entries").
 
@@ -361,7 +365,7 @@ endif::[]
 
 ifdef::cheri_ratification_v1_only[]
 
-If <<{rvy_sentry_insn_ext_name}>> is implemented, control-flow integrity is achieved using <<JALR_CHERI>>:
+If <<section_rvy_sentry_insn_ext>> is implemented, control-flow integrity is achieved using <<JALR_CHERI>>:
 
 * <<JALR_CHERI>> _unseals_ <<sentry_cap, sentry capabilities>> before installing them into the <<pcc>>.
 * <<JALR_CHERI>> _seals_ the return pointers it generates as <<sentry_cap, sentry capabilities>> before writing them to `{cd}`.
@@ -1226,30 +1230,16 @@ NOTE: A future extension may define more restrictive _forward-only_ and _backwar
 
 === Interaction with <<JALR_CHERI>>
 
-{rvy_sentry_insn_ext_name} adds sealing and unsealing behavior to <<JALR_CHERI>>.
+{rvy_sentry_insn_ext_name} enables sealing and unsealing behavior in <<JALR_CHERI>>.
 
-ifdef::cheri_ratification_v1_only[]
-* If `{cs1}` is _sealed_ then _unseal_ it before installing in <<pcc>> (see <<sec_cap_type>>).
-* The <<pcc>> of the next instruction is _sealed_ as a <<sentry_cap>> then then written to `{cd}`.
-endif::[]
-
-ifndef::cheri_ratification_v1_only[]
-. For HOOK 2: Seal the return capability as a sentry.
-endif::[]
-
-NOTE: When any sealed capability is passed as the input to <<JALR_CHERI>>, its address must have bit zero clear and the instruction must have a zero offset, or the target <<pcc>> will have its {ctag} set to zero, since updates to its address are interpreted with the semantics of the <<SCADDR>> instruction.
- As such, a <<sentry_cap>> defines a secure function entry point, and as such the offset in the JALR instruction must be zero.
-
-NOTE: Future {cheri_base_ext_name} extensions are permitted to introduce additional restrictions on the behaviour of <<JALR_CHERI>>, by extending the number of available values in the <<sec_cap_type>> field in the capability encoding format.
- One such example is CHERIoT differentiating between a forward and backward edge <<sentry_cap>>.
+* If `{cs1}` is _sealed_ then _unseal_ it before installing in <<pcc>>.
+* The <<pcc>> of the next instruction is _sealed_ as a <<sentry_cap>> of type `1` and then written to `{cd}`.
 
 === Interaction with <<JAL_CHERI>>
 
-{rvy_sentry_insn_ext_name} adds unsealing behavior to <<JAL_CHERI>>.
+{rvy_sentry_insn_ext_name} enables sealing behavior to <<JAL_CHERI>>.
 
-ifdef::cheri_ratification_v1_only[]
-* The <<pcc>> of the next instruction is _sealed_ as a <<sentry_cap>> then then written to `{cd}`.
-endif::[]
+* The <<pcc>> of the next instruction is _sealed_ as a <<sentry_cap>> of type `1` and then written to `{cd}`.
 
 
 === Added instructions
