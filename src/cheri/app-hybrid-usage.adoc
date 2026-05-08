@@ -1,0 +1,241 @@
+[[section_hybrid_usage_models]]
+== Hybrid Mode Usage Models
+
+The `{cheri_default_ext_name}` extension enables a hart to switch between {cheri_cap_mode_name} and {cheri_int_mode_name}.
+This capability supports various usage models that facilitate the co-existence of and transition between non-CHERI software and pure-capability CHERI software.
+
+=== High-Level Overview of Compatibility
+
+There are three operating modes on a RVY-enabled core:
+
+RVI/RVE mode (`misa.Y`=0 or `__x__envcfg.{CRE}`=0)::
+  The base ISA is RVI or RVE.
+  There is no access to extended YLEN registers.
+  Custom-1 through Custom-3 remain available for vendor extensions.
+
+RVY pure-capability mode (`misa.Y`=1 and `__x__envcfg.{CRE}`=1, and <<pcc>>.<<m_bit>> = {CAP_MODE_VALUE})::
+  The base ISA is RVY, and Custom-3 is used for RVY instructions.
+  All loads and stores use a YLEN base register for permissions and bounds checks.
+
+RVY in RVI compatibility mode (`misa.Y`=1 and `__x__envcfg.{CRE}`=1, and <<pcc>>.<<m_bit>> = {INT_MODE_VALUE})::
+  The base ISA is RVY, and Custom-3 is used for RVY instructions.
+  However, all loads and stores use a XLEN base register and check <<ddc>> for permissions and bounds.
+  This mode requires `Zyhybrid` support.
+  Some implementations, like CHERIoT, will not support this mode.
+
+=== Example Usage Models
+
+Purecap Kernel with 64-bit Plain RISC-V Programs::
+  In this model, a CHERI-aware operating system (the kernel) executes in {cheri_cap_mode_name}, benefiting from full memory safety for kernel operations.
+  User applications may be standard 64-bit RISC-V programs executing in {cheri_int_mode_name}.
+  The kernel can decide based on the ELF header whether to start the program with CHERI enabled and in pure-capability mode or completely disabled.
++
+To set up this environment and handle transitions, the following sequence is typical:
++
+.  **Initialize <<ddc>> for User Space:** The kernel creates a data capability with read and write permissions.
+  Its bounds are restricted to the user program's data segment.
+  This capability is written to the <<ddc>> CSR.
+.  **Setup <<pcc>> for User Space:** The kernel creates a capability for the user program entry point.
+It sets the <<m_bit>> to {cheri_int_mode_name} so the processor starts in integer mode.
+This capability is written to <<sepc_y,sepc>>.
+.  **Enter User Mode:** The kernel executes the `sret` instruction.
+This installs the capability from <<sepc_y,sepc>> into <<pcc>>, switching the mode to {cheri_int_mode_name}.
+.  **Return to Kernel Mode:** When the user program makes a system call (via `ecall`) or an error occurs, the hardware saves the current <<pcc>> into <<sepc_y,sepc>>.
+It then loads the kernel's exception vector capability from <<stvec_y,stvec>> into <<pcc>>.
+Since <<stvec_y,stvec>> was set up with its <<m_bit>> set for pure-capability execution, this switches the execution mode back to {cheri_cap_mode_name}.
++
+The kernel can disable CHERI for user mode by clearing the appropriate enable bits (e.g., bit in `senvcfg.{CRE}`).
+This ensures that the user application cannot execute any CHERI instructions.
+It also guarantees that the program has access to the `custom-3` instruction space, which CHERI would otherwise use for its own instructions in integer mode.
++
+NOTE: To allow mixing plain RISC-V and pure-capability RISC-V user applications, the kernel must either context-switch the state of `senvcfg.{CRE}`, or run the plain RISC-V applications in RVI compatibility mode, in which case the custom opcode space reserved by {cheri_base_ext_name} is not available to userspace.
++
+[plantuml, target="kernel-user-transition", format="svg"]
+....
+@startuml
+box "Kernel Mode (Purecap)" #LightCyan
+participant "Kernel" as K
+end box
+
+box "User Mode (Integer)" #LightYellow
+participant "User App" as U
+end box
+
+K -> K: Prepare User DDC & PCC
+K -> K: Write target PCC to sepc\n(mode bit = Integer)
+K -> U: Execute ""sret"" (Switches to Integer Mode)
+U -> U: Execute App code
+U -> K: Trigger ""ecall"" or Exception (Switches to Purecap Mode)
+K -> K: Handle System Call
+
+@enduml
+....
+
+
+Plain RISC-V Program with a Purecap Library Sandbox::
+  A large non-CHERI application (executing in {cheri_int_mode_name}) may wish to use a specific library that has been recompiled for CHERI (executing in {cheri_cap_mode_name}) to process untrusted data (e.g., an image or video codec).
++
+To set up this environment and handle transitions, the following sequence is typical:
++
+.  **Prepare Library Capabilities:** A dynamic linker or runtime creates a capability for the library's entry point with the <<m_bit>> set to {cheri_cap_mode_name}.
+  This capability only covers the library's code and read-only data section.
+.  **Setup Sandbox Environment:** Before running the library, the system sets <<ddc>> to NULL.
+This stops the library from accessing memory unless it uses specific capabilities given to it.
+.  **Invoke the Library:** The main program (in integer mode) calls the library using <<JALR_CHERI>>.
+This installs the capability into <<pcc>> and switches the mode to capability mode.
+It also saves a return capability in the link register.
+.  **Return from the Library:** When finished, the library returns by jumping to the return capability in the link register.
+This switches the mode back to integer mode.
++
+[plantuml, target="lib-sandbox-transition", format="svg"]
+....
+@startuml
+box "Main Program (Integer)" #LightYellow
+participant "Main" as M
+end box
+
+box "Library (Purecap)" #LightCyan
+participant "Lib" as L
+end box
+
+M -> M: Create Library Capability\n(mode bit = Purecap)
+M -> M: Set DDC to NULL
+M -> L: Call via ""JALR_CHERI"" (Switches to Purecap Mode)
+L -> L: Execute Sandboxed Code
+L -> M: Return via return capability (Switches to Integer Mode)
+M -> M: Restore DDC
+
+@enduml
+....
+
+
+Pure-capability RISC-V Program Calling into a Non-CHERI Library::
+  Conversely, a new pure-capability application may need to link against a non-CHERI binary-only library for which source code is unavailable.
++
+To set up this environment and handle transitions, the following sequence is typical:
++
+.  **Prepare Non-CHERI Code Capability:** The pure-capability program creates a capability for the non-CHERI library's functions with the <<m_bit>> set to {cheri_int_mode_name}.
+  This capability only covers the non-CHERI library's code region.
+.  **Setup <<ddc>> for Non-CHERI Code:** In pure-capability mode, <<ddc>> is usually NULL.
+  Before calling the non-CHERI library, the program must load a capability into <<ddc>>.
+  This capability must cover all memory the non-CHERI library needs (heap, globals, and stack).
+.  **Invoke Non-CHERI Code:** The pure-capability program calls the non-CHERI code using <<JALR_CHERI>>.
+This switches the processor to integer mode and installs the restricted <<pcc>>.
+.  **Restore State on Return:** When the non-CHERI library returns (usually using a standard `JALR` instruction), the pure-capability program restores its state and sets <<ddc>> back to NULL.
++
+[plantuml, target="purecap-calling-noncheri", format="svg"]
+....
+@startuml
+box "Program (Purecap)" #LightCyan
+participant "Purecap Code" as P
+end box
+
+box "Library (Integer)" #LightYellow
+participant "Non-CHERI Lib" as N
+end box
+
+P -> P: Create Non-CHERI Capability\n(mode bit = Integer)
+P -> P: Load capability into DDC\n(heap, globals, stack)
+P -> N: Call via ""JALR_CHERI"" (Switches to Integer Mode)
+N -> N: Execute Legacy Code
+N -> P: Return via return capability (Switches to Purecap Mode)
+P -> P: Restore DDC to NULL
+
+@enduml
+....
+
+
+Hybrid Mode: RVI Code with Explicit Capabilities::
+  For example, a Just-In-Time (JIT) compiler running in a pure-capability environment might generate code that uses standard integer addresses (or 32-bit compressed pointers) to avoid the overhead of larger capability pointers.
+  While described here in the context of a JIT compiler and language runtime, this model is generalizable to other scenarios requiring efficient execution of code using smaller pointers within a larger pure-capability application.
++
+This model sets up and switches modes just like the sandboxing models above.
+The main difference is that the generated code (running in integer mode) uses CHERI instructions to talk to the pure-capability environment:
++
+* **Accessing C Runtime Data:** The code can access data in the surrounding C++ runtime using explicit capability-based load/store operations.
+  At the same time, it uses standard integer addresses for its own heap via <<ddc>>.
+  This can be achieved by executing <<MODESW_CAP>> before the memory access and <<MODESW_INT>> to return back to address interpretation.
+* **Calling Runtime Helpers:** Runtime helper functions are given to the code as sentry capabilities.
+   When the code calls these helpers, the processor automatically switches back to capability mode.
+  This lets the runtime run with full safety before returning to the JIT code.
++
+[plantuml, target="hybrid-mode-transition", format="svg"]
+....
+@startuml
+box "JIT Code (Integer)" #LightYellow
+participant "JIT Code" as J
+end box
+
+box "Runtime (Purecap)" #LightCyan
+participant "C++ Runtime" as R
+end box
+
+note over J: Running in Integer Mode
+
+== Accessing C Runtime Data ==
+J -> J: Execute ""MODESW_CAP"" (Switches to Capability Mode)
+J -> J: Access runtime data using\nexplicit capabilities
+J -> J: Execute ""MODESW_INT"" (Switches to Integer Mode)
+
+== Calling Runtime Helpers ==
+J -> R: Call helper (Sentry Capability) (Switches to Capability Mode)
+R -> R: Execute safe runtime code
+R -> J: Return to JIT code (Switches to Integer Mode)
+
+@enduml
+....
+
+
+=== CSRs and Registers Involved in Mode Transitions
+
+When transitioning between modes, certain capability registers and CSRs must be configured to ensure correct execution and authorization:
+
+<<ddc>> (Default Data Capability)::
+This CSR must be written with a capability covering the data memory that the code in {cheri_int_mode_name} is authorized to access.
+Memory accesses in {cheri_int_mode_name} are implicitly authorized by <<ddc>>.
+
+Exception Return Capability Registers (`sepc` or `mepc`)::
+When a privileged environment prepares to transition to a lower privilege mode via an exception return instruction, it must write the target code capability to `sepc` or `mepc`.
+This capability must have its <<m_bit>> set to the desired execution mode ({cheri_cap_mode_name} or {cheri_int_mode_name}).
+The exception return instruction installs this capability into <<pcc>>, thereby setting the mode.
+
+Trap Vector Registers (<<stvec_y,stvec>> or <<mtvec_y,mtvec>>)::
+These registers hold the capability for the exception vector.
+  When an exception or interrupt occurs, the hardware installs this capability into <<pcc>>, thereby setting the mode for the trap handler.
+  For example, if <<stvec_y,stvec>> was set up with its <<m_bit>> set to {CAP_MODE_VALUE}, the processor will switch to {cheri_cap_mode_name} on entry to the trap handler.
+
+=== CHERI Enable Bits in Setup (when changing privilege levels)
+
+In addition to setting up capabilities and mode bits, the execution environment must manage the CHERI enable bits provided by the privileged architecture:
+
+Per-Privilege Enable Bits::
+The privileged architecture defines enable bits (often denoted as `{CRE}`) in CSRs such as `misa`, `menvcfg`, and `senvcfg` to control CHERI availability in each privilege mode (see <<section_cheri_disable>>).
+
+Reset State::
+On reset, CHERI is disabled for all modes to ensure 100% backwards compatibility with standard RISC-V software.
+This behavior applies to cores that support execution in both {cheri_cap_mode_name} and {cheri_int_mode_name}.
+Implementations that do not support RVI/RVE base ISAs and always run with a RVY base ISA (such as CHERIoT) cannot execute standard RVI code and therefore start up with CHERI enabled.
+Enabling CHERI::
+A higher privilege mode must set the appropriate enable bits to allow a lower privilege mode to use CHERI instructions or switch between {cheri_cap_mode_name} and {cheri_int_mode_name}.
+
+Disabled CHERI with Bounds Enforcement::
+If CHERI is disabled for a specific privilege mode, that mode cannot execute CHERI instructions or change modes.
+However, the hardware continues to enforce the bounds defined by the last installed <<pcc>> and <<ddc>>.
+This allows a kernel to run non-CHERI-aware code in a strict integer environment while still confining it within capability bounds.
+
+=== Transition Instructions and Frequency
+
+Transitions between modes are performed using specific instructions:
+
+<<MODESW_INT>> and <<MODESW_CAP>>::
+These instructions are used to switch between modes without changing the control flow.
+They are typically used when entering or leaving a section of code that requires a different mode.
+<<JALR_CHERI>>::
+When jumping to a target capability with the <<m_bit>> set differently from the current mode, the jump performs a mode switch.
+This is commonly used for function calls between compartments or libraries in different modes.
+
+The frequency of transitions depends on the model:
+
+* **Kernel/User boundary:** Transitions occur on every system call, exception, and interrupt, which is relatively infrequent compared to instruction execution.
+* **Library calls:** Transitions occur on every call to and return from the sandboxed library.
+  If these calls are frequent, the overhead of mode switching (which may involve saving/restoring registers and clearing state) should be considered.
