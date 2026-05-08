@@ -1,16 +1,16 @@
 [#section_cheri_hybrid_ext, reftext={cheri_default_ext_name}]
-== "{cheri_default_ext_name}" Extension for CHERI Execution Modes
+== "{cheri_default_ext_name}" Extension for {cheri_mode_name}s
 
-ifdef::cheri_standalone_spec[]
-WARNING: This chapter will appear in the unpriv spec somewhere after the Zicsr chapter (since it depends on Zicsr).
-endif::[]
+{cheri_default_ext_name} is an optional extension to {cheri_base_ext_name} which adds the ability to execute standard RISC-V (RV32[IE]/RV64[IE]) code on an {cheri_base_ext_name} hart, while still allowing access to RVY instructions.
 
-{cheri_default_ext_name} is an optional extension to {cheri_base_ext_name} which adds the ability to dynamically change the base architecture of the hart between CHERI ({cheri_base_ext_name}) and standard RISC-V (RV32[IE]/RV64[IE]).
+Because the base architecture remains {cheri_base_ext_name}, the custom encoding space re-allocated to CHERI remains re-allocated.
 
-The ability to choose between these two behaviors is referred to as switching between _CHERI Execution Modes_.
-The mode is controlled by a new bit allocated in the capability metadata (the <<p_bit>>) and the <<p_bit>> in the <<pcc>> controls the current CHERI Execution Mode.
+NOTE: If an implementation needs to be able access custom encodings in spaces which have been reallocated, then it should disable CHERI, see <<section_cheri_disable>>.
 
-NOTE: The <<p_bit>> determines how pointers are represented, either as _Addresses_ or as _Capabilities_.
+The ability to choose between these two behaviors is referred to as switching between _{cheri_mode_name}s_.
+The mode is controlled by a new bit allocated in the capability metadata (the <<p_bit>>) and the <<p_bit>> in the <<pcc>> controls the current {cheri_mode_name}.
+
+NOTE: The <<p_bit>> determines how pointers are represented, either as standard RISC-V _Addresses_ or as CHERI _Capabilities_.
 
 {cheri_default_ext_name} adds the instructions shown in <<{rvy_hybrid_file_name}>> which add the ability to query and update the current mode.
 
@@ -21,24 +21,26 @@ Provided that the execution environment has set up <<ddc>> and <<pcc>> appropria
 
 {cheri_base_ext_name} implementations which support {cheri_default_ext_name} are typically referred to as CHERI Hybrid, whereas implementations which do not support {cheri_default_ext_name} are typically referred to as CHERI Purecap.
 
-[#cheri_execution_mode,reftext="CHERI Pointer Execution Mode"]
-=== CHERI Pointer Execution Modes
+[#cheri_execution_mode,reftext="{cheri_mode_name}"]
+=== {cheri_mode_name}s
 
-The two CHERI Pointer Execution Modes are:
+The two {cheri_mode_name}s are:
 
 {cheri_int_mode_name}::
-Executing with the RV32[IE]/RV64[IE] base ISA.
+Pointers are interpreted as for the RV32[IE]/RV64[IE] base ISA.
 +
-NOTE: If RVC encodings are supported, load/store encodings will revert to their non-CHERI encodings, such as <<C_LOAD_CAP>> reverting to C.FSD for RV64/{cheri_base64_ext_name}.
+If RVC encodings are supported, load/store encodings will revert to their _non-CHERI encodings_, such as <<C_LOAD_CAP>> reverting to C.FSD for RV64/{cheri_base64_ext_name}.
 This behavior is summarized in
 ifndef::cheri_ratification_v1_only[]
 <<insn_remapping_16bit_rv32_a>>, <<insn_remapping_16bit_rv32_b>>,
 endif::[]
-<<insn_remapping_16bit_rv64_a>>, and <<insn_remapping_16bit_rv64_b>>.
+<<insn_remapping_16bit_rv64_a>> and <<insn_remapping_16bit_rv64_b>>.
 +
-NOTE: Instructions which are _modified_ on an {cheri_base_ext_name} architecture (see <<{rvy_i_mod_file_name}>>) _revert to their standard behavior_.
+Instructions which are _modified_ on an {cheri_base_ext_name} architecture (see <<{rvy_i_mod_file_name}>>) _revert to their standard behavior_.
 +
-All instructions listed in <<{rvy_file_name}>>, and associated CSRs, are available in addition to RV32[IE]/RV64[IE] and all supported non-CHERI extensions.
+All {cheri_base_ext_name} instructions and CSRs are available in addition to all standard RV32[IE]/RV64[IE] instructions and CSRs.
++
+NOTE: Non-standard extensions with encodings in remapped custom space are _not_ supported.
 +
 The authorizing capability for memory access is <<ddc>> (as opposed to `rs1`).
 That is, all memory accesses, including <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CHERI>>, are implicitly authorized by <<ddc>> and only the memory address is sourced from `rs1`.
@@ -56,7 +58,7 @@ Executing with the {cheri_base_ext_name} base ISA.
 The _<<cheri_execution_mode>>_ is key in providing backwards compatibility with the base RV32[IE]/RV64[IE] ISAs.
 RISC-V software is able to execute unchanged in implementations supporting {cheri_default_ext_name} provided that the <<ddc>> and <<pcc>> are configured appropriately.
 
-NOTE: The CHERI Execution Mode is always {cheri_cap_mode_name} on implementations that support {cheri_base_ext_name}, but not {cheri_default_ext_name}.
+NOTE: The {cheri_mode_name} is always {cheri_cap_mode_name} on implementations that support {cheri_base_ext_name}, but not {cheri_default_ext_name}.
 
 [NOTE]
 ====
@@ -70,7 +72,7 @@ requires the CHERI RISC-V hart to support {cheri_base_ext_name} and
 ====
 
 [#p_bit,reftext="P-bit"]
-==== CHERI Execution Mode Encoding
+==== {cheri_mode_name} Encoding
 
 The <<p_bit>> (P) is only relevant for capabilities which grant <<x_perm>>, as it only architecturally has an effect on the <<pcc>>.
 
@@ -80,17 +82,15 @@ Capabilities not granting <<x_perm>> may or may not have a defined <<p_bit>> fie
 and attempting to update this field may be a no-op.
 {cheri_default_ext_name} is compatible only with capability encodings that specify transport of the <<p_bit>> (see <<rv64y_cap_description>>, for example).
 
-* CHERI Execution Mode (P)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
-* CHERI Execution Mode (P)={INT_MODE_VALUE} indicates {cheri_int_mode_name}.
-
-NOTE: A value of {INT_MODE_VALUE} represents {cheri_int_mode_name} hence the bit is named the <<p_bit>>.
+* {cheri_mode_name} (P)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
+* {cheri_mode_name} (P)={INT_MODE_VALUE} indicates {cheri_int_mode_name}.
 
 IMPORTANT: Since indirect jumps copy the full target capability into <<pcc>> they can change between modes (see <<sec_changing_cheri_execution_mode>>).
 
-When executing <<CLRPERM>>, if <<x_perm>> is removed when the <<p_bit>> is set, and the capability encoding still permits representing the <<p_bit>>, then the <<p_bit>> must be set to zero.
+When executing <<CLRPERM>>, if <<x_perm>> is removed when the <<p_bit>> is set to one, and the capability encoding still permits representing the <<p_bit>>, then the <<p_bit>> must be set to zero.
 
 [#sec_changing_cheri_execution_mode]
-==== Changing CHERI Execution Mode
+==== Changing {cheri_mode_name}
 The <<p_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cheri_mode_sw_summary>>:
 
 .{cheri_default_ext_name} instructions that can perform mode changes
@@ -127,11 +127,11 @@ beyond those of <<sec_permission_transitions>>,
 capability encodings may nevertheless take advantage of this implication
 in their representation of architectural CHERI capabilities.
 
-[#m_bit_observe,reftext="Observing the CHERI Execution Mode"]
-==== Observing the CHERI Execution Mode
+[#m_bit_observe,reftext="Observing the {cheri_mode_name}"]
+==== Observing the {cheri_mode_name}
 
-The effective CHERI Execution Mode cannot be determined just by reading the <<p_bit>> from <<pcc>> since it also depends on the execution environment.
-The following code sequence demonstrates how a program can observe the current, effective CHERI Execution Mode.
+The effective {cheri_mode_name} cannot be determined just by reading the <<p_bit>> from <<pcc>> since it also depends on the execution environment.
+The following code sequence demonstrates how a program can observe the current, effective {cheri_mode_name}.
 It will write, to `x1`, the value `1` for {cheri_cap_mode_name} (wherein `pc` has a set {ctag})
 or `0` for {cheri_int_mode_name} (wherein `pc` is just an address and has a clear {ctag}):
 
