@@ -3,14 +3,11 @@
 
 {cheri_default_ext_name} is an optional extension to {cheri_base_ext_name} which adds the ability to execute standard RISC-V (RV32[IE]/RV64[IE]) code on an {cheri_base_ext_name} hart, while still allowing access to RVY instructions.
 
-Because the base architecture remains {cheri_base_ext_name}, the custom encoding space re-allocated to CHERI remains re-allocated.
-
-NOTE: If an implementation needs to be able access custom encodings in spaces which have been reallocated, then privileged software should disable CHERI entirely.
-
 The ability to choose between these two behaviors is referred to as switching between _{cheri_mode_name}s_.
-The mode is controlled by a new bit allocated in the capability metadata (the <<p_bit>>) and the <<p_bit>> in the <<pcc>> controls the current {cheri_mode_name}.
+The mode is controlled by a new bit allocated in the capability metadata: the <<p_bit>>.
+The <<p_bit>> in the <<pcc>> controls the current {cheri_mode_name}.
 
-NOTE: The <<p_bit>> determines how pointers are represented, either as standard RISC-V _Addresses_ or as CHERI _Capabilities_.
+NOTE: The <<p_bit>> determines how pointers are represented, either as standard RISC-V _Integer Addresses_ or as CHERI _Capabilities_.
 
 {cheri_default_ext_name} adds the instructions shown in <<{rvy_hybrid_file_name}>> which add the ability to query and update the current mode.
 
@@ -21,13 +18,49 @@ Provided that the execution environment has set up <<ddc>> and <<pcc>> appropria
 
 {cheri_base_ext_name} implementations which support {cheri_default_ext_name} are typically referred to as CHERI Hybrid, whereas implementations which do not support {cheri_default_ext_name} are typically referred to as CHERI Purecap.
 
+Because the base architecture remains {cheri_base_ext_name}, the custom encoding space re-allocated to CHERI remains re-allocated.
+
+NOTE: If an implementation needs to be able access custom encodings in spaces which have been reallocated, then privileged software should disable CHERI entirely.
+
 [#cheri_execution_mode,reftext="{cheri_mode_name}"]
 === {cheri_mode_name}s
 
 The two {cheri_mode_name}s are:
 
+{cheri_cap_mode_name}::
+All pointer operands to instructions are interpreted as capabilities.
+Instruction semantics are as defined in the {cheri_base_ext_name} base ISA.
+
 {cheri_int_mode_name}::
-Pointers are interpreted as for the RV32[IE]/RV64[IE] base ISA.
+All pointer operands to instructions are interpreted as for the RV32[IE]/RV64[IE] base ISA, i.e., as plain memory addresses without metadata.
+Operands are still checked against a capability, but instead of using the metadata from the full `YLEN` register, the bounds and permissions are obtained from <<ddc>> (for data accesses) or <<pcc>> (for instruction accesses).
++
+[IMPORTANT]
+====
+#ARC-NOTE: Naming of these modes is still an open ARC comment.#
+#The goal is to differentiate interpretation of pointers as plain integer addresses vs. full capabilities with metadata.#
+#The current placeholder names {cheri_int_mode_name} and {cheri_cap_mode_name} match compiler terminology (integral vs. non-integral pointers).#
+
+The following options have been considered:
+
+[cols="1,1,2", options="header"]
+|===
+| Compatibility Mode Name | Purecap Mode Name | Notes
+| {cheri_int_mode_name} | {cheri_cap_mode_name} | Matches compiler terminology
+| Non-CHERI Mode | CHERI Mode | Using a negative to describe a mode is awkward
+| Non-CHERI Pointer Mode | CHERI Pointer Mode | Same again just with  "Pointer"
+| Address Mode | Capability Mode |
+| Address Pointer Mode | Capability Pointer Mode | "Address Pointer" is a bit odd
+| (Non-CHERI) Address Mode | (CHERI) Capability Mode | Older rejected proposal, parens are a bit awkward
+| Integer Mode | Capability Mode | CHERIv9 naming scheme.
+| RVI Mode | RVY Mode | Omits RVE, should it be RVI/RVE mode?
+| RVI Pointer Mode | RVY Pointer Mode | Again omits RVE
+|===
+
+One past suggestion was "Pointer Mode" vs "Capability Mode".
+However, this is also confusing since capabilities are also pointers (just not "classic" pointers that are a number).
+In this naming scheme we want to show the difference in how hardware interprets pointers-type operands: as binary number (i.e., an address), or as a capability pointer (address+metadata).
+====
 +
 If RVC encodings are supported, load/store encodings will revert to their _non-CHERI encodings_, such as <<C_LOAD_CAP>> reverting to C.FSD for RV64/{cheri_base64_ext_name}.
 This behavior is summarized in
@@ -51,9 +84,6 @@ NOTE: <<ddc>> is also used to authorize {cheri_base_ext_name} specific memory in
 NOTE: Any prefetches which fail authorization execute as nops.
 +
 All CSR reads of YLEN CSRs only access the lower XLEN bits, and, writes update the CSR using the semantics of the <<SCADDR>> instruction (see xref:zicsr-section-default[xrefstyle=short]).
-
-{cheri_cap_mode_name}::
-Executing with the {cheri_base_ext_name} base ISA.
 
 The _<<cheri_execution_mode>>_ is key in providing backwards compatibility with the base RV32[IE]/RV64[IE] ISAs.
 RISC-V software is able to execute unchanged in implementations supporting {cheri_default_ext_name} provided that the <<ddc>> and <<pcc>> are configured appropriately.
