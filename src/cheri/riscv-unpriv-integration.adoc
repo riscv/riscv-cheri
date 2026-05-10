@@ -676,10 +676,10 @@ include::img/pccreg.edn[]
 
 ==== Added CSRs
 
-{cheri_base_ext_name} adds the YLEN-bit CSR shown in
+{cheri_base_ext_name} adds the <<ylen_csrs, YLEN-bit CSR>> shown in
 xref:csrnames-added-y[xrefstyle=short].
 ifdef::cheri_xycfg_csr[]
-It also adds the XLEN-bit CSR shown in xref:csrnames-added-x[xrefstyle=short]
+It also adds the <<xlen_csrs, XLEN-bit CSR>> shown in xref:csrnames-added-x[xrefstyle=short]
 endif::[]
 
 [[csrnames-added-y]]
@@ -804,32 +804,34 @@ endif::[]
 
 All CSRs that can hold addresses are extended to YLEN bits.
 
-{cheri_base_ext_name} has three classes of CSRs
+{cheri_base_ext_name} has three classes of CSRs:
 
-* [[xlen_csrs, XLEN-bit CSRs]]XLEN-bit CSRs, which do not contain addresses
-** e.g., _fcsr_ from the "F" extension
-* [[extended_csrs, extended CSRs]]XLEN-bit CSRs extended to YLEN bits, which are able to contain addresses (referred to as _extended CSRs_)
-** e.g., _jvt_ from the "Zcmt" extension
-* [[ylen_csrs, YLEN-bit CSRs]]YLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
-** e.g., <<utidc>>
+[[xlen_csrs, XLEN-bit CSRs]]XLEN-bit CSRs::
+These do not contain addresses (e.g., _fcsr_ from the "F" extension).
 
+[[extended_csrs, extended CSRs]]Extended CSRs::
+These are XLEN-bit CSRs extended to YLEN bits, which are able to contain addresses (e.g., _jvt_ from the "Zcmt" extension).
++
 NOTE: Zcmt is not yet available for {cheri_base_ext_name}.
+
+[[ylen_csrs, YLEN-bit CSRs]]YLEN-bit CSRs::
+These are added by {cheri_base_ext_name} and contain addresses (e.g., <<utidc>>).
 
 When accessing CSRs these rules are followed:
 
-. Accesses to XLEN-bit CSRs are as specified by Zicsr
-. Accesses to YLEN-bit CSRs and extended CSRs, using CSRRW will:
+. Accesses to <<xlen_csrs>> are as specified by Zicsr
+. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using CSRRW will:
 .. Read YLEN bits
 .. Write YLEN bits, and will write the {ctag} to zero if any <<section_cap_integrity,integrity>> check fails
-. Accesses to YLEN-bit CSRs and extended CSRs, using instructions other than CSRRW will:
+. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using instructions other than CSRRW will:
 .. Read YLEN bits
 .. Write an XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value
 
-NOTE: Any YLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
+NOTE: Any <<ylen_csrs, YLEN-bit>> or <<extended_csrs, extended CSR>> may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
 
 The assembler pseudoinstruction to read a capability CSR `csrr {cd}, csr`, is encoded as `csrrs {cd}, csr, {creg}0`.
 
-.YLEN-bit CSR and Extended CSR access summary for {cheri_base_ext_name}
+.<<ylen_csrs, YLEN-bit CSR>> and <<extended_csrs, Extended CSR>> access summary for {cheri_base_ext_name}
 [#clen_access_summary_base,%autowidth,options=header,align="center"]
 |=======================
 |Instruction          | Read Width  | Write Width
