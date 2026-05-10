@@ -129,13 +129,13 @@ For a capability to be valid, the {ctag} must be set, otherwise a capability is 
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
 All capabilities derived from invalid capabilities are themselves invalid, i.e., their {ctag}s are zero.
 
-NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be cleared.
+NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be set to 0.
 When the {ctag} associated with the memory location is zero, the location contains non-capability data.
 
 ==== {ctag_cap}s in registers
 
 Every YLEN-bit register has a one-bit {ctag}, indicating whether the capability in the register is valid to be dereferenced.
-This {ctag} is cleared whenever an invalid capability operation is performed.
+This {ctag} is set to 0 whenever an invalid capability operation is performed.
 Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
 
 ==== {ctag_cap}s in memory
@@ -295,7 +295,7 @@ All CHERI systems must support unsealed capabilities.
 [#sealed_cap,reftext="sealed capability"]
 Sealed capabilities::
 Capabilities with `CT≠0` are sealed against modification and cannot be dereferenced to access memory.
-Instructions that operate on capabilities will produce a result with a cleared {ctag} if the source capability is sealed and the operation would alter its address, bounds, or permissions.
+Instructions that operate on capabilities will produce a result with its {ctag} set to 0 if the source capability is sealed and the operation would alter its address, bounds, or permissions.
 Extensions that augment capability metadata must describe their interaction(s) with sealed capabilities.
 
 Given a capability with `CT=0`,
