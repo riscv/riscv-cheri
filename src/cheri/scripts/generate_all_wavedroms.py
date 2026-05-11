@@ -7,7 +7,7 @@ import argparse
 # Add the current directory to sys.path to allow importing from rvy_instruction_encodings
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from rvy_instruction_encodings import get_custom3_insts, RVYInstructions, Instruction
+from rvy_instruction_encodings import get_custom3_insts, RVYInstructions, Instruction, insn_xref
 
 
 def get_sections(rvy_insts: RVYInstructions) -> list[tuple[str, list[Instruction]]]:
@@ -34,29 +34,45 @@ def generate_overview(rvy_insts, section_gen_func):
 
 
 def generate_bytefield_section(title, insts) -> list[str]:
-    lines = ["[bytefield,subs=attributes+]", "...."]
-    lines.append('(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 20}])')
-    lines.append("(def row-height 40)")
-    lines.append("(def boxes-per-row 40)")
-    lines.append(
-        '(draw-column-headers {:height 20 :font-size 18 :labels (concat (reverse (map str (range 32))) (repeat 8 ""))})'
-    )
+    has_post_v1 = any(insn.is_post_v1 for insn in insts)
 
-    for i, insn in enumerate(insts):
-        insn_cells = sorted(insn.cells, key=lambda c: c.end, reverse=True)
+    def emit_block(filtered_insts):
+        lines = ["[bytefield,subs=attributes+]", "...."]
+        lines.append('(defattrs :plain [:plain {:font-family "M+ 1p Fallback" :font-size 20}])')
+        lines.append("(def row-height 40)")
+        lines.append("(def boxes-per-row 40)")
+        lines.append(
+            '(draw-column-headers {:height 20 :font-size 18 :labels (concat (reverse (map str (range 32))) (repeat 8 ""))})'
+        )
 
-        for c in insn_cells:
-            span = c.start - c.end + 1
-            val = c.value_for_encoding_overview
-            lines.append(f'(draw-box "{val}" {{:span {span}}})')
+        for i, insn in enumerate(filtered_insts):
+            insn_cells = sorted(insn.cells, key=lambda c: c.end, reverse=True)
 
-        lines.append(f'(draw-box "{insn.name}" {{:span 8 :borders {{}}}})')
+            for c in insn_cells:
+                span = c.start - c.end + 1
+                val = c.value_for_encoding_overview
+                lines.append(f'(draw-box "{val}" {{:span {span}}})')
 
-        if i < len(insts) - 1:
-            lines.append("(next-row)")
+            lines.append(f'(draw-box "{insn.name}" {{:span 8 :borders {{}}}})')
 
-    lines.append("....")
-    return lines
+            if i < len(filtered_insts) - 1:
+                lines.append("(next-row)")
+
+        lines.append("....")
+        return lines
+
+    if has_post_v1:
+        lines = []
+        lines.append("ifdef::cheri_ratification_v1_only[]")
+        lines.extend(emit_block([insn for insn in insts if not insn.is_post_v1]))
+        lines.append("endif::[]")
+
+        lines.append("ifndef::cheri_ratification_v1_only[]")
+        lines.extend(emit_block(insts))
+        lines.append("endif::[]")
+        return lines
+    else:
+        return emit_block(insts)
 
 
 def generate_asciidoc_table_section(title, insts) -> list[str]:
@@ -94,6 +110,10 @@ def generate_asciidoc_table_section(title, insts) -> list[str]:
         lines.append(" 4+^|31:25  2+^|24:20  2+^|19:15  2+^|14:12  2+^|11:7  2+^|6:0 | Inst")
 
     for insn in insts:
+        use_guard = insn.is_post_v1
+        if use_guard:
+            lines.append("ifndef::cheri_ratification_v1_only[]")
+
         insn_cells = sorted(insn.cells, key=lambda c: c.end, reverse=True)
         row = []
 
@@ -115,27 +135,51 @@ def generate_asciidoc_table_section(title, insts) -> list[str]:
             row.append(f"{span}{val}")
 
         # Instruction Name
-        row.append(f"<|{insn.name}")
+        row.append(f"<|{insn_xref(insn, use_guards=False)}")
 
         # Join with space
         lines.append(" ".join(row))
+
+        if use_guard:
+            lines.append("endif::[]")
 
     lines.append("|===")
     return lines
 
 
 def generate_wavedrom_section(title, insts) -> list[str]:
-    from rvy_instruction_encodings import Instruction
     lines = []
     if title in ("3OP", "2OP") and insts:
-        lines.append(f"// {title} Instructions")
-        lines.extend(Instruction.as_merged_wavedrom(insts, include_header=True, collapse_identical_labels=False))
-        lines.append("")
+        has_post_v1 = any(insn.is_post_v1 for insn in insts)
+
+        def emit_block(filtered_insts):
+            b_lines = [f"// {title} Instructions"]
+            b_lines.extend(Instruction.as_merged_wavedrom(filtered_insts, include_header=True, collapse_identical_labels=False))
+            b_lines.append("")
+            return b_lines
+
+        if has_post_v1:
+            lines.append("ifdef::cheri_ratification_v1_only[]")
+            lines.extend(emit_block([insn for insn in insts if not insn.is_post_v1]))
+            lines.append("endif::[]")
+
+            lines.append("ifndef::cheri_ratification_v1_only[]")
+            lines.extend(emit_block(insts))
+            lines.append("endif::[]")
+        else:
+            lines.extend(emit_block(insts))
     else:
         for insn in insts:
+            use_guard = insn.is_post_v1
+            if use_guard:
+                lines.append("ifndef::cheri_ratification_v1_only[]")
+
             lines.append(f"// {insn.name}")
             lines.extend(insn.as_wavedrom(include_header=True))
             lines.append("")
+
+            if use_guard:
+                lines.append("endif::[]")
     return lines
 
 

@@ -172,6 +172,10 @@ class Instruction(TableEntry):
     def as_wavedrom(self, include_header: bool = False) -> list[str]:
         return self.as_merged_wavedrom([self], include_header)
 
+    @property
+    def is_post_v1(self) -> bool:
+        return self.ext in ("Zybndsrdw", "Zyseal")
+
     @classmethod
     def as_merged_wavedrom(cls, instructions, include_header: bool = False, collapse_identical_labels: bool = True) -> list[str]:
         if not instructions:
@@ -271,6 +275,27 @@ def _get_asciidoc_insn_name(name: str) -> str:
     result = macro_map.get(base_name)
     assert result is not None, f"could not find asciidoc name for {name}"
     return "{" + result + "}"
+
+
+def insn_xref(i: Instruction, use_guards: bool = True) -> str:
+    name = i.name
+    if not name or name in ("1OP/2OP", "*Unallocated*"):
+        return name
+    anchor = _get_macro_mapping().get(name)
+    if name == "LR.Y":
+        anchor = "LOAD_RES_CAP"
+    elif name == "SC.Y":
+        anchor = "STORE_COND_CAP"
+    elif name == "AMOSWAP.Y":
+        anchor = "AMOSWAP_CAP"
+    elif name == "LY":
+        anchor = "LOAD_CAP"
+    elif name == "SY":
+        anchor = "STORE_CAP"
+    xref = f"<<{anchor},{name}>>" if anchor else f"<<{name}>>"
+    if use_guards and i.is_post_v1:
+        return f"\nifndef::cheri_ratification_v1_only[]\n{xref}\nendif::[]\n"
+    return xref
 
 
 class RVYRType3Op(RType):
@@ -473,7 +498,16 @@ def get_custom3_insts():
     regular_3op_insns = [
         next_rtype("YADD", rs2=RS2_NEQ_X0, rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label="increment"),
         # Explicit f7=last_r3_f7_idx to group with YADD
-        RVYRType3Op("YMV", f7=last_r3_f7_idx, f7_label="{CADD}=0000011", rs2=0b00000, rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label="{CMV}: rs2=x0"),
+        RVYRType3Op(
+            "YMV",
+            f7=last_r3_f7_idx,
+            f7_label="{CADD}=0000011",
+            rs2=0b00000,
+            rs1="{cs1}",
+            rd="{cd}",
+            rs1_label="src",
+            rs2_label="{CMV}: rs2=x0",
+        ),
         next_rtype("YADDRW", rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label="address"),
         next_rtype("YPERMC", rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label="mask"),
         next_rtype("PACKY", rs1="rs1", rd="{cd}"),
@@ -483,9 +517,33 @@ def get_custom3_insts():
         next_rtype("YSS", rs1="{cs1}", rs2="{cs2}", rd="rd"),
         next_rtype("YSUNSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
         next_rtype("YBLD", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
+        next_rtype("YSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}", ext="Zyseal"),
+        next_rtype("YUNSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}", ext="Zyseal"),
         next_rtype("YMODEW", rs1="{cs1}", rd=f"{{cd}}{NEQ}0", ext="Zyhybrid"),
-        RVYRType3Op("YMODESWY", f7=last_r3_f7_idx, f7_label="{SCMODE}=0110011", rs2=0, rs2_label="{MODESW_CAP}=00000", rs1="{cs1}=x0", rs1_label="{cs1}=x0", rd="{cd}=x0", rd_label="{cd}=x0", ext="Zyhybrid"),
-        RVYRType3Op("YMODESWI", f7=last_r3_f7_idx, f7_label="{SCMODE}=0110011", rs2=1, rs2_label="{MODESW_INT}=00001", rs1="{cs1}=x0", rs1_label="{cs1}=x0", rd="{cd}=x0", rd_label="{cd}=x0", ext="Zyhybrid"),
+        RVYRType3Op(
+            "YMODESWY",
+            f7=last_r3_f7_idx,
+            f7_label="{SCMODE}=0110011",
+            rs2=0,
+            rs2_label="{MODESW_CAP}=00000",
+            rs1="{cs1}=x0",
+            rs1_label="{cs1}=x0",
+            rd="{cd}=x0",
+            rd_label="{cd}=x0",
+            ext="Zyhybrid",
+        ),
+        RVYRType3Op(
+            "YMODESWI",
+            f7=last_r3_f7_idx,
+            f7_label="{SCMODE}=0110011",
+            rs2=1,
+            rs2_label="{MODESW_INT}=00001",
+            rs1="{cs1}=x0",
+            rs1_label="{cs1}=x0",
+            rd="{cd}=x0",
+            rd_label="{cd}=x0",
+            ext="Zyhybrid",
+        ),
         next_rtype("YBNDSRDW", rs1="{cs1}", rd="{cd}", ext="Zybndsrdw"),
         next_rtype("YSH1ADD", rs1="rs1", rs2="{cs2}", rd="{cd}", ext="Zba"),
         next_rtype("YSH2ADD", rs1="rs1", rs2="{cs2}", rd="{cd}", ext="Zba"),
