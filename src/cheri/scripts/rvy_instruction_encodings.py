@@ -593,7 +593,7 @@ def get_custom3_insts():
                 rd="rd",
                 imm_label="shamt=XLEN",
             ),
-            IType("SRLIY", op=MajorOpcode.RVY_A, f3=Custom3Funct3.MISC, imm="shamt[6:0]", fixed="0" * 5),
+            IType("SRLIY", op=MajorOpcode.RVY_A, f3=Custom3Funct3.MISC, rs1="{cs1}", imm="shamt[6:0]", fixed="0" * 5),
             IType(
                 "YBNDSWI",
                 op=MajorOpcode.RVY_A,
