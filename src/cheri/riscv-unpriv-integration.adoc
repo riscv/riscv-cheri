@@ -336,16 +336,16 @@ The standard capability type mapping is shown in <<table_capability_types>>, ext
 
 [#table_capability_types]
 .Standard capability type mapping
-[width="80%",options=header,align=left,cols="1,1,5"]
+[width="100%",options=header,align=left,cols="2,1,4"]
 |===
-| Type Name      | Integer Value | Description
-| Unsealed       | 0             | _Unsealed_ capability granting access to memory
-| <<sentry_cap>> | 1             | Immutable _unrestricted sentry_ type for both _forward-edge_ and _backward-edge_ transitions.
+| Type Name                     | Integer Value | Description
+| Unsealed                      | 0             | _Unsealed_ capability granting access to memory
+| Unrestricted <<sentry_cap>>^1^| 1             | Immutable _unrestricted sentry_ type for both _forward-edge_ and _backward-edge_ transitions.
+| Forward-edge  <<sentry_cap>>  | 1             | Immutable _sentry_ type for _forward-edge_ transitions.
+| Backward-edge <<sentry_cap>>  | 1             | Immutable _sentry_ type for _backward-edge_ transitions.
 |===
 
-The <<sec_cap_type>> value of 1 is enabled by the <<section_rvy_sentry_insn_ext>> extension.
-
-NOTE: Capabilities sealed with a <<sec_cap_type>> of type `1` are dubbed "sentries" (a portmanteau of "sealed entries").
+^1^ <<section_rvy_sentry_insn_ext>> defines a <<sentry_cap>> of this type.
 
 NOTE: The integer value in the table above defines the architectural capability type (i.e., the result of the <<GCTYPE>> instruction) but does not need to be encoded that way in memory.
 
@@ -1236,11 +1236,12 @@ Therefore the full operational description of <<JALR_CHERI>> is specialized to:
 
 . `{cs1}` is written to the target <<pcc>>.
 . The target address is obtained by adding the sign-extended 12-bit I-immediate to `{cs1}.address`, then setting the least-significant bit of the result to zero.
-. _Unseal_ the target <<pcc>> if it is _sealed_ as a _forward-edge_ <<sentry_cap>> (type `1` qualifies for this) and `{cs1}.address[0]` is zero and the I-immediate is zero.
+. _Unseal_ the target <<pcc>> if it is _sealed_ as a _forward-edge_ <<sentry_cap>>^1^ and `{cs1}.address[0]` is zero and the I-immediate is zero.
 . Set the address of the target <<pcc>> to the target address using the semantics of the <<SCADDR>> instruction.
 . The <<pcc>> of the next instruction is _sealed_ as a <<sentry_cap>> of type `1` and written to `{cd}`.
 . Jump to the target <<pcc>>.
 
+^1^ type `1` defined by this extension is a _forward-edge_ <<sentry_cap>>, other compatible extensions may declare more _forward-edge_ types which <<JALR_CHERI>> will unseal.
 
 === Interaction with <<JAL_CHERI>>
 
