@@ -132,9 +132,9 @@ def test_ybndswi():
     expected = [
         "{reg: [",
         "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
-        "  {bits:  5, name: '{cd}',       attr: ['5', 'src'],              type: 2},",
+        "  {bits:  5, name: '{cd}',       attr: ['5', 'dest'],             type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-MISC=101'],     type: 8},",
-        "  {bits:  5, name: '{cs1}',      attr: ['5', 'dest'],             type: 4},",
+        "  {bits:  5, name: '{cs1}',      attr: ['5', 'src'],              type: 4},",
         "  {bits:  9, name: 'ybndswimm[8:0]', attr: ['9', 'imm'],              type: 4},",
         "  {bits:  3, name: 'funct3',     attr: ['3', '{SCBNDSI}=111'],    type: 3},",
         "]}",

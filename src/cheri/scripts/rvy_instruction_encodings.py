@@ -471,7 +471,7 @@ def get_custom3_insts():
         return RVYRType2Op(name, f7=(0b1111 << 3 | funct7_low), rs2=funct5, rd=rd, rs1=rs1, **kwargs)
 
     regular_3op_insns = [
-        next_rtype("YADD", rs2=RS2_NEQ_X0, rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label=f"increment"),
+        next_rtype("YADD", rs2=RS2_NEQ_X0, rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label="increment"),
         # Explicit f7=last_r3_f7_idx to group with YADD
         RVYRType3Op("YMV", f7=last_r3_f7_idx, f7_label="{CADD}=0000011", rs2=0b00000, rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label="{CMV}: rs2=x0"),
         next_rtype("YADDRW", rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label="address"),
@@ -602,8 +602,8 @@ def get_custom3_insts():
                 fixed="111",
                 rs1="{cs1}",
                 rd="{cd}",
-                rd_label="src",
-                rs1_label="dest",
+                rd_label="dest",
+                rs1_label="src",
                 imm_label="imm",
             ),
         ],
