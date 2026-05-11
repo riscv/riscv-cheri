@@ -310,6 +310,7 @@ Sentry capabilities provide *immutable* function pointers within a CHERI softwar
 NOTE: Capabilities sealed with a specific <<sec_cap_type>> which can be unsealed when passed as an argument to <<JALR_CHERI>> are dubbed "sentries" (a portmanteau of "sealed entries").
 
 Sentries can establish a form of control-flow integrity between mutually distrusting code.
+Because they are immutable, the jump target cannot be modified, ensuring that control flow can only enter at the specific address encoded in the capability and not in the middle of a function.
 
 Any sentry type may be passed as the `{cs1}` argument to <<JALR_CHERI>>, and are _unsealed_ on dereference.
 The returned `{cd}` value is also _sealed_ as a sentry.
@@ -425,7 +426,8 @@ If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a cap
 The permission stripping behavior _only_ applies to loaded capabilities with their {ctag} set and that are not sealed after all other checks.
 This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
-NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
+NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure without making a copy.
+For example, if software removes `LM` from a capability to a linked list, any pointers loaded through that capability will automatically lose their Write (`W`) permission, preventing modification of the list content.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is similar to CHERIoT's _LoadGlobal_ permission, except that any _global_ capability implicitly grants _LoadGlobal_.
@@ -482,6 +484,10 @@ Capability encoding formats may impose additional constraints to reduce the numb
 | [[perm_req:base:lm:c-and-r,base-2]]base-2 | <<lm_perm>>  | <<c_perm>> and <<r_perm>>
 | [[perm_req:base:asr:x,base-3]]base-3      | <<asr_perm>> | <<x_perm>>
 |===
+
+NOTE: These rules enforce sensible permission combinations.
+For example, it makes no sense to allow loading/storing capabilities (<<c_perm>>) if you cannot read or write data (<<r_perm>> or <<w_perm>>).
+Similarly, <<lm_perm>> is only useful if you can already read capabilities (<<c_perm>> and <<r_perm>>), and <<asr_perm>> is restricted to executable capabilities (<<x_perm>>).
 
 ifndef::cheri_ratification_v1_only[]
 When using <<rv64y_cap_description,{rv64y_uni_base_name}>> and <<rv32y_cap_description,{rv32y_uni_base_name}>> the complete set of rules with and without <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>> are shown in <<clrperm-rules-no-zylevels1>> and <<clrperm-rules-zylevels1>>.
