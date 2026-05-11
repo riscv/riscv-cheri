@@ -170,7 +170,7 @@ def generate_xlsx():
         ws.cell(row_idx, 35).border = Border(left=THICK_SIDE, right=THICK_SIDE, top=THICK_SIDE, bottom=THICK_SIDE)
         ws.cell(row_idx, 1).border = Border(left=THICK_SIDE, right=THICK_SIDE, top=THICK_SIDE, bottom=THICK_SIDE)
 
-        render_row(inst, ws, row_idx, MajorOpcode.CUSTOM_3, merge_box)
+        render_row(inst, ws, row_idx, MajorOpcode.RVY_A, merge_box)
 
         if "RESERVED" in inst.name or "UNALLOCATED" in inst.name:
             for col in range(1, 34):
@@ -289,7 +289,7 @@ def generate_xlsx():
     misc_grouped = {}
     misc_f3 = Custom3Funct3.MISC
     for i in rvy_insts.misc_insns:
-        if i.op.val == MajorOpcode.CUSTOM_3 and i.f3.val == misc_f3:
+        if i.op.val == MajorOpcode.RVY_A and i.f3.val == misc_f3:
             matching_f7s = []
             if isinstance(i, IType) and hasattr(i, "imm_high"):
                 fixed_val = i.imm_high.val

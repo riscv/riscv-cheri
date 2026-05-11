@@ -28,7 +28,7 @@ def test_yadd():
     inst = get_insn_def("YADD")
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: '{cd}',       attr: ['5', 'dest'],             type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
         "  {bits:  5, name: '{cs1}',      attr: ['5', 'src'],              type: 4},",
@@ -43,7 +43,7 @@ def test_ybaser():
     inst = get_insn_def("YBASER")
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: 'rd',         attr: ['5', 'dest'],             type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
         "  {bits:  5, name: '{cs1}',      attr: ['5', 'src'],              type: 4},",
@@ -58,7 +58,7 @@ def test_yaddi(rvy_insts):
     inst = rvy_insts.yaddi
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: '{cd}',       attr: ['5', 'dest'],             type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', '{CADDI}=100'],      type: 8},",
         "  {bits:  5, name: '{cs1}',      attr: ['5', 'src'],              type: 4},",
@@ -71,7 +71,7 @@ def test_yaddi(rvy_insts):
 def test_sy(rvy_insts):
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: 'offset[4:0]', attr: ['5', 'offset[4:0]'],      type: 4},",
         "  {bits:  3, name: 'funct3',     attr: ['3', '{STORE_CAP_NAME}=010'], type: 8},",
         "  {bits:  5, name: '{cs1}≠0',    attr: ['5', 'base'],             type: 4},",
@@ -85,7 +85,7 @@ def test_sy(rvy_insts):
 def test_ly(rvy_insts):
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: '{cd}',       attr: ['5', 'dest'],             type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', '{LOAD_CAP_NAME}=001'], type: 8},",
         "  {bits:  5, name: '{cs1}≠0',    attr: ['5', 'base'],             type: 4},",
@@ -99,7 +99,7 @@ def test_srliy():
     inst = get_insn_def("YHIR")
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: 'rd',         attr: ['5', 'dest'],             type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-MISC=101'],     type: 8},",
         "  {bits:  5, name: '{cs1}',      attr: ['5', 'src'],              type: 4},",
@@ -114,7 +114,7 @@ def test_amoswap_y():
     inst = get_insn_def("AMOSWAP.Y")
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: '{cd}',       attr: ['5', 'rd'],               type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-AMO=011'],      type: 8},",
         "  {bits:  5, name: '{cs1}≠0',    attr: ['5', 'base'],             type: 4},",
@@ -131,7 +131,7 @@ def test_ybndswi():
     inst = get_insn_def("YBNDSWI")
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: '{cd}',       attr: ['5', 'src'],              type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-MISC=101'],     type: 8},",
         "  {bits:  5, name: '{cs1}',      attr: ['5', 'dest'],             type: 4},",
@@ -148,7 +148,7 @@ def test_modesw_merge(insn_map):
 
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: '{cd}=x0',    attr: ['5', '{cd}=x0'],          type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
         "  {bits:  5, name: '{cs1}=x0',   attr: ['5', '{cs1}=x0'],         type: 4},",
@@ -175,7 +175,7 @@ def test_ymv():
     inst = get_insn_def("YMV")
     expected = [
         "{reg: [",
-        "  {bits:  7, name: 'opcode',     attr: ['7', 'CUSTOM-3=1111011'], type: 8},",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
         "  {bits:  5, name: '{cd}',       attr: ['5', 'dest'],             type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
         "  {bits:  5, name: '{cs1}',      attr: ['5', 'src'],              type: 4},",

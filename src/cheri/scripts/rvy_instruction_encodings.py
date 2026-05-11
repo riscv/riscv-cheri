@@ -24,7 +24,8 @@ class MajorOpcode(Enum):
     AMO = 0b0101111
     OP = 0b0110011
     SYSTEM = 0b1110011
-    CUSTOM_3 = 0b1111011
+    RVY_B = 0b1011011
+    RVY_A = 0b1111011
 
 
 class Funct3(Enum):
@@ -116,9 +117,9 @@ class InsnBitsCell:
 
     # Note on field representations:
     # Wavedrom wants the names of the fields inside the diagram (e.g. "funct7"), and the actual values
-    # as labels underneath (e.g. "CUSTOM-3=1111011").
+    # as labels underneath (e.g. "RVY-A=1111011").
     # However, the encoding overview (XLSX, bytefield) just has a single box per field, so we put the
-    # actual value (e.g. "0000001" or "CUSTOM-3=1111011") directly in there.
+    # actual value (e.g. "0000001" or "RVY-A=1111011") directly in there.
 
     @property
     def value_for_wavedrom(self) -> str:
@@ -279,7 +280,7 @@ class RVYRType3Op(RType):
         kwargs.setdefault("rs2_label", "src2")
         if f7_label is None:
             f7_label = f"{_get_asciidoc_insn_name(name)}={format(f7, '07b')}"
-        super().__init__(name, op=MajorOpcode.CUSTOM_3, f3=Custom3Funct3.REGULAR, f7=f7, f7_label=f7_label, **kwargs)
+        super().__init__(name, op=MajorOpcode.RVY_A, f3=Custom3Funct3.REGULAR, f7=f7, f7_label=f7_label, **kwargs)
 
 
 class RVYRType2Op(RType):
@@ -293,7 +294,7 @@ class RVYRType2Op(RType):
         )
         super().__init__(
             name,
-            op=MajorOpcode.CUSTOM_3,
+            op=MajorOpcode.RVY_A,
             f3=Custom3Funct3.REGULAR,
             f7=f7,
             rs2=rs2,
@@ -516,10 +517,10 @@ def get_custom3_insts():
     return RVYInstructions(
         regular_3op_insns=regular_3op_insns,
         regular_2op_insns=regular_2op_insns,
-        yaddi=IType("YADDI", op=MajorOpcode.CUSTOM_3, f3=Custom3Funct3.YADDI, rs1="{cs1}", rd="{cd}", imm_label="imm"),
+        yaddi=IType("YADDI", op=MajorOpcode.RVY_A, f3=Custom3Funct3.YADDI, rs1="{cs1}", rd="{cd}", imm_label="imm"),
         ly=IType(
             "LY",
-            op=MajorOpcode.CUSTOM_3,
+            op=MajorOpcode.RVY_A,
             f3=Custom3Funct3.LY,
             rs1=CS1_NEQ_X0,
             rd="{cd}",
@@ -528,7 +529,7 @@ def get_custom3_insts():
         ),
         sy=SType(
             "SY",
-            op=MajorOpcode.CUSTOM_3,
+            op=MajorOpcode.RVY_A,
             f3=Custom3Funct3.SY,
             rs1=CS1_NEQ_X0,
             rs2="{cs2}",
@@ -538,7 +539,7 @@ def get_custom3_insts():
         amo_insns=[
             AMOType(
                 "LR.Y",
-                op=MajorOpcode.CUSTOM_3,
+                op=MajorOpcode.RVY_A,
                 f5=lr_f7,
                 f3=Custom3Funct3.AMO,
                 ext="Zalrsc",
@@ -552,7 +553,7 @@ def get_custom3_insts():
             ),
             AMOType(
                 "AMOSWAP.Y",
-                op=MajorOpcode.CUSTOM_3,
+                op=MajorOpcode.RVY_A,
                 f5=0b00001,
                 f3=Custom3Funct3.AMO,
                 ext="Zaamo",
@@ -567,7 +568,7 @@ def get_custom3_insts():
             ),
             AMOType(
                 "SC.Y",
-                op=MajorOpcode.CUSTOM_3,
+                op=MajorOpcode.RVY_A,
                 f5=0b00011,
                 f3=Custom3Funct3.AMO,
                 ext="Zalrsc",
@@ -584,7 +585,7 @@ def get_custom3_insts():
         misc_insns=[
             IType(
                 "YHIR",
-                op=MajorOpcode.CUSTOM_3,
+                op=MajorOpcode.RVY_A,
                 f3=Custom3Funct3.MISC,
                 imm="shamt=XLEN",
                 fixed="0" * 5,
@@ -592,10 +593,10 @@ def get_custom3_insts():
                 rd="rd",
                 imm_label="shamt=XLEN",
             ),
-            IType("SRLIY", op=MajorOpcode.CUSTOM_3, f3=Custom3Funct3.MISC, imm="shamt[6:0]", fixed="0" * 5),
+            IType("SRLIY", op=MajorOpcode.RVY_A, f3=Custom3Funct3.MISC, imm="shamt[6:0]", fixed="0" * 5),
             IType(
                 "YBNDSWI",
-                op=MajorOpcode.CUSTOM_3,
+                op=MajorOpcode.RVY_A,
                 f3=Custom3Funct3.MISC,
                 imm="ybndswimm[8:0]",
                 fixed="111",

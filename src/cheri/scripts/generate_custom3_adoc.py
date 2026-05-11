@@ -96,7 +96,7 @@ def generate_adoc():
     misc_grouped = {}
     misc_f3 = Custom3Funct3.MISC
     for i in rvy_insts.misc_insns:
-        if i.op.val == MajorOpcode.CUSTOM_3 and i.f3.val == misc_f3:
+        if i.op.val == MajorOpcode.RVY_A and i.f3.val == misc_f3:
             matching_f7s = []
             if isinstance(i, IType) and hasattr(i, "imm_high"):
                 fixed_val = i.imm_high.val
