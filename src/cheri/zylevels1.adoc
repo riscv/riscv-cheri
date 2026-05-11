@@ -11,7 +11,7 @@ It adds one new "level" metadata bit to classify capabilities as either *global*
 [#zylevels1_ap_field_summary,width="100%",options=header,halign=center,cols="2,2,5"]
 |==============================================================================
 | Bit                    | Type                   | Comment
-| <<zylevels1_gl_perm>>  | Data flow label        | Used to classify capabilities as global or local.
+| <<zylevels1_gl_perm>>  | Information flow label | Used to classify capabilities as global or local.
 | <<zylevels1_sl_perm>>  | Data memory permission | Used to filter the {ctag}s of stored capabilities.
 | <<zylevels1_lg_perm>>  | Data memory permission | Used to filter the permissions of loaded capabilities.
 |==============================================================================
@@ -32,7 +32,7 @@ The _Capability Global_ flag holds one of two values:
 * 1: the capability is _global_.
 * 0: the capability is _local_.
 
-Like permissions, the _Capability Global_ flag can be cleared when creating a new capability from an existing one, but it can never be set unless derived from a superset capability which has the  _Capability Global_ flag set .
+Like permissions, the _Capability Global_ flag can be cleared when creating a new capability from an existing one, but it can never be set unless derived from a superset capability which has the  _Capability Global_ flag set.
 
 [#zylevels1_sl_perm,reftext="SL-permission"]
 ==== Store Local Permission (SL)
@@ -104,7 +104,7 @@ The behavior can be described as implicitly reducing the permissions of the load
 
 * If the authority (`{cs1}`) lacks <<zylevels1_lg_perm>> and the loaded capability is sealed, its <<zylevels1_gl_perm>> is cleared in the result register (`{cd}`).
 +
-NOTE: The absence of <<zylevels1_lg_perm>> affects the <<zylevels1_gl_perm>> even of sealed capabilities because the latter is a data flow label rather than a traditional permission.
+NOTE: The absence of <<zylevels1_lg_perm>> affects the <<zylevels1_gl_perm>> even of sealed capabilities because the latter is an information flow label rather than a traditional permission.
 
 .<<zylevels1_lg_perm>> effects for loading capabilities
 [#zylevels1_load_summary,width="100%",options=header,align="center",cols="1,1,1,1,1,6"]
@@ -130,7 +130,7 @@ The capability is stored with a set {ctag} only if:
 
 Otherwise, the capability is stored with a zero {ctag}.
 
-NOTE: While <<zylevels1_lg_perm>> restricts flow by clearing metadata bits, <<zylevels1_sl_perm>> restricts flow by clearing the {ctag}.
+NOTE: While <<zylevels1_lg_perm>> restricts flow by reducing permissions (labeling it as local and stripping permissions), <<zylevels1_sl_perm>> restricts flow by invalidating capabilities (clearing the {ctag}).
 
 .<<zylevels1_sl_perm>> effects for stored capabilities
 [#zylevels1_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
