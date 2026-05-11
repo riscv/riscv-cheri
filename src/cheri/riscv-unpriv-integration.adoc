@@ -878,19 +878,19 @@ No other exception paths are added by {cheri_base_ext_name}: in particular, capa
 |inst[4:2] .2+|000 .2+|001   .2+|010     .2+|011   .2+|100 .2+|101     .2+|110          .2+|111 (>32b)
 |inst[6:5]
 |00           |LOAD   |LOAD-FP  |_custom-0_ |MISC-MEM |OP-IMM |AUIPC      |OP-IMM-32       |_reserved_
-|01           |STORE  |STORE-FP |*RVY-1*    |AMO      |OP     |LUI        |OP-32           |_reserved_
-|10           |MADD   |MSUB     |NMSUB      |NMADD    |OP-FP  |OP-V       |*RVY-2*         |_reserved_
-|11           |BRANCH |JALR     |_reserved_ |JAL      |SYSTEM |OP-VE      |*RVY-3*         |_reserved_
+|01           |STORE  |STORE-FP |*{cheri_base_ext_name}-C*    |AMO      |OP     |LUI        |OP-32           |_reserved_
+|10           |MADD   |MSUB     |NMSUB      |NMADD    |OP-FP  |OP-V       |*{cheri_base_ext_name}-B*         |_reserved_
+|11           |BRANCH |JALR     |_reserved_ |JAL      |SYSTEM |OP-VE      |*{cheri_base_ext_name}-A*         |_reserved_
 |===
 
 Therefore:
 
 . _custom-0_ is still available for custom encodings
-. _custom-1/2/3_ are repurposed as *{cheri_base_ext_name}-1/2/3*
+. _custom-1/2/3_ are repurposed as *{cheri_base_ext_name}-C/B/A* in that order.
 
 NOTE: Standard {cheri_base_ext_name} encodings will _never_ be placed in _custom-0_.
 
-NOTE: Parts of *{cheri_base_ext_name}-1/2/3* may be returned to custom space in the future.
+NOTE: Parts of *{cheri_base_ext_name}-C/B/A* may be returned to custom space in the future.
 
 :leveloffset: +1
 
