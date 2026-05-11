@@ -26,8 +26,8 @@ NOTE: Reserved bits must be 0 in valid capabilities and are available for future
 The encoding diagram above of the capability format includes some fields which depend upon the presence of extensions:
 
 <<section_cheri_hybrid_ext>>::
-When {cheri_default_ext_name} is supported, capabilities include an <<m_bit>> (bit 52).
-If the capability does not grant <<x_perm>> or {cheri_default_ext_name} is not supported, the <<m_bit>> is always _reserved_ and so must be zero in valid capabilities.
+When {cheri_default_ext_name} is supported, capabilities include an <<p_bit>> (bit 52).
+If the capability does not grant <<x_perm>> or {cheri_default_ext_name} is not supported, the <<p_bit>> is always _reserved_ and so must be zero in valid capabilities.
 
 ifndef::cheri_ratification_v1_only[]
 <<section_zylevels1>>::
@@ -52,7 +52,7 @@ This capability encoding has the following properties that affect the observable
 | EW        | {cap_rv64_exp_width} | Exponent width
 | CAP_MAX_E | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8  | 0                    | Whether the encoding format includes the L~8~ bit
-| AP_MBit   | 0                    | Whether the <<m_bit>> is encoded in the AP-field
+| AP_PBit   | 0                    | Whether the <<p_bit>> is encoded in the AP-field
 | AP_MAX    | ones                 | Value of the AP field giving maximum permissions
 |==============================================================================
 
@@ -110,11 +110,11 @@ endif::[]
 
 NOTE: Future extensions may define new permissions and, if so, must augment the above table.
 
-[#M-field-encoding64, reftext="M-field encoding"]
-==== Capability Mode (M) Encoding
+[#P-field-encoding64, reftext="P-field encoding"]
+==== Capability Mode (P) Encoding
 
-The <<m_bit>> is only assigned meaning when the implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
-In valid capabilities, the bit assigned to the <<m_bit>> must be zero if <<x_perm>> isn't set.
+The <<p_bit>> is only assigned meaning when the implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
+In valid capabilities, the bit assigned to the <<p_bit>> must be zero if <<x_perm>> isn't set.
 
 [#SDP-field64, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
@@ -518,9 +518,6 @@ This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
 is _representable_.
 
-// ===== <<AUIPC_CHERI>> Representability
-//
-// The capabilities of this chapter have sufficient <<section_rep_check_concept,representability>> such that sequences used to form XLEN-bit addresses (such as <<AUIPC_CHERI>>+<<LOAD_CAP>>) will not clear the {ctag}.
 
 [#section_special_caps_encoding]
 === Encoding of Special Capabilities
@@ -544,7 +541,7 @@ expanded base is 0 and top is 2^XLEN^.
 | {ctag_title}             | zero   | Capability is not valid
 | <<SDP-field64,SDP>>        | zeros  | Grants no permissions
 | <<AP-field,AP>>          | zeros  | Grants no permissions
-| <<m_bit,M>>^1^           | zero   | No meaning since non-executable ({cheri_default_ext_name} only)
+| <<p_bit,P>>^1^           | zero   | No meaning since non-executable ({cheri_default_ext_name} only)
 | CT       | zero   | Unsealed
 | EF       | zero   | Internal exponent format
 | L~8~^2^  | zero   | Top address reconstruction bit
@@ -571,7 +568,7 @@ are presumed absent in NULL capabilities.
 
 This encoding is for an _Infinite_ capability value, which
 grants all permissions while its bounds also cover the whole address space.
-It includes <<x_perm>> and so includes the <<m_bit>> if {cheri_default_ext_name} is supported.
+It includes <<x_perm>> and so includes the <<p_bit>> if {cheri_default_ext_name} is supported.
 This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capability.
 
 .Field values of the Infinite capability
@@ -582,7 +579,7 @@ This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capabil
 | {ctag_title}  | one   | Capability is valid
 | SDP           | ones  | Grants all permissions
 | AP            | AP_MAX | Grants all permissions
-| <<m_bit,M>>^1^   | {INT_MODE_VALUE_WORD} | CHERI execution mode
+| <<p_bit,P>>^1^   | {INT_MODE_VALUE_WORD} | {cheri_mode_name}
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
 | L~8~^2^       | zero  | Top address reconstruction bit

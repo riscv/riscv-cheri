@@ -129,13 +129,13 @@ For a capability to be valid, the {ctag} must be set, otherwise a capability is 
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
 All capabilities derived from invalid capabilities are themselves invalid, i.e., their {ctag}s are zero.
 
-NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be cleared.
+NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be set to 0.
 When the {ctag} associated with the memory location is zero, the location contains non-capability data.
 
 ==== {ctag_cap}s in registers
 
 Every YLEN-bit register has a one-bit {ctag}, indicating whether the capability in the register is valid to be dereferenced.
-This {ctag} is cleared whenever an invalid capability operation is performed.
+This {ctag} is set to 0 whenever an invalid capability operation is performed.
 Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
 
 ==== {ctag_cap}s in memory
@@ -295,7 +295,7 @@ All CHERI systems must support unsealed capabilities.
 [#sealed_cap,reftext="sealed capability"]
 Sealed capabilities::
 Capabilities with `CT≠0` are sealed against modification and cannot be dereferenced to access memory.
-Instructions that operate on capabilities will produce a result with a cleared {ctag} if the source capability is sealed and the operation would alter its address, bounds, or permissions.
+Instructions that operate on capabilities will produce a result with its {ctag} set to 0 if the source capability is sealed and the operation would alter its address, bounds, or permissions.
 Extensions that augment capability metadata must describe their interaction(s) with sealed capabilities.
 
 Given a capability with `CT=0`,
@@ -397,7 +397,7 @@ If <<c_perm>> is missing then the {ctag}s for capability loads and stores are re
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
 +
-The permission stripping behavior _only_ applies to loaded capabilities that have their {ctag} set and are not sealed.
+The permission stripping behavior _only_ applies to loaded capabilities with their {ctag} set and that are not sealed after all other checks.
 This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure (e.g., a tree or linked list) without making a copy.
@@ -441,7 +441,7 @@ For the base set of permissions just defined, the following rules apply.
 Extensions that define new permission bits may also introduce new dependency constraints.
 Currently defined examples are:
 
-. <<section_cheri_hybrid_ext,{cheri_default_ext_name}>>, see <<sec_m_bit_hybrid_rule>>
+. <<section_cheri_hybrid_ext,{cheri_default_ext_name}>>, see <<sec_p_bit_hybrid_rule>>
 ifndef::cheri_ratification_v1_only[]
 . <<section_zylevels1>>, see <<zylevels1-clrperm-rules>>
 . <<section_zyseal>>, see <<zyseal_ap_field>>
@@ -621,7 +621,7 @@ As stated above, all state which can hold addresses are extended from XLEN to YL
 
 ==== General Purpose Registers
 
-The <<gprs,XLEN-wide integer registers>> (e.g., `sp`, `a0`) are all extended to YLEN bits
+The <<gprs,XLEN-wide integer registers>> (e.g., `x1`, `x2`) are all extended to YLEN bits
 and associated {ctag}s, as shown in <<base_cap_registers>>.
 
 .Extended registers in {cheri_base_ext_name}
@@ -646,7 +646,7 @@ and associated {ctag}s, as shown in <<base_cap_registers>>.
 // The register can be referred to either way - as `{creg}1` accessing all YLEN bits or as `{creg}1` accessing only the address field (i.e., the lower XLEN bits).
 // For the ABI register names the `y` prefix is added, e.g., `{abi_creg}sp` to refer to all YLEN bits, and so the assembler can refer to either `sp` or `{abi_creg}sp` depending on the instruction operand.
 
-The zero register is extended with zero metadata and a zero {ctag}: this is called the <<null-cap>> capability.
+The zero register (`x0`) is extended with zero metadata and a zero {ctag}: this is called the <<null-cap>> capability.
 
 [#pcc,reftext="{pcc}"]
 ==== The Program Counter Capability (`{pcc}`)
@@ -676,10 +676,10 @@ include::img/pccreg.edn[]
 
 ==== Added CSRs
 
-{cheri_base_ext_name} adds the YLEN-bit CSR shown in
+{cheri_base_ext_name} adds the <<ylen_csrs, YLEN-bit CSR>> shown in
 xref:csrnames-added-y[xrefstyle=short].
 ifdef::cheri_xycfg_csr[]
-It also adds the XLEN-bit CSR shown in xref:csrnames-added-x[xrefstyle=short]
+It also adds the <<xlen_csrs, XLEN-bit CSR>> shown in xref:csrnames-added-x[xrefstyle=short]
 endif::[]
 
 [[csrnames-added-y]]
@@ -799,34 +799,39 @@ to reject executables that expect unknown or known-incompatible CHERI features o
 
 endif::[]
 
-==== Extended CSRs
+[#rvy_csr_classes]
+==== CSR Classes
 
 All CSRs that can hold addresses are extended to YLEN bits.
 
-{cheri_base_ext_name} has three classes of CSRs
+{cheri_base_ext_name} has three classes of CSRs:
 
-* XLEN-bit CSRs, which do not contain addresses
-** e.g., _fcsr_ from the "F" extension
-* XLEN-bit CSRs extended to YLEN bits, which are able to contain addresses (referred to as _extended CSRs_)
-** e.g., _jvt_ from the "Zcmt" extension, once the {cheri_base_ext_name} version becomes available.
-* YLEN-bit CSRs, which are added by {cheri_base_ext_name} and contain addresses
-** e.g., <<utidc>>
+[[xlen_csrs, XLEN-bit CSRs]]XLEN-bit CSRs::
+These do not contain addresses (e.g., _fcsr_ from the "F" extension).
+
+[[extended_csrs, extended CSRs]]Extended CSRs::
+These are XLEN-bit CSRs extended to YLEN bits, which are able to contain addresses (e.g., _jvt_ from the "Zcmt" extension).
++
+NOTE: Zcmt is not yet available for {cheri_base_ext_name}.
+
+[[ylen_csrs, YLEN-bit CSRs]]YLEN-bit CSRs::
+These are added by {cheri_base_ext_name} and contain addresses (e.g., <<utidc>>).
 
 When accessing CSRs these rules are followed:
 
-. Accesses to XLEN-bit CSRs are as specified by Zicsr
-. Accesses to YLEN-bit CSRs and extended CSRs, using CSRRW will:
+. Accesses to <<xlen_csrs>> are as specified by Zicsr
+. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using CSRRW will:
 .. Read YLEN bits
 .. Write YLEN bits, and will write the {ctag} to zero if any <<section_cap_integrity,integrity>> check fails
-. Accesses to YLEN-bit CSRs and extended CSRs, using instructions other than CSRRW will:
+. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using instructions other than CSRRW will:
 .. Read YLEN bits
 .. Write an XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value
 
-NOTE: Any YLEN-bit or extended CSR may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
+NOTE: Any <<ylen_csrs, YLEN-bit>> or <<extended_csrs, extended CSR>> may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
 
 The assembler pseudoinstruction to read a capability CSR `csrr {cd}, csr`, is encoded as `csrrs {cd}, csr, {creg}0`.
 
-.YLEN-bit CSR and Extended CSR access summary for {cheri_base_ext_name}
+.<<ylen_csrs, YLEN-bit CSR>> and <<extended_csrs, Extended CSR>> access summary for {cheri_base_ext_name}
 [#clen_access_summary_base,%autowidth,options=header,align="center"]
 |=======================
 |Instruction          | Read Width  | Write Width
@@ -905,6 +910,7 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 |<<SCBNDS>>   | {SCBNDS_DESC}
 |<<SCBNDSR>>  | {SCBNDSR_DESC}
 |<<YSUNSEAL>> | {YSUNSEAL_DESC}
+|<<CBLD>>     | {CBLD_DESC}
 |=======================
 
 ^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
@@ -916,6 +922,7 @@ include::insns/schi_32bit.adoc[]
 include::insns/scbnds_32bit.adoc[]
 include::insns/scbndsr_32bit.adoc[]
 include::insns/ysunseal_32bit.adoc[]
+include::insns/cbld_32bit.adoc[]
 
 <<<
 
@@ -1203,16 +1210,3 @@ NOTE: A future extension may define more restrictive _forward-only_ and _backwar
 === Added instructions
 
 include::insns/sentry_32bit.adoc[]
-
-[#section_rvy_bld_insn_ext,reftext="{rvy_bld_insn_ext_name}"]
-== "{rvy_bld_insn_ext_name}" Extension for Building Capabilities
-
-The {rvy_bld_insn_ext_name} extension adds the <<CBLD>> instruction to capabilities with a superset authority to validate (i.e. set the {ctag}) of a capability with lesser authority.
-
-NOTE: This instruction can be used to speed up operations such as paging in memory after swap.
-
-NOTE: CHERIoT implementations do not use {CBLD}, so this instruction is part of an optional extension instead of the {cheri_base_ext_name} base ISA.
-
-=== Added instructions
-
-include::insns/cbld_32bit.adoc[]

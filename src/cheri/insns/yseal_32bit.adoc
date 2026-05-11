@@ -17,7 +17,7 @@ Construct, into `{cd}`, a sealed copy of the unsealed capability in `{cs2}`, usi
 +
 Copy `{cs2}` into `{cd}`, and then...
 +
-. Clear the {ctag} of the capability in `{cd}` if any of the following hold:
+. Set the {ctag} of the capability in `{cd}` to zero if any of the following hold:
 +
 --
 - `{cs2}` is sealed (has a non-zero <<sec_cap_type>> value)
@@ -55,7 +55,7 @@ That is, some encodings may be able to represent
 a valid capability with a given non-zero <<sec_cap_type>>
 only if other properties of that capability hold,
 such as it granting, or not granting, a particular permission.
-As such, {YSEAL} may clear the {ctag} of the result in `{cd}`
+As such, {YSEAL} may set the {ctag} of the result in `{cd}` to zero
 depending on these other aspects of its `{cs2}` input,
 even if some capabilities can be sealed with
 the type called for by the address of `{cs1}`.

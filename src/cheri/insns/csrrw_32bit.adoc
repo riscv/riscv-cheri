@@ -24,13 +24,15 @@ Encoding::
 include::wavedrom/csrw-instr.adoc[]
 
 Description::
-CSRRW has extended functionality for accessing YLEN-bit CSRs, and XLEN-bit CSRs extended to YLEN bits (_Extended CSRs_).
+CSRRW has extended functionality for accessing <<ylen_csrs>> and <<extended_csrs>>.
 +
-Access to XLEN bit CSRs is as defined in Zicsr.
+Access to <<xlen_csrs>> is as defined in Zicsr.
 +
-CSRRW accesses to YLEN bit CSRs read YLEN bits into `{cd}` and write YLEN bits of `{cs1}` into the CSR.
+CSRRW accesses to <<ylen_csrs>> read YLEN bits into `{cd}` and write YLEN bits of `{cs1}` into the CSR.
 +
-CSRRW accesses to extended CSRs read YLEN bits into `{cd}` and write YLEN bits of `{cs1}` into the CSR, or if {cheri_default_ext_name} is supported, XLEN bit accesses are made in {cheri_int_mode_name}. The final write data is determined using semantics of the <<SCADDR>> instruction.
+CSRRW accesses to <<extended_csrs>> read YLEN bits into `{cd}` and write YLEN bits of `{cs1}` into the CSR.
+However, if {cheri_default_ext_name} is supported and the current mode is {cheri_int_mode_name}, accesses to <<extended_csrs>> are XLEN-wide.
+The final write data for <<extended_csrs>> is determined using the semantics of the <<SCADDR>> instruction.
 +
 In all cases, when writing YLEN bits of `{cs1}`, if any <<section_cap_integrity,integrity>> check fails then set the {ctag} to zero before writing to the CSR.
 

@@ -445,6 +445,7 @@ it is not possible to disable CHERI checks completely.
 endif::[]
 
 When using a system with {cheri_default_ext_name}, it may be desirable to disable CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
+This includes allowing custom encodings reallocated to CHERI to revert to being custom.
 {cheri_default_ext_name} includes functions to disable explicit access to CHERI
 registers and instructions (hereafter referred to as _disabling CHERI_).
 
@@ -462,12 +463,12 @@ NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{C
 
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
-* Instructions from <<rvy_insn_table>> and <<rvy_hybrid_insn_table>> cause illegal instruction exceptions.
-* Executing CSR instructions accessing any natively YLEN CSR causes an illegal instruction exception.
+* Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces, and so the encodings in <<rvy_insn_table>> and <<rvy_hybrid_insn_table>> are no longer available.
+* Natively YLEN CSRs are no longer available, and may have been mapped to different standard CSRs.
 * Executing CSR instructions accessing any CSR extended to YLEN only allows XLEN access (this is identical to {cheri_int_mode_name} access).
 
 Disabling CHERI has no effect on implicit accesses or security checks.
-The last capability written to <<pcc>> and <<ddc>> before disabling CHERI will be used to authorize instruction execution and data memory accesses.
+The last capability written to <<pcc>> and <<ddc>> before disabling CHERI will be used to authorize instruction execution and data memory accesses respectively.
 
 [NOTE]
 ====
@@ -476,30 +477,30 @@ from interfering with the correct operation of higher-privileged {cheri_int_mode
 that does not perform <<ddc>> switches on trap entry and return.
 
 Disabling CHERI allows harts supporting CHERI to be fully
-compatible with standard RISC-V, so CHERI instructions, such as <<CRAM>>, that
-do not change any CHERI state, raise exceptions.
+compatible with standard RV32[IE]/RV64[IE] base architectures,
+including any instructions mapped into the reallocated custom encoding spaces.
 This is the default behavior on reset.
 ====
 
-xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart
-in connection with the effective CHERI enable and the <<cheri_execution_mode>> while in a privilege other than debug mode.
+xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart for the different CHERI modes, while executing outside debug mode.
 
 .Hart's behavior depending on the effective <<section_cheri_disable,CHERI enable>> and <<cheri_execution_mode>>
 [#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
 |==============================================================================
-|                                      | {CRE}^1^=0        | {CRE}=1, M-bit={int_mode_value} | {CRE}=1, M-bit={cap_mode_value}
+|                                      | {CRE}^1^=0        | {CRE}=1, P-bit={int_mode_value} | {CRE}=1, P-bit={cap_mode_value}
 | Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
-| natively YLEN CSR Access Width       | ✘                 | YLEN                  | YLEN
-| Extended YLEN CSR Access Width       | XLEN              | XLEN                  | YLEN
-| CHERI Instructions Allowed           | ✘                 | ✔^3^                  | ✔
-| Summary                              | **_Fully RISC-V compatible_**^2^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
+| Natively YLEN CSRs available         | ✘                 | ✔                     | ✔
+| Extended YLEN CSR access width       | XLEN              | XLEN                  | YLEN
+| CHERI instructions available         | ✘                 | ✔^2^                  | ✔
+| Custom-1,2,3 available for custom use| ✔                 | ✘                     | ✘
+| Summary                              | **_Fully RV32[IE]/RV64[IE] compatible_**^3^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
 |==============================================================================
 
 ^1^ _{CRE}_ represents the effective CHERI enable for the current privilege mode.
 
-^2^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, Xtvec, Xepc and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
+^2^ The compressed instructions operating on capability data are _unavailable_ as their encodings will revert to non-CHERI standard behavior.
 
-^3^ The compressed instructions operating on capability data are unavailable as their encoding will revert to non-CHERI standard behavior.
+^3^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, Xtvec, Xepc and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
 
 ifdef::support_varxlen[]
 [#section_cheri_dyn_xlen]
@@ -671,9 +672,9 @@ Write Permission (W)::
 Execute Permission (X)::
  See the unprivileged manual for the definition of X-permission.
 
-[#m_bit, reftext="M-bit"]
-M-bit::
- See the unprivileged manual for the definition of the M-bit.
+[#p_bit, reftext="P-bit"]
+P-bit::
+ See the unprivileged manual for the definition of the P-bit.
 
 [#pcc, reftext="pc"]
 PC::
@@ -683,9 +684,9 @@ PC::
 DDC::
  See the unprivileged manual for the definition of the default data capability CSR.
 
-[#cheri_execution_mode, reftext="CHERI execution modes"]
-CHERI execution modes::
- See the unprivileged manual for the definition of the CHERI execution modes.
+[#cheri_execution_mode, reftext="{cheri_mode_name}s"]
+{cheri_mode_name}s::
+ See the unprivileged manual for the definition of the {cheri_mode_name}s.
 
 [#utidc, reftext="utidc"]
 utidc::
