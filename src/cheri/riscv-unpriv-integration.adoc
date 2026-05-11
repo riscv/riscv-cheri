@@ -832,15 +832,22 @@ All CSRs that can hold addresses are extended to YLEN bits.
 {cheri_base_ext_name} has three classes of CSRs:
 
 [[xlen_csrs, XLEN-bit CSRs]]XLEN-bit CSRs::
-These do not contain addresses (e.g., _fcsr_ from the "F" extension).
+These do not contain pointers (e.g., _fcsr_ from the "F" extension).
 
 [[extended_csrs, extended CSRs]]Extended CSRs::
-These are XLEN-bit CSRs extended to YLEN bits, which are able to contain addresses (e.g., _jvt_ from the "Zcmt" extension).
+These are XLEN-bit CSRs extended to YLEN bits, which are able to contain pointers
+// No unprivileged pointer-type CSRs in v1.0, so let's use mtvec here.
+ifdef::cheri_ratification_v1_only[]
+(e.g., _mtvec_ from the privileged specification).
+endif::[]
+ifndef::cheri_ratification_v1_only[]
+(e.g., _jvt_ from the "Zcmt" extension).
 +
 NOTE: Zcmt is not yet available for {cheri_base_ext_name}.
+endif::[]
 
 [[ylen_csrs, YLEN-bit CSRs]]YLEN-bit CSRs::
-These are added by {cheri_base_ext_name} and contain addresses (e.g., <<utidc>>).
+These are added by {cheri_base_ext_name} and contain pointers (e.g., <<utidc>>).
 
 When accessing CSRs these rules are followed:
 
