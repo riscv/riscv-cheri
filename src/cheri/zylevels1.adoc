@@ -128,9 +128,9 @@ The capability is stored with a set {ctag} only if:
 * The capability being stored (`{cs2}`) is global (<<zylevels1_gl_perm>>=1), OR
 * The authority used for the store (`{cs1}`) grants <<zylevels1_sl_perm>>.
 
-Otherwise, the capability is stored with a zero {ctag}.
+Otherwise, the capability is stored with the {ctag} set to 0.
 
-NOTE: While <<zylevels1_lg_perm>> restricts flow by reducing permissions (labeling it as local and stripping permissions), <<zylevels1_sl_perm>> restricts flow by invalidating capabilities (clearing the {ctag}).
+NOTE: While <<zylevels1_lg_perm>> restricts flow by reducing permissions (labeling it as local and stripping permissions), <<zylevels1_sl_perm>> restricts flow by invalidating capabilities (setting the {ctag} to 0).
 
 .<<zylevels1_sl_perm>> effects for stored capabilities
 [#zylevels1_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
@@ -139,7 +139,7 @@ NOTE: While <<zylevels1_lg_perm>> restricts flow by reducing permissions (labeli
     h|*W*    h|*C* h|*SL* h|*GL*           h| Notes
 .3+.^|1  .3+.^| 1   | 1    | X              | Store data capability unmodified
                .2+.^| 0    | 1              | Store data capability unmodified
-                           | 0              | Store data capability with {ctag} cleared
+                           | 0              | Store data capability with {ctag} set to 0
 |==============================================================================
 
 NOTE: <<zylevels1_sl_perm>> is only effective when both <<w_perm>> and <<c_perm>> are granted.
@@ -202,5 +202,5 @@ When passing a capability to a less-trusted function, a caller often wants to en
 
 *   **Deep no-capture (via <<zylevels1_lg_perm>>):**
     To solve the shallow limitation, the caller also removes the <<zylevels1_lg_perm>> from the argument capability.
-    If the callee loads any capability through this argument, the hardware automatically clears the loaded capability's <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>>.
+    If the callee loads any capability through this argument, the hardware automatically removes the loaded capability's <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>>.
     This enforces a deep no-capture guarantee: the callee is prevented from capturing the argument _and_ anything reachable from it.
