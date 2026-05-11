@@ -4,8 +4,7 @@
 IMPORTANT: {not_v1_ratification_package_freeze}
 
 {cheri_levels1_ext_name} adds an *Information Flow Control* (IFC) mechanism to CHERI.
-It classifies capabilities as either *global* or *local* and adds checks to memory operations to control how capabilities can be shared.
-This extension adds a new metadata bit called the **Global (GL) flag** and two new permissions, **Store Local (SL)** and **Load Global (LG)**.
+It adds one new "level" metadata bit to classify capabilities as either *global* or *local*, adds checks to memory operations to control how capabilities can be shared, and adds two new level-related permissions, **Store Local (SL)** and **Load Global (LG)**.
 
 === Added Metadata Bits (Permissions and Flags)
 
@@ -13,7 +12,7 @@ This extension adds a new metadata bit called the **Global (GL) flag** and two n
 |==============================================================================
 | Bit                    | Type                   | Comment
 | <<zylevels1_gl_perm>>  | Data flow label        | Used to classify capabilities as global or local.
-| <<zylevels1_sl_perm>>  | Data memory permission | Used to filter the validity of stored capabilities.
+| <<zylevels1_sl_perm>>  | Data memory permission | Used to filter the {ctag}s of stored capabilities.
 | <<zylevels1_lg_perm>>  | Data memory permission | Used to filter the permissions of loaded capabilities.
 |==============================================================================
 
@@ -33,7 +32,7 @@ The _Capability Global_ flag holds one of two values:
 * 1: the capability is _global_.
 * 0: the capability is _local_.
 
-Like permissions, the _Capability Global_ flag can be cleared when creating a new capability from an existing one, but it can never be set unless derived from a global superset capability.
+Like permissions, the _Capability Global_ flag can be cleared when creating a new capability from an existing one, but it can never be set unless derived from a superset capability which has the  _Capability Global_ flag set .
 
 [#zylevels1_sl_perm,reftext="SL-permission"]
 ==== Store Local Permission (SL)
@@ -149,8 +148,8 @@ NOTE: <<zylevels1_sl_perm>> is only effective when both <<w_perm>> and <<c_perm>
 
 In implementations of {cheri_levels1_ext_name}, the <<SCSS>> instruction (`{SCSS_LC} rd, {cs1}, {cs2}`) indicates that `{cs2}` is a subset of `{cs1}` (setting `rd` to 1) only if:
 
-* The Global flag of `{cs2}` is clear (0), OR
-* The Global flag of `{cs1}` is set (1).
+* The Global flag of the supposed subset capability (`{cs2}`) is clear (0), OR
+* The Global flag of the supposed superset capability (`{cs1}`) is set (1).
 
 The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>> permissions.
 
@@ -158,8 +157,8 @@ The existing permission subset logic applies to the new <<zylevels1_sl_perm>> an
 
 A <<CBLD>> instruction (`{CBLD_LC} {cd}, {cs1}, {cs2}`) may yield a valid capability (`{cd}.tag=1`) only if:
 
-* The Global flag of `{cs2}` is clear (0), OR
-* The Global flag of `{cs1}` is set (1).
+* The Global flag of the bits to be reconstituted (`{cs2}`) is clear (0), OR
+* The Global flag of the reconstituting superset capability (`{cs1}`) is set (1).
 
 The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>> permissions.
 
