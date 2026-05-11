@@ -1,10 +1,6 @@
 [#rv64y_cap_description, reftext="{rv64y_uni_base_name}"]
 == The {rv64y_uni_base_name} Capability Base for RV64
 
-IMPORTANT: #ARC-NOTE: We originally had these two sections as separate chapters since they have a forward reference to the levels extension to define how those bits are allocated.#
-#Is this forward reference acceptable or do we need to push the definition into the Zylevels chapter?#
-#We originally had the latter, but we got feedback from implementers that it makes the spec more difficult to digest and confirm correct behavior.#
-
 This section describes the in-memory format and properties of the capability encoding intended for RV64.
 
 NOTE: The format is closely modeled upon features from CHERI v9 cite:[cheri-v9-spec], and the bounds encoding scheme is based upon CHERI Concentrate cite:[woodruff2019cheri].
@@ -29,11 +25,9 @@ The encoding diagram above of the capability format includes some fields which d
 When {cheri_default_ext_name} is supported, capabilities include an <<p_bit>> (bit 52).
 If the capability does not grant <<x_perm>> or {cheri_default_ext_name} is not supported, the <<p_bit>> is always _reserved_ and so must be zero in valid capabilities.
 
-ifndef::cheri_ratification_v1_only[]
 <<section_zylevels1>>::
 If <<section_zylevels1>> is available, bits 6 and 7 of the `AP` field are allocated, otherwise they must always be set to one for any valid capability.
 Additionally, the <<zylevels1_gl_perm,GL>> flag is only available if <<section_zylevels1>> is implemented, otherwise it is reserved and must be zero.
-endif::[]
 
 This capability encoding has the following properties that affect the observable behavior of {cheri_base_ext_name} instructions such as <<SCBNDS>> and <<CLRPERM>>:
 
@@ -62,8 +56,8 @@ This capability encoding has the following properties that affect the observable
 | Extension                    | Comment
 | <<section_cheri_hybrid_ext>> | Compatible
 | <<section_rvy_sentry_insn_ext>> | Compatible
-ifndef::cheri_ratification_v1_only[]
 | <<section_zylevels1>>        | Compatible
+ifndef::cheri_ratification_v1_only[]
 | <<section_zyseal>>           | Will be compatible once new permissions are encoded
 endif::[]
 | All RV64Y versions of other standard extensions | Compatible
@@ -98,14 +92,8 @@ NOTE: In the future, if there are no further remaining reserved bits, but extens
 | 3   | <<x_perm>>
 | 4   | <<asr_perm>>
 | 5   | <<lm_perm>>
-ifndef::cheri_ratification_v1_only[]
 | 6   | <<zylevels1_lg_perm>> if <<section_zylevels1>> is implemented; reserved `1` otherwise.
 | 7   | <<zylevels1_sl_perm>> if <<section_zylevels1>> is implemented; reserved `1` otherwise.
-endif::[]
-ifndef::cheri_ratification_v1_only[]
-| 6   | reserved `1`.
-| 7   | reserved `1`.
-endif::[]
 |==============================================================================
 
 NOTE: Future extensions may define new permissions and, if so, must augment the above table.
@@ -565,11 +553,7 @@ expanded base is 0 and top is 2^XLEN^.
 
 ^2^ Only present if `enableL8=1`.
 
-Permissions added by extensions
-ifndef::cheri_ratification_v1_only[]
-(such as those of <<section_zylevels1>>)
-endif::[]
-are presumed absent in NULL capabilities.
+Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed absent in NULL capabilities.
 
 [#section_infinite_cap_encoding]
 ==== Infinite Capability Encoding
@@ -606,8 +590,4 @@ This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capabil
 ^3^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
  If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
 
-Permissions added by extensions
-ifndef::cheri_ratification_v1_only[]
-such as those of <<section_zylevels1>>)
-endif::[]
-are presumed present in Infinite capabilities.
+Permissions added by extensions such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities.

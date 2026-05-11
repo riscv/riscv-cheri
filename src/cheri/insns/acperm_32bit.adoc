@@ -52,21 +52,17 @@ include::../img/acperm_bit_field.edn[]
 NOTE: If a future extension adds a new permission that overlaps with an existing permission (e.g., finer-grained <<asr_perm>>), then clearing the original must also clear the new permission.
 This ensures software forward-compatibility: for example, a kernel that does not know about finer-grained <<asr_perm>> subsets must still be able to prevent all access to privileged instructions and CSRs by clearing <<asr_perm>>.
 
-NOTE: Any future extension that defines new permissions that are a refinement of existing permissions (e.g., finer-grained <<asr_perm>>
-ifndef::cheri_ratification_v1_only[]
- or those of <<section_zylevels1>>
-endif::[]
- ) must be allocated to the bits that are currently reported as 1 to ensure forward-compatibility.
+NOTE: Any future extension that defines new permissions that are a refinement of existing permissions
+(e.g., finer-grained <<asr_perm>> or those of <<section_zylevels1>>)
+must be allocated to the bits that are currently reported as 1 to ensure forward-compatibility.
  Completely new permissions (e.g., sealing) should use the bits that are reported as zero in the current specification.
 
-ifndef::cheri_ratification_v1_only[]
 [NOTE]
 ====
 Extensions like <<section_zylevels1>> introduce bits that are, conceptually, _labels_ on a capability rather than a permission granted by the capability.
 These bits are, nevertheless, still adjusted using the <<CLRPERM>> instruction.
 This avoids the need for a dedicated instruction and allows simultaneous changes of these labels and permissions.
 ====
-endif::[]
 
 Included in::
 <<rvy_insn_table>>
