@@ -125,6 +125,16 @@ The value of the <<SDP-field64>> bits of the <<GCPERM>> result maps 1:1 to the <
 [#section_cap_sealed]
 ==== Capability Type (CT) Encoding
 
+The <<sec_cap_type>> field is as specified in <<table_capability_types>>.
+
+The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> values;
+this field directly encodes the values `0` and `1`:
+
+* The encoded value `0` indicates an unsealed type.
+* If {rvy_sentry_insn_ext_name} is supported, then `1` encodes an unrestricted <<sentry_cap>>.
+* Otherwise, the value `1` is _reserved_.
+
+ifndef::cheri_ratification_v1_only[]
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
 The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
@@ -137,8 +147,7 @@ The value `1` is...
 * considered <<sec_cap_type_ambient,ambiently available>> for <<CBLD>>,
 
 * used as the type for capabilities sealed by <<SENTRY>> instructions,
-  regardless of the input capability's permission,
-  if <<section_rvy_sentry_insn_ext>> is present in the platform.
+  regardless of the input capability's permission.
 
 Additionally, <<JALR_CHERI>> both
 
@@ -149,7 +158,6 @@ Additionally, <<JALR_CHERI>> both
 <<JALR_CHERI>> places no constraints on the triple of input <<sec_cap_type>> value, `{cd}` selector, and `{cs1}` selector.
 That is, <<JALR_CHERI>> will, as directed, attempt to jump to any unsealed or sealed capability in any register regardless of which register comes to hold the sealed return pointer.
 
-ifndef::cheri_ratification_v1_only[]
 [NOTE]
 =====
 The permission encodings of <<rv64y_cap_description>> do not provide mappings for
