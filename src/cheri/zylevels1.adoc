@@ -128,9 +128,9 @@ The capability is stored with a {ctag} set to one only if:
 * The capability being stored (`{cs2}`) is global (<<zylevels1_gl_perm>>=1), OR
 * The authority used for the store (`{cs1}`) grants <<zylevels1_sl_perm>>.
 
-Otherwise, the capability is stored with the {ctag} set to 0.
+Otherwise, the capability is stored with the {ctag} set to zero.
 
-NOTE: While <<zylevels1_lg_perm>> restricts flow by reducing permissions (labeling it as local and stripping permissions), <<zylevels1_sl_perm>> restricts flow by invalidating capabilities (setting the {ctag} to 0).
+NOTE: While a lack of<<zylevels1_lg_perm>> restricts flow by reducing permissions (labeling the loaded capability as local and stripping permissions), <<zylevels1_sl_perm>> restricts flow by invalidating capabilities (by setting the {ctag} to zero).
 
 .<<zylevels1_sl_perm>> effects for stored capabilities
 [#zylevels1_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
@@ -139,7 +139,7 @@ NOTE: While <<zylevels1_lg_perm>> restricts flow by reducing permissions (labeli
     h|*W*    h|*C* h|*SL* h|*GL*           h| Notes
 .3+.^|1  .3+.^| 1   | 1    | X              | Store data capability unmodified
                .2+.^| 0    | 1              | Store data capability unmodified
-                           | 0              | Store data capability with {ctag} set to 0
+                           | 0              | Store data capability with {ctag} set to zero
 |==============================================================================
 
 NOTE: <<zylevels1_sl_perm>> is only effective when both <<w_perm>> and <<c_perm>> are granted.
