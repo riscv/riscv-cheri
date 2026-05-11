@@ -869,9 +869,28 @@ E.g., `lw t0, 16({abi_creg}sp)` loads a word from memory, getting the address, b
 No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not raise an exception, but may set {ctag} of the resulting capability to zero if the operation is not permitted.
 
 === Added Instructions
-{cheri_base_ext_name} adds new instructions to operate on capabilities.
-// It might be good to distinguish the operands using some kind of different notion, but for now we were asked to use the same as before.
-// To clarify whether an instruction accesses XLEN or YLEN bits of the register, the instruction listing uses `{cd}/{cs1}/{cs2}` for capability operands and `rd/rs1/rs2` for integer operands.
+{cheri_base_ext_name} adds new instructions to operate on capabilities, and redefines part of the RVI/RVE custom encoding space for this purpose.
+
+[[rvyopcodemap]]
+.RISC-V base opcode map for {cheri_base_ext_name}, inst[1:0]=11
+[%autowidth.stretch,float="center",align="center",cols=  ">.^4m,  ^.^4m,    ^.^4m,      ^.^4m,    ^.^4m,  ^.^4m,      ^.^4m,           ^.^6m, ^.^4h"]
+|===
+|inst[4:2] .2+|000 .2+|001   .2+|010     .2+|011   .2+|100 .2+|101     .2+|110          .2+|111 (>32b)
+|inst[6:5]
+|00           |LOAD   |LOAD-FP  |_custom-0_ |MISC-MEM |OP-IMM |AUIPC      |OP-IMM-32       |_reserved_
+|01           |STORE  |STORE-FP |*RVY-1*    |AMO      |OP     |LUI        |OP-32           |_reserved_
+|10           |MADD   |MSUB     |NMSUB      |NMADD    |OP-FP  |OP-V       |*RVY-2*         |_reserved_
+|11           |BRANCH |JALR     |_reserved_ |JAL      |SYSTEM |OP-VE      |*RVY-3*         |_reserved_
+|===
+
+Therefore:
+
+. _custom-0_ is still available for custom encodings
+. _custom-1/2/3_ are repurposed as *{cheri_base_ext_name}-1/2/3*
+
+NOTE: Standard {cheri_base_ext_name} encodings will _never_ be placed in _custom-0_.
+
+NOTE: Parts of *{cheri_base_ext_name}-1/2/3* may be returned to custom space in the future.
 
 :leveloffset: +1
 
