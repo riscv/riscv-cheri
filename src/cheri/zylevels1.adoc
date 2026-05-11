@@ -41,7 +41,7 @@ Store Local Permission (SL) controls whether local capabilities can be stored to
 Storing a local capability (one without the <<zylevels1_gl_perm>> set) using an authorizing capability that lacks <<zylevels1_sl_perm>> results in the stored capability having its {ctag} set to zero.
 
 <<zylevels1_sl_perm>> is dependent on both <<c_perm>> and <<w_perm>>.
-If either of these permissions is clear, <<zylevels1_sl_perm>> is ignored.
+If either of these permissions is clear, <<zylevels1_sl_perm>> is ignored and does not need to be encodable in the capability format.
 
 [#zylevels1_lg_perm,reftext="LG-permission"]
 ==== Load Global Permission (LG)
@@ -53,7 +53,7 @@ If the loaded capability is _unsealed_, its <<zylevels1_lg_perm>> is also cleare
 This behavior is similar to how <<lm_perm>> affects loaded capabilities (but note the difference in interaction with seals).
 
 <<zylevels1_lg_perm>> is dependent on both <<c_perm>> and <<r_perm>>.
-If either of these permissions is clear, <<zylevels1_lg_perm>> is ignored.
+If either of these permissions is clear, <<zylevels1_lg_perm>> is ignored and does not need to be encodable in the capability format.
 
 === Interaction with <<root-cap>> Capabilities
 
@@ -104,7 +104,7 @@ The behavior can be described as implicitly reducing the permissions of the load
 
 * If the authority (`{cs1}`) lacks <<zylevels1_lg_perm>> and the loaded capability is sealed, its <<zylevels1_gl_perm>> is cleared in the result register (`{cd}`).
 +
-NOTE: The absence of <<zylevels1_lg_perm>> affects the <<zylevels1_gl_perm>> even of sealed capabilities because the latter is an information flow label rather than a traditional permission.
+NOTE: The absence of <<zylevels1_lg_perm>> affects the <<zylevels1_gl_perm>> even of sealed capabilities because the latter is an information flow label rather than a architectural permission.
 
 .<<zylevels1_lg_perm>> effects for loading capabilities
 [#zylevels1_load_summary,width="100%",options=header,align="center",cols="1,1,1,1,1,6"]
