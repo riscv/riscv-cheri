@@ -30,9 +30,8 @@ Mnemonics::
 Encoding::
 include::wavedrom/scbnds_32bit.adoc[]
 
-NOTE: 99.5% of uses of unrestricted allocation of {cs1} and {cd} for {SCBNDSI} have {cs1}={cd}, and so the cases where they do not match are reserved.
-
-#ARC note - This is a placeholder encoding pending final allocation. We want to ensure that {cheri_base_ext_name} minimized usage of opcode space, so a 10-bit immediate is sufficient and rs1!=rd does not need to be supported, and therefore could use the same number of bits as a R-type instruction.#
+// NOTE: 99.5% of uses of unrestricted allocation of {cs1} and {cd} for {SCBNDSI} have {cs1}={cd}.
+// We could have reserved those, but not doing so is more consistent with overall RISC-V design.
 
 Description::
 Copy the capability from register `{cs1}` to register `{cd}`.
@@ -45,21 +44,43 @@ Set `{cd}.tag=0` if the requested bounds cannot be encoded exactly.
 +
 include::malformed_cs1_clear_tag.adoc[]
 +
-<<SCBNDSI>> uses the following formula to determine the requested length:
+<<SCBNDSI>> decodes the 9-bit immediate value `imm[8:0]` to the requested length `result` as follows:
 
-* `((imm[7:0] + 257) << imm[9:8]) - 256`
+* If `imm[8:0] == 0`, `result` is `4096`.
+* If `imm[8] == 0` and `imm[7:0] > 0`, `result[7:0] = imm[7:0]` with all other bits set to `0`.
+* If `imm[8] == 1`, `result` is decoded as follows, with all other bits set to `0`:
+  * If `imm[7:4] != 0000`, then `result[11:4] = imm[7:0]`.
+  * If `imm[7:4] == 0000`, then `result[8] = 1`, `result[7:4] = imm[3:0]`, `result[3] = 1`.
+
+The resulting logical encodable regions and step sizes are summarized in the table below:
+
+[%autowidth,options="header",align="left"]
+|===
+| Region | Decoded range (bytes) | Immediate decoding condition
+
+| Byte granular
+| `1, 2, ..., 255`
+| `imm[8] == 0` and `imm[7:0] > 0`
+
+.2+<| 8-byte granular
+.2+<| `256, 264, ..., 504`
+| `imm[8] == 1` and `imm[7:4] == 0001` (even multiples of 8)
+
+| `imm[8] == 1` and `imm[7:4] == 0000` (odd multiples of 8)
+
+.2+<| 16-byte granular
+| `512, 528, ..., 4080`
+| `imm[8] == 1` and `imm[7:4] >= 0010`
+
+| `4096`
+| `imm[8:0] == 0`
+|===
 
 [NOTE]
 ====
-This formula does not actually require two additions in decode as it expands to the following:
-[%autowidth]
-|===
-|`imm[9:8]`|Resulting immediate   | Immediate range
-|0         |`(imm[7:0]<<0) + 1`   | 1, 2, ..., 255, 256
-|1         |`(imm[7:0]<<1) + 258` | 258, 260, ..., 766, 768
-|2         |`(imm[7:0]<<2) + 772` | 772, 776, ..., 1788, 1792
-|3         |`(imm[7:0]<<3) + 1800`| 1800, 1808, ..., 3832, 3840
-|===
+This immediate encoding scheme achieves coverage of almost all observed immediate values while decoding the 9-bit immediate field without any adders or variable shifts.
+The linear range, stride-16 range, and stride-8 region are decoded via simple multiplexers and bit wiring.
+Mapping `imm == 0` to `4096` reclaims the redundant zero encoding (already covered by `{scbnds_lc} dst, src, x0`) to support highly common page-sized objects.
 ====
 
 Included in::
