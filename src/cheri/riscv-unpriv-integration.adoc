@@ -739,47 +739,16 @@ endif::[]
 The <<utidc>> register is an unprivileged CSR used to identify the current software thread.
 Any operation that modifies <<utidc>> raises an exception unless the <<asr_perm>> is set in the current <<pcc>>.
 
-NOTE: While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
-Therefore, this specification offers an additional CSR that facilitates a trusted source for identifying software threads.
-
 .User thread identifier capability register
 include::img/utidcreg.edn[]
 
-#TODO: ARC COMMENT: This description of compartments is confusing and seems to mix  kernel mode thread switching and user mode compartment switching?  Not clear why utidc is needed.#
 [NOTE]
 =====
-#The following should probably move to a programmers guide#
-
-Compartmentalization seeks to separate the privileges between different
-protection units, e.g., two or more libraries. Code can be separated by sentries,
-which allow for giving out code capabilities to untrusted code where the untrusted
-code can only call the code capability, but not modify it. The <<utidc>> register supports
-a model where untrusted code is separated by trusted code and each call from one piece of untrusted
-code to another piece of untrusted code goes through trusted code. Often, the trusted
-code is referred to as a *trampoline*. Sentries can
-be called from different software threads and thus there needs to be a way of
-identifying the current software thread. While identifying the current software thread
-can be done by privileged code, e.g., the kernel, the implied performance
-overhead of this is not bearable for CHERI systems with many compartments.
-
-The <<utidc>> register is designed to hold a capability, which can only be used for memory accesses by
-trusted code. In a commonly used model on CHERI systems, the trusted code's responsibility
-is only to switch between compartments, but not to switch threads. This responsibility is usually
-taken over by more privileged code, e.g., an operating system kernel running on a different privilege level.
-The privileged code switches software threads and writes the <<utidc>> register.
-
-Every piece of code in the user space (and more privileged levels) can read the contents of the <<utidc>>
-register. However, the memory authorized by the capability in <<utidc>> must not be accessible to untrusted code,
-but only to trusted code. In order to protect this capability, it can be sealed. The
-trusted code will be given means to unseal this capability (say, via <<YSUNSEAL>>).
-For the untrusted code, the memory pointed to by <<utidc>> is inaccessible. The sealed capability itself is no secret, but the
-memory to which it points is a secret and must not be accessed by any untrusted code.
-
-Trusted code can use <<utidc>> to implement secure compartment switches. Often, the capability therein is
-used to implement a trusted stack. Whenever a compartment switch happens, the trusted code can pass arguments between
-the caller and callee compartment avoid capability leaks between the two compartments.
-The trusted code can store capabilities on the trusted stack when calling out of a compartment and can install them
-when returning to the same compartment.
+Each thread (as scheduled by the kernel) can have its own context stored in privileged data structures managed by the compartmentalisaiton TCB, for example a stack of user-level compartment entries and exits.
+<<tid>> allows compartment-switching code to determine the currently running thread without a call into the operating system.
+This is read-only without <<asr_perm>> to prevent a malicious compartment from tricking the switching mechanism into accessing data corresponding to the wrong thread.
+While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
+Extending <<tid>> to a capability allows a data structure to be shared (guarded by e.g. the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
 =====
 
 ifdef::cheri_xycfg_csr[]
