@@ -63,9 +63,9 @@ end box
 
 K -> K: Prepare User DDC & PCC
 K -> K: Write target PCC to sepc\n(mode bit = {INT_MODE_VALUE})
-K -> U: Execute ""sret"" (Switches to {cheri_int_mode_name})
+K -> U: Execute ""sret"" (Switches to {cheri_int_mode_name_nofmt})
 U -> U: Execute App code
-U -> K: Trigger ""ecall"" or Exception (Switches to {cheri_cap_mode_name})
+U -> K: Trigger ""ecall"" or Exception (Switches to {cheri_cap_mode_name_nofmt})
 K -> K: Handle System Call
 
 @enduml
@@ -100,9 +100,9 @@ end box
 
 M -> M: Create Library Code Capability\n(mode bit = {CAP_MODE_VALUE})
 M -> M: Set DDC to NULL
-M -> L: Call via ""JALR_CHERI"" (Switches to {cheri_cap_mode_name})
+M -> L: Call via ""JALR_CHERI"" (Switches to {cheri_cap_mode_name_nofmt})
 L -> L: Execute Sandboxed Code
-L -> M: Return via return capability (Switches to {cheri_int_mode_name})
+L -> M: Return via return capability (Switches to {cheri_int_mode_name_nofmt})
 M -> M: Restore DDC
 
 @enduml
@@ -137,9 +137,9 @@ end box
 
 P -> P: Create Non-CHERI Code Capability\n(mode bit = {INT_MODE_VALUE})
 P -> P: Load capability into DDC\n(heap, globals, stack)
-P -> N: Call via ""JALR_CHERI"" (Switches to {cheri_int_mode_name})
+P -> N: Call via ""JALR_CHERI"" (Switches to {cheri_int_mode_name_nofmt})
 N -> N: Execute Legacy Code
-N -> P: Return via return capability (Switches to {cheri_cap_mode_name})
+N -> P: Return via return capability (Switches to {cheri_cap_mode_name_nofmt})
 P -> P: Restore DDC to NULL
 
 @enduml
@@ -171,17 +171,17 @@ box "Runtime (RVY Purecap)" #LightCyan
 participant "C++ Runtime" as R
 end box
 
-note over J: Running in {cheri_int_mode_name}
+note over J: Running in {cheri_int_mode_name_nofmt}
 
 == Accessing C Runtime Data ==
-J -> J: Execute ""MODESW_CAP"" (Switches to {cheri_cap_mode_name})
+J -> J: Execute ""MODESW_CAP"" (Switches to {cheri_cap_mode_name_nofmt})
 J -> J: Access runtime data using\nexplicit capabilities
-J -> J: Execute ""MODESW_INT"" (Switches to {cheri_int_mode_name})
+J -> J: Execute ""MODESW_INT"" (Switches to {cheri_int_mode_name_nofmt})
 
 == Calling Runtime Helpers ==
-J -> R: Call helper (Sentry Capability) (Switches to {cheri_cap_mode_name})
+J -> R: Call helper (Sentry Capability) (Switches to {cheri_cap_mode_name_nofmt})
 R -> R: Execute safe runtime code
-R -> J: Return to JIT code (Switches to {cheri_int_mode_name})
+R -> J: Return to JIT code (Switches to {cheri_int_mode_name_nofmt})
 
 @enduml
 ....
