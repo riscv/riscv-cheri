@@ -327,6 +327,7 @@ class RVYRType2Op(RType):
             f7_label=f7_label,
             **kwargs,
         )
+        self.rs2.name = "funct5"
 
 
 class IType(Instruction):
