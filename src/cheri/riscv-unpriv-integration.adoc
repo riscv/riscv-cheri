@@ -427,7 +427,7 @@ The permission stripping behavior _only_ applies to loaded capabilities with the
 This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure without making a copy.
-For example, if software removes `LM` from a capability to a linked list, any pointers loaded through that capability will automatically lose their <<w_perm>>, preventing modification of the list content.
+For example, if software removes <<lm_perm>> from a capability to a linked list, any pointers loaded through that capability will automatically lose their <<w_perm>>, preventing modification of the list content.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is similar to CHERIoT's _LoadGlobal_ permission, except that any _global_ capability implicitly grants _LoadGlobal_.
