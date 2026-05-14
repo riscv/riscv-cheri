@@ -47,10 +47,10 @@ include::malformed_cs1_clear_tag.adoc[]
 <<SCBNDSI>> decodes the 9-bit immediate value `imm[8:0]` to the requested length `result` as follows:
 
 * If `imm[8:0] == 0`, `result` is `4096`.
-* If `imm[8] == 0` and `imm[7:0] > 0`, `result[7:0] = imm[7:0]` with all other bits set to `0`.
-* If `imm[8] == 1`, `result` is decoded as follows, with all other bits set to `0`:
-** If `imm[7:4] != 0000`, then `result[11:4] = imm[7:0]`.
-** If `imm[7:4] == 0000`, then `result[8] = 1`, `result[7:4] = imm[3:0]`, `result[3] = 1`.
+* If `imm[8] == 0` and `imm[8:0] > 0`, `result` is `imm[7:0]`.
+* If `imm[8] == 1`, `result` is decoded as follows:
+** If `imm[7:5] != 0`, `result` is `imm[7:0] << 4`.
+** If `imm[7:5] == 0`, `result` is `(imm[7:0] << 4) | (imm[4] ? 8 : 256)`.
 
 +
 The resulting logical encodable regions and step sizes are summarized in the table below:
@@ -63,15 +63,13 @@ The resulting logical encodable regions and step sizes are summarized in the tab
 | `1, 2, ..., 255`
 | `imm[8] == 0` and `imm[7:0] > 0`
 
-.2+<| 8-byte granular
-.2+<| `256, 264, ..., 504`
-| `imm[8] == 1` and `imm[7:4] == 0001` (even multiples of 8)
-
-| `imm[8] == 1` and `imm[7:4] == 0000` (odd multiples of 8)
+| 8-byte granular
+| `256, 264, ..., 504`
+| `imm[8:5] == 1000`
 
 .2+<| 16-byte granular
 | `512, 528, ..., 4080`
-| `imm[8] == 1` and `imm[7:4] >= 0010`
+| `imm[8] == 1` and `imm[7:5] != 000`
 
 | `4096`
 | `imm[8:0] == 0`
@@ -80,8 +78,15 @@ The resulting logical encodable regions and step sizes are summarized in the tab
 [NOTE]
 ====
 This immediate encoding scheme achieves coverage of almost all observed immediate values while decoding the 9-bit immediate field without any adders or variable shifts.
-The linear range, stride-16 range, and stride-8 region are decoded via simple multiplexers and bit wiring.
 Mapping `imm == 0` to `4096` reclaims the redundant zero encoding (already covered by `{scbnds_lc} dst, src, x0`) to support highly common page-sized objects.
+
+// The hardware implementation is a simple bit-remapping: +
+// `result[12] = (imm[8:0] == 0)`, +
+// `result[11:9] = imm[8] ? imm[7:5] : 0`, +
+// `result[8] = imm[8] ? (imm[7:5] == 0 || imm[4]) : 0`, +
+// `result[7:4] = imm[8] ? imm[3:0] : imm[7:4]`, +
+// `result[3] = imm[8] ? (imm[7:4] == 1) : imm[3]`, +
+// and `result[2:0] = imm[8] ? 0 : imm[2:0]`.
 ====
 
 Included in::
