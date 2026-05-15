@@ -48,9 +48,8 @@ include::malformed_cs1_clear_tag.adoc[]
 
 * If `imm[8:0] == 0`, `result` is `4096`.
 * If `imm[8] == 0` and `imm[7:0] != 0`, `result` is `imm[7:0]`.
-* If `imm[8] == 1`, `result` is decoded as follows:
-** If `imm[7:5] != 0`, `result` is `imm[7:0] << 4`.
-** If `imm[7:5] == 0`, `result` is `256 | (imm[3:0] << 4) | (imm[4] << 3)`.
+* If `imm[8] == 1` and `imm[7:5] == 0`, `result` is `256 | (imm[3:0] << 4) | (imm[4] << 3)`.
+* Otherwise, `result` is `imm[7:0] << 4`.
 
 +
 The resulting logical encodable regions and step sizes are summarized in the table below:
@@ -69,7 +68,7 @@ The resulting logical encodable regions and step sizes are summarized in the tab
 
 .2+<| 16-byte granular
 | `512, 528, ..., 4080`
-| `imm[8] == 1` and `imm[7:5] != 000`
+| `imm[8:5] > 1000`
 
 | `4096`
 | `imm[8:0] == 0`
