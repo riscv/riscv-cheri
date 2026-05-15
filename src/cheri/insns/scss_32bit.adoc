@@ -14,7 +14,7 @@ endif::[]
 include::new_encoding_note.adoc[]
 
 Synopsis::
-Capability Subset
+{SCSS_DESC}
 
 Mnemonic::
 `{scss_lc} rd, {cs1}, {cs2}`
@@ -25,7 +25,9 @@ include::wavedrom/scss.adoc[]
 Description::
 `rd` is set to 1 if:
 . the {ctag} of capabilities `{cs1}` and `{cs2}` are equal, and
-. `{cs2}` 's permissions and bounds are equal to or a subset of `{cs1}` 's, and
+. all permissions granted by either the <<AP-field>> or <<SDP-field>> of `{cs2}` are also granted by those of `{cs1}`, and
+. `{cs2}` 's top bound is less than or equal to `{cs1}` 's top bound, and
+. `{cs1}` 's base bound is greater than or equal to `{cs1}` 's base bound, and
 . neither `{cs1}` nor `{cs2}` fail any <<section_cap_integrity,integrity>> checks
 . any extension-specific constraints capability subset relationships hold.
 
