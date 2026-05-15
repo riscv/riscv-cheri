@@ -50,7 +50,7 @@ include::malformed_cs1_clear_tag.adoc[]
 * If `imm[8] == 0` and `imm[7:0] != 0`, `result` is `imm[7:0]`.
 * If `imm[8] == 1`, `result` is decoded as follows:
 ** If `imm[7:5] != 0`, `result` is `imm[7:0] << 4`.
-** If `imm[7:5] == 0`, `result` is `(imm[7:0] << 4) | (imm[4] ? 8 : 256)`.
+** If `imm[7:5] == 0`, `result` is `256 | (imm[3:0] << 4) | (imm[4] << 3)`.
 
 +
 The resulting logical encodable regions and step sizes are summarized in the table below:
@@ -83,9 +83,9 @@ Mapping `imm == 0` to `4096` reclaims the redundant zero encoding (already cover
 // The hardware implementation is a simple bit-remapping: +
 // `result[12] = (imm[8:0] == 0)`, +
 // `result[11:9] = imm[8] ? imm[7:5] : 0`, +
-// `result[8] = imm[8] ? (imm[7:5] == 0 || imm[4]) : 0`, +
+// `result[8] = imm[8] ? (imm[7:5] == 0b000 || imm[4]) : 0`, +
 // `result[7:4] = imm[8] ? imm[3:0] : imm[7:4]`, +
-// `result[3] = imm[8] ? (imm[7:4] == 1) : imm[3]`, +
+// `result[3] = imm[8] ? (imm[7:4] == 0b0001) : imm[3]`, +
 // and `result[2:0] = imm[8] ? 0 : imm[2:0]`.
 ====
 
