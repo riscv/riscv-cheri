@@ -47,7 +47,7 @@ include::malformed_cs1_clear_tag.adoc[]
 <<SCBNDSI>> decodes the 9-bit immediate value `imm[8:0]` to the requested length `result` as follows:
 
 * If `imm[8:0] == 0`, `result` is `4096`.
-* If `imm[8] == 0` and `imm[8:0] > 0`, `result` is `imm[7:0]`.
+* If `imm[8] == 0` and `imm[7:0] != 0`, `result` is `imm[7:0]`.
 * If `imm[8] == 1`, `result` is decoded as follows:
 ** If `imm[7:5] != 0`, `result` is `imm[7:0] << 4`.
 ** If `imm[7:5] == 0`, `result` is `(imm[7:0] << 4) | (imm[4] ? 8 : 256)`.
