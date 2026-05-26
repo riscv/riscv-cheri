@@ -23,7 +23,7 @@ DOCS := riscv-privileged riscv-unprivileged riscv-cheri riscv-cheri-full
 
 RELEASE_TYPE ?= draft
 GIT_SHORT_HASH ?= -$(shell git rev-parse --short HEAD || true)
-NEXT_VERSION = v0.9.8.1
+NEXT_VERSION = v0.9.8.2
 ifeq ($(RELEASE_TYPE), draft)
 CHERI_SPEC_VERSION ?= $(NEXT_VERSION)-draft$(GIT_SHORT_HASH)
 else
