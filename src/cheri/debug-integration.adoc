@@ -206,7 +206,7 @@ The <<p_bit>> of this capability is _only_ updated by executing <<MODESW_CAP>> o
 include::img/drootcreg.edn[]
 
 ==== Modified Trap-Return Instruction Behavior
-The `DRET` instruction reads the full YLEN bits of the <<mepc_y>>/<<sepc_y>> register and unseals it prior to exception return if it is a <<sentry_cap>>.
+The <<DRET_CHERI>> instruction reads the full YLEN bits of the <<mepc_y>>/<<sepc_y>> register and unseals it prior to exception return if it is a <<sentry_cap>>.
 
 include::insns/dret.adoc[leveloffset=+1]
 
@@ -255,6 +255,8 @@ Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>> is set to a
 <<root-rw-cap>> capability such that <<ddc>>'s address remains unchanged.
 
 When debug mode is exited by executing <<DRET_CHERI>>, the hart's <<ddc>> is updated to
+the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
+When debug mode is exited, the hart's <<ddc>> is updated to
 the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
 hart's context.
 
