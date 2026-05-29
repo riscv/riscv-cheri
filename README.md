@@ -14,6 +14,7 @@ The RISC-V Instruction Set Manual is organized into the following volumes:
 ## Official and Draft Versions
 
 - **Compiled versions of the most recent drafts** of the specifications can be found on the [GitHub releases page](https://github.com/riscv/riscv-cheri/releases/latest).
+- **Historical spec versions and releases** can be viewed on the [Versions Overview](https://riscv.github.io/riscv-cheri/versions.html).
 - **HTML snapshots of the latest commit** can be viewed at the following locations:
   - [Standalone CHERI specification](https://riscv.github.io/riscv-cheri/)
   - [Standalone CHERI specification with additional non-frozen chapters](https://riscv.github.io/riscv-cheri/snapshot/riscv-cheri-full/)

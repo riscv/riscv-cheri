@@ -1,0 +1,67 @@
+---
+name: Deploy GitHub Pages
+
+on:
+  release:
+    types: [published, edited, deleted]
+  workflow_run:
+    workflows: [RISC-V ISA Build]
+    branches:
+      - main
+    types:
+      - completed
+  workflow_dispatch:
+
+# Allow one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  deploy-pages:
+    runs-on: ubuntu-latest
+
+    permissions:
+      pages: write
+      id-token: write
+      actions: read # Required to download artifacts from other runs
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      # If triggered by a completed build run on main, download its built HTML artifacts
+      - name: Download artifacts from triggering run
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+        uses: actions/download-artifact@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: tmp-artifacts
+
+      # Organize the downloaded artifacts into the 'build/' folder with clean names
+      - name: Organize downloaded artifacts
+        if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+        run: |
+          mkdir -p build
+          cp tmp-artifacts/*/*.html build/
+          echo "Organized artifacts in build/:"
+          ls -la build/
+
+      - name: Generate GitHub Pages Site
+        run: python3 .github/workflows/generate_gh_pages.py
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload pages artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
