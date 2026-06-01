@@ -27,11 +27,12 @@ use with {cheri_base_ext_name}:
 These requirements allow a debugger to read and write capabilities in integer
 registers without disturbing other registers.  These requirements may be
 relaxed if some other means of accessing capabilities in integer registers,
-such as an extension of the Access Register abstract command, is added.  The
-following sequences demonstrate how a debugger can read and write a capability
+such as an extension of the Access Register abstract command, is added.
+
+The following sequences demonstrate how a debugger can read and write a capability
 in `{creg}1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
-0xBF0, `hartinfo.datasize` is 1, `dmstatus.impebreak` is 0, and
-`abstractcs.progbufsize` is 5:
+0xBF0, `hartinfo.datasize` is 1, `hartinfo.nscratch` is at least 1, `dmstatus.impebreak` is 0,
+and `abstractcs.progbufsize` is 5:
 
 [source,subs=attributes+]
 ----
@@ -65,10 +66,23 @@ ebreak
 ----
 
 The low `MXLEN` bits of a capability are read and written using normal Access
-Register abstract commands.  If <<dscratch0_y>> were known to be preserved
-between abstract commands, it would be possible to remove the requirements on
-`hartinfo.datasize`, `hartinfo.dataaccess`, and `abstractcs.progbufsize`,
-however, there is no way to discover the former property.
+Register abstract commands.
+
+The above instruction sequences utilize these guarantees provided by
+the _RISC-V Debug Specification_:
+
+* When `hartinfo.nscratch` is greater than 0, the <<dscratch0_y>>
+  is guaranteed to retain its value within a single abstract command.
+
++
+If <<dscratch0_y>> were known to be preserved between abstract commands,
+it would be possible to remove the requirements on `hartinfo.datasize`,
+`hartinfo.dataaccess`, and `abstractcs.progbufsize`, however, there is
+no way to discover the former property.
+
+* Execution of Access Register abstract commands does not alter the values of `data`
+  debug module registers (unless read of a register is explicitly requested by
+  setting `transfer` to 1 and `write` to 0).
 ====
 
 ==== Debug Mode
