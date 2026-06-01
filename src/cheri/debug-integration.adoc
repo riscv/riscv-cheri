@@ -31,7 +31,7 @@ such as an extension of the Access Register abstract command, is added.
 
 The following sequences demonstrate how a debugger can read and write a capability
 in `{creg}1` if `MXLEN` is 64, `hartinfo.dataaccess` is 0, `hartinfo.dataaddr` is
-0xBF0, `hartinfo.datasize` is 1, `hartinfo.nscratch` is 1, `dmstatus.impebreak` is 0,
+0xBF0, `hartinfo.datasize` is 1, `hartinfo.nscratch` is at least 1, `dmstatus.impebreak` is 0,
 and `abstractcs.progbufsize` is 5:
 
 [source,subs=attributes+]
@@ -80,7 +80,7 @@ it would be possible to remove the requirements on `hartinfo.datasize`,
 `hartinfo.dataaccess`, and `abstractcs.progbufsize`, however, there is
 no way to discover the former property.
 
-* Executon of Access Register abstract command does not alter the values of `data`
+* Execution of Access Register abstract commands does not alter the values of `data`
   debug module registers (unless read of a register is explicitly requested by
   setting `transfer` to 1 and `write` to 0).
 ====
