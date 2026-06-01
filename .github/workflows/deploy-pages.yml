@@ -37,7 +37,7 @@ jobs:
       # If triggered by a completed build run on main, download its built HTML artifacts
       - name: Download artifacts from triggering run
         if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           run-id: ${{ github.event.workflow_run.id }}
