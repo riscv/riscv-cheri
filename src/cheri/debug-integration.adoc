@@ -153,10 +153,16 @@ On debug mode entry, <<dpc_y>> is updated with the
 capability in <<pcc>> whose address field is set to the address of the next
 instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
 
-When leaving debug mode, an unsealed capability value is copied from the value in <<dpc_y>> and written into <<pcc>>.
-A debugger may write <<dpc_y>> to change where the hart resumes and its mode, permissions, sealing or bounds.
+When leaving debug mode, the value in <<dpc_y>> is unsealed if it is a <<sentry_cap>> and is written to <<pcc>>.
+
+NOTE: A debugger may write <<dpc_y>> to change where the hart resumes and its mode, permissions, sealing or bounds.
+ The value saved from the <<pcc>> on debug mode entry cannot be sealed.
 
 The legalization of <<dpc_y>> follows the same rules described for <<mepc_y>>.
+
+One method of resuming execution is <<DRET_CHERI>>.
+
+include::insns/dret.adoc[leveloffset=+1]
 
 [#dscratch0_y,reftext="dscratch0 ({cheri_base_ext_name})"]
 ==== Debug Scratch Register 0 (dscratch0)
@@ -218,11 +224,6 @@ The <<p_bit>> of this capability is _only_ updated by executing <<MODESW_CAP>> o
 
 .Debug root capability register
 include::img/drootcreg.edn[]
-
-==== Modified Trap-Return Instruction Behavior
-The <<DRET_CHERI>> instruction reads the full YLEN bits of the <<mepc_y>>/<<sepc_y>> register and unseals it prior to exception return if it is a <<sentry_cap>>.
-
-include::insns/dret.adoc[leveloffset=+1]
 
 [#section_hybrid_debug_integration]
 === Integrating {cheri_default_ext_name} with Sdext
