@@ -138,7 +138,8 @@ The <<dpc>> register is extended to hold a capability.
 include::img/dpccreg.edn[]
 
 Upon entry to debug mode, the _RISC-V Debug Specification_, does not specify how to
-update the PC, and says PC-relative instructions may be illegal. This concept
+When the hart is in debug mode, the _RISC-V Debug Specification_ does not specify
+how the PC is updated, and says that PC-relative instructions may be illegal. This concept
 is extended to include any instruction which reads or updates <<pcc>>, which refers to
 all jumps, conditional branches and <<AUIPC_CHERI>>. The exceptions are <<MODESW_CAP>> and <<MODESW_INT>>,
 which _are_ supported if {cheri_default_ext_name} is implemented, see <<drootc>>
@@ -151,6 +152,8 @@ instruction execution.
 
 On debug mode entry, <<dpc_y>> is updated with the
 capability in <<pcc>> whose address field is set to the address of the next
+On debug mode entry, <<dpc_y>> is updated with the
+capability in <<pcc>>, whose address field equals to the address of the next
 instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
 
 When leaving debug mode, the value in <<dpc_y>> is unsealed if it is a <<sentry_cap>> and is written to <<pcc>>.
@@ -160,7 +163,7 @@ NOTE: A debugger may write <<dpc_y>> to change where the hart resumes and its mo
 
 The legalization of <<dpc_y>> follows the same rules described for <<mepc_y>>.
 
-One method of resuming execution is <<DRET_CHERI>>.
+One possible implementation choice for debug mode exit is DRET.
 
 include::insns/dret.adoc[leveloffset=+1]
 
