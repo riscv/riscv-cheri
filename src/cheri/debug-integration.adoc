@@ -137,7 +137,6 @@ The <<dpc>> register is extended to hold a capability.
 .Debug program counter capability
 include::img/dpccreg.edn[]
 
-Upon entry to debug mode, the _RISC-V Debug Specification_, does not specify how to
 When the hart is in debug mode, the _RISC-V Debug Specification_ does not specify
 how the PC is updated, and says that PC-relative instructions may be illegal. This concept
 is extended to include any instruction which reads or updates <<pcc>>, which refers to
@@ -150,8 +149,6 @@ to this specification. The <<pcc>> metadata has no architectural effect in debug
 mode. Therefore <<asr_perm>> is implicitly granted for access to all CSRs for
 instruction execution.
 
-On debug mode entry, <<dpc_y>> is updated with the
-capability in <<pcc>> whose address field is set to the address of the next
 On debug mode entry, <<dpc_y>> is updated with the
 capability in <<pcc>>, whose address field equals to the address of the next
 instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
