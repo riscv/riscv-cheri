@@ -416,16 +416,16 @@ There are three levels of support:
 [#cheri_pmas]
 [width="100%",options=header]
 |=========================================================================================
-| PMA                        | Load Behavior    | Store Behavior                      | Comment
-| _CHERI {ctag_title}_       | Load {ctag}      | Store {ctag}                        | Tagged memory supporting {ctag}s
-| _CHERI {ctag_title} Strip_ | Load zero {ctag} | Ignore stored {ctag}                | No support for {ctag}s, ignore them
-| _CHERI {ctag_title} Fault_ | Load zero {ctag} | Store/AMO Access Fault on {ctag}^1^ | No support for {ctag}s, trap on storing one
+| PMA                              | Load Behavior    | Store Behavior                      | Comment
+| _CHERI {ctag_title}_             | Load {ctag}      | Store {ctag}                        | Tagged memory supporting {ctag}s
+| _CHERI {ctag_title} Strip_       | Load zero {ctag} | Ignore stored {ctag}                | No support for {ctag}s, ignore them
+| _CHERI {ctag_title} Store Fault_ | Load zero {ctag} | Store/AMO Access Fault on {ctag}^1^ | No support for {ctag}s, trap on storing one
 |=========================================================================================
 
 ^1^ The access fault is triggered on all capability stores or atomics such as <<STORE_CAP>> or <<AMOSWAP_CAP>> when <<c_perm>> and <<w_perm>> are granted and the to-be-stored {ctag} is set to one.
  For SC{LD_ST_DOT_CAP}, the access fault is raised if the to-be-stored {ctag} is set in {cs2} even when the store fails.
 
-Memory regions that do not have the _CHERI {ctag_title}_ PMA do not require storage for {ctag}s.
+Only memory regions that have the _CHERI {ctag_title}_ PMA require storage for {ctag}s.
 
 === Modified Trap-Return Instructions Behavior
 
