@@ -128,7 +128,7 @@ The capability is stored with a {ctag} set to one only if:
 
 Otherwise, the capability is stored with the {ctag} set to zero.
 
-NOTE: While a lack of<<zylevels1_lg_perm>> restricts flow by reducing permissions (labeling the loaded capability as local and stripping permissions), <<zylevels1_sl_perm>> restricts flow by invalidating capabilities (by setting the {ctag} to zero).
+NOTE: While a lack of <<zylevels1_lg_perm>> restricts flow by reducing permissions (labeling the loaded capability as local and stripping permissions), <<zylevels1_sl_perm>> restricts flow by invalidating capabilities (by setting the {ctag} to zero).
 
 .<<zylevels1_sl_perm>> effects for stored capabilities
 [#zylevels1_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
@@ -166,6 +166,104 @@ The <<YSUNSEAL>> instruction (`{YSUNSEAL_LC} {cd}, {cs1}, {cs2}`) ensures that t
 (That is, `{cd}` is global if and only if both the authority in `{cs1}` and the unsealed form of `{cs2}` are global.)
 
 The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>> permissions.
+
+=== Encoding in the AP-field for {rv64y_uni_base_name}
+
+{cheri_levels1_ext_name} adds <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>> to the states in <<cap_perms_encoding_nolevels32>>, including allocating some previously reserved entries.
+<<zylevels1_alloc_into_ap_field>> and <<zylevels1_mods_into_ap_field>> show which entries have been allocated or modified to grant LG and/or SL.
+
+[#zylevels1_alloc_into_ap_field]
+.Newly allocated AP-field entries.
+[float="center",align="center",cols="1,1,1,1,4",options="header"]
+|===
+| Quadrant | Entries | LG     | SL | Comment
+| 2        | 6       | 0      | 1  | R, W, C, LM, SL granted
+| 2        | 7       | 0      | 0  | R, W, C, LM granted
+| 3        | 6       | 1      | 1  | R, W, C, LM, LG, SL granted
+|===
+
+[#zylevels1_mods_into_ap_field]
+.Modified AP-field entries.
+[float="center",align="center",cols="1,1,1,1,4",options="header"]
+|===
+| Quadrant | Entries | LG     | SL | Comment
+| 1        | all     | AP[2:0]<6 | !AP[1]  | LG conditionally granted, SL always granted
+| 3        | 3       | 1      | 1  | LG and SL granted
+| 3        | 7       | 1      | 0  | LG granted
+|===
+
+The following <<CLRPERM>> rules are defined:
+
+[#clrperm-rules-zylevels1]
+.<<CLRPERM>> rules if {cheri_levels1_ext_name} and {cheri_default_ext_name} are present.
+[float="center",align="center",cols="1,1,4",options="header"]
+|===
+| <<CLRPERM>> Rule | Permission   | Valid only if
+| `RV32-l1-1`      | LM           | W or LG
+| `RV32-l1-2`      | LG           | LM
+| `RV32-l1-3`      | SL           | LM and W
+| `RV32-l1-4`      | X            | (C and LM and LG and SL) or +
+(C and LM and LG and not w) or +
+not (C or LM or LG or SL)
+|===
+
+The following rules are run once _in order_:
+
+. `RV32-base-1,2,3,4,5`
+. `RV32-l1-1,2,3,4`
+. `RV32-base-7,8`
+
+The overall AP-field behavior is summarized in <<cap_perms_encoding_levels1>>.
+
+.Encoding of architectural permissions with {cheri_levels1_ext_name}
+[#cap_perms_encoding_levels1,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
+|==============================================================================
+10+| *Quadrant 0: Non-capability data read/write*
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Notes
+| 0   |   |   |   |   |   |   |   |   | No permissions^1^
+| 1   | ✔ |   |   |   |   |   |   |   | Data RO
+| 4   |   | ✔ |   |   |   |   |   |   | Data WO
+| 5   | ✔ | ✔ |   |   |   |   |   |   | Data RW
+10+| *Quadrant 1: Executable capabilities*
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Notes
+| 0        | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |  ✔  | Execute + Data & Cap RW + ASR
+| 2        | ✔ |   | ✔ | ✔  | ✔  |   | ✔ |     | Execute + Data & Cap RO
+| 4        | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ | ✔ |     | Execute + Data & Cap RW
+| 6        | ✔ | ✔ |   |    |    |   | ✔ |     | Execute + Data RW
+10+| *Quadrant 2: Restricted capability data read/write*
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Notes
+| 3       | ✔ |   | ✔ |    |    |   |   |     | Data & Cap R0 (without LM)
+| 6       | ✔ | ✔ | ✔ | ✔  |    | ✔ |   |     | Data & Cap RW (with SL, no LG)
+| 7       | ✔ | ✔ | ✔ | ✔  |    |   |   |     | Data & Cap RW (no SL, no LG)
+10+| *Quadrant 3: Capability data read/write*
+|Field[2:0]| R | W | C | LM | LG | SL | X | ASR | Notes
+| 3       | ✔ |   | ✔ | ✔  | ✔  |   |   |     | Data & Cap R0
+| 6       | ✔ | ✔ | ✔ | ✔  | ✔  | ✔ |   |     | Data & Cap RW (with SL)
+| 7       | ✔ | ✔ | ✔ | ✔  | ✔  |   |   |     | Data & Cap RW (no SL)
+|==============================================================================
+
+^1^ This is used for the <<null-cap>> capability encoding.
+
+^2^ This is used for the <<root-rx-cap>> and <<root-rw-cap>> capability encoding.
+
+[#clrperm-rules-with-zylevels1-hybrid]
+.Summary of <<CLRPERM>> rules.
+[float="center",align="center",cols="1,1,4",options="header"]
+|===
+| <<CLRPERM>> Rule | Permission   | Valid only if
+| `RV32-base-1`    | C            | R (supersedes <<perm_req:base:c:r-or-w>>)
+| `RV32-base-2`    | X            | R
+| `RV32-base-3`    | W            | not\(C) or LM
+| `RV32-base-4`    | X            | W or C
+| `RV32-base-5`    | LM           | C (supersedes <<perm_req:base:lm:c-and-r>>)
+| `RV32-l1-1`      | LM           | W or LG
+| `RV32-l1-2`      | LG           | LM
+| `RV32-l1-3`      | SL           | LM and W
+| `RV32-l1-4`      | X            | (C and LM and LG and SL) or +
+(C and LM and LG and not w) or +
+not (C or LM or LG or SL)
+| `RV32-base-7`    | ASR          | W and C and X (supersedes <<perm_req:base:asr:x>>)
+|===
 
 === Rationale and Software Use Cases
 

@@ -109,7 +109,7 @@ Hybrid software requires both {cheri_base_ext_name} and {cheri_default_ext_name}
 [#p_bit,reftext="P-bit"]
 ==== {cheri_mode_name} Encoding
 
-The current {cheri_mode_name} is controlled by the <<p_bit>> in the capability metadata of <<pcc>>.
+The current {cheri_mode_name} is controlled by the <<p_bit>> in the capability AP-field of <<pcc>>.
 The <<p_bit>> (P) is only architecturally relevant for capabilities granting <<x_perm>>, as it only affects execution state when installed into <<pcc>>.
 
 NOTE: While the <<p_bit>> can be read or written explicitly using <<GCMODE>> and <<SCMODE>>, these instructions do not change the current execution mode.
@@ -159,6 +159,47 @@ For capabilities that do not grant <<x_perm>>,
 <<p_bit>> must always be interpreted and reported as {cap_mode_value} representing {cheri_cap_mode_name}.
 
 NOTE: While this is not phrased as an additional rule for <<CLRPERM>> to follow beyond those of <<sec_permission_transitions>>, capability encodings may nevertheless take advantage of this implication in their representation of architectural CHERI capabilities.
+
+==== Representation of the <<p_bit>> in {rv64y_uni_base_name}
+
+
+=== {cheri_default_ext_name} Support
+
+In addition to <<rvy32_uni_base_name_param_summary>> {cheri_default_ext_name} redefines the following parameter:
+
+.{rv64y_uni_base_name} parameter summary with {cheri_default_ext_name} support.
+[#rvy64_uni_base_name_param_summary_hybrid,width="100%",cols="1,2,4",options=header,]
+|==============================================================================
+| Parameter | Value                | Comment
+| AP_MAX    | 0x9                  | Value of the AP-field giving maximum permissions
+|==============================================================================
+
+The AP-field states shown in <<cap_perms_encoding_nolevels32_hybrid>> are allocated, and the definition of the AP-field from both the <<root-rx-cap>> and <<root-rw-cap>> capabilities are replaced.
+
+.Encoding of architectural permissions for {rv64y_uni_base_name} with {cheri_default_ext_name} support
+[#cap_perms_encoding_nolevels32_hybrid,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,^1,4",align="center"]
+|==============================================================================
+9+| *Quadrant 1: Executable capabilities - regular future entries have: X=1*
+| Field[2:0] | R | W | C | LM | X | ASR | <<p_bit>> | Notes
+| 1          | ✔ | ✔ | ✔ | ✔  | ✔ |  ✔  | {INT_MODE_VALUE} | Execute + Data & Cap RW + ASR + {cheri_int_mode_name}^1^
+| 2          | ✔ |   | ✔ | ✔  | ✔ |     | {INT_MODE_VALUE} | Execute + Data & Cap RO + {cheri_int_mode_name}
+| 5          | ✔ | ✔ | ✔ | ✔  | ✔ |     | {INT_MODE_VALUE} | Execute + Data & Cap RW + {cheri_int_mode_name}
+| 7          | ✔ | ✔ |   |    | ✔ |     | {INT_MODE_VALUE} | Execute + Data RW + {cheri_int_mode_name}
+|==============================================================================
+
+^1^ This replaces the <<root-rx-cap>> and <<root-rw-cap>> capability encoding.
+
+One additional <<CLRPERM>> rule is added.
+
+[#clrperm-rules-hybrid]
+.{rv64y_uni_base_name} <<CLRPERM>> rules.
+[float="center",align="center",cols="1,1,4",options="header"]
+|===
+| <<CLRPERM>> Rule | Permission   | Valid only if
+| `RV32-hybrid-1`  | <<p_bit>>    | X
+|===
+
+`RV32-hybrid-1` is always run _last_ after all other defined rules as there are no other rules which depend on the presence of the <<p_bit>>.
 
 ==== Observing the {cheri_mode_name}
 
