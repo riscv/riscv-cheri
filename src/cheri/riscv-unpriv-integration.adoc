@@ -490,7 +490,7 @@ For example, it makes no sense to allow loading/storing capabilities (<<c_perm>>
 Similarly, <<lm_perm>> is only useful if you can already read capabilities (<<c_perm>> and <<r_perm>>), and <<asr_perm>> is restricted to executable capabilities (<<x_perm>>).
 
 ifndef::cheri_ratification_v1_only[]
-When using <<rv64y_cap_description,{rv64y_uni_base_name}>> and <<rv32y_cap_description,{rv32y_uni_base_name}>> the complete set of rules with and without <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>> are shown in <<clrperm-rules-no-zylevels1>> and <<clrperm-rules-zylevels1>>.
+When using <<rv64y_cap_description,{rv64y_uni_base_name}>> and <<rv32y_cap_description,{rv32y_uni_base_name}>> the complete set of rules are shown in <<clrperm-rules>>.
 endif::[]
 
 [#SDP-field, reftext="SDP-field"]
@@ -543,7 +543,7 @@ and grants at least all of <<r_perm>>, <<w_perm>>, <<c_perm>>, and <<lm_perm>>.
 Extensions introducing new permissions may require these to be provided by root data capabilities.
 
 [#null-cap,reftext="NULL"]
-===== NULL Capability
+NULL Capability::
 A capability with all-zero metadata, a zero {ctag}, and an address of zero is referred to as the _NULL_ capability.
 This capability grants no permissions and any dereference results in raising an exception.
 
@@ -1181,6 +1181,7 @@ NOTE: A future extension may raise an exception on the branch instruction itself
 :leveloffset: +1
 
 include::rvy64-encoding.adoc[]
+include::rvy32-encoding.adoc[]
 
 ifndef::cheri_ratification_v1_only[]
 
@@ -1197,7 +1198,7 @@ Therefore, multiple capability encodings with observable (but generally unintere
 While the in-memory bit pattern of capabilities across these systems as well as the precision of bounds may differ, software that does not depend on the raw bits in memory is source (and often also binary) compatible with these different capability encodings.
 
 The {rv32y_uni_base_name} follows the same rules as {rv64y_uni_base_name}, and sets different parameter values.
-It also encodes the AP field to use fewer bits.
+It also encodes the AP-field to use fewer bits.
 
 The currently defined RV32 capability encoding formats are:
 
@@ -1207,9 +1208,6 @@ The currently defined RV32 capability encoding formats are:
 * <<rv32y_cheriot_encoding3_description>>
 
 NOTE: Further domain specialized capability encoding formats are expected in the future.
-
-
-include::rvy32-encoding.adoc[]
 
 endif::[]
 

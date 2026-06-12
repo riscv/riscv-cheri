@@ -12,12 +12,13 @@ ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the in-memory format.
 endif::[]
 
-
 .Capability encoding for {rv64y_uni_base_name}
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
 NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
+
+ifdef::expanded_ap_field[]
 
 The encoding diagram above of the capability format includes some fields which depend upon the presence of extensions:
 
@@ -29,12 +30,19 @@ If the capability does not grant <<x_perm>> or {cheri_default_ext_name} is not s
 If <<section_zylevels1>> is available, bits 6 and 7 of the `AP` field are allocated, otherwise they must always be set to one for any valid capability.
 Additionally, the <<zylevels1_gl_perm,GL>> flag is only available if <<section_zylevels1>> is implemented, otherwise it is reserved and must be zero.
 
+endif::[]
+
 This capability encoding has the following properties that affect the observable behavior of {cheri_base_ext_name} instructions such as <<SCBNDS>> and <<CLRPERM>>:
 
 * **Mantissa width (mw{cap_rv64_mw_width})**: The mantissa width for the bounds encoding uses {cap_rv64_mw_width} bits
 * **Maximum exponent (e{cap_rv64_exp_max})**: The maximum value for the exponent in a valid capability is {cap_rv64_exp_max}.
 * **Representable region (rc1)**: The encoding uses one additional bit to ensure a _centered_ region of at least 1/4 of the capability size remains representable when creating out-of-bounds derived capabilities.
+ifdef::expanded_ap_field[]
 * **Permission encoding (ps)**: The permissions are encoded using a simple representation of one bit per architectural permission.
+endif::[]
+ifndef::expanded_ap_field[]
+* **Permission encoding (ps)**: The permissions are encoded compressed representation allowing useful combinations to be represented.
+endif::[]
 
 ==== Capability Encoding Summary
 
@@ -46,8 +54,7 @@ This capability encoding has the following properties that affect the observable
 | EW        | {cap_rv64_exp_width} | Exponent width
 | CAP_MAX_E | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8  | 0                    | Whether the encoding format includes the L~8~ bit
-| AP_PBit   | 0                    | Whether the <<p_bit>> is encoded in the AP-field
-| AP_MAX    | ones                 | Value of the AP field giving maximum permissions
+| AP_MAX    | 0x8                  | Value of the AP-field giving maximum permissions
 |==============================================================================
 
 .{rv64y_uni_base_name} extension summary
@@ -63,14 +70,7 @@ endif::[]
 | All RV64Y versions of other standard extensions | Compatible
 |==============================================================================
 
-.{rv64y_uni_base_name} Feature summary
-[#rvy64_uni_base_name_feature_summary,width="100%",options=header,]
-|==============================================================================
-| Feature                      | Comment
-| Representable region         | At least 1/4 of the capability size
-| Permission encodings         | All combinations can be represented, some combinations are reserved
-|==============================================================================
-
+ifdef::expanded_ap_field[]
 [#AP-field-encoding64, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
@@ -103,6 +103,72 @@ NOTE: Future extensions may define new permissions and, if so, must augment the 
 
 The <<p_bit>> is only assigned meaning when the implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
 In valid capabilities, the bit assigned to the <<p_bit>> must be zero if <<x_perm>> isn't set.
+endif::[]
+
+ifndef::expanded_ap_field[]
+
+The AP-field is {cap_rv32_perms_width} bits wide and is encoded using a compressed representation avoiding unused combinations to save encoding space.
+The AP-field is split into four quadrants.
+The quadrant number is taken from AP[4:3].
+The meanings of bits AP[2:0] for each quadrant are shown in <<cap_perms_encoding_nolevels32>>.
+
+NOTE: Extensions which allocate new permissions need to specify modifications to the AP-fields and the <<CLRPERM>> rules to reduce the permissions to maintain an encodable set.
+ The recommendation is for new permissions added to existing entries in quadrant 0 _must not_ be granted as that quadrant includes the <<null-cap>> capability.
+ New permissions added to quadrant 1 entry 0 _must_ be granted as this represents both of the <<root-rx-cap>> and <<root-rw-cap>> capabilities.
+
+<<<
+[#default-cap-AP]
+===== AP encoding and rules
+
+All gaps in <<cap_perms_encoding_nolevels32>> are _reserved_ for future extensions.
+
+.Encoding of architectural permissions for {rv64y_uni_base_name}
+[#cap_perms_encoding_nolevels32,width="100%",options=header,cols="^2,^1,^1,^1,^1,^1,^1,4",align="center"]
+|==============================================================================
+8+| *Quadrant 0: Non-capability data read/write - regular future entries have: W=AP[2], R=AP[0]*
+| Field[2:0] | R | W | C | LM | X | ASR | Notes
+| 0          |   |   |   |   |     |   | No permissions^1^
+| 1          | ✔ |   |   |   |     |   | Data RO
+| 4          |   | ✔ |   |   |     |   | Data WO
+| 5          | ✔ | ✔ |   |   |     |   | Data RW
+8+| *Quadrant 1: Executable capabilities - regular future entries have: X=1*
+| Field[2:0] | R | W | C | LM | X | ASR | Notes
+| 0          | ✔ | ✔ | ✔ | ✔  | ✔ |  ✔  | Execute + Data & Cap RW + ASR^2^
+| 2          | ✔ |   | ✔ | ✔  | ✔ |     | Execute + Data & Cap RO
+| 4          | ✔ | ✔ | ✔ | ✔  | ✔ |     | Execute + Data & Cap RW
+| 6          | ✔ | ✔ |   |    | ✔ |     | Execute + Data RW
+8+| *Quadrant 2: Restricted capability data read/write - regular future entries have: R=1, C=1, W=AP[2]*
+| Field[2:0] | R | W | C | LM | X | ASR | Notes
+| 3          | ✔ |   | ✔ |   |   |     | Data & Cap RO (no LM)
+8+| *Quadrant 3: Capability data read/write - regular future entries have: R=1, C=1, W=AP[2]*
+| Field[2:0] | R | W | C | LM | X | ASR | Notes
+| 3          | ✔ |   | ✔ | ✔ |   |     | Data & Cap RO
+| 7          | ✔ | ✔ | ✔ | ✔ |   |     | Data & Cap RW
+|==============================================================================
+
+^1^ This is used for the <<null-cap>> capability encoding.
+
+^2^ This is used for the <<root-rx-cap>> and <<root-rw-cap>> capability encoding.
+
+The compressed permission format specifies a procedure for encoding architectural permissions.
+When encoding permissions the following rules are run once _in order_:
+
+[#clrperm-rules]
+.Compressed AP-field <<CLRPERM>> rules.
+[float="center",align="center",cols="1,1,4",options="header"]
+|===
+| <<CLRPERM>> Rule | Permission   | Valid only if
+| `RV32-base-1`    | C            | R (supersedes <<perm_req:base:c:r-or-w>>)
+| `RV32-base-2`    | X            | R
+| `RV32-base-3`    | W            | not\(C) or LM
+| `RV32-base-4`    | X            | W or C
+| `RV32-base-5`    | LM           | C (supersedes <<perm_req:base:lm:c-and-r>>)
+| `RV32-base-6`    | X            | (C and LM) or not (C or LM)
+| `RV32-base-7`    | ASR          | W and C and X (supersedes <<perm_req:base:asr:x>>)
+|===
+
+
+endif::[]
 
 [#SDP-field64, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
@@ -385,7 +451,7 @@ equivalent to _b_=0 and _t_{ge}2^XLEN^.
 
 A capability is _malformed_ if its bounds cannot be correctly decoded.
 The following check indicates whether a capability is malformed.
-If `enableL8` is true, the `L~8~` bit is available in the capability encoding format for extra precision when `EF=1`.
+If `enableL8=1` the `L~8~` bit is available in the capability encoding format for extra precision when `EF=1`.
 
 [source]
 ----
@@ -534,13 +600,12 @@ expanded base is 0 and top is 2^XLEN^.
 [#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
 |==============================================================================
 | Field    | Value  | Comment
-| {ctag_title}             | zero   | Capability is not valid
-| <<SDP-field64,SDP>>        | zeros  | Grants no permissions
-| <<AP-field,AP>>          | zeros  | Grants no permissions
-| <<p_bit,P>>^1^           | zero   | No meaning since non-executable ({cheri_default_ext_name} only)
+| {ctag_title}         | zero   | Capability is not valid
+| <<SDP-field64,SDP>>  | zeros  | Grants no permissions
+| <<AP-field,AP>>      | zeros  | Grants no permissions
 | CT       | zero   | Unsealed
 | EF       | zero   | Internal exponent format
-| L~8~^2^  | zero   | Top address reconstruction bit
+| L~8~^1^  | zero   | Top address reconstruction bit
 | T        | zeros  | Top address bits
 | T~E~     | zeros  | Exponent bits
 | B        | zeros  | Base address bits
@@ -549,9 +614,7 @@ expanded base is 0 and top is 2^XLEN^.
 | Reserved | zeros  | All reserved fields
 |==============================================================================
 
-^1^ Only present if `AP_MBit=1` and {cheri_default_ext_name} is implemented.
-
-^2^ Only present if `enableL8=1`.
+^1^ Only present if `enableL8=1`.
 
 Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed absent in NULL capabilities.
 
@@ -571,23 +634,20 @@ This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capabil
 | {ctag_title}  | one   | Capability is valid
 | SDP           | ones  | Grants all permissions
 | AP            | AP_MAX | Grants all permissions
-| <<p_bit,P>>^1^   | {INT_MODE_VALUE_WORD} | {cheri_mode_name}
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
-| L~8~^2^       | zero  | Top address reconstruction bit
+| L~8~^1^       | zero  | Top address reconstruction bit
 | T             | zeros | Top address bits
 | T~E~          | zeros | Exponent bits
 | B             | zeros | Base address bits
 | B~E~          | zeros | Exponent bits
-| Address       | any^3^ | Capability address
+| Address       | any^2^ | Capability address
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-^1^ Only present if `AP_MBit=1` and {cheri_default_ext_name} is implemented.
+^1^ Only present if `enableL8=1`.
 
-^2^ Only present if `enableL8` is set.
-
-^3^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
+^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
  If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
 
 Permissions added by extensions such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities.
