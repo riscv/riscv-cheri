@@ -459,7 +459,12 @@ The effective CHERI-enable for the current privilege is:
 * Supervisor: `<<misa>>.{CRE} & <<menvcfg>>.{CRE}`
 * User: `<<misa>>.{CRE} & <<menvcfg>>.{CRE} & <<senvcfg>>.{CRE}`
 
-NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally root capabilities (see <<root-cap>>).
+NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally <<root-cap,root capabilities>>.
+
+`<<misa>>.{CRE}` is a WARL field.
+M-mode software can freely set it to one, but then it can only be set back to zero if <<ddc>> and <<pcc>> are root capabilities.
+
+NOTE: In this way M-mode software cannot disable <<ddc>>/<<pcc>> bounds checks once they have been configured.
 
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
