@@ -52,6 +52,7 @@ and so software should not assume `{cs1}==0` to be a pseudo-instruction for {cta
 // as appropriate for their intended uses.
 // =====
 
+ifndef::cheri_ratification_v1_only[]
 [NOTE]
 =====
 <<YSUNSEAL>> is intended to enable "superset unsealing"
@@ -60,8 +61,7 @@ Specifically, a software component can:
 
 1. allocate the memory for these objects from a region of address space,
 
-2. render capabilities to these objects opaque by sealing
-   (with, for example, the <<SENTRY>> instruction, if present),
+2. render capabilities to these objects opaque by sealing with <<SENTRY>>,
 
 3. distribute these handles to other software components, and
 
@@ -85,7 +85,7 @@ If the capability encoding defines multiple non-zero <<sec_cap_type>> values
 and software wishes to distinguish between them,
 it must use <<GCTYPE>> on the sealed capability.
 =====
-
+endif::[]
 Included in::
 <<rvy_insn_table>>
 

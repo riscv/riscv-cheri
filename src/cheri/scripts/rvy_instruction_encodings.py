@@ -563,7 +563,7 @@ def get_custom3_insts():
         next_r2type("YTAGR", rs1="{cs1}", rd="rd"),
         next_r2type("YTYPER", rs1="{cs1}", rd="rd"),
         next_r2type("YAMASK", rs1="rs1", rd="rd"),
-        next_r2type("YSENTRY", rs1="{cs1}", rd="{cd}", ext="Zysentry"),
+        next_r2type("YUSEAL", rs1="{cs1}", rd="{cd}"),
         next_r2type("YMODER", rs1="{cs1}", rd="rd", ext="Zyhybrid"),
     ]
     # Sort by register selector bits (0:2) first and the the instruction index)

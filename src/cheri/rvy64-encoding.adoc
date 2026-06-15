@@ -55,7 +55,6 @@ This capability encoding has the following properties that affect the observable
 |==============================================================================
 | Extension                    | Comment
 | <<section_cheri_hybrid_ext>> | Compatible
-| <<section_rvy_sentry_insn_ext>> | Compatible
 | <<section_zylevels1>>        | Compatible
 ifndef::cheri_ratification_v1_only[]
 | <<section_zyseal>>           | Will be compatible once new permissions are encoded
@@ -118,9 +117,8 @@ The <<sec_cap_type>> field is as specified in <<table_capability_types>>.
 The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> values;
 this field directly encodes the values `0` and `1`:
 
-* The encoded value `0` indicates an unsealed type.
-* If {rvy_sentry_insn_ext_name} is supported, then `1` encodes an unrestricted <<sentry_cap>>.
-* Otherwise, the value `1` is _reserved_.
+* The encoded value `0` indicates an _unsealed_ type.
+* The encoded value `1` indicates an _sealed_ type which can unsealed by <<JALR_CHERI>>.
 
 ifndef::cheri_ratification_v1_only[]
 ifdef::cheri_v9_annotations[]

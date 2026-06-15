@@ -19,14 +19,16 @@ include::wavedrom/sentry.adoc[]
 Description::
 Copy `{cs1}` to `{cd}`.
 +
-Set the capability type (<<sec_cap_type>>) of `{cd}` to the value `1`, representing a sentry type.
-+
-NOTE: {SENTRY} does not require any permission to seal, and so is considered <<sec_cap_type_ambient,ambient>>.
+Seal the capability in `{cd}` by setting `{cd}.ct=1`.
 +
 Set `{cd}.tag=0` if `{cs1}` is sealed.
++
+NOTE: This is an unauthorized sealing instruction of type 1, future extensions may require authority to be able to perform the sealing action of different <<CT-field>> values.
++
+NOTE: If the capability encoding format does not support a <<CT-field>> of type 1, then this instruction is _reserved_.
 
 Included in::
-<<rvy_sentry_insn_table>>
+<<rvy_insn_table>>
 
 Operation::
 +

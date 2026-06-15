@@ -272,7 +272,7 @@ If such a capability exists then it must have been caused by a logic or memory f
 Unlike malformed bounds, the top overflowing is not treated as a special case in the
 architecture: normal bounds check rules should be followed.
 
-
+ifndef::cheri_ratification_v1_only[]
 [#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
 
@@ -330,7 +330,7 @@ Ambient sealing type::
 Some capability types are said to be _ambiently available_ (or just _ambient_)
 if they do not require specific authority to seal a capability with that type.
 Therefore sentry types can be declared _ambient_.
-For example, if <<section_rvy_sentry_insn_ext>> is available on a given platform,
+For example, if <<SENTRY>> is available on a given platform,
 the type with which it seals capabilities is considered _ambiently available_.
 
 The standard capability type mapping is shown in <<table_capability_types>>, extensions and capability encoding formats may add more types.
@@ -341,18 +341,14 @@ The standard capability type mapping is shown in <<table_capability_types>>, ext
 |===
 | Type Name                     | Integer Value     | Description
 | Unsealed                      | 0                 | _Unsealed_ capability granting access to memory
-| Unrestricted <<sentry_cap>>^1^| Extension defined | Immutable _unrestricted sentry_ type for both _forward-edge_ and _backward-edge_ transitions.
+| Unrestricted <<sentry_cap>>   | 1                 | Immutable _unrestricted sentry_ type for both _forward-edge_ and _backward-edge_ transitions.
 | Forward-edge  <<sentry_cap>>  | Extension defined | Immutable _sentry_ type for _forward-edge_ transitions.
 | Backward-edge <<sentry_cap>>  | Extension defined | Immutable _sentry_ type for _backward-edge_ transitions.
 |===
 
-^1^ <<section_rvy_sentry_insn_ext>> defines a <<sentry_cap>> of this type.
-
 NOTE: The integer value in the table above defines the architectural capability type (i.e., the result of the <<GCTYPE>> instruction) but does not need to be encoded that way in memory.
 
 NOTE: Other encoding formats may provide different type mappings, but the value `0` must _always_ represent an unsealed capability.
-
-ifndef::cheri_ratification_v1_only[]
 
 [NOTE]
 ====
@@ -373,6 +369,57 @@ Capability encoding formats will explicitly state whether these are relevant to 
 
 They are not used by <<rv64y_cap_description>>, but are by the CHERIoT formats.
 ====
+
+endif::[]
+ifdef::cheri_ratification_v1_only[]
+[#sec_cap_type, reftext="CT-field"]
+==== Capability Type (CT)
+
+The Capability type field is used to _seal_ capabilities against modification, and also to provide control flow integrity.
+
+[#unsealed_cap,reftext="unsealed capability"]
+Unsealed capabilities::
+When `CT=0`, the capability authorizes access to a region of memory as defined by the permissions and bounds.
+
+[#sealed_cap,reftext="sealed capability"]
+Sealed capabilities::
+Capabilities with `CT≠0` are sealed against modification and cannot be dereferenced to access memory.
+Instructions that operate on capabilities will produce a result with the {ctag} set to zero if the source capability is sealed and the operation would alter its address, bounds, or permissions.
+
+Unsealing::
+Deriving a `CT=0` capability from a `CT≠0` capability is termed _unsealing_.
+This is achieved using <<YSUNSEAL>>.
+
+Sealing::
+Given a capability with `CT=0`, deriving a capability with `CT≠0` is termed _sealing_.
+This is achieved using <<SENTRY>>.
+
+[#sentry_cap,reftext="secure entry point capability"]
+Control-flow Integrity::
+Sealed capabilities can be used as immutable function pointers, which can establish a form of control-flow integrity between mutually distrusting code.
+Because they are immutable, the jump target cannot be modified, ensuring that control flow can only enter at the specific address encoded in the capability and not in the elsewhere in a function.
+
+NOTE: Such function pointers are sometimes known as "sentries", a contraction of "sealed entries".
+
+A sealed capability may be passed as the `{cs1}` argument to <<JALR_CHERI>>, and is _unsealed_ on dereference.
+The returned `{cd}` value is also _sealed_.
+
+NOTE: In addition to using sealed capabilities for secure entry points, they can also be useful to software as secure software tokens.
+ <<YSUNSEAL>> can be used to convert such a token back to an unsealed capability.
+ A future extension may add an unseal instruction for performance.
+
+The standard capability type mapping is shown in <<table_capability_types>>, extensions and capability encoding formats may add more types.
+
+[#table_capability_types]
+.Standard capability type mapping
+[width="100%",options=header,align=left,cols="2,1,4"]
+|===
+| Type Name         | Integer Value     | Description
+| Unsealed          | 0                 | _Unsealed_ capability granting access to memory
+| Sealed capability | 1                 | _Sealed_ capability which can be used as a secure entry point.
+|===
+
+NOTE: Future extensions may declare new <<CT-field>> values which place restrictions on their usage with <<JAL_CHERI>>/<<JALR_CHERI>> for improved CFI.
 
 endif::[]
 
@@ -937,6 +984,7 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 |<<SCBNDSR>>  | {SCBNDSR_DESC}
 |<<YSUNSEAL>> | {YSUNSEAL_DESC}
 |<<CBLD>>     | {CBLD_DESC}
+|<<SENTRY>>   | {SENTRY_DESC}
 |=======================
 
 ^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
@@ -949,6 +997,7 @@ include::insns/scbnds_32bit.adoc[]
 include::insns/scbndsr_32bit.adoc[]
 include::insns/ysunseal_32bit.adoc[]
 include::insns/cbld_32bit.adoc[]
+include::insns/sentry_32bit.adoc[]
 
 <<<
 
@@ -1214,44 +1263,3 @@ include::rvy32-encoding.adoc[]
 endif::[]
 
 :leveloffset: -1
-
-[#section_rvy_sentry_insn_ext,reftext="{rvy_sentry_insn_ext_name}"]
-== "{rvy_sentry_insn_ext_name}" Extension for Creation of Sentry Capabilities
-
-The {rvy_sentry_insn_ext_name} extension:
-
-. Defines one <<sentry_cap>> type, the <<sentry_cap>> type for both _forward-edge_ and _backward-edge_ control-flow transitions, with a <<sec_cap_type>> value of `1`.
-. Adds the <<SENTRY>> instruction to allow <<sec_cap_type_ambient,ambient sealing >> of capabilities as sentries with <<sec_cap_type>> value of `1`.
-
-{rvy_sentry_insn_ext_name} is only compatible with capability encoding formats which can encode the <<sec_cap_type>> value of `1`.
-
-=== Interaction with <<JALR_CHERI>>
-
-{rvy_sentry_insn_ext_name} enables _sealing_ and _unsealing_ behavior in <<JALR_CHERI>> with the single <<sentry_cap>> of type `1` being available.
-
-Therefore the full operational description of <<JALR_CHERI>> is specialized to:
-
-. `{cs1}` is written to the target <<pcc>>.
-. The target address is obtained by adding the sign-extended 12-bit I-immediate to `{cs1}.address`, then setting the least-significant bit of the result to zero.
-. _Unseal_ the target <<pcc>> if it is _sealed_ as a _forward-edge_ <<sentry_cap>>^1^ and `{cs1}.address[0]` is zero and the I-immediate is zero.
-. Set the address of the target <<pcc>> to the target address using the semantics of the <<SCADDR>> instruction.
-. The <<pcc>> of the next instruction is _sealed_ as a <<sentry_cap>> of type `1` and written to `{cd}`.
-. Jump to the target <<pcc>>.
-
-^1^ type `1` defined by this extension is a _forward-edge_ <<sentry_cap>>, other compatible extensions may declare more _forward-edge_ types which <<JALR_CHERI>> will unseal.
-
-=== Interaction with <<JAL_CHERI>>
-
-{rvy_sentry_insn_ext_name} enables _sealing_ behavior in <<JAL_CHERI>> with the single <<sentry_cap>> of type `1` being available.
-
-Therefore the sealed type of `{cd}` is defined as follows:
-
-* The <<pcc>> of the next instruction is _sealed_ as a <<sentry_cap>> of type `1` and written to `{cd}`.
-
-=== Interaction with <<CBLD>>
-
-The <<sentry_cap>> type defined by this extension is <<sec_cap_type_ambient,ambient>> and so <<CBLD>> can output a sealed capability of this type.
-
-=== Added instructions
-
-include::insns/sentry_32bit.adoc[]

@@ -586,11 +586,6 @@ if __name__ == "__main__":
                 header=header,
             ),
             InsnTable(
-                extension="{rvy_sentry_insn_ext_name}",
-                filename=output_file(args, "Zysentry_insns_table_body.adoc"),
-                header=header,
-            ),
-            InsnTable(
                 extension="{rvy_topr_insn_ext_name}",
                 filename=output_file(args, "Zytopr_insns_table_body.adoc"),
                 header=header,
