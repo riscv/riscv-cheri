@@ -29,7 +29,7 @@ When {cheri_default_ext_name} is supported, capabilities include an <<p_bit>> (w
 If not supported the <<p_bit>> is reserved and reads as zero.
 
 <<section_zylevels1>>::
-If <<section_zylevels1>> is available, additional values of the `AP, P` field are allocated, otherwise they are reserved for any valid capability.
+If <<section_zylevels1>> is available, additional values of the AP-field are allocated, otherwise they are reserved for any valid capability.
 Additionally, the <<zylevels1_gl_perm,GL>> flag is only available if <<section_zylevels1>> is implemented, otherwise it is reserved and must be zero.
 
 This capability encoding has the following properties that affect the observable behavior of {cheri_base_ext_name} instructions such as <<SCBNDS>> and <<CLRPERM>>:
@@ -77,8 +77,8 @@ endif::[]
 | Permission encodings         | Not all combinations can be represented
 |==============================================================================
 
-[#AP-field-encoding32, reftext="P-bit encoding in the AP field"]
-==== Architectural Permissions and Mode (AP, P) Encoding
+[#AP-field-encoding32, reftext="Compressed AP field"]
+==== Architectural Permissions (AP) Encoding
 
 The permissions field is {cap_rv32_perms_width} bits wide and is encoded using a compressed representation as shown below.
 Certain combinations of permissions are impractical. For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
