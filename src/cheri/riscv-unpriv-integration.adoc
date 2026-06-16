@@ -63,7 +63,7 @@ improve their security.
 [#sec_capability_registers]
 === Capability Registers and Format
 
-{cheri_base_ext_name} extends all registers that have to be able to hold addresses to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+{cheri_base_ext_name} widens all registers that can hold addresses from `XLEN` to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
 In addition to widening to YLEN, each register also gains a one-bit {ctag} which is defined below.
 
 {cheri_base_ext_name} specifies the minimum required fields that the capability format must support, and their semantics.
@@ -652,8 +652,7 @@ As stated above, all state which can hold addresses are extended from XLEN to YL
 
 ==== General Purpose Registers
 
-The <<gprs,XLEN-wide integer registers>> (e.g., `x1`, `x2`) are all extended to YLEN bits
-and associated {ctag}s, as shown in <<base_cap_registers>>.
+The <<gprs,XLEN-wide integer registers>> (e.g., `x1`, `x2`) are all widened to YLEN bits, each gaining an associated {ctag}, as shown in <<base_cap_registers>>.
 
 .Extended registers in {cheri_base_ext_name}
 [#base_cap_registers]
@@ -682,8 +681,8 @@ The zero register (`x0`) is extended with zero metadata and a zero {ctag}: this 
 [#pcc,reftext="{pcc}"]
 ==== The Program Counter Capability (`{pcc}`)
 
-The `pc` is extended to be a capability.
-Extending the `pc` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
+The `pc` register is widened to hold a capability (referred to as the Program Counter Capability, or `{pcc}`).
+Widening the `pc` register to `{pcc}` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
 The <<pcc>> address field is the `pc` in the base RISC-V ISA so that the
 hardware automatically updates it as instructions are executed.
 
@@ -802,7 +801,7 @@ endif::[]
 [#rvy_csr_classes]
 ==== CSR Classes
 
-All CSRs that can hold addresses are extended to YLEN bits.
+All CSRs that can hold addresses are widened to YLEN bits.
 
 {cheri_base_ext_name} has three classes of CSRs:
 
@@ -810,7 +809,7 @@ All CSRs that can hold addresses are extended to YLEN bits.
 These do not contain pointers (e.g., _fcsr_ from the "F" extension).
 
 [[extended_csrs, extended CSRs]]Extended CSRs::
-These are XLEN-bit CSRs extended to YLEN bits, which are able to contain pointers
+These are XLEN-bit CSRs widened to YLEN bits, which are able to contain pointers
 // No unprivileged pointer-type CSRs in v1.0, so let's use mtvec here.
 ifdef::cheri_ratification_v1_only[]
 (e.g., _mtvec_ from the privileged specification).

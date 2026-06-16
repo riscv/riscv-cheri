@@ -9,14 +9,14 @@ This chapter describes integration of {cheri_base_ext_name} with the RISC-V priv
 
 === Machine-Level CSRs added or extended by {cheri_base_ext_name}
 
-{cheri_base_ext_name} extends some M-mode CSRs to hold capabilities or
+{cheri_base_ext_name} widens some M-mode CSRs to hold capabilities or
 otherwise add new functions. <<asr_perm>> in the <<pcc>> is always required for access
 to privileged CSRs.
 
 [#mtvec_y,reftext="mtvec ({cheri_base_ext_name})"]
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
-The <<mtvec>> register is extended to hold a code capability.
+The <<mtvec>> register is widened to hold a code capability.
 Its reset value is nominally a <<root-rx-cap>> capability.
 
 NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of a <<root-rx-cap>> capability after reset.
@@ -60,7 +60,7 @@ NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pc
 [#mscratch_y, reftext="mscratch ({cheri_base_ext_name})"]
 ==== Machine Scratch Capability Register (mscratch)
 
-The <<mscratch>> register is extended to hold a capability.
+The <<mscratch>> register is widened to hold a capability.
 
 {TAG_RESET_MCSR}
 
@@ -72,7 +72,7 @@ include::img/mscratchcreg.edn[]
 [#mepc_y,reftext="mepc ({cheri_base_ext_name})"]
 ==== Machine Exception Program Counter Capability (mepc)
 
-The <<mepc>> is extended to hold a capability.
+The <<mepc>> is widened to hold a capability.
 Its reset value is nominally a <<root-rx-cap>> capability.
 
 .Machine exception program counter capability register
@@ -250,13 +250,13 @@ endif::[]
 [#supervisor-level-csrs-section]
 === Supervisor-Level CSRs added or extended by {cheri_base_ext_name}
 
-{cheri_base_ext_name} extends some of the existing RISC-V CSRs to be able to
+{cheri_base_ext_name} widens some of the existing RISC-V CSRs to be able to
 hold capabilities or with other new functions. <<asr_perm>> in the <<pcc>> is required for access to all privileged CSRs.
 
 [#stvec_y,reftext="stvec ({cheri_base_ext_name})"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
 
-The <<stvec>> register is extended to hold a capability.
+The <<stvec>> register is widened to hold a capability.
 
 {ROOT_RX_RESET_SCSR}
 
@@ -268,7 +268,7 @@ The handling of <<stvec_y>> is otherwise identical to <<mtvec_y>>, but in superv
 [#sscratch_y, reftext="sscratch ({cheri_base_ext_name})"]
 ==== Supervisor Scratch Capability Register (sscratch)
 
-The <<sscratch>> register is extended to hold a capability.
+The <<sscratch>> register is widened to hold a capability.
 
 {TAG_RESET_SCSR}
 
@@ -280,7 +280,7 @@ include::img/sscratchcreg.edn[]
 [#sepc_y,reftext="sepc ({cheri_base_ext_name})"]
 ==== Supervisor Exception Program Counter Capability (sepc)
 
-The <<sepc>> register is extended to hold a capability.
+The <<sepc>> register is widened to hold a capability.
 
 {ROOT_RX_RESET_SCSR}
 

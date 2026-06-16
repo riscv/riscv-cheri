@@ -10,7 +10,7 @@ type-1 or type-2 hypervisor cite:[riscv-priv-spec].
 The hypervisor extension is
 generally orthogonal to CHERI; the main requirements, when integrating with
 {cheri_base_ext_name} and {cheri_default_ext_name}, are that address CSRs added
-for hypervisors are extended to YLEN size.
+for hypervisors are widened to YLEN size.
 The remainder of this chapter describes these changes in detail.
 
 [#hstatus,reftext="hstatus"]
@@ -76,7 +76,7 @@ xref:mstatus_y[xrefstyle=short] for mstatus.UXL.
 [#vstvec_y,reftext="vstvec ({cheri_base_ext_name})"]
 === Virtual Supervisor Trap Vector Base Address Capability Register (vstvec)
 
-The `vstvec` register is extended to hold a capability.
+The `vstvec` register is widened to hold a capability.
 
 .Virtual supervisor trap vector base address capability register
 include::img/vstveccreg.edn[]
@@ -87,7 +87,7 @@ virtual supervisor mode.
 [#vsscratch_y,reftext="vsscratch ({cheri_base_ext_name})"]
 === Virtual Supervisor Scratch Register (vsscratch)
 
-The `vsscratch` register is extended to hold a capability.
+The `vsscratch` register is widened to hold a capability.
 
 It is not WARL, all capability fields must be implemented.
 
@@ -97,7 +97,7 @@ include::img/vsscratchcreg.edn[]
 [#vsepc_y,reftext="vsepc ({cheri_base_ext_name})"]
 === Virtual Supervisor Exception Program Counter Capability (vsepc)
 
-The `vsepc` register is extended to hold a capability.
+The `vsepc` register is widened to hold a capability.
 
 As shown in xref:CSR_exevectors[xrefstyle=short], <<vsepc_y>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
 Additionally, the capability in <<vsepc_y>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction when V=1.
