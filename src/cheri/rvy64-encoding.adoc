@@ -123,7 +123,7 @@ this field directly encodes the values `0` and `1`:
 ifndef::cheri_ratification_v1_only[]
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
-The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<SENTRY>> for sealed entry (sentry) capabilities.
+The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<CT-field>>=1 for sealed entry (sentry) capabilities.
 endif::[]
 
 The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> values;
@@ -132,8 +132,8 @@ The value `1` is...
 
 * considered <<sec_cap_type_ambient,ambiently available>> for <<CBLD>>,
 
-* used as the type for capabilities sealed by <<SENTRY>> instructions,
-  regardless of the input capability's permission.
+* used as the type for capabilities sealed by <<YSEAL>> instructions,
+  not requiring a specific sealing permission.
 
 Additionally, <<JALR_CHERI>> both
 

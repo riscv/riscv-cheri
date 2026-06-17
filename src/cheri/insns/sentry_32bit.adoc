@@ -1,5 +1,5 @@
-[#SENTRY,reftext="{SENTRY}"]
-==== {SENTRY}
+[#YSEAL,reftext="{YSEAL}"]
+==== {YSEAL}
 
 include::new_encoding_note.adoc[]
 
@@ -8,28 +8,31 @@ NOTE: *CHERI v9 Note:* this instruction was called CSEALENTRY.
 endif::[]
 
 Synopsis::
-{SENTRY_DESC}
+{YSEAL_DESC}
 
 Mnemonic::
-`{sentry_lc} {cd}, {cs1}`
+`{yseal_lc} {cd}, {cs1}, {cs2}`
 
 Encoding::
 include::wavedrom/sentry.adoc[]
 
+NOTE: '{cs1}{ne}x0' is currently reserved.
+
 Description::
-Copy `{cs1}` to `{cd}`.
+Copy `{cs2}` to `{cd}`.
 +
-Seal the capability in `{cd}` by setting `{cd}.ct=1`.
+Seal the capability in `{cd}` by setting `{cd}.ct=1` if `{cs1}=x0`.
 +
-Set `{cd}.tag=0` if `{cs1}` is sealed.
+Set `{cd}.tag=0` if `{cs2}` is sealed.
 +
-NOTE: This is an unauthorized sealing instruction of type 1, future extensions may require authority to be able to perform the sealing action of different <<CT-field>> values.
+NOTE: Future extensions may allow `{cs1}{ne}x0` to specify an authorising capability to perform the sealing action, and also to specify the destination <<CT-field>> value.
 +
 NOTE: If the capability encoding format does not support a <<CT-field>> of type 1, then this instruction is _reserved_.
+ Future capability formats may redefine the behavior for <<CT-field>> values greater than 1.
 
 Included in::
 <<rvy_insn_table>>
 
 Operation::
 +
-sail::execute[clause="SENTRY(_, _)",part=body,unindent]
+TODO

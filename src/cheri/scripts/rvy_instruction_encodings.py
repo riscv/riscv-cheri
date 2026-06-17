@@ -518,7 +518,7 @@ def get_custom3_insts():
         next_rtype("YSS", rs1="{cs1}", rs2="{cs2}", rd="rd"),
         next_rtype("YSUNSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
         next_rtype("YBLD", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
-        next_rtype("YSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}", ext="Zyseal"),
+        next_rtype("YSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
         next_rtype("YUNSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}", ext="Zyseal"),
         next_rtype("YMODEW", rs1="{cs1}", rd=f"{{cd}}{NEQ}0", ext="Zyhybrid"),
         RVYRType3Op(
@@ -563,7 +563,6 @@ def get_custom3_insts():
         next_r2type("YTAGR", rs1="{cs1}", rd="rd"),
         next_r2type("YTYPER", rs1="{cs1}", rd="rd"),
         next_r2type("YAMASK", rs1="rs1", rd="rd"),
-        next_r2type("YUSEAL", rs1="{cs1}", rd="{cd}"),
         next_r2type("YMODER", rs1="{cs1}", rd="rd", ext="Zyhybrid"),
     ]
     # Sort by register selector bits (0:2) first and the the instruction index)

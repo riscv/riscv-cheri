@@ -7,8 +7,8 @@ IMPORTANT: {not_v1_ratification_package_freeze}
 === Explicit Sealing and Unsealing Operations
 
 The {cheri_base_ext_name} base architecture defines <<sealed_cap, sealed capabilities>>.
-The <<CBLD>>, <<JALR_CHERI>>, and <<YSUNSEAL>> instruction
-and the <<SENTRY>> instruction
+The <<CBLD>>, <<JALR_CHERI>>, and <<YSUNSEAL>> instructions
+and the <<YSEAL>> instruction with <<CT-field>>>1
 allow platforms to build and consume sealed capabilities in
 particular ways.
 This extension introduces a more general,
@@ -85,9 +85,9 @@ the <<acperm_bit_field,capability permissions bitfield>> (<<acperm_bit_field>>),
 used by <<CLRPERM>> and <<GCPERM>>,
 as shown in <<zyseal_acperm_bit_field>>.
 
-=== Added Instructions
+=== Extended and New Instructions
 
-<<YSEAL>>:: A `{YSEAL_LC} {cd}, {cs1}, {cs2}` instruction will use the provided
+<<YSEAL_ZYSEAL>>:: A `{YSEAL_LC} {cd}, {cs1}, {cs2}` instruction will use the provided
 sealing authority of `{cs1}` to copy the _unsealed_ capability
 in `{cs2}` into `{cd}` and seal it with type `{cs1}.address`,
 assuming `{cs1}` has a set {ctag}, is in bounds, and grants <<zyseal_se_perm>>.
