@@ -5,10 +5,10 @@
 
 The behavior of the <<YSEAL>> instruction is extended to allow `{cs1}{ne}x0`.
 
-Extended Description::
+Extended Description if `{cs1}{ne}x0`::
 Construct, into `{cd}`, a sealed copy of the unsealed capability in `{cs2}`, using the type and authority from `{cs1}`.
 +
-Copy `{cs2}` into `{cd}`, and then if `{cs1}{ne}x0`...
+Copy `{cs2}` into `{cd}`, and then...
 +
 . Set the {ctag} of the capability in `{cd}` to zero if any of the following hold:
 +
@@ -21,11 +21,6 @@ Copy `{cs2}` into `{cd}`, and then if `{cs1}{ne}x0`...
 --
 +
 . Set the <<sec_cap_type>> of `{cd}` to the address of `{cs1}`.
-
-[NOTE]
-=====
-If `{cs1}=x0` and <<CT-field>>=1 is not supported by the capability encoding format, then `{cs1}` is interpreted as a NULL capability causing `{cd}.tag=0`.
-=====
 
 [NOTE]
 =====
