@@ -78,7 +78,9 @@ The permissions field is {cap_rv64_perms_width} bits wide and is encoded using o
 A permission is granted if its corresponding bit, and those of any dependent permissions, are set;
 otherwise, the capability does not grant that permission.
 
-The rules in <<base_clrperm_rule_summary>> are enforced and any invalid states are _reserved_ in the <<AP-field>> encoding.
+Certain combinations of permissions are impractical.
+For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>
+Therefore, it is only legal to encode a subset of all combinations and any invalid states are _reserved_ in the <<AP-field>> encoding.
 
 NOTE: Reserved states can be used in future to allow different formats to be encoded within the <<AP-field>>.
 
