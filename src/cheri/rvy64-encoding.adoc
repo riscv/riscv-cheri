@@ -77,10 +77,12 @@ endif::[]
 The permissions field is {cap_rv64_perms_width} bits wide and is encoded using one bit per architectural permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
 A permission is granted if its corresponding bit, and those of any dependent permissions, are set;
 otherwise, the capability does not grant that permission.
-Certain combinations of permissions are impractical. For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
-Therefore, it is only legal to encode a subset of all combinations, but this capability encoding does not make use of this redundancy as there are sufficient reserved bits.
 
-NOTE: In the future, if there are no further remaining reserved bits, but extensions need to allocate further capability metadata bits, it will be possible to use the redundancy to create a future version of this encoding that is fully _compatible for all software_ but with observable differences in the in-memory representation of capabilities.
+Certain combinations of permissions are impractical.
+For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
+Therefore, it is only legal to encode a subset of all combinations and any invalid states are _reserved_ in the <<AP-field>> encoding.
+
+NOTE: Reserved states can be used in the future to allow additional permissions to be encoded within the <<AP-field>>.
 
 .Encoding of architectural permissions for {rv64y_uni_base_name}
 [#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="75%"]
