@@ -272,66 +272,87 @@ If such a capability exists then it must have been caused by a logic or memory f
 Unlike malformed bounds, the top overflowing is not treated as a special case in the
 architecture: normal bounds check rules should be followed.
 
-ifndef::cheri_ratification_v1_only[]
+
 [#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
 
 This metadata value indicates the type of the capability and determines which operations the capability authorizes.
+For example, the <<sec_cap_type>> can be used to _seal_ capabilities against modification, to provide control flow integrity, and to provide immutable software tokens.
+ifndef::cheri_ratification_v1_only[]
 Which capability types a given CHERI platform supports is a function of the extensions and <<sec_cap_encoding_formats>> in use.
 The capability encoding specifies a mapping between some bits within the capability format (usually described as "the CT field") and the capability types.
 
 The capability encoding must be able to encode type `0` (_unsealed_).
 If any other sealed type exists, then they can be used to provide different levels of control-flow integrity.
+endif::[]
 
 [#unsealed_cap,reftext="unsealed capability"]
 Unsealed capabilities::
 When `CT=0`, the capability authorizes access to a region of memory as defined by the permissions and bounds.
-All CHERI systems must support unsealed capabilities.
+ifndef::cheri_ratification_v1_only[All CHERI systems must support unsealed capabilities.]
 
 [#sealed_cap,reftext="sealed capability"]
 Sealed capabilities::
 Capabilities with `CT≠0` are sealed against modification and cannot be dereferenced to access memory.
 Instructions that operate on capabilities will produce a result with the {ctag} set to zero if the source capability is sealed and the operation would alter its address, bounds, or permissions.
-Extensions that extend the capability metadata must describe their interaction(s) with sealed capabilities.
+ifndef::cheri_ratification_v1_only[Extensions that extend the capability metadata must describe their interaction(s) with sealed capabilities.]
 
+Sealing::
 Given a capability with `CT=0`,
 deriving a capability with `CT≠0` is termed _sealing_
-(or _sealing with type ``x``_ when a particular output ``CT=x`` is meant).
+ifndef::cheri_ratification_v1_only[(or _sealing with type ``x``_ when a particular output ``CT=x`` is meant)]
+.
+This is achieved using <<YSEAL>>.
 
-In the other direction,
-deriving a `CT=0` capability from a `CT≠0` capability is termed _unsealing_
-(or _unsealing from type ``x``_ when a particular input ``CT=x`` is meant).
+Unsealing::
+Given a capability with `CT≠0`,
+deriving a capability with `CT=0` is termed _unsealing_
+ifndef::cheri_ratification_v1_only[(or _unsealing from type ``x``_ when a particular input ``CT=x`` is meant)]
+.
+This is achieved using <<YSUNSEAL>>
+ifndef::cheri_ratification_v1_only[(or <<YUNSEAL>> if <<section_zyseal>> is implemented)]
+.
 
-[#sentry_cap,reftext="sentry capability"]
-Sentry capability type::
-Sentry capabilities provide *immutable* function pointers within a CHERI software system.
+[#sentry_cap,reftext="sealed entry point capability"]
+Sealed Entry Point Capability::
+Sealed entry point capabilities provide *immutable* function pointers within a CHERI software system.
+ifndef::cheri_ratification_v1_only[]
 <<sealed_cap,Sealed capabilities>> are a natural foundation, providing immutability.
 
 NOTE: Capabilities sealed with a specific <<sec_cap_type>> which can be unsealed when passed as an argument to <<JALR_CHERI>> are dubbed "sentries" (a portmanteau of "sealed entries").
+endif::[]
+ifdef::cheri_ratification_v1_only[]
 
-Sentries can establish a form of control-flow integrity between mutually distrusting code.
-Because they are immutable, the jump target cannot be modified, ensuring that control flow can only enter at the specific address encoded in the capability and not in the middle of a function.
+NOTE: Such function pointers are sometimes known as "sentries", a contraction of "sealed entries".
+endif::[]
 
-Any sentry type may be passed as the `{cs1}` argument to <<JALR_CHERI>>, and are _unsealed_ on dereference.
-The returned `{cd}` value is also _sealed_ as a sentry.
+They can establish a form of control-flow integrity between mutually distrusting code.
+Because they are immutable, the jump target cannot be modified, ensuring that control flow can only enter at the specific address encoded in the capability and not elsewhere in a function.
 
+A sealed entry point capability may be passed as the `{cs1}` argument to <<JALR_CHERI>>, and is _unsealed_ on dereference.
+The returned `{cd}` value is also written back as a <<sentry_cap>>.
+
+ifndef::cheri_ratification_v1_only[]
 Sentry types may be restricted to _forward-edge_ only and _backward-edge_ only transitions to further improve control-flow integrity.
 
 * When <<JALR_CHERI>> is used as a function call only _forward-edge_ sentries in `{cs1}` are _unsealed_ on dereference.
  The returned `{cd}` value is always _sealed_ as a _backward-edge_ sentry type.
 * When <<JALR_CHERI>> is used as a function return only _backward-edge_ sentries in `{cs1}` are _unsealed_ on dereference.
+endif::[]
 
-NOTE: In addition to using sealed capabilities as sentries for sealed entry points, sealed capabilities can also be useful to software as secure software tokens.
+NOTE: In addition to using sealed capabilities for sealed entry points, sealed capabilities can also be useful to software as secure software tokens.
  <<YSUNSEAL>> can be used to convert such a token back to an unsealed capability.
  A future extension may add an unseal instruction for performance.
 
+ifndef::cheri_ratification_v1_only[]
 [#sec_cap_type_ambient, reftext="Ambient sealing type"]
 Ambient sealing type::
 Some capability types are said to be _ambiently available_ (or just _ambient_)
 if they do not require specific authority to seal a capability with that type.
 Therefore sentry types can be declared _ambient_.
-For example, if <<CT-field>>=1 is available on a given platform,
+For example, if <<SENTRY>> is available on a given platform,
 the type with which it seals capabilities is considered _ambiently available_.
+endif::[]
 
 The standard capability type mapping is shown in <<table_capability_types>>, extensions and capability encoding formats may add more types.
 
@@ -341,11 +362,17 @@ The standard capability type mapping is shown in <<table_capability_types>>, ext
 |===
 | Type Name                     | Integer Value     | Description
 | Unsealed                      | 0                 | _Unsealed_ capability granting access to memory
+ifdef::cheri_ratification_v1_only[]
+| Sealed entry point capability | 1                 | _Sealed_ capability that can be used as a function entry point.
+endif::[]
+ifndef::cheri_ratification_v1_only[]
 | Unrestricted <<sentry_cap>>   | 1                 | Immutable _unrestricted sentry_ type for both _forward-edge_ and _backward-edge_ transitions.
 | Forward-edge  <<sentry_cap>>  | Extension defined | Immutable _sentry_ type for _forward-edge_ transitions.
 | Backward-edge <<sentry_cap>>  | Extension defined | Immutable _sentry_ type for _backward-edge_ transitions.
+endif::[]
 |===
 
+ifndef::cheri_ratification_v1_only[]
 NOTE: The integer value in the table above defines the architectural capability type (i.e., the result of the <<GCTYPE>> instruction) but does not need to be encoded that way in memory.
 
 NOTE: Other encoding formats may provide different type mappings, but the value `0` must _always_ represent an unsealed capability.
@@ -369,59 +396,9 @@ Capability encoding formats will explicitly state whether these are relevant to 
 
 They are not used by <<rv64y_cap_description>>, but are by the CHERIoT formats.
 ====
-
 endif::[]
-ifdef::cheri_ratification_v1_only[]
-[#sec_cap_type, reftext="CT-field"]
-==== Capability Type (CT)
 
-The Capability type field is used to _seal_ capabilities against modification, and also to provide control flow integrity.
-
-[#unsealed_cap,reftext="unsealed capability"]
-Unsealed capabilities::
-When `CT=0`, the capability authorizes access to a region of memory as defined by the permissions and bounds.
-
-[#sealed_cap,reftext="sealed capability"]
-Sealed capabilities::
-Capabilities with `CT≠0` are sealed against modification and cannot be dereferenced to access memory.
-Instructions that operate on capabilities will produce a result with the {ctag} set to zero if the source capability is sealed and the operation would alter its address, bounds, or permissions.
-
-Unsealing::
-Deriving a `CT=0` capability from a `CT≠0` capability is termed _unsealing_.
-This is achieved using <<YSUNSEAL>>.
-
-Sealing::
-Given a capability with `CT=0`, deriving a capability with `CT≠0` is termed _sealing_.
-This is achieved using <<YSEAL>>.
-
-[#sentry_cap,reftext="sealed entry point capability"]
-Control-flow Integrity::
-Sealed capabilities can be used as immutable function pointers, which can establish a form of control-flow integrity between mutually distrusting code.
-Because they are immutable, the jump target cannot be modified, ensuring that control flow can only enter at the specific address encoded in the capability and not in the elsewhere in a function.
-
-NOTE: Such function pointers are sometimes known as "sentries", a contraction of "sealed entries".
-
-A sealed capability may be passed as the `{cs1}` argument to <<JALR_CHERI>>, and is _unsealed_ on dereference.
-The returned `{cd}` value is also _sealed_.
-
-NOTE: In addition to using sealed capabilities for sealed entry points, they can also be useful to software as secure software tokens.
- <<YSUNSEAL>> can be used to convert such a token back to an unsealed capability.
- A future extension may add an unseal instruction for performance.
-
-The standard capability type mapping is shown in <<table_capability_types>>, extensions and capability encoding formats may add more types.
-
-[#table_capability_types]
-.Standard capability type mapping
-[width="100%",options=header,align=left,cols="2,1,4"]
-|===
-| Type Name         | Integer Value     | Description
-| Unsealed          | 0                 | _Unsealed_ capability granting access to memory
-| Sealed capability | 1                 | _Sealed_ capability which can be used as a sealed entry point.
-|===
-
-NOTE: Future extensions may declare new <<CT-field>> values which place restrictions on their usage with <<JAL_CHERI>>/<<JALR_CHERI>> for improved CFI.
-
-endif::[]
+NOTE: Future extensions may declare new <<CT-field>> values which place restrictions on their usage (e.g. forward/backward-only control flow checks with <<JAL_CHERI>>/<<JALR_CHERI>> for improved CFI).
 
 [#AP-field, reftext="AP-field"]
 ==== Architectural Permissions (AP)
