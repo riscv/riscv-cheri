@@ -46,8 +46,7 @@ This capability encoding has the following properties that affect the observable
 | EW        | {cap_rv64_exp_width} | Exponent width
 | CAP_MAX_E | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8  | 0                    | Whether the encoding format includes the L~8~ bit
-| AP_PBit   | 0                    | Whether the <<p_bit>> is encoded in the <<AP-field>>
-| AP_MAX    | ones                 | Value of the AP field giving maximum permissions
+| AP_MAX    | ones                 | Value of the <<AP-field>> giving maximum permissions
 |==============================================================================
 
 .{rv64y_uni_base_name} extension summary
@@ -537,10 +536,9 @@ expanded base is 0 and top is 2^XLEN^.
 | {ctag_title}             | zero   | Capability is not valid
 | <<SDP-field64,SDP>>        | zeros  | Grants no permissions
 | <<AP-field,AP>>          | zeros  | Grants no permissions
-| <<p_bit,P>>^1^           | zero   | No meaning since non-executable ({cheri_default_ext_name} only)
 | CT       | zero   | Unsealed
 | EF       | zero   | Internal exponent format
-| L~8~^2^  | zero   | Top address reconstruction bit
+| L~8~^1^  | zero   | Top address reconstruction bit
 | T        | zeros  | Top address bits
 | T~E~     | zeros  | Exponent bits
 | B        | zeros  | Base address bits
@@ -549,9 +547,7 @@ expanded base is 0 and top is 2^XLEN^.
 | Reserved | zeros  | All reserved fields
 |==============================================================================
 
-^1^ Only present if `AP_PBit=1` and {cheri_default_ext_name} is implemented.
-
-^2^ Only present if `enableL8=1`.
+^1^ Only present if `enableL8=1`.
 
 Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed absent in NULL capabilities.
 
@@ -571,23 +567,21 @@ This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capabil
 | {ctag_title}  | one   | Capability is valid
 | SDP           | ones  | Grants all permissions
 | AP            | AP_MAX | Grants all permissions
-| <<p_bit,P>>^1^   | {INT_MODE_VALUE_WORD} | {cheri_mode_name}
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
-| L~8~^2^       | zero  | Top address reconstruction bit
+| L~8~^1^       | zero  | Top address reconstruction bit
 | T             | zeros | Top address bits
 | T~E~          | zeros | Exponent bits
 | B             | zeros | Base address bits
 | B~E~          | zeros | Exponent bits
-| Address       | any^3^ | Capability address
+| Address       | any^2^ | Capability address
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-^1^ Only present if `AP_PBit=1` and {cheri_default_ext_name} is implemented.
+^1^ Only present if `enableL8=1`
+ifndef::cheri_ratification_v1_only[(see <<rv32y_cap_description>>)].
 
-^2^ Only present if `enableL8=1.
-
-^3^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
+^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
  If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
 
-Permissions added by extensions such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities.
+Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities, which may involve redefining the AP_MAX value.

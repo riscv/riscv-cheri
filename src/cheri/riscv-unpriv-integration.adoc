@@ -513,10 +513,6 @@ NOTE: These rules enforce sensible permission combinations.
 For example, it makes no sense to allow loading/storing capabilities (<<c_perm>>) if you cannot read or write data (<<r_perm>> or <<w_perm>>).
 Similarly, <<lm_perm>> is only useful if you can already read capabilities (<<c_perm>> and <<r_perm>>), and <<asr_perm>> is restricted to executable capabilities (<<x_perm>>).
 
-ifndef::cheri_ratification_v1_only[]
-When using <<rv64y_cap_description,{rv64y_uni_base_name}>> and <<rv32y_cap_description,{rv32y_uni_base_name}>> the complete set of rules with and without <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>> are shown in <<clrperm-rules-no-zylevels1>> and <<clrperm-rules-zylevels1>>.
-endif::[]
-
 [#SDP-field, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
@@ -533,8 +529,7 @@ NOTE: Software is completely free to define the usage of these bits.
 ==== Special Capabilities
 
 [#root-cap,reftext="Root"]
-===== Root Capabilities
-
+Root Capabilities::
 _Root_ (sometimes also _primordial_, _initial_) capabilities are those provided by the system at reset.
 In some systems (and capability encodings), there is a single "Infinite" capability value,
 which grants all permissions and has bounds covering the whole 2^XLEN^ address space;
@@ -567,7 +562,7 @@ and grants at least all of <<r_perm>>, <<w_perm>>, <<c_perm>>, and <<lm_perm>>.
 Extensions introducing new permissions may require these to be provided by root data capabilities.
 
 [#null-cap,reftext="NULL"]
-===== NULL Capability
+NULL Capability::
 A capability with all-zero metadata, a zero {ctag}, and an address of zero is referred to as the _NULL_ capability.
 This capability grants no permissions and any dereference results in raising an exception.
 
@@ -1224,7 +1219,7 @@ Therefore, multiple capability encodings with observable (but generally unintere
 While the in-memory bit pattern of capabilities across these systems as well as the precision of bounds may differ, software that does not depend on the raw bits in memory is source (and often also binary) compatible with these different capability encodings.
 
 The {rv32y_uni_base_name} follows the same rules as {rv64y_uni_base_name}, and sets different parameter values.
-It also encodes the AP field to use fewer bits.
+It also encodes the <<AP-field>> to use fewer bits.
 
 The currently defined RV32 capability encoding formats are:
 
