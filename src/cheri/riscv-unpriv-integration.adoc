@@ -363,7 +363,7 @@ The standard capability type mapping is shown in <<table_capability_types>>, ext
 | Type Name                     | Integer Value     | Description
 | Unsealed                      | 0                 | _Unsealed_ capability granting access to memory
 ifdef::cheri_ratification_v1_only[]
-| Sealed entry point capability | 1                 | _Sealed_ capability that can be used as a function entry point.
+| Sealed entry point capability | 1                 | _Sealed_ capability that can be used as a function entry point or function return.
 endif::[]
 ifndef::cheri_ratification_v1_only[]
 | Unrestricted <<sentry_cap>>   | 1                 | Immutable _unrestricted sentry_ type for both _forward-edge_ and _backward-edge_ transitions.
@@ -961,10 +961,12 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 |<<YSUNSEAL>> | {YSUNSEAL_DESC}
 |<<CBLD>>     | {CBLD_DESC}
 |<<YSEAL>>    | {YSEAL_DESC}
+|<<SENTRY>>^2^| {SENTRY_DESC}
 |=======================
 
 ^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
 
+^2^ <<SENTRY>> is a pseudoinstruction for <<YSEAL>>
 
 include::insns/acperm_32bit.adoc[]
 include::insns/cmv_32bit.adoc[]
