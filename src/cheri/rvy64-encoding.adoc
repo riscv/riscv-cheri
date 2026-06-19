@@ -8,11 +8,6 @@ NOTE: The format is closely modeled upon features from CHERI v9 cite:[cheri-v9-s
 [#section_cap_encoding]
 === Capability Encoding
 
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The encoding changes eliminate the concept of the in-memory format.
-endif::[]
-
-
 .Capability encoding for {rv64y_uni_base_name}
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
@@ -26,12 +21,11 @@ When {cheri_default_ext_name} is supported, capabilities include an <<p_bit>> (b
 If the capability does not grant <<x_perm>> or {cheri_default_ext_name} is not supported, the <<p_bit>> is always _reserved_ and so must be zero in valid capabilities.
 
 <<section_zylevels1>>::
-If <<section_zylevels1>> is available, bits 6 and 7 of the `AP` field are allocated, otherwise they must always be set to one for any valid capability.
-Additionally, the <<zylevels1_gl_perm,GL>> flag is only available if <<section_zylevels1>> is implemented, otherwise it is reserved and must be zero.
+Bits 6 and 7 of the `AP` field are allocated, otherwise they are reserved and set to one.
++
+The <<zylevels1_gl_perm,GL>> flag is allocated, otherwise it is reserved and must be zero.
 
-This capability encoding has the following properties that affect the observable behavior of {cheri_base_ext_name} instructions such as <<SCBNDS>> and <<CLRPERM>>:
-
-==== Capability Encoding Summary
+==== Capability Encoding Parameter Summary
 
 .{rv64y_uni_base_name} capability encoding format parameters
 [#rvy64_uni_base_name_param_summary,width="100%",options=header,cols="1,1,4"]
@@ -111,7 +105,7 @@ The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> value
 this field directly encodes the values `0` and `1`:
 
 * The encoded value `0` indicates an _unsealed_ type.
-* The encoded value `1` indicates an _sealed_ type which can unsealed by <<JALR_CHERI>>.
+* The encoded value `1` indicates an _sealed_ type which can unsealed if in `{cs1}` passed to <<JALR_CHERI>>, and is used to _seal_ the capability written to `{cd}`.
 
 ifndef::cheri_ratification_v1_only[]
 ifdef::cheri_v9_annotations[]
@@ -547,8 +541,7 @@ Permissions added by extensions (such as those of <<section_zylevels1>>) are pre
 ==== Infinite Capability Encoding
 
 This encoding is for an _Infinite_ capability value, which
-grants all permissions while its bounds also cover the whole address space.
-It includes <<x_perm>> and so includes the <<p_bit>> if {cheri_default_ext_name} is supported.
+grants all permissions while its bounds also nominally cover the whole address space.
 This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capability.
 
 .Field values of the Infinite capability
@@ -557,8 +550,8 @@ This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capabil
 |==============================================================================
 | Field         | Value | Comment
 | {ctag_title}  | one   | Capability is valid
-| SDP           | ones  | Grants all permissions
-| AP            | AP_MAX | Grants all permissions
+| <<SDP-field64,SDP>> | ones  | Grants all permissions
+| <<AP-field,AP>>     | AP_MAX | Grants all permissions
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
 | L~8~^1^       | zero  | Top address reconstruction bit

@@ -3,7 +3,7 @@
 
 This chapter introduces a new set of base ISAs called {cheri_base_ext_name} that extend the RV32[IE]/RV64[IE] base ISAs with CHERI.
 
-The {cheri_base_ext_name} base ISA can be composed with other standard options to bases such as E (16-registers) and Zfinx.
+The {cheri_base_ext_name} base ISA can be composed with other standard options to bases such as Zfinx.
 
 === CHERI Overview
 
@@ -16,13 +16,18 @@ In CHERI, integer-based pointers are replaced by capabilities to provide memory 
 Every {cheri_base_ext_name} base ISA requires a _capability encoding format_ to complete the specification, such as <<rv64y_cap_description>>.
 The _capability encoding format_ gives full details of how CHERI capabilities are represented in memory and in registers, and specifies the exact properties such as bounds precision and available combinations of permissions.
 
-The full specification of a base ISA includes a capability encoding format.
+The full specification of an {cheri_base_ext_name} base ISA includes a capability encoding format.
 
-E.g., in {rv64y_uni_base_name} `XLEN=64`, and in {rv64y_uni_encoding_suffix} `L` means that it's a parameterized base, `Y` means that it's a CHERI base and `A` is the specific capability encoding format.
+E.g., in {rv64y_uni_base_name} :
+
+. `XLEN=64`
+. `L` means that it's a parameterized base
+. `Y` means that it's a CHERI base
+. `A` is the specific capability encoding format.
 
 NOTE: Future RV64 CHERI capability encoding format could be RV64LYB, RVY64LYC etc. or they may have more descriptive names after the RV64LY prefix.
 
-Also see xref:sec_cap_encoding_formats[].
+Also see xref:sec_cap_encoding_formats[xrefstyle=full].
 
 === CHERI protection model
 
@@ -591,7 +596,7 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 | enableL8    | 0/1                  | 0                    | Whether the encoding format includes the L~8~ bit
 4+| *Parameters used for permissions encoding in the <<AP-field>>*
 | AP_MAX      | integer values       | all ones             | Value of the <<AP-field>> giving maximum permissions
-| AP_ENC      | ps<suffix>/pc<suffix>| ps1                  | Encoding scheme for the <<AP-field>>
+| AP_ENC      | ps<suffix>/ pc<suffix>| ps1                  | Encoding scheme for the <<AP-field>>
 4+| *Other parameters*
 | AUIPC_SHIFT | integer values up to 12 | 12                   | Shift distance of the immediate in AUIPC
 | REP_REGION  | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
