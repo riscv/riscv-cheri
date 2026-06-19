@@ -156,7 +156,7 @@ The main difference is that the generated code (running in {cheri_int_mode_name}
 * **Accessing C Runtime Data:** The code can access data in the surrounding C++ runtime using explicit capability-based load/store operations.
   At the same time, it uses standard integer addresses for its own heap via <<ddc>>.
   This can be achieved by executing <<MODESW_CAP>> before the memory access and <<MODESW_INT>> to return back to address interpretation.
-* **Calling Runtime Helpers:** Runtime helper functions are given to the code as sentry capabilities.
+* **Calling Runtime Helpers:** Runtime helper functions are given to the code as a <<sentry_cap>>.
    When the code calls these helpers, the processor automatically switches back to {cheri_cap_mode_name}.
   This lets the runtime run with full safety before returning to the JIT code.
 +
@@ -179,7 +179,7 @@ J -> J: Access runtime data using\nexplicit capabilities
 J -> J: Execute ""MODESW_INT"" (Switches to {cheri_int_mode_name_nofmt})
 
 == Calling Runtime Helpers ==
-J -> R: Call helper (Sentry Capability) (Switches to {cheri_cap_mode_name_nofmt})
+J -> R: Call helper (Sealed Entry Point Capability) (Switches to {cheri_cap_mode_name_nofmt})
 R -> R: Execute safe runtime code
 R -> J: Return to JIT code (Switches to {cheri_int_mode_name_nofmt})
 

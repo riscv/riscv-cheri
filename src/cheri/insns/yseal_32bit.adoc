@@ -1,18 +1,11 @@
 <<<
 
-[#YSEAL,reftext="{YSEAL}"]
-==== {YSEAL}
+[#YSEAL_ZYSEAL,reftext="{YSEAL} (Zyseal)"]
+==== {YSEAL} (Zyseal)
 
-Synopsis::
-{YSEAL_DESC}
+The behavior of the <<YSEAL>> instruction is extended to allow `{cs1}{ne}x0`.
 
-Mnemonic::
-`{YSEAL_LC} {cd}, {cs1}, {cs2}`
-
-Encoding::
-TODO
-
-Description::
+Extended Description if `{cs1}{ne}x0`::
 Construct, into `{cd}`, a sealed copy of the unsealed capability in `{cs2}`, using the type and authority from `{cs1}`.
 +
 Copy `{cs2}` into `{cd}`, and then...
@@ -31,7 +24,7 @@ Copy `{cs2}` into `{cd}`, and then...
 
 [NOTE]
 =====
-<<YSEAL>> uses the (in-bounds) _addresss_ of the authority in `{cs1}` as the
+<<YSEAL>> uses the (in-bounds) _address_ of the authority in `{cs1}` as the
 type in the resulting capability.
 If the authority has a nontrivial range,
 software can use <<SCADDR>> to select which type should be used.
@@ -62,7 +55,7 @@ the type called for by the address of `{cs1}`.
 =====
 
 Included in::
-{cheri_seal_ext_name}
+{cheri_base_ext_name}, extended in {cheri_seal_ext_name}
 
 Operation::
 +

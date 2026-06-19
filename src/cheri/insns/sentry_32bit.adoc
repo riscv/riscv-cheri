@@ -1,5 +1,5 @@
-[#SENTRY,reftext="{SENTRY}"]
-==== {SENTRY}
+[#YSEAL,reftext="{YSEAL}"]
+==== {YSEAL}
 
 include::new_encoding_note.adoc[]
 
@@ -8,26 +8,56 @@ NOTE: *CHERI v9 Note:* this instruction was called CSEALENTRY.
 endif::[]
 
 Synopsis::
-{SENTRY_DESC}
+{YSEAL_DESC}
 
 Mnemonic::
-`{sentry_lc} {cd}, {cs1}`
+`{yseal_lc} {cd}, {cs1}, {cs2}`
 
 Encoding::
 include::wavedrom/sentry.adoc[]
 
+NOTE: `{cs1}{ne}x0` is currently _reserved_.
+
 Description::
-Copy `{cs1}` to `{cd}`.
+Copy `{cs2}` to `{cd}`.
 +
-Set the capability type (<<sec_cap_type>>) of `{cd}` to the value `1`, representing a sentry type.
+Seal the capability in `{cd}` by setting `{cd}.ct=1`.
 +
-NOTE: {SENTRY} does not require any permission to seal, and so is considered <<sec_cap_type_ambient,ambient>>.
+Set `{cd}.tag=0` if `{cs2}` is sealed.
 +
-Set `{cd}.tag=0` if `{cs1}` is sealed.
+NOTE: A future extension may allow `{cs1}{ne}x0` to specify an authorizing capability to perform the sealing action, and also to specify the destination <<sec_cap_type>> value.
+ The same extension is likely to add privileged state to _disallow_ the use of `{cs1}=x0` for sealing the output without an authorizing capability.
++
+NOTE: If the capability encoding format does not support a <<CT-field>> of type 1, then this instruction is _reserved_.
+ Future capability formats may redefine the behavior for <<CT-field>> values greater than 1.
 
 Included in::
-<<rvy_sentry_insn_table>>
+<<rvy_insn_table>>
 
 Operation::
 +
-sail::execute[clause="SENTRY(_, _)",part=body,unindent]
+TODO
+
+<<<
+
+[#SENTRY,reftext="{SENTRY}"]
+==== {SENTRY}
+
+Synopsis::
+{SENTRY_DESC}
+
+Mnemonic::
+`{sentry_lc} {cd}, {cs2}`
+
+Encoding::
+{SENTRY} is a pseudoinstruction for <<YSEAL>> with `{cs1}=x0`.
+
+Description::
+Copy `{cs2}` to `{cd}`.
++
+Seal the capability in `{cd}` as a <<sentry_cap>> by setting `{cd}.ct=1`.
++
+Set `{cd}.tag=0` if `{cs2}` is sealed.
+
+Included in::
+<<rvy_insn_table>>

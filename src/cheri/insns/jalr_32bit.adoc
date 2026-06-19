@@ -14,12 +14,13 @@ include::wavedrom/ct-unconditional-2.adoc[]
 
 include::base_isa_extension.adoc[]
 
+ifdef::generic_JALR[]
+//full description including backwards/forwards-edge sentries
 Description::
 Indirect jump to the target capability in `{cs1}` with an address offset.
 +
 NOTE: The description below is generic, and implementations which need control-flow-integrity will include at least one extension which defines one or more <<sentry_cap, sentry capabilities>>.
  All such extensions are required to detail the specialized behavior of JALR to remove any ambiguity.
- For example, see <<section_rvy_sentry_insn_ext>>.
 +
 . `{cs1}` is written to the target <<pcc>>.
 . If `{cd}`≠x0, `{cs1}` is _sealed_ and `{cs1}` is not a _forward-edge_ <<sentry_cap>>, then the behavior is _reserved_^1^.
@@ -44,9 +45,22 @@ In this case the specialized operation becomes:
  . Jump to the target <<pcc>>.
 ====
 +
-NOTE: A future extension may raise an exception on the <<JALR_CHERI>> instruction itself if the target <<pcc>> will raise a {cheri_excep_name_pc} at the target.
-+
 NOTE: The standard software calling convention uses 'x1' as the link register.
+endif::[]
+ifndef::generic_JALR[]
+// simple description with only unrestricted sentries
+Description::
+Indirect jump to the target capability in `{cs1}` with an address offset.
++
+. `{cs1}` is written to the target <<pcc>>.
+. The target address is obtained by adding the sign-extended 12-bit I-immediate to `{cs1}.address`, then setting the least-significant bit of the result to zero.
+. Unseal the target <<pcc>> if it is a <<sentry_cap>>, `{cs1}.address[0]` is zero, and the I-immediate is zero.
+. Set the address of the target <<pcc>> to the target address using the semantics of the <<SCADDR>> instruction.
+. The <<pcc>> of the next instruction is sealed as a <<sentry_cap>> and written to `{cd}`.
+. Jump to the target <<pcc>>.
+endif::[]
++
+NOTE: A future extension may raise an exception on the <<JALR_CHERI>> instruction itself if the target <<pcc>> will raise a {cheri_excep_name_pc} at the target.
 
 Included in::
 <<rvy_i_mod_insn_table>>
