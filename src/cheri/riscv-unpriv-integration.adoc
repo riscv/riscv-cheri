@@ -580,26 +580,28 @@ Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds t
 
 NOTE: These observable differences in behavior are similar to floating point numbers where the supported operations and their semantics are the same for all formats, but the exact result depends on the representation (e.g., 16/32/64-bit IEEE-754 or other floating point formats).
 
-It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid in-memory encodings.
+It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid capability encoding formats.
 However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, each capability encoding format comes with a set of standard parameters.
 
 Each capability encoding format also declares a new base ISA.
 
-The documentation for each capability encoding format specifies at least the parameters in <<cap_encoding_param_summary>> below where the default is not used.
+The documentation for each capability encoding format specifies at least the parameters in <<cap_encoding_param_default_summary>> below where the default is not used.
+
+NOTE: The default settings all match <<rv64y_cap_description>>.
 
 .{cheri_base_ext_name} capability encoding format parameters
-[#cap_encoding_param_summary,width="100%",options=header,cols="1,1,1,4"]
+[#cap_encoding_param_default_summary,width="100%",options=header,cols="1,1,1,4"]
 |==============================================================================
 | Parameter   | Legal values | Default Value        | Comment
-4+| ***Parameters used for the bounds encoding (see <<section_cap_bounds>>)***
+4+| *Parameters used for the bounds encoding (see <<section_cap_bounds>>)*
 | MW          | integer values       | {cap_rv64_mw_width}  | Mantissa width for the bounds encoding
 | EW          | integer values       | {cap_rv64_exp_width} | Exponent width for the bounds encoding
 | CAP_MAX_E   | integer values       | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8    | 0/1                  | 0                    | Whether the encoding format includes the L~8~ bit
-4+| ***Parameters used for permissions encoding in the <<AP-field>>***
+4+| *Parameters used for permissions encoding in the <<AP-field>>*
 | AP_MAX      | integer values       | all ones             | Value of the <<AP-field>> giving maximum permissions
 | AP_ENC      | ps<suffix>/pc<suffix>| ps1                  | Encoding scheme for the <<AP-field>>
-4+| ***Other parameters***
+4+| *Other parameters*
 | AUIPC_SHIFT | integer values up to 12 | 12                   | Shift distance of the immediate in AUIPC
 | REP_REGION  | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
 |==============================================================================
@@ -608,11 +610,9 @@ Two parameters used non-numeric values:
 
 AP_ENC::
  Whether permissions in the <<AP-field>> are encoded using a _simple_ representation of one bit per architectural permission (`ps`) or a _compressed_ encoding that leverages dependencies between permissions and does not allow encoding all possible combinations (`pc`).
- Each scheme has a suffix to show which exact version is in use, as `ps` scheme may not always store permissions in the same order and `pc` schemes may use different forms of compression.
+ Each scheme has a suffix to show which exact version is in use, as `ps` schemes may not always store permissions in the same order and `pc` schemes may use different forms of compression.
 REP_RANGE::
  Whether the capability encoding formats guarantees representability of out-of-bounds capability values, `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, or `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed  out of bounds <<section_cap_representable_check,representable range>>.
-
-Any implementation with matching parameters is binary compatible (assuming the same extensions are implemented).
 
 NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability encoding ensures sufficient future extensibility and therefore few custom formats are expected to exist.
  {cheri_base32_ext_name}, however, has insufficient bits available to enable features for all target domains, so multiple {cheri_base32_ext_name}-extending capability formats will exist.

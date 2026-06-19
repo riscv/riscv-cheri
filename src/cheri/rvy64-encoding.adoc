@@ -31,26 +31,23 @@ Additionally, the <<zylevels1_gl_perm,GL>> flag is only available if <<section_z
 
 This capability encoding has the following properties that affect the observable behavior of {cheri_base_ext_name} instructions such as <<SCBNDS>> and <<CLRPERM>>:
 
-* **Mantissa width (mw{cap_rv64_mw_width})**: The mantissa width for the bounds encoding uses {cap_rv64_mw_width} bits
-* **Maximum exponent (e{cap_rv64_exp_max})**: The maximum value for the exponent in a valid capability is {cap_rv64_exp_max}.
-* **Representable range (rc1)**: The encoding uses one additional bit to ensure a _centered_ region of at least 1/4 of the capability size remains representable when creating out-of-bounds derived capabilities.
-* **Permission encoding (ps)**: The permissions are encoded using a simple representation of one bit per architectural permission.
-
 ==== Capability Encoding Summary
 
-.{rv64y_uni_base_name} parameter summary
-[#rvy64_uni_base_name_param_summary,width="100%",options=header,]
+.{rv64y_uni_base_name} capability encoding format parameters
+[#rvy64_uni_base_name_param_summary,width="100%",options=header,cols="1,1,4"]
 |==============================================================================
-| Parameter   | Value                | Comment
-| MW          | {cap_rv64_mw_width}  | Mantissa width
-| EW          | {cap_rv64_exp_width} | Exponent width
+| Parameter   | Default Value        | Comment
+| MW          | {cap_rv64_mw_width}  | Mantissa width for the bounds encoding
+| EW          | {cap_rv64_exp_width} | Exponent width for the bounds encoding
 | CAP_MAX_E   | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8    | 0                    | Whether the encoding format includes the L~8~ bit
-| AP_MAX      | ones                 | Value of the <<AP-field>> giving maximum permissions
+| AP_MAX      | all ones             | Value of the <<AP-field>> giving maximum permissions
+| AP_ENC      | ps1                  | Encoding scheme for the <<AP-field>>
 | AUIPC_SHIFT | 12                   | Shift distance of the immediate in AUIPC
-| REP_REGION  | rc1                  | At least 1/4 of the capability length
-| PERM_ENC    | ps1                  | One bit used per permission format number 1
+| REP_REGION  | rc1                  | Whether out of bounds addresses are representable
 |==============================================================================
+
+NOTE: All parameters match the default values from <<cap_encoding_param_default_summary>>.
 
 .{rv64y_uni_base_name} extension summary
 [#rvy64_uni_base_name_ext_summary,width="100%",options=header,]
@@ -64,18 +61,10 @@ endif::[]
 | All RV64Y versions of other standard extensions | Compatible
 |==============================================================================
 
-.{rv64y_uni_base_name} Feature summary
-[#rvy64_uni_base_name_feature_summary,width="100%",options=header,]
-|==============================================================================
-| Feature                      | Comment
-| Representable range         | At least 1/4 of the capability size
-| Permission encodings         | All combinations can be represented, some combinations are reserved
-|==============================================================================
-
 [#AP-field-encoding64, reftext="AP-field encoding"]
-==== Architectural Permissions (AP) Encoding
+==== Architectural Permissions (AP) Encoding - `ps1`
 
-The permissions field is {cap_rv64_perms_width} bits wide and is encoded using one bit per architectural permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
+The permissions field is up to {cap_rv64_perms_width} bits wide and is encoded using one bit per architectural permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
 A permission is granted if its corresponding bit, and those of any dependent permissions, are set;
 otherwise, the capability does not grant that permission.
 
