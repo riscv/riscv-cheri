@@ -220,24 +220,24 @@ The number of shared bits depends on the exponent, see xref:section_cap_bounds[x
 Software sometimes uses out-of-bounds pointers, for example, to represent a one-past-the end pointer to an array in C (`arr + size`).
 To support this pattern, CHERI must allow these out-of-bounds pointers to be held in capabilities while still protecting the bounds and integrity.
 Because the CHERI Concentrate cite:[woodruff2019cheri] encoding scheme for memory bounds shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
-This range is known as the *representable region*.
-The relationship between the bounds and the representable region is illustrated in <<cap_bounds_map>>.
+This range is known as the *representable range*.
+The relationship between the bounds and the representable range is illustrated in <<cap_bounds_map>>.
 
 NOTE: While the C standard only requires one-past-the-end pointers to be valid, real-world software has been observed to (temporarily) create pointers that point multiple bytes past the end or even before the start.
   To maximize software compatibility, the bounds representation was designed to allow for out-of-bounds pointers.
 
 [#cap_bounds_map]
-.Memory address bounds and representable region encoded within a capability
+.Memory address bounds and representable range encoded within a capability
 image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
 E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
 
-The maximum range of address values that the pointer can take without changing the interpretation of bounds is defined by the <<section_cap_representable_check,representable region>>.
+The maximum range of address values that the pointer can take without changing the interpretation of bounds is defined by the <<section_cap_representable_check,representable range>>.
 
 NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability encoding had separate 64-bit values for the base and top memory bounds, and another for metadata fields.
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
-Since deriving a new capability with a different address could change the meaning of the bounds, all such derived capabilities (e.g., deriving the next <<pcc>> capability from the existing <<pcc>> via control-flow instructions or sequential execution) and instructions that return valid derived capabilities, must check that the new address is within the representable region defined by the source capability.
+Since deriving a new capability with a different address could change the meaning of the bounds, all such derived capabilities (e.g., deriving the next <<pcc>> capability from the existing <<pcc>> via control-flow instructions or sequential execution) and instructions that return valid derived capabilities, must check that the new address is within the representable range defined by the source capability.
 If the interpretation of bounds _has_ changed, then the {ctag} of the derived capability is set to zero, so that it is invalid for use.
 
 Software can derive a capability with a new address using instructions such as <<SCADDR>>, <<CADD>> and <<CADDI>>.
@@ -246,7 +246,7 @@ NOTE: <<SCADDR>> writes back a derived capability with a new address field and, 
 
 NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only comes back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
 
-NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable region check, and may never allow the address to be out of bounds.
+NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check, and may never allow the address to be out of bounds.
 Therefore, the rest of the specification uses the phrase *represented exactly* for this check.
 
 ==== Memory space
