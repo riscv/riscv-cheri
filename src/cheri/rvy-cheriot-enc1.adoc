@@ -83,7 +83,7 @@ Known extension (in)compatibilities are listed in <<rv32y_cheriot_encoding1_ext_
 | Parameter | Value                  | Comment
 | mw        | {cap_cheriot_mw_width} | Mantissa width
 | e         | 14                     | Exponent limit before jumping to maximum exponent
-| rc        | 0                      | Representable region between base and top only
+| rc        | 0                      | Representable range between base and top only
 | p         | pc                     | Compressed permission encoding
 | enc       | Cheriot1               | Encoding variant
 |==============================================================================
@@ -107,7 +107,7 @@ endif::[]
 [#rv32y_cheriot_encoding1_feature_summary,width="100%",options=header,]
 |==============================================================================
 | Feature                      | Comment
-| Representable region         | Between base and top only (inclusive)
+| Representable range         | Between base and top only (inclusive)
 | Permission encodings         | Not all combinations can be represented
 |==============================================================================
 
@@ -253,7 +253,7 @@ c_t = A_hi - T_hi
 ----
 
 These corrections work by assuming that the base is in the lower of two 2^e+9^ aligned regions, and that the top and address are always greater than or equal to the base but may be in the higher region provided they are within 2^e+9^ of base.
-These assumptions lead to the representable region being given by:
+These assumptions lead to the representable range being given by:
 
 [source]
 ----
