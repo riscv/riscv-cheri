@@ -200,6 +200,8 @@ On system initialization, one or more <<root-cap>> capabilities are available;
 typically, these have bounds which cover all of memory and the maximum permissions set.
 All smaller capabilities are derived from these.
 
+NOTE: As a reminder, the ISA does not allow the bounds or permissions of a capability with its {ctag} set to be increased (_monotonicity_)
+
 The <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions generate new capabilities from a source capability and a length operand (`rs2` or `imm`).
 The resulting capability has its address set as the _base_ bound and its length as requested, subject to encoding granularity constraints.
 These instructions write the newly generated capability to the destination register.
@@ -488,8 +490,6 @@ Not all capability permissions are orthogonal
 as some permissions inherently depend on others.
 As such, using <<CLRPERM>> to clear some permissions
 may have the effect of clearing others as well.
-Therefore a permission bit being set in the result of <<GCPERM>>
-implies that all bits for permissions upon which it depends will also be set.
 
 For the base set of permissions just defined, the rules in <<base_clrperm_rule_summary>> apply.
 
@@ -515,7 +515,7 @@ ifndef::cheri_ratification_v1_only[]
 . <<section_zyseal>>, see <<zyseal_ap_field>>
 endif::[]
 
-Capability encoding formats with `AP_ENC=pc<suffix>` may impose additional constraints to reduce the number of bits necessary to represent permissions.
+Capability encoding formats may impose additional constraints to reduce the number of bits necessary to represent permissions.
 
 [#SDP-field, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP)
