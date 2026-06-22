@@ -7,7 +7,7 @@ endif::[]
 
 This chapter describes integration of {cheri_base_ext_name} with the RISC-V privileged architecture.
 
-=== Machine-Level CSRs added or extended by {cheri_base_ext_name}
+=== Machine-Level CSRs widened by {cheri_base_ext_name}
 
 {cheri_base_ext_name} widens some M-mode CSRs so that they can hold capabilities.
 Additionally, {cheri_base_ext_name} allocates some previously reserved bits in existing CSRs.
@@ -45,7 +45,7 @@ to `__x__cause` when an interrupt is taken.
 Therefore the minimum observable address is `mtvec.address & ~3` and the maximum is `(mtvec.address & ~3) + 4 x HICAUSE`.
 
 All possible observable values must be <<section_cap_representable_check, represented exactly>>.
-Software must ensure this is true when writing to <<mtvec_y>>, and the hardware sets the {ctag} to zero if any values cannot be <<section_cap_representable_check, represented exactlymamak>>.
+Software must ensure this is true when writing to <<mtvec_y>>, and the hardware sets the {ctag} to zero if any values cannot be <<section_cap_representable_check, represented exactly>>.
 
 <<mtvec_y>> is always updated using the semantics of the <<SCADDR>> instruction and so writing a sealed capability will cause the {ctag} to be set to zero.
 
@@ -107,6 +107,8 @@ The {ctag} and metadata of the <<pcc>> are also written to <<mepc_y>>.
 On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_y>> is unsealed and written to <<pcc>>.
 
 <<mepc_y>> follows the rule from `mepc` about not needing to be able to hold all possible <<section_invalid_addr_conv,invalid addresses>>.
+
+=== Machine-Level CSRs added by {cheri_base_ext_name}
 
 [#mtidc,reftext="mtidc"]
 ==== Machine Thread Identifier Capability (mtidc)
@@ -267,8 +269,8 @@ and <<utidc>> CSRs.
 
 endif::[]
 
-[#supervisor-level-csrs-section]
-=== Supervisor-Level CSRs added or extended by {cheri_base_ext_name}
+[#supervisor-level-widended-csrs-section]
+=== Supervisor-Level CSRs widened by {cheri_base_ext_name}
 
 [#stvec_y,reftext="stvec ({cheri_base_ext_name})"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
@@ -303,6 +305,9 @@ The handling of <<sepc_y>> is identical to <<mepc_y>>, but in supervisor mode (i
 
 .Supervisor exception program counter capability register
 include::img/sepccreg.edn[]
+
+[#supervisor-level-added-csrs-section]
+=== Supervisor-Level CSRs added {cheri_base_ext_name}
 
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
