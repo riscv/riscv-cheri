@@ -181,7 +181,7 @@ read-only).
 {bits: 1, name: 'C'},
 {bits: 1, name: 'FCSR'},
 {bits: 1, name: 'JVT'},
-{bits: 1, name: 'TID'},
+{bits: 1, name: 'TIDC'},
 {bits: 50, name: 'WPRI'},
 {bits: 1, name: 'CTR'},
 {bits: 1, name: 'SRMCFG'},
@@ -203,7 +203,7 @@ read-only).
 {bits: 1, name: 'C'},
 {bits: 1, name: 'FCSR'},
 {bits: 1, name: 'JVT'},
-{bits: 1, name: 'TID'},
+{bits: 1, name: 'TIDC'},
 {bits: 50, name: 'WPRI'},
 {bits: 1, name: 'CTR'},
 {bits: 2, name: 'WPRI'},
@@ -224,7 +224,7 @@ read-only).
 {bits: 1, name: 'C'},
 {bits: 1, name: 'FCSR'},
 {bits: 1, name: 'JVT'},
-{bits: 1, name: 'TID'},
+{bits: 1, name: 'TIDC'},
 {bits: 28, name: 'WPRI'}
 ], config:{bits: 32, lanes: 2, hspace:1024}}
 ....
@@ -256,15 +256,15 @@ whether they really do.
 The JVT bit controls access to the `jvt` CSR provided by the Zcmt extension.
 
 If the base architecture is {cheri_base_ext_name} then
-the TID bit in `mstateen0` controls access to the <<stidc>>,
+the TIDC bit in `mstateen0` controls access to the <<stidc>>,
 ifndef::cheri_ratification_v1_only[]
 <<vstidc>>,
 endif::[]
 and <<utidc>> CSRs.
 ifndef::cheri_ratification_v1_only[]
-The TID bit in `hstateen0` controls access to the <<stidc>> (really <<vstidc>>) CSR.
+The TIDC bit in `hstateen0` controls access to the <<stidc>> (really <<vstidc>>) CSR.
 endif::[]
-The TID bit in `sstateen0` controls access to the <<utidc>> CSR.
+The TIDC bit in `sstateen0` controls access to the <<utidc>> CSR.
 
 The SE0 bit in `mstateen0` controls access to the `hstateen0`, `hstateen0h`,
 and the `sstateen0` CSRs. The SE0 bit in `hstateen0` controls access to the

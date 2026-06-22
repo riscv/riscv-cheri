@@ -19,11 +19,16 @@ Encoding::
 include::wavedrom/trap-return.adoc[]
 
 Description::
-Return from machine mode (<<MRET_CHERI>>) or supervisor mode (<<SRET_CHERI>>) trap handler.
-MRET unseals <<mepc_y>> and writes the result into <<pcc>>. SRET unseals <<sepc_y>> and writes the result into <<pcc>>.
+Return from machine mode (MRET) or supervisor mode (SRET) trap handler.
++
+MRET unseals <<mepc_y>> and writes the result into <<pcc>>.
++
+SRET unseals <<sepc_y>> and writes the result into <<pcc>>.
 
 Exceptions::
-An illegal instruction fault is raised when <<pcc>> does not grant <<asr_perm>> because <<MRET_CHERI>> and <<SRET_CHERI>> require access to privileged CSRs.
+An illegal instruction fault is raised when <<pcc>> does not grant <<asr_perm>>.
++
+NOTE: <<asr_perm>> is required as MRET and SRET require access to privileged CSRs.
 
 Prerequisites (MRET)::
 Machine-Level ISA, {cheri_base_ext_name}

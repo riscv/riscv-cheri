@@ -7,17 +7,15 @@ endif::[]
 
 This chapter describes integration of {cheri_base_ext_name} with the RISC-V privileged architecture.
 
-=== Machine-Level CSRs added or extended by {cheri_base_ext_name}
+=== Machine-Level CSRs widened by {cheri_base_ext_name}
 
 {cheri_base_ext_name} widens some M-mode CSRs so that they can hold capabilities.
 Additionally, {cheri_base_ext_name} allocates some previously reserved bits in existing CSRs.
-<<asr_perm>> in the <<pcc>> is always required for access
-to privileged CSRs.
 
 [#mtvec_y,reftext="mtvec ({cheri_base_ext_name})"]
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
-The <<mtvec>> register is widened so that it can hold a code capability.
+The mtvec register is widened to a code capability.
 Its reset value is nominally a <<root-rx-cap>> capability.
 
 NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of a <<root-rx-cap>> capability after reset.
@@ -46,26 +44,28 @@ to `__x__cause` when an interrupt is taken.
 
 Therefore the minimum observable address is `mtvec.address & ~3` and the maximum is `(mtvec.address & ~3) + 4 x HICAUSE`.
 
-All possible observable values must be in the <<section_cap_representable_check>>.
-Software must ensure this is true when writing to <<mtvec_y>>, and the hardware sets the {ctag} to zero if any values are out of the <<section_cap_representable_check>>.
-
-NOTE: Modifying the address of any capability outside of the <<section_cap_representable_check>> without clearing the {ctag} causes a security hole as the interpretation of the bounds changes.
-Therefore requiring that all possible observable addresses are representable but not necessary in bounds is the minimum security requirement.
+All possible observable values must be <<section_cap_representable_check, represented exactly>>.
+Software must ensure this is true when writing to <<mtvec_y>>, and the hardware sets the {ctag} to zero if any values cannot be <<section_cap_representable_check, represented exactly>>.
 
 <<mtvec_y>> is always updated using the semantics of the <<SCADDR>> instruction and so writing a sealed capability will cause the {ctag} to be set to zero.
 
 NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other executing from other CSRs such as <<mepc_y>>.
 
-<<mtvec_y>> follows the rule from `mtvec` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+<<mtvec_y>> follows the rule from `mtvec` about not needing to be able to hold all possible <<section_invalid_addr_conv, invalid addresses>>.
+
+[#menvcfg_y,reftext="menvcfg ({cheri_base_ext_name})"]
+Machine Environment Configuration (`menvcfg`) Register::
+
+
+[#menvcfgmodereg]
+include::img/menvcfgmodereg.edn[]
 
 [#mscratch_y, reftext="mscratch ({cheri_base_ext_name})"]
 ==== Machine Scratch Capability Register (mscratch)
 
-The <<mscratch>> register is widened so that it can hold a capability.
+The *mscratch* register is widened to a capability.
 
 {TAG_RESET_MCSR}
-
-It is not WARL, all capability fields must be implemented.
 
 .Machine-mode scratch capability register
 include::img/mscratchcreg.edn[]
@@ -73,7 +73,7 @@ include::img/mscratchcreg.edn[]
 [#mepc_y,reftext="mepc ({cheri_base_ext_name})"]
 ==== Machine Exception Program Counter Capability (mepc)
 
-The <<mepc>> is widened so that it can hold a capability.
+The *mepc* register is widened to a capability.
 Its reset value is nominally a <<root-rx-cap>> capability.
 
 .Machine exception program counter capability register
@@ -86,7 +86,7 @@ include::img/mepccreg.edn[]
 .  `mepc.address[1]` reads as zero when IALIGN is programmable and is set to 32
 
 As listed above for <<mtvec_y>>, this means that `mepc.address` can represent multiple different values.
-Therefore software must ensure that all possible values are in the <<section_cap_representable_check>> on writing, otherwise the hardware sets the written {ctag} to zero.
+Therefore software must ensure that all possible values are <<section_cap_representable_check, represented exactly>> on writing, otherwise the hardware sets the written {ctag} to zero.
 
 Sealed capabilities may be written to <<mepc_y>>.
 The {ctag} is set to zero on writing if:
@@ -96,17 +96,19 @@ The {ctag} is set to zero on writing if:
 
 In the following case the value of the {ctag} observable in the CSR depends on the value of IALIGN:
 
-. <<mepc_y>> is sealed, the {ctag} is set, and
+. `mepc.ct{ne}0 && mepc.tag=1`, and
 . `mepc.address[1]=1` and IALIGN=16 when writing the CSR
 
-The {ctag} is zero then IALIGN=32 when reading the CSR, or executing <<MRET_CHERI>>, and the {ctag} is one when IALIGN=16.
+The observable {ctag} is zero when IALIGN=32 and one when IALIGN=16.
 
 When a trap is taken into M-mode, the pc is written to `mepc.address` following the standard behavior.
 The {ctag} and metadata of the <<pcc>> are also written to <<mepc_y>>.
 
 On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_y>> is unsealed and written to <<pcc>>.
 
-<<mepc_y>> follows the rule from `mepc` about not needing to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+<<mepc_y>> follows the rule from `mepc` about not needing to be able to hold all possible <<section_invalid_addr_conv,invalid addresses>>.
+
+=== Machine-Level CSRs added by {cheri_base_ext_name}
 
 [#mtidc,reftext="mtidc"]
 ==== Machine Thread Identifier Capability (mtidc)
@@ -137,16 +139,22 @@ endif::[]
 
 === Machine-Level CSRs modified by {cheri_base_ext_name}
 
+[#misa_y, "misa ({cheri_base_ext_name})"]
+==== Machine ISA (`misa`) Register
+
+{cheri_base_ext_name} sets the Y bit to be 1.
+Either I or E is _also_ set to show how many registers are present.
+
 [#mstatus_y, reftext="mstatus ({cheri_base_ext_name})"]
 ==== Machine Status Registers (mstatus and mstatush)
 
 The *mstatus* and *mstatush* registers have two additional restrictions:
 
-* The <<xlen-control, MXL, SXL and UXL>> fields that control the
+* The MXL, SXL and UXL fields that control the
 value of XLEN for S-mode and U-mode must be read-only and equal to MXL in {cheri_base_ext_name} implementations.
   Only 1 and 2 are supported values.
 
-* The <<endianness-control,MBE, SBE, and UBE>> fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in {cheri_base_ext_name} implementations.
+* The MBE, SBE, and UBE fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in {cheri_base_ext_name} implementations.
    SBE and UBE must be read only and equal to MBE, if S-mode or
 U-mode, respectively, is implemented, or read-only zero otherwise.
 
@@ -157,14 +165,27 @@ NOTE: These restrictions may be relaxed by a future extension. Such an extension
 MXR has no effect on the CHERI permission checking.
 
 NOTE: CHERI does not need to make use execute only memory for security reasons, and so MXR has no relevance.
- Additionally the 32-bit encoding format does not allow <<x_perm>> to be encoded without <<r_perm>>.
 
 [#mcause_y, reftext="mcause ({cheri_base_ext_name})"]
 ==== Machine Cause Register (mcause)
 
-{cheri_base_ext_name} adds new exception codes for CHERI exceptions that <<mcause>> must be able to represent.
+{cheri_base_ext_name} adds new exception codes for CHERI exceptions that *mcause* must be able to represent.
 The new exception codes and priorities are listed in
-xref:mcauses[xrefstyle=short] and xref:exception-priority-cheri[xrefstyle=short] respectively.
+<<exception-cause-cheri>> and the priorities are listed in xref:exception-priority-cheri[xrefstyle=short] respectively.
+
+[[exception-cause-cheri]]
+.Synchronous exception causes for {cheri_base_ext_name}.
+[%autowidth,float="center",align="center",options="header",]
+|===
+|Exception code              | Description
+|{cheri_excep_cause_pc}      | {cheri_excep_name_pc}
+|{cheri_excep_cause_ld}      | {cheri_excep_name_ld}
+|{cheri_excep_cause_st}      | {cheri_excep_name_st}
+|{cheri_excep_cause_pte_ld}  | {cheri_excep_name_pte_ld}^1^
+|{cheri_excep_cause_pte_st}  | {cheri_excep_name_pte_st}^1^
+|===
+
+^1^ These exceptions are defined by the {cheri_priv_crg_ext} extension which is available for {cheri_base64_ext_name} only.
 
 [[exception-priority-cheri]]
 .Synchronous exception priority in decreasing priority order for {cheri_base_ext_name}.
@@ -211,16 +232,16 @@ Load/store/AMO address misaligned
 
 ^2^ {cheri_excep_name_pte_ld} is the lowest priority as determining whether to raise the exception may include checking the loaded {ctag}.
 
-NOTE: The full details of {cheri_excep_name_pc}, {cheri_excep_name_ld} and {cheri_excep_name_st} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
+NOTE: Full details of {cheri_excep_name_pc}, {cheri_excep_name_ld} and {cheri_excep_name_st} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
 ifdef::cheri_standalone_spec[]
 ==== Machine Trap Delegation Register (medeleg)
 
-Bits {cheri_excep_cause_list} of <<medeleg>> refer to valid CHERI exceptions and so can be used to
+Bits {cheri_excep_cause_list} of *medeleg* refer to valid CHERI exceptions and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
 ==== "Smstateen/Ssstateen" Integration
-The TID bit in `mstateen0` controls access to the <<stidc>>,
+The TIDC bit in `mstateen0` controls access to the <<stidc>>,
 ifndef::cheri_ratification_v1_only[]
 <<vstidc>>,
 endif::[]
@@ -233,7 +254,7 @@ and <<utidc>> CSRs.
 {bits: 1, name: 'C'},
 {bits: 1, name: 'FCSR'},
 {bits: 1, name: 'JVT'},
-{bits: 1, name: 'TID'},
+{bits: 1, name: 'TIDC'},
 {bits: 52, name: 'WPRI'},
 {bits: 1, name: 'P1P13'},
 {bits: 1, name: 'CONTEXT'},
@@ -248,33 +269,27 @@ and <<utidc>> CSRs.
 
 endif::[]
 
-[#supervisor-level-csrs-section]
-=== Supervisor-Level CSRs added or extended by {cheri_base_ext_name}
-
-{cheri_base_ext_name} widens some of the existing RISC-V CSRs so that they can hold capabilities.
-Additionally, {cheri_base_ext_name} allocates some previously reserved bits in existing CSRs.
-<<asr_perm>> in the <<pcc>> is required for access to all privileged CSRs.
+[#supervisor-level-widended-csrs-section]
+=== Supervisor-Level CSRs widened by {cheri_base_ext_name}
 
 [#stvec_y,reftext="stvec ({cheri_base_ext_name})"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
 
-The <<stvec>> register is widened so that it can hold a capability.
+The *stvec* register is widened to a capability.
 
 {ROOT_RX_RESET_SCSR}
 
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
 
-The handling of <<stvec_y>> is otherwise identical to <<mtvec_y>>, but in supervisor mode.
+The handling of <<stvec_y>> is identical to <<mtvec_y>>, but in supervisor mode.
 
 [#sscratch_y, reftext="sscratch ({cheri_base_ext_name})"]
 ==== Supervisor Scratch Capability Register (sscratch)
 
-The <<sscratch>> register is widened so that it can hold a capability.
+The *sscratch* register is widened to a capability.
 
 {TAG_RESET_SCSR}
-
-It is not WARL, all capability fields must be implemented.
 
 .Supervisor scratch capability register
 include::img/sscratchcreg.edn[]
@@ -282,16 +297,17 @@ include::img/sscratchcreg.edn[]
 [#sepc_y,reftext="sepc ({cheri_base_ext_name})"]
 ==== Supervisor Exception Program Counter Capability (sepc)
 
-The <<sepc>> register is widened so that it can hold a capability.
+The *sepc* register is widened to a code capability.
 
 {ROOT_RX_RESET_SCSR}
 
-As shown in xref:CSR_exevectors[xrefstyle=short], <<sepc_y>> is a code capability, so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
-Additionally, the capability in <<sepc_y>> is unsealed when it is written to <<pcc>> on execution of an <<SRET_CHERI>> instruction.
-The handling of <<sepc_y>> is otherwise identical to <<mepc_y>>, but in supervisor mode.
+The handling of <<sepc_y>> is identical to <<mepc_y>>, but in supervisor mode (i.e. applying to <<SRET_CHERI>>).
 
 .Supervisor exception program counter capability register
 include::img/sepccreg.edn[]
+
+[#supervisor-level-added-csrs-section]
+=== Supervisor-Level CSRs added {cheri_base_ext_name}
 
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
@@ -321,17 +337,22 @@ include::img/ycfgreg.edn[]
 endif::[]
 
 === Supervisor-Level CSRs modified by {cheri_base_ext_name}
-ifdef::cheri_standalone_spec[]
+
+[#senvcfg_y,reftext="senvcfg ({cheri_base_ext_name})"]
+==== Supervisor environment configuration register (senvcfg)
+
+{cheri_default_ext_name} adds a {CRE} bit to *senvcfg*
+
+.Supervisor environment configuration register (*senvcfg*)
+include::img/senvcfgreg.edn[]
+
+[#scause_y, reftext="scause ({cheri_base_ext_name})"]
 ==== Supervisor Cause Register (scause)
 
-{cheri_base_ext_name} adds new exception codes for CHERI exceptions that <<scause>> must be able to represent.
-The new exception code is listed in xref:scauses[xrefstyle=short].
-The behavior and usage of <<scause>> otherwise remains as described in xref:scause[xrefstyle=short].
-
-See <<mcause_y>> for the new exceptions priorities when {cheri_base_ext_name} is implemented.
+{cheri_base_ext_name} adds new exception codes for CHERI exceptions as in <<mcause_y>>.
 
 ==== "Smstateen/Ssstateen" Integration
-The TID (thread ID) bit in `sstateen0` controls access to the <<utidc>> CSR.
+The TIDC bit in `sstateen0` controls access to the <<utidc>> CSR.
 See <<utidc>> for a description of the usage.
 
 .Supervisor State Enable 0 Register (`sstateen0`)
@@ -341,17 +362,15 @@ See <<utidc>> for a description of the usage.
 {bits: 1, name: 'C'},
 {bits: 1, name: 'FCSR'},
 {bits: 1, name: 'JVT'},
-{bits: 1, name: 'TID'},
+{bits: 1, name: 'TIDC'},
 {bits: 28, name: 'WPRI'}
 ], config:{bits: 32, lanes: 2, hspace:1024}}
 ....
 
-endif::[]
-
 [#sec_cheri_exception_handling]
 === CHERI Exception handling
 
-CHERI faults are typically higher priority than standard RISC-V faults. E.g., CHERI faults on the <<pcc>> are higher priority than any other fault effecting the program counter such as instruction access fault.
+CHERI faults are typically higher priority than standard RISC-V faults. E.g., CHERI faults on the <<pcc>> are higher priority than any other fault effecting the program counter such as Instruction Access Fault.
 
 NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> (if {cheri_default_ext_name} is implemented).
 
@@ -372,7 +391,7 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` {ctag} is zero
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not grant <<r_perm>>
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^1^
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^2^
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
 | Capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
@@ -380,23 +399,18 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
 | All stores,  CBO.ZERO                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant <<w_perm>>
 | All atomics, CBO.CLEAN, CBO.FLUSH, CBO.INVAL   | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant both <<r_perm>> and <<w_perm>>
-| All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^1^
-| CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^1^
-| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^1^
+| All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^2^
+| CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^2^
+| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^2^
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
-| Capability stores                              | 7^2^                       | Store access fault    | Misaligned capability store
+| Capability stores                              | 7^3^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
 
-^1^ The bounds checks include the cases where the bounds could not be decoded.
+^1^ The <<pcc>> bounds checks includes the case where the bounds could not be decoded and so a minimum sized instruction is not fully in bounds.
 
-^2^ Misaligned capability accesses raise access faults instead of misaligned faults since they cannot be emulated in software.
+^2^ The load/store bounds check includes the case where the bounds could not be decoded as they are malformed.
 
-NOTE: <<CBO_ZERO_CHERI>> is performed as a cache block wide store.  All
-CMOs operate on the cache block which contains the address.  Prefetch instructions check
-that the authorizing capability is has its {ctag} set, is not sealed, has the required permission (<<r_perm>>,
-<<w_perm>>, <<x_perm>>) corresponding to the instruction, and has bounds which
-include at least one byte of the cache block; if any check fails, the prefetch
-is not performed but no exception is generated.
+^3^ Misaligned capability accesses raise access faults instead of misaligned faults since they cannot be emulated in software.
 
 [#CHERI_SPEC,reftext="CHERI Exceptions and speculative execution"]
 === CHERI Exceptions and speculative execution
@@ -409,8 +423,7 @@ NOTE: CHERI adds architectural guarantees that can prove to be microarchitectura
 === Physical Memory Attributes (PMA)
 
 Typically, only parts of the entire memory space need to support CHERI {ctag}s.
-Therefore, it is desirable that harts supporting {cheri_base_ext_name} extend PMAs with Physical Memory Attributes indicating whether a memory region allows storing CHERI {ctag}s.
-If they are not supported, then what the behavior is when attempting to access them.
+Therefore Physical Memory Attributes are included indicating whether a memory region allows storing CHERI {ctag}s and to define the behavior when attempting to access them.
 
 There are three levels of support:
 
@@ -431,83 +444,9 @@ Only memory regions that have the _CHERI {ctag_title}_ PMA require storage for {
 
 === Modified Trap-Return Instructions Behavior
 
-When the {cheri_base_ext_name} base ISA is implemented, the <<otherpriv,trap-return instructions>> (`MRET` and `SRET`) read the full YLEN bits of the <<mepc_y>>/<<sepc_y>> register and unseal it prior to exception return if it is a <<sentry_cap>>.
+When the {cheri_base_ext_name} base ISA is implemented, the <<otherpriv,trap-return instructions>> (`MRET` and `SRET`) read the full YLEN bits of the <<mepc_y>>/<<sepc_y>> register and unseal it prior to exception return.
 
 include::insns/mret_sret.adoc[]
-
-[#section_cheri_disable]
-== "{cheri_priv_m_reg_enable_ext}" Extension, Version 1.0
-
-ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
-per-privilege enable bits.
-
-NOTE: *CHERI v9 Note:* The rules for excepting have been tightened here. Also,
-it is not possible to disable CHERI checks completely.
-endif::[]
-
-When using a system with {cheri_default_ext_name}, it may be desirable to disable CHERI register and instruction access to some (or all) privilege levels such that they operate as a RV32I/RV64I system without any observable presence of CHERI features.
-This includes allowing custom encodings reallocated to CHERI to revert to being custom.
-{cheri_default_ext_name} includes functions to disable explicit access to CHERI
-registers and instructions (hereafter referred to as _disabling CHERI_).
-
-NOTE: When _CHERI is disabled_ for a specific privilege level, <<pcc>> and <<ddc>> bounds are _still_ enforced.
-
-The {cheri_default_ext_name} extension makes the {CRE} bit of <<misa>>, <<menvcfg>>, and <<senvcfg>> writable to allow CHERI to be disabled.
-
-The effective CHERI-enable for the current privilege is:
-
-* Machine: `<<misa>>.{CRE}`
-* Supervisor: `<<misa>>.{CRE} & <<menvcfg>>.{CRE}`
-* User: `<<misa>>.{CRE} & <<menvcfg>>.{CRE} & <<senvcfg>>.{CRE}`
-
-NOTE: On reset CHERI is always disabled for backwards compatibility (<<misa>>.{CRE} resets to zero, <<ddc>> and <<pcc>> bounds are nominally <<root-cap,root capabilities>>.
-
-`<<misa>>.{CRE}` is a WARL field.
-M-mode software can freely set it to one, but then it can only be set back to zero if <<ddc>> and <<pcc>> are root capabilities.
-
-NOTE: In this way M-mode software cannot disable <<ddc>>/<<pcc>> bounds checks once they have been configured.
-
-The following occurs when executing code in a privilege mode that has CHERI disabled:
-
-* Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces, and so the encodings in <<rvy_insn_table>> and <<rvy_hybrid_insn_table>> are no longer available.
-* Natively YLEN CSRs are no longer available, and may have been mapped to different standard CSRs.
-* Executing CSR instructions accessing any CSR extended to YLEN only allows XLEN access (this is identical to {cheri_int_mode_name} access).
-
-Disabling CHERI has no effect on implicit accesses or security checks.
-The last capability written to <<pcc>> and <<ddc>> before disabling CHERI will be used to authorize instruction execution and data memory accesses respectively.
-
-[NOTE]
-====
-Disabling CHERI prevents low-privileged {cheri_int_mode_name} software
-from interfering with the correct operation of higher-privileged {cheri_int_mode_name} software
-that does not perform <<ddc>> switches on trap entry and return.
-
-Disabling CHERI allows harts supporting CHERI to be fully
-compatible with standard RV32[IE]/RV64[IE] base architectures,
-including any instructions mapped into the reallocated custom encoding spaces.
-This is the default behavior on reset.
-====
-
-xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart for the different CHERI modes, while executing outside debug mode.
-
-.Hart's behavior depending on the effective <<section_cheri_disable,CHERI enable>> and <<cheri_execution_mode>>
-[#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
-|==============================================================================
-|                                      | {CRE}^1^=0        | {CRE}=1, P-bit={int_mode_value} | {CRE}=1, P-bit={cap_mode_value}
-| Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
-| Natively YLEN CSRs available         | ✘                 | ✔                     | ✔
-| Extended YLEN CSR access width       | XLEN              | XLEN                  | YLEN
-| CHERI instructions available         | ✘                 | ✔^2^                  | ✔
-| _custom-1/2/3_ available for custom use| ✔                 | ✘                     | ✘
-| Summary                              | **_Fully RV32[IE]/RV64[IE] compatible_**^3^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
-|==============================================================================
-
-^1^ _{CRE}_ represents the effective CHERI enable for the current privilege mode.
-
-^2^ The compressed instructions operating on capability data are _unavailable_ as their encodings will revert to non-CHERI standard behavior.
-
-^3^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, Xtvec, Xepc and <<ddc>> have not been changed from the default reset state (i.e., hold <<root-rx-cap>> and <<root-rw-cap>> capabilities).
 
 ifdef::support_varxlen[]
 [#section_cheri_dyn_xlen]
@@ -563,15 +502,6 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 
 ====
 
-[#cheri_pte_fault]
-=== {cheri_excep_name_pte_st}
-
-{cheri_base64_ext_name} adds the the following new fault type:
-
-* {cheri_excep_name_pte_st} (cause value {cheri_excep_cause_pte_st})
-
-It is prioritized against other fault types as shown in <<exception-priority-cheri>>.
-
 === The _pte_._{cheri_base_ext_name_lc}_ field for capability flow control
 
 [NOTE]
@@ -609,16 +539,13 @@ If _pte_._{pte_cap_rw_name_lc}_=1 then:
 When address translation is in effect for {cheri_base64_ext_name}, the upper bits of virtual
 memory addresses must match for the address to be valid.
 
-The CSRs shown in xref:CSR_exevectors[xrefstyle=short], as well as the pc, need not hold all possible invalid addresses.
-Implementations may convert an invalid address into some other invalid address that the register is capable of holding.
+The CSRs shown in xref:CSR_exevectors[xrefstyle=short], as well as the <<pcc>>, need not hold all possible invalid addresses.
 
 However, the bounds encoding of capabilities depends on the address value if the bounds are not infinite.
 
 Therefore implementations must not convert invalid addresses to other arbitrary invalid addresses in an unrestricted manner if the bounds are not infinite.
 
 If the bounds could not be decoded due to the address being invalid, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
-
-NOTE: In all cases, if the authorizing capability has bounds that cover all addresses, then the behavior is identical to the normal RISC-V behavior without CHERI.
 
 NOTE: Not requiring the implementation to decode the bounds for invalid addresses reduces the size of bounds comparators from 64-bits to the supported virtual address width.
 
@@ -631,26 +558,27 @@ A CSR may be updated to hold a capability with an invalid address, due to:
 
 To ensure that the bounds of a valid capability cannot be corrupted:
 
-* If the new address is invalid and the capability bounds do not cover all addresses, then set the {ctag} to zero before writing to the CSR.
+* If the new address is invalid and the capability bounds are not infinite then set the {ctag} to zero before writing to the CSR.
 
-NOTE: When the capability's address is invalid and happens to match an invalid address which the CSR
+NOTE: When the new address is invalid and happens to match an invalid address which the CSR
 can hold, then it is implementation-defined whether to set the {ctag} to zero.
 
 ==== Branches and Jumps
 
-If the effective target address of the jump or branch is invalid, and the authorizing capability's bounds do not cover all addresses, then set the {ctag} of the target <<pcc>> to zero.
-This will cause a {cheri_excep_name_pc} exception when executing the target instruction.
+If the effective target address of the jump or branch is invalid, and the authorizing capability's bounds are not infinite, then set the {ctag} of the target <<pcc>> to zero.
+
+NOTE: A {cheri_excep_name_pc} exception will be raised at the target.
 
 NOTE: RISC-V harts that do not support {cheri_base_ext_name} normally raise an
 instruction access fault or page fault after jumping or branching to an invalid address.
-Therefore, {cheri_base_ext_name} aims to preserve that behavior to ensure that
+Therefore, {cheri_base_ext_name} preserves that behavior to ensure that
 harts supporting {cheri_base_ext_name} and {cheri_default_ext_name} are fully
 compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to
 <<root-rx-cap>> and <<root-rw-cap>> capabilities, respectively.
 
 ==== Memory Accesses
 
-If the effective address of the memory access is invalid, and the authorizing capability's bounds do not cover all addresses, then raise a {cheri_excep_name_ld} or {cheri_excep_name_st} exception because the bounds cannot be reliably decoded.
+If the effective address of the memory access is invalid, and the authorizing capability's bounds are not infinite, then raise a {cheri_excep_name_ld} or {cheri_excep_name_st} exception because the bounds cannot be reliably decoded.
 
 ifndef::cheri_standalone_spec[]
 
@@ -722,10 +650,6 @@ Root Executable Capability::
 [#sec_cap_type,reftext="CT-field"]
 Capability Type (CT)::
  See the unprivileged manual for the definition of capability type values.
-
-[#sentry_cap,reftext="sealed entry point capability"]
-Sealed Entry Point Capabilities::
- See the unprivileged manual for the definition of sealed entry point capabilities.
 
 [#null-cap,reftext="NULL"]
 NULL Capability::
@@ -808,3 +732,67 @@ Instructions added by {cheri_default_ext_name}::
   See the unprivileged manual for instructions added by {cheri_default_ext_name}.
 
 endif::[]
+
+[#section_cheri_disable]
+== "{cheri_priv_m_reg_enable_ext}" Extension, Version 1.0
+
+ifdef::cheri_v9_annotations[]
+NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
+per-privilege enable bits.
+
+endif::[]
+
+When using a system with {cheri_default_ext_name}, it may be desirable to configure some (or all) privilege levels such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
+
+{cheri_default_ext_name} includes functions to disable CHERI by making the {CRE} bit of <<misa_y>>, <<menvcfg_y>>, and <<senvcfg_y>> writable.
+
+The effective CHERI-enable for the current privilege is:
+
+* Machine: `<<misa_y>>.{CRE}`
+* Supervisor: `<<misa_y>>.{CRE} & <<menvcfg_y>>.{CRE}`
+* User: `<<misa_y>>.{CRE} & <<menvcfg_y>>.{CRE} & <<senvcfg_y>>.{CRE}`
+
+NOTE: On reset CHERI is always disabled for backwards compatibility: <<misa_y>>.{CRE} resets to zero, <<ddc>>, <<pcc>>, Xtvec, Xepc are nominally <<root-cap,root capabilities>>.
+
+`<<misa_y>>.{CRE}` is a WARL field.
+M-mode software can freely set it to one, but then it can only be set back to zero if <<ddc>>, <<pcc>>, Xtvec, Xepc are root capabilities so that no CHERI configuration has taken effect.
+
+NOTE: In this way M-mode software cannot disable any CHERI checks once they have been configured.
+
+The following occurs when executing code in a privilege mode that has CHERI disabled:
+
+* Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces
+** Therefore the encodings in <<rvy_insn_table>> and <<rvy_hybrid_insn_table>> are no longer available.
+* Natively YLEN CSRs are no longer available.
+* Only XLEN CSR access is permitted.
+** This is identical to {cheri_int_mode_name} access.
+
+Disabling CHERI has no effect on implicit accesses or security checks.
+The last capability written to <<pcc>> and <<ddc>> before disabling CHERI will be used to authorize instruction execution and data memory accesses respectively.
+
+[NOTE]
+====
+Disabling CHERI prevents low-privileged {cheri_int_mode_name} software
+from interfering with the correct operation of higher-privileged {cheri_int_mode_name} software
+that does not perform <<ddc>> switches on trap entry and return.
+====
+
+xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart for the different CHERI modes, while executing outside debug mode.
+
+.Hart's behavior depending on the effective <<section_cheri_disable,CHERI enable>> and <<cheri_execution_mode>>
+[#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
+|==============================================================================
+|                                      | {CRE}^1^=0        | {CRE}=1, P-bit={int_mode_value} | {CRE}=1, P-bit={cap_mode_value}
+| Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
+| Natively YLEN CSRs available         | ✘                 | ✔                     | ✔
+| Extended YLEN CSR access width       | XLEN              | XLEN                  | YLEN
+| CHERI instructions available         | ✘                 | ✔^2^                  | ✔
+| _custom-1/2/3_ available for custom use| ✔                 | ✘                     | ✘
+| Summary                              | **_Fully RV32[IE]/RV64[IE] compatible_**^3^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
+|==============================================================================
+
+^1^ _{CRE}_ represents the effective CHERI enable for the current privilege mode.
+
+^2^ The {cheri_base_ext_name} compressed instructions operating on capability data are _unavailable_ as their encodings will revert to RV32[IE]/RV64[IE] standard behavior.
+
+^3^ If {CRE}=0 in M-mode the hart is fully compatible with RV32[IE]/RV64[IE]. For lower privileged modes <<pcc>> or <<ddc>> may not be <<root-cap,root capabilities>> and so the behavior may be restricted.

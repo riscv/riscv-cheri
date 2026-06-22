@@ -43,21 +43,21 @@ The <<mtidc>> register's reset value is changed to be
 {cheriot_unpriv_ext_name}'s <<root-rw-cap>> capability value (with set {ctag}),
 rather than the unspecified value with zero {ctag} of {cheri_base_ext_name}.
 
-<<mscratch>>::
-The <<mscratch>> register's reset value is changed to be
+<<mscratch_y>>::
+The <<mscratch_y>> register's reset value is changed to be
 {cheriot_unpriv_ext_name}'s _sealing_ capability value (with set {ctag}),
 rather than the unspecified value with zero {ctag} of {cheri_base_ext_name}.
 
 === Additional CSR Legalization Requirements
 
-All of <<pcc>>, <<mtvec>>, and <<mepc>> will clear their {ctag} if the
+All of <<pcc>>, <<mtvec_y>>, and <<mepc_y>> will clear their {ctag} if the
 capability they would come to hold after an update
 would be sealed or would not grant <<x_perm>>.
 
 [NOTE]
 =====
 The <<section_priv_cheri,{cheri_priv_m_ext}>> requires that
-<<mtvec>> and <<mepc>> nominally reset to <<root-rx-cap>> capabilities, and
+<<mtvec_y>> and <<mepc_y>> nominally reset to <<root-rx-cap>> capabilities, and
 <<pcc>> must be unsealed and grant <<x_perm>> for successful execution.
 Neither architecture nor software expects to be able
 to place capabilities thereby prohibited in these CSRs.
