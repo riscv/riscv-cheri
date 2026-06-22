@@ -2,66 +2,68 @@
 == "{cheri_levels1_ext_name}" Extension for CHERI 2-Level Information Flow Control
 
 {cheri_levels1_ext_name} adds an *Information Flow Control* (IFC) mechanism to CHERI.
-It adds one new "level" metadata bit to classify capabilities as either *global* or *local*, adds checks to memory operations to control how capabilities can be shared, and adds two new level-related permissions, **Store Local (SL)** and **Load Global (LG)**.
+It adds one new "level" metadata bit (<<zylevels1_gl_flag>>) to classify capabilities as either *global* or *local*, adds checks to memory operations to control how capabilities can be shared, and adds two new level-related permissions, <<zylevels1_sl_perm,Store Local (SL)>> and <<zylevels1_lg_perm,Load Global (LG)>>.
+
+NOTE: The behavior is an extension as it may be replaced by a future scheme with more than two levels.
 
 === Added Metadata Bits (Permissions and Flags)
 
 [#zylevels1_ap_field_summary,width="100%",options=header,halign=center,cols="2,2,5"]
 |==============================================================================
 | Bit                    | Type                   | Comment
-| <<zylevels1_gl_perm>>  | Information flow label | Used to classify capabilities as global or local.
+| <<zylevels1_gl_flag>>  | Information flow label | Used to classify capabilities as global or local.
 | <<zylevels1_sl_perm>>  | Data memory permission | Used to filter the {ctag}s of stored capabilities.
 | <<zylevels1_lg_perm>>  | Data memory permission | Used to filter the permissions of loaded capabilities.
 |==============================================================================
 
 ifdef::cheri_v9_annotations[]
-NOTE: The <<zylevels1_gl_perm>> and <<zylevels1_sl_perm>> are as in CHERI v9, Morello, and CHERIoT v1.
+NOTE: The <<zylevels1_gl_flag>> and <<zylevels1_sl_perm>> are as in CHERI v9, Morello, and CHERIoT v1.
 The <<zylevels1_lg_perm>> is as in CHERIoT v1.
 endif::[]
 
-[#zylevels1_gl_perm,reftext="GL(obal) Flag"]
+[#zylevels1_gl_flag,reftext="GL(obal) Flag"]
 ==== The Capability Global (GL) Flag
 
-The _Capability Global_ (GL) flag is a metadata bit used to track and control the propagation of capabilities.
+The <<zylevels1_gl_flag>> is a metadata bit used to track and control the propagation of capabilities.
 It works in conjunction with the <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>> permissions to enforce information flow boundaries.
 
-The _Capability Global_ flag holds one of two values:
+[#levels_globalcap,reftext="global capability"]
+Global Capability::
+A global capability has <<zylevels1_gl_flag>>=1.
 
-* 1: the capability is _global_.
-* 0: the capability is _local_.
+[#levels_localcap,reftext="local capability"]
+Local Capability::
+A local capability has <<zylevels1_gl_flag>>=0.
 
-Like permissions, the _Capability Global_ flag can be cleared when creating a new capability from an existing one, but it can never be set unless derived from a superset capability which has the  _Capability Global_ flag set.
+Like permissions, the <<zylevels1_gl_flag>> can be cleared when creating a new capability from an existing one, but it can never be set unless derived from a superset capability which has the <<zylevels1_gl_flag>> set.
 
 [#zylevels1_sl_perm,reftext="SL-permission"]
 ==== Store Local Permission (SL)
 
-Store Local Permission (SL) controls whether local capabilities can be stored to memory.
-Storing a local capability (one without the <<zylevels1_gl_perm>> set) using an authorizing capability that lacks <<zylevels1_sl_perm>> results in the stored capability having its {ctag} set to zero.
+Store Local Permission (SL) controls whether a <<levels_localcap>> can be stored to memory.
 
-<<zylevels1_sl_perm>> is dependent on both <<c_perm>> and <<w_perm>>.
-If either of these permissions is clear, <<zylevels1_sl_perm>> is ignored and does not need to be encodable in the capability format.
+If the authorizing capability lacks <<zylevels1_sl_perm>> then the stored capability has its {ctag} set to zero.
+
+<<zylevels1_sl_perm>> is dependent on both <<c_perm>> and <<w_perm>> as shown in <<zylevels1_clrperm_table>>.
 
 [#zylevels1_lg_perm,reftext="LG-permission"]
 ==== Load Global Permission (LG)
 
-Load Global Permission (LG) controls whether global capabilities can be loaded from memory.
-Loading a capability using an authorizing capability that lacks <<zylevels1_lg_perm>> clears the <<zylevels1_gl_perm>> bit of the loaded capability, making it local.
-If the loaded capability is _unsealed_, its <<zylevels1_lg_perm>> is also cleared.
+Load Global Permission (LG) controls whether <<levels_globalcap, global capabilities>> can be loaded from memory.
+Loading a capability using an authorizing capability that lacks <<zylevels1_lg_perm>> clears the <<zylevels1_gl_flag>> bit of the loaded capability, making it into a <<levels_localcap>>.
+If the loaded capability is unsealed, its <<zylevels1_lg_perm>> is also cleared.
 
-This behavior is similar to how <<lm_perm>> affects loaded capabilities (but note the difference in interaction with seals).
+NOTE: This behavior is similar to how <<lm_perm>> affects loaded capabilities (but note the difference in interaction with seals).
 
-<<zylevels1_lg_perm>> is dependent on both <<c_perm>> and <<r_perm>>.
-If either of these permissions is clear, <<zylevels1_lg_perm>> is ignored and does not need to be encodable in the capability format.
+<<zylevels1_lg_perm>> is dependent on both <<c_perm>> and <<r_perm>> as shown in <<zylevels1_clrperm_table>>.
 
 === Interaction with <<root-cap>> Capabilities
 
-The <<root-cap>> capabilities used in the system are extended:
+The <<root-cap>> capabilities definitions are extended:
 
-* The definitions of <<root-rx-cap>> and <<root-rw-cap>> capabilities are both augmented to require that <<zylevels1_gl_perm>> be set to _global_.
+* A <<root-rx-cap>> capability is required to grant <<zylevels1_lg_perm>> and to be a <<levels_globalcap>>.
 
-* A <<root-rx-cap>> capability is required to grant <<zylevels1_lg_perm>>.
-
-* A <<root-rw-cap>> capability is required to grant both <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>.
+* A <<root-rw-cap>> capability is required to grant both <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>> and to be a <<levels_globalcap>>.
 
 === Interaction with <<CLRPERM>> and <<GCPERM>>
 
@@ -69,21 +71,20 @@ The <<root-cap>> capabilities used in the system are extended:
 [#zylevels1_acperm_bit_field]
 include::./img/zylevels1-acperm_bit_field.edn[]
 
-The <<zylevels1_gl_perm>>, <<zylevels1_sl_perm>>, and <<zylevels1_lg_perm>> fields are mapped into the <<acperm_bit_field,capability permissions bitfield>> (<<acperm_bit_field>>), used by <<CLRPERM>> and <<GCPERM>>, as shown in <<zylevels1_acperm_bit_field>>.
+The <<zylevels1_gl_flag>>, <<zylevels1_sl_perm>>, and <<zylevels1_lg_perm>> fields are mapped into the <<acperm_bit_field,capability permissions bitfield>> (<<acperm_bit_field>>), used by <<CLRPERM>> and <<GCPERM>>, as shown in <<zylevels1_acperm_bit_field>>.
 
 ==== <<CLRPERM>> and the Capability Global (GL) Flag
-<<CLRPERM>> can produce a new capability with its <<zylevels1_gl_perm>> cleared, even if the source capability is sealed.
+<<CLRPERM>> can produce a new capability with its <<zylevels1_gl_flag>> cleared, even if the source capability is sealed.
 This differs from architectural and software permissions.
 This applies to both the implicit clearing of permissions during memory loads and explicit <<CLRPERM>> instructions.
 
 [#zylevels1-clrperm-rules]
-==== Additional <<CLRPERM>> rules
+==== Additional <<CLRPERM>> permission rules
 
-As mentioned, the <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>> permissions are dependent on base permissions.
-<<CLRPERM>> operations (including implicit ones) and/or the capability encoding clear these permissions when their dependencies are cleared.
-Specifically, we add the following rules to those of <<sec_permission_transitions>>:
+The following <<CLRPERM>> permission rules are added:
 
-[float="center",align="center",cols="2,2,4",options="header"]
+.<<CLRPERM>> permission rules for {cheri_levels1_ext_name}.
+[#zylevels1_clrperm_table,float="center",align="center",cols="2,2,4",options="header"]
 |===
 | <<CLRPERM>> Rule | Permission | Valid only if
 | [[perm_req:zylevels1:lg:c-and-r,{cheri_levels1_ext_name}-1]]{cheri_levels1_ext_name}-1 +
@@ -94,37 +95,35 @@ Specifically, we add the following rules to those of <<sec_permission_transition
 
 === Interaction with <<LOAD_CAP>>
 
-As outlined above, {cheri_levels1_ext_name} introduces two new constraints on capabilities loaded from memory.
-These constraints apply to <<LOAD_CAP>> (`{load_cap_name_lc} {cd}, offset({cs1})`) and other instructions with similar semantics.
-The behavior can be described as implicitly reducing the permissions of the loaded capability:
+{cheri_levels1_ext_name} introduces two new constraints on capabilities loaded from memory.
+These constraints apply to <<LOAD_CAP>> and all other instructions that can load valid capabilities.
 
-* If the authority (`{cs1}`) lacks <<zylevels1_lg_perm>> and the loaded capability is unsealed, both its <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>> are cleared in the result register (`{cd}`).
+The permissions of the loaded capability may be reduced:
 
-* If the authority (`{cs1}`) lacks <<zylevels1_lg_perm>> and the loaded capability is sealed, its <<zylevels1_gl_perm>> is cleared in the result register (`{cd}`).
+* If the authorizing capability lacks <<zylevels1_lg_perm>> and the loaded capability is unsealed, both <<zylevels1_gl_flag>> and <<zylevels1_lg_perm>> are cleared in the result.
+
+* If the authorizing capability lacks <<zylevels1_lg_perm>> and the loaded capability is sealed, <<zylevels1_gl_flag>> is cleared in the result.
 +
-NOTE: The absence of <<zylevels1_lg_perm>> affects the <<zylevels1_gl_perm>> even of sealed capabilities because the latter is an information flow label rather than a architectural permission.
+NOTE: The absence of <<zylevels1_lg_perm>> affects the <<zylevels1_gl_flag>> even of sealed capabilities because the latter is an information flow label rather than an architectural permission.
 
 .<<zylevels1_lg_perm>> effects for loading capabilities
 [#zylevels1_load_summary,width="100%",options=header,align="center",cols="1,1,1,1,1,6"]
 |==============================================================================
    3+|Auth cap field         2+| Data cap field |
     h|*R*   h|*C*    h|*LG*   h| Tag h| Sealed h| Action
-.3+.^|1 .3+.^| 1 .2+.^| 0 .2+.^| 1    | Yes     | Load data capability with its <<zylevels1_gl_perm>> cleared
-                                      | No      | Load data capability with both its <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>> cleared
-                    3+| All other cases         | Load data capability with both its <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>> unmodified
+.3+.^|1 .3+.^| 1 .2+.^| 0 .2+.^| 1    | Yes     | Load data capability with its <<zylevels1_gl_flag>> cleared
+                                      | No      | Load data capability with both its <<zylevels1_gl_flag>> and <<zylevels1_lg_perm>> cleared
+                    3+| All other cases         | Load data capability with both its <<zylevels1_gl_flag>> and <<zylevels1_lg_perm>> unmodified
 |==============================================================================
-
-NOTE: <<zylevels1_lg_perm>> is only effective when both <<r_perm>> and <<c_perm>> are granted.
-
-NOTE: Because <<zylevels1_sl_perm>> is only relevant to capabilities granting <<w_perm>>, any load that clears <<w_perm>> (e.g., due to a lack of <<lm_perm>> permission) will also necessarily clear <<zylevels1_sl_perm>>.
 
 === Interaction with <<STORE_CAP>>
 
-{cheri_levels1_ext_name} adds a constraint to <<STORE_CAP>> (`{store_cap_name_lc} {cs2}, offset({cs1})`) and similar instructions.
+{cheri_levels1_ext_name} adds a constraint to <<STORE_CAP>> and all instructions which can store valid capabilities.
+
 The capability is stored with a {ctag} set to one only if:
 
-* The capability being stored (`{cs2}`) is global (<<zylevels1_gl_perm>>=1), OR
-* The authority used for the store (`{cs1}`) grants <<zylevels1_sl_perm>>.
+* The capability being stored is a <<levels_globalcap>>, or
+* The authorizing capability grants <<zylevels1_sl_perm>>.
 
 Otherwise, the capability is stored with the {ctag} set to zero.
 
@@ -140,32 +139,14 @@ NOTE: While a lack of <<zylevels1_lg_perm>> restricts flow by reducing permissio
                            | 0              | Store data capability with {ctag} set to zero
 |==============================================================================
 
-NOTE: <<zylevels1_sl_perm>> is only effective when both <<w_perm>> and <<c_perm>> are granted.
+=== Interaction with Capability Subsets
 
-=== Interaction with <<SCSS>>
+The definition of <<cap_subset>> has an additional rule:
 
-In implementations of {cheri_levels1_ext_name}, the <<SCSS>> instruction (`{SCSS_LC} rd, {cs1}, {cs2}`) indicates that `{cs2}` is a subset of `{cs1}` (setting `rd` to 1) only if:
+* The <<zylevels1_gl_flag>> of `{cs2}` is zero, or
+* The <<zylevels1_gl_flag>> of `{cs1}` is one.
 
-* The Global flag of the supposed subset capability (`{cs2}`) is clear (0), OR
-* The Global flag of the supposed superset capability (`{cs1}`) is set (1).
-
-The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>> permissions.
-
-=== Interaction with <<CBLD>>
-
-A <<CBLD>> instruction (`{CBLD_LC} {cd}, {cs1}, {cs2}`) may yield a valid capability (`{cd}.tag=1`) only if:
-
-* The Global flag of the bits to be reconstituted (`{cs2}`) is clear (0), OR
-* The Global flag of the reconstituting superset capability (`{cs1}`) is set (1).
-
-The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>> permissions.
-
-=== Interaction with <<YSUNSEAL>>
-
-The <<YSUNSEAL>> instruction (`{YSUNSEAL_LC} {cd}, {cs1}, {cs2}`) ensures that the result has <<zylevels1_gl_perm>> set only if the unsealing authority (`{cs1}`) also has <<zylevels1_gl_perm>> set.
-(That is, `{cd}` is global if and only if both the authority in `{cs1}` and the unsealed form of `{cs2}` are global.)
-
-The existing permission subset logic applies to the new <<zylevels1_sl_perm>> and <<zylevels1_lg_perm>> permissions.
+NOTE: This affects the behavior of <<SCSS>>, <<CBLD>> and <<YSUNSEAL>>.
 
 === Rationale and Software Use Cases
 
@@ -175,7 +156,7 @@ There are many uses of this mechanism, but two examples are listed below.
 ==== Restricting Capability Flow Between Regions or Domains (e.g., Stack-to-Heap or Kernel-to-User)
 
 Software can use these features to prevent pointers from leaking between different memory regions or privilege domains that have different security properties.
-The general pattern is to mark sensitive capabilities as local (by clearing their <<zylevels1_gl_perm>>) and ensuring that destination memory regions are accessed through authorities that lack the <<zylevels1_sl_perm>>.
+The general pattern is to mark sensitive capabilities as local (by clearing their <<zylevels1_gl_flag>>) and ensuring that destination memory regions are accessed through authorities that lack the <<zylevels1_sl_perm>>.
 
 *   **Intra-program flow (e.g., Stack-to-Heap):**
     To prevent pointers to short-lived memory (like the stack) from leaking into long-lived memory (like the heap), software marks all stack pointers as local.
@@ -193,12 +174,12 @@ The general pattern is to mark sensitive capabilities as local (by clearing thei
 When passing a capability to a less-trusted function, a caller often wants to enforce "no-capture" guarantees, ensuring the callee cannot hold onto the capability after returning.
 {cheri_levels1_ext_name} provides two levels of protection against capability capture.
 
-*   **Shallow no-capture (via <<zylevels1_gl_perm>> and <<zylevels1_sl_perm>>):**
-    The caller makes the argument capability local by clearing its <<zylevels1_gl_perm>>.
+*   **Shallow no-capture (via <<zylevels1_gl_flag>> and <<zylevels1_sl_perm>>):**
+    The caller makes the argument capability local by clearing its <<zylevels1_gl_flag>>.
     Because the callee's global variables and persistent data structures are accessed through capabilities that lack the <<zylevels1_sl_perm>>, the callee cannot store the local argument capability into them.
-    This enforces a shallow guarantee: the callee cannot capture the argument itself, but it might still load a global capability _through_ the argument and capture that.
+    This enforces a shallow guarantee: the callee cannot capture the argument itself, but it might still load a <<levels_globalcap>> _through_ the argument and capture that.
 
 *   **Deep no-capture (via <<zylevels1_lg_perm>>):**
     To solve the shallow limitation, the caller also removes the <<zylevels1_lg_perm>> from the argument capability.
-    If the callee loads any capability through this argument, the hardware automatically removes the loaded capability's <<zylevels1_gl_perm>> and <<zylevels1_lg_perm>>.
+    If the callee loads any capability through this argument, the hardware automatically removes the loaded capability's <<zylevels1_gl_flag>> and <<zylevels1_lg_perm>>.
     This enforces a deep no-capture guarantee: the callee is prevented from capturing the argument _and_ anything reachable from it.

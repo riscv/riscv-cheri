@@ -35,7 +35,7 @@ include::img/cap-encoding-cheriot.edn[]
 |==============================================================================
 | Field      | Description
 | R          | Reserved bit
-| G          | Global bit, as in <<zylevels1_gl_perm,GL>>.
+| G          | Global bit, as in <<zylevels1_gl_flag,GL>>.
 | P          | Permissions, see <<cheriot-permission-encoding>>.
 | CT         | Sealed object Type, see <<section_cheriot_cap_type>>.
 | E          | Exponent field for bounds encoding, see <<section_cheriot_cap_bounds>>.
@@ -59,7 +59,7 @@ This encoding does not support {cheri_default_ext_name}: there is no mode bit so
 
 <<section_zylevels1>>::
 This encoding supports <<section_zylevels1>>.
-Its <<zylevels1_gl_perm,GL>> flag is encoded in the G bit,
+Its <<zylevels1_gl_flag,GL>> flag is encoded in the G bit,
 and its <<zylevels1_lg_perm,GL>> and <<zylevels1_sl_perm,SL>> permissions are encoded in the P field.
 
 ifdef::cheri_standalone_spec[]
@@ -341,7 +341,7 @@ The encoding for the <<root-rx-cap>> and <<root-rw-cap>> capabilities defined by
 and the sealing root defined by <<sec_zycheriot_unpriv_permission_roots,{cheriot_unpriv_ext_name}>>
 have bounds that cover the entire associated address space.
 Root capabilities necessarily have set {ctag}s and are necessarily unsealed,
-<<section_zylevels1>> requires root capabilities to be <<zylevels1_gl_perm,Global>>,
+<<section_zylevels1>> requires root capabilities to be <<zylevels1_gl_flag,Global>>,
 and we define our root capabilities as having a clear reserved bit (that is, an R field of `0`).
 The encoded fields of root capabilities are shown in <<tab_cheriot_enc1_infinite>>,
 except the P field, which depends on which root capability is being represented.
