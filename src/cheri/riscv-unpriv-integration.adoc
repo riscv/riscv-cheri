@@ -1,21 +1,9 @@
 [[rvy]]
 == {cheri_base_ext_name} Base Capability Instruction Set, Version 1.0
 
-ifdef::cheri_standalone_spec[]
-WARNING: This chapter will appear in the unpriv spec after the RV32I chapter.
-endif::[]
+This chapter introduces a new set of base ISAs called {cheri_base_ext_name} that extend the RV32[IE]/RV64[IE] base ISAs with CHERI.
 
-This chapter introduces a new base ISA called {cheri_base64_ext_name} that extends the RV64 instruction set with CHERI.
-In the future, 32-bit bases ({cheri_base32_ext_name}) will also be defined with near identically behavior but a different in-memory representation, so this chapter uses the term {cheri_base_ext_name} to refer to the behavior common between all bases.
-The {cheri_base_ext_name} base can be composed with other standard options to bases such as E (16-registers), Zfinx and endianness.
-
-All CHERI implementations must also specify a capability encoding format.
-
-This chapter also specifies <<rv64y_cap_description>> which is the capability encoding format for {cheri_base64_ext_name} systems.
-
-ifdef::cheri_ratification_v1_only[]
-Future versions of this specification will include capability encoding formats for {cheri_base32_ext_name}
-endif::[]
+The {cheri_base_ext_name} base ISA can be composed with other standard options to bases such as Zfinx.
 
 === CHERI Overview
 
@@ -24,6 +12,22 @@ It has an additional memory access mechanism that protects _references to code a
 This mechanism is implemented by providing a new primitive, called a *capability*, that software components can use to implement strongly protected pointers within an address space.
 Capabilities are unforgeable and delegatable tokens of authority that grant software the ability to perform a specific set of operations.
 In CHERI, integer-based pointers are replaced by capabilities to provide memory access control.
+
+Every {cheri_base_ext_name} base ISA requires a _capability encoding format_ to complete the specification, such as <<rv64y_cap_description>>.
+The _capability encoding format_ gives full details of how CHERI capabilities are represented in memory and in registers, and specifies the exact properties such as bounds precision and available combinations of permissions.
+
+The full specification of an {cheri_base_ext_name} base ISA includes a capability encoding format.
+
+E.g., in {rv64y_uni_base_name} :
+
+. `XLEN=64`
+. `L` means that it's a parameterized base
+. `Y` means that it's a CHERI base
+. `A` is the specific capability encoding format.
+
+NOTE: Future RV64 CHERI capability encoding format could be RV64LYB, RVY64LYC etc. or they may have more descriptive names after the RV64LY prefix.
+
+Also see xref:sec_cap_encoding_formats[xrefstyle=full].
 
 === CHERI protection model
 
@@ -45,7 +49,7 @@ capabilities are always derived via valid manipulations of other capabilities
 equal to or less permissive (_monotonicity_). Tampering or modifying capabilities
 in an attempt to elevate their rights will yield an invalid capability.
 Attempting to dereference via an invalid capability
-will result in a hardware exception.
+will result in raising an exception.
 
 ^1^ Not all possible corrupted states are detected, see xref:section_cap_integrity[xrefstyle=full].
 
@@ -69,8 +73,8 @@ In addition to widening to YLEN, each register also gains a one-bit {ctag} which
 {cheri_base_ext_name} specifies the minimum required fields that the capability format must support, and their semantics.
 All current {cheri_base_ext_name} bases are little endian and therefore the memory representation of capabilities always holds the address in the first `XLEN` bytes of memory followed by the metadata.
 
-{cheri_base_ext_name} is designed to be highly extensible, and therefore must allow multiple metadata encoding formats to exist.
-Specific encoding formats may support different ISA extensions, and add new architectural permissions.
+{cheri_base_ext_name} is designed to be highly extensible by allowing different capability encoding formats to exist.
+Specific capability encoding formats may support different ISA extensions and add new architectural permissions.
 
 .CHERI Capability structure
 [#cap_structure]
@@ -116,14 +120,14 @@ The {ctag} cannot be directly set by software; it is _not_ a conventionally acce
 If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
 If the rules are followed then the {ctag} will propagate through the instructions that modify, load or store the capability.
 
-Therefore, whenever an instruction writes a capability with the {ctag} set to a register:
+Therefore, whenever an instruction writes a capability with the {ctag} set to a register or to memory:
 
 * At least one {ctag} must have been set in the input operands.
 ** This is the _provenance_ check.
-* The requested operation must have been legal and does not increase bounds or permissions.
+* The requested operation must have been legal and not increase bounds or permissions.
 ** This is the _monotonicity_ check.
 * The instruction may have checked that none of the input capability were corrupted.
-** This is the _integrity_ check. Only some instructions must perform this check, see <<section_cap_integrity>>.
+** This is the _integrity_ check. Not all instructions check all input operands for _integrity_.
 
 Capability load/store require the _provenance_ check:
 
@@ -196,7 +200,7 @@ On system initialization, one or more <<root-cap>> capabilities are available;
 typically, these have bounds which cover all of memory and the maximum permissions set.
 All smaller capabilities are derived from these.
 
-The ISA does not allow the bounds (and permissions) of a capability with its {ctag} set to be increased (_monotonicity_).
+NOTE: As a reminder, the ISA does not allow the bounds or permissions of a capability with its {ctag} set to be increased (_monotonicity_)
 
 The <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions generate new capabilities from a source capability and a length operand (`rs2` or `imm`).
 The resulting capability has its address set as the _base_ bound and its length as requested, subject to encoding granularity constraints.
@@ -232,22 +236,21 @@ image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
 E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding[xrefstyle=short] along with the bounds decoding.
 
-The maximum range of address values that the pointer can take without changing the interpretation of bounds is defined by the <<section_cap_representable_check,representable range>>.
+The maximum range of address values that the pointer can take without changing the calculation of the bounds is defined by the <<section_cap_representable_check,representable range>>.
 
 NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability encoding had separate 64-bit values for the base and top memory bounds, and another for metadata fields.
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
-Since deriving a new capability with a different address could change the meaning of the bounds, all such derived capabilities (e.g., deriving the next <<pcc>> capability from the existing <<pcc>> via control-flow instructions or sequential execution) and instructions that return valid derived capabilities, must check that the new address is within the representable range defined by the source capability.
-If the interpretation of bounds _has_ changed, then the {ctag} of the derived capability is set to zero, so that it is invalid for use.
+Since the upper bits of the address are used to calculate the top and base bounds, deriving a new capability with a different address could change the resulting bounds.
+All derived capabilities must check that the new address does not change the bounds.
+If they _do_ change then the {ctag} of the derived capability is set to zero, so that it is invalid for use.
 
 Software can derive a capability with a new address using instructions such as <<SCADDR>>, <<CADD>> and <<CADDI>>.
 
-NOTE: <<SCADDR>> writes back a derived capability with a new address field and, if the {ctag} was previously set, sets the {ctag} of the derived capability to one if the resulting capability still has the same bounds interpretation.
-
-NOTE: Existing software sometimes temporarily moves pointers outside of arrays, and then only comes back into the valid range on dereference, so the encoding was designed to allow valid capabilities to be out-of-bounds.
+NOTE: <<SCADDR>> writes back a derived capability with a new address field and, if the {ctag} was previously set, sets the {ctag} of the derived capability to one if the resulting capability still has the same bounds.
 
 NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check, and may never allow the address to be out of bounds.
-Therefore, the rest of the specification uses the phrase *represented exactly* for this check.
+Therefore, the ISA specification uses the phrase *represented exactly* for this check.
 
 ==== Memory space
 
@@ -263,11 +266,14 @@ The memory address space is circular, so the byte at address
 <<section_cap_representable_check>> described in xref:section_cap_encoding[xrefstyle=short] is
 also circular, so address 0 is within the <<section_cap_representable_check>> of a capability
 where address 2^XLEN^ - 1 is within the bounds.
+
 However, the decoded top address of a capability is XLEN + 1 bits wide and does *not* wrap, so
 a capability with base 2^XLEN^ - 1 and top 2^XLEN^ + 1 is not a subset of the
 infinite capability and does not authorize access to the byte at address 0.
+
 Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
 a CHERI core to generate a valid capability with top > 2^XLEN^.
+
 If such a capability exists then it must have been caused by a logic or memory fault.
 Unlike malformed bounds, the top overflowing is not treated as a special case in the
 architecture: normal bounds check rules should be followed.
@@ -280,7 +286,7 @@ This metadata value indicates the type of the capability and determines which op
 For example, the <<sec_cap_type>> can be used to _seal_ capabilities against modification, to provide control flow integrity, and to provide immutable software tokens.
 ifndef::cheri_ratification_v1_only[]
 Which capability types a given CHERI platform supports is a function of the extensions and <<sec_cap_encoding_formats>> in use.
-The capability encoding specifies a mapping between some bits within the capability format (usually described as "the CT field") and the capability types.
+The capability encoding specifies a mapping between the CT-field within the capability format and the architectural capability types.
 
 The capability encoding must be able to encode type `0` (_unsealed_).
 If any other sealed type exists, then they can be used to provide different levels of control-flow integrity.
@@ -408,8 +414,8 @@ Any operation is also contingent on requirements imposed by other RISC-V archite
 The permissions defined in {cheri_base_ext_name} are listed in <<ap_field_summary>>.
 All capability formats must support at least this set of permissions.
 Extensions building on top of {cheri_base_ext_name} may define additional permissions.
-An example of such an extension is <<section_zylevels1>>.
-The in-memory format of these permissions depends on the capability encoding.
+
+NOTE: An example of such an extension is <<section_zylevels1>>.
 
 Permissions can be cleared when deriving a new capability value (using <<CLRPERM>>) but they can never be added.
 
@@ -480,25 +486,12 @@ NOTE: Extensions may add additional non-privileged CSRs that require <<asr_perm>
 [#sec_permission_transitions]
 ===== Permission Transitions
 
-Not all capability permissions are _orthogonal_
-(that is, some permissions inherently _depend_ on others).
+Not all capability permissions are orthogonal
+as some permissions inherently depend on others.
 As such, using <<CLRPERM>> to clear some permissions
-may have the effect of clearing others as well,
-such that a permission bit being set in the result of <<GCPERM>>
-implies that all bits for permissions upon which it depends will also be set.
+may have the effect of clearing others as well.
 
-For the base set of permissions just defined, the following rules apply.
-Extensions that define new permission bits may also introduce new dependency constraints.
-Currently defined examples are:
-
-. <<section_cheri_hybrid_ext,{cheri_default_ext_name}>>, see <<sec_p_bit_hybrid_rule>>
-. <<section_zylevels1>>, see <<zylevels1-clrperm-rules>>
-ifndef::cheri_ratification_v1_only[]
-. <<section_zyseal>>, see <<zyseal_ap_field>>
-endif::[]
-
-Capability encoding formats may impose additional constraints to reduce the number of bits necessary to represent permissions.
-
+For the base set of permissions just defined, the rules in <<base_clrperm_rule_summary>> apply.
 
 .<<CLRPERM>> base rules
 [#base_clrperm_rule_summary,float="center",align="center",cols="2,2,4",options="header"]
@@ -513,9 +506,16 @@ NOTE: These rules enforce sensible permission combinations.
 For example, it makes no sense to allow loading/storing capabilities (<<c_perm>>) if you cannot read or write data (<<r_perm>> or <<w_perm>>).
 Similarly, <<lm_perm>> is only useful if you can already read capabilities (<<c_perm>> and <<r_perm>>), and <<asr_perm>> is restricted to executable capabilities (<<x_perm>>).
 
+Extensions that define new permission bits may also introduce new dependency constraints.
+Currently defined examples are:
+
+. <<section_cheri_hybrid_ext,{cheri_default_ext_name}>>, see <<sec_p_bit_hybrid_rule>>
+. <<section_zylevels1>>, see <<zylevels1-clrperm-rules>>
 ifndef::cheri_ratification_v1_only[]
-When using <<rv64y_cap_description,{rv64y_uni_base_name}>> and <<rv32y_cap_description,{rv32y_uni_base_name}>> the complete set of rules with and without <<section_cheri_hybrid_ext,{cheri_default_ext_name}>> and <<section_zylevels1>> are shown in <<clrperm-rules-no-zylevels1>> and <<clrperm-rules-zylevels1>>.
+. <<section_zyseal>>, see <<zyseal_ap_field>>
 endif::[]
+
+Capability encoding formats may impose additional constraints to reduce the number of bits necessary to represent permissions.
 
 [#SDP-field, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP)
@@ -533,26 +533,17 @@ NOTE: Software is completely free to define the usage of these bits.
 ==== Special Capabilities
 
 [#root-cap,reftext="Root"]
-===== Root Capabilities
-
-_Root_ (sometimes also _primordial_, _initial_) capabilities are those provided by the system at reset.
-In some systems (and capability encodings), there is a single "Infinite" capability value,
+Root Capabilities::
+_Root_ capabilities are those provided by the system on initialization.
+In some capability encoding formats there is a single _Infinite_ capability value,
 which grants all permissions and has bounds covering the whole 2^XLEN^ address space;
-in such systems, root capabilities are often Infinite.
-More generally, the _set_ of root capabilities often collectively grant all permissions to all addresses.
-By way of example, an encoding may prohibit one capability from authorizing both write and execute;
-a system using such an encoding would typically make available maximally permissive
-read-write and read-execute capabilities as part of their root set.
-
-[NOTE]
-=====
-How unprivileged software receives its root capabilities is largely an ABI question;
-the privileged specification will detail requirements of capability registers' reset state
-(and so on the root capabilities held therein).
-=====
-
-Because particular sets of requirements recur throughout the specification,
-we define some useful short-hand terminology.
+in such systems, _root_ capabilities are often _Infinite_.
++
+Other capability encoding formats may have a set of _root_ capabilities distinguishing between data and executable capabilities as shown below.
++
+At system initialization the set of all _root_ capabilities must be made available to software.
++
+NOTE: Implementations are not required to provide access to the entire address space to a single hart, the _root_ capabilities may be restricted to only cover a subset of the entire address space, or to remove certain permissions.
 
 [#root-rx-cap,reftext="Root Executable"]
 Root Executable Capability::
@@ -567,81 +558,60 @@ and grants at least all of <<r_perm>>, <<w_perm>>, <<c_perm>>, and <<lm_perm>>.
 Extensions introducing new permissions may require these to be provided by root data capabilities.
 
 [#null-cap,reftext="NULL"]
-===== NULL Capability
+NULL Capability::
 A capability with all-zero metadata, a zero {ctag}, and an address of zero is referred to as the _NULL_ capability.
 This capability grants no permissions and any dereference results in raising an exception.
 
 [#sec_cap_encoding_formats, reftext="capability encoding format"]
 === Capability encoding formats
-CHERI implementations make trade-offs in their "encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
-The CHERI base ISA name includes a compact description of these decisions,
-and the definition of all CHERI base ISAs includes sufficient details of a capability encoding format to precisely define the execution behavior of all base ISA instructions.
+CHERI implementations make trade-offs in their "capability encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
+The definition of all CHERI base ISAs includes sufficient details of a capability encoding format to precisely define the execution behavior of all base ISA instructions.
 
-Whilst {cheri_base64_ext_name} has enough bits in the encoding format to prevent such trade-offs in general, the concepts are introduced in here and the future {cheri_base32_ext_name} formats will make extensive use of them.
+Whilst {cheri_base64_ext_name} has enough bits in the encoding format to prevent such trade-offs in general, the concepts are introduced in here and {cheri_base32_ext_name} formats will make extensive use of them.
 
 The name {cheri_base_ext_name} refers generically to CHERI base ISAs, which share common semantics but may have different metadata encodings.
-The {cheri_base64_ext_name} name on its own does not describe the complete base ISAs, but defines all the _semantics_ of a {cheri_base64_ext_name} machine, where certain behavioral parameters must be filled in by the capability encoding.
+The {cheri_base_ext_name} name on its own does not describe the complete base ISAs, but defines all the _semantics_ of a {cheri_base_ext_name} machine, where certain behavioral parameters must be filled in by the capability encoding.
 For example, the <<SCBNDSR>> instruction yields a capability with new bounds that are rounded differently depending on the number of bits allocated to the bounds in the capability format.
 Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds than XLEN=32 system and therefore have a larger <<section_cap_representable_check>>.
 
 NOTE: These observable differences in behavior are similar to floating point numbers where the supported operations and their semantics are the same for all formats, but the exact result depends on the representation (e.g., 16/32/64-bit IEEE-754 or other floating point formats).
 
-It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid in-memory encodings.
-However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, these are encoded via an `LY<params>` suffix to the base ISA name.
+It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid capability encoding formats.
+However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, each capability encoding format comes with a set of standard parameters.
 
-NOTE: The base `L<encoding_parameters>` encoding format scheme is designed to separate the aspects of capability encoding that influence the behavior of {cheri_base_ext_name} instructions from the other aspects defined by the encoding format.
-The intent is to simplify the future development of more (possibly domain-specific) encoding formats while also more directly conveying compatibility of architectural bases.
+Each capability encoding format also declares a new base ISA.
 
-The following parameters are currently defined to distinguish existing formats:
+The documentation for each capability encoding format specifies at least the parameters in <<cap_encoding_param_default_summary>> below where the default is not used.
 
-Parameters for bounds precision and representability::
-These parameters affect the behavior of <<SCBNDS>>/<<SCBNDSR>> as well as the representability check that affects the tag-clearing behavior of how far you can go out of bounds with <<SCADDR>>/<<CADD>>.
-* **Mantissa width (mw<N>)**: The mantissa width for the bounds encoding. For example, a format with {cap_rv64_mw_width} bits of mantissa, would use `mw{cap_rv64_mw_width}`.
-The mantissa width influences the precision of bounds (much like the mantissa width of floating point numbers defines arithmetic precision).
-* **Maximum exponent (ea or e<N>)**: If _all_ meaningful values of the exponent can be encoded directly in the exponent field this uses `ea`.
-Otherwise `e<N>` describes the largest encodable exponent for a valid capability except for the one used for the whole address space.
-For example, the CHERIoT capability encoding formats use  `e14` since it uses a four-bit exponent field that can encode only the values 0 through 14 and 24 (which, with its 9-bit mantissas, is sufficient to provide an encoding of bounds that cover the whole address space).
-The default value for this parameter is `ea` and may be omitted in that case.
-* **Representable region (rc1 or r0)**: The number of mantissa bits used to guarantee representability of out-of-bounds capability values.
-So far two options have been used in commercial implementations: `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, and `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed out-of-bounds range.
+NOTE: The default settings all match <<rv64y_cap_description>>.
 
-Parameter for permissions::
-This parameter defines which permission modifications using <<CLRPERM>> also clear additional (non-encodable) permissions.
-* **Permission encoding (ps or pc)**: Whether permissions are encoded using a _simple_ representation of one bit per architectural permission (`ps`) or a _compressed_ encoding that leverages dependencies between permissions and does not allow encoding all possible combinations (`pc`).
+.{cheri_base_ext_name} capability encoding format parameters
+[#cap_encoding_param_default_summary,width="100%",options=header,cols="1,1,1,4"]
+|==============================================================================
+| Parameter   | Legal values | Default Value        | Comment
+4+| *Parameters used for the bounds encoding (see <<section_cap_bounds>>)*
+| MW          | integer values       | {cap_rv64_mw_width}  | Mantissa width for the bounds encoding
+| EW          | integer values       | {cap_rv64_exp_width} | Exponent width for the bounds encoding
+| CAP_MAX_E   | integer values       | {cap_rv64_exp_max}   | Maximum exponent value
+| enableL8    | 0/1                  | 0                    | Whether the encoding format includes the L~8~ bit
+4+| *Parameters used for permissions encoding in the <<AP-field>>*
+| AP_MAX      | integer values       | all ones             | Value of the <<AP-field>> giving maximum permissions
+| AP_ENC      | ps<suffix>/ pc<suffix>| ps1                  | Encoding scheme for the <<AP-field>>
+4+| *Other parameters*
+| AUIPC_SHIFT | integer values up to 12 | 12                   | Shift distance of the immediate in AUIPC
+| REP_REGION  | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
+|==============================================================================
 
-Parameter for in-memory format::
-* **In-memory encoding (enc<suffix>)**: This parameter defines layout of capability metadata fields in memory.
-The default value for this parameter is `enc1` and may be omitted in that case.
-Custom formats may define alternate layouts where all other parameters are otherwise identical, so this parameter can be used to differentiate such formats.
-Additionally, there is one other value, `enc0`, which means the compiler and/or software must avoid making any assumptions about the in-memory representation.
+Two parameters used non-numeric values:
 
-NOTE: In general, only very specialized software such as offline crash-dump debuggers need to know the exact memory representation, and all other software can and should use the inspection instructions such as <<GCBASE>>, etc.
+AP_ENC::
+ Whether permissions in the <<AP-field>> are encoded using a _simple_ representation of one bit per architectural permission (`ps`) or a _compressed_ encoding that leverages dependencies between permissions and does not allow encoding all possible combinations (`pc`).
+ Each scheme has a suffix to show which exact version is in use, as `ps` schemes may not always store permissions in the same order and `pc` schemes may use different forms of compression.
+REP_RANGE::
+ Whether the capability encoding formats guarantees representability of out-of-bounds capability values, `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, or `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed  out of bounds <<section_cap_representable_check,representable range>>.
 
-Other parameters::
-These other parameters are not used by the formats currently set forward for ratification but are being used in custom extensions on top of {cheri_base_ext_name}.
-* **<<AUIPC_CHERI>> shift (as<N>)**: The shift amount used in the {cheri_base_ext_name} variant of <<AUIPC_CHERI>>. This is 12 (as in RVI) unless specified otherwise. Also see <<section_auipc_shift>>.
-
-As with other extensions, a version number suffix may be added to the `LY` string to identify a new version with the same parameters but different in-memory representation.
-Any newer version must be forwards compatible with any existing software using the same parameters.
-Custom capability encoding formats may be implemented (their name suffix should start with `LYX`).
-
-IMPORTANT: Any future capability encoding formats must provide all the capability guarantees listed in this chapter and must undergo formal verification of these properties before being proposed for ratification.
-
-IMPORTANT: The behavior of all {cheri_base_ext_name} instructions is fully defined by the parameters in the `LY` string.
-Therefore, any implementation with matching parameters is binary compatible (assuming the same extensions are implemented).
-
-The {cheri_base64_ext_name} base capability encoding format is based on University of Cambridge CHERI v9 cite:[cheri-v9-spec]: <<rv64y_cap_description, {rv64y_uni_base_name}>>
-
-ifndef::cheri_ratification_v1_only[]
-For {cheri_base32_ext_name}, the capability encoding format is also based on University of Cambridge CHERI v9 cite:[cheri-v9-spec]: <<rv32y_cap_description, {rv32y_uni_base_name}>>
-endif::[]
-
-NOTE: It is expected that the actual {cheri_base_ext_name} instantiation is chosen using a profile rather than a full architecture string and therefore the unwieldy suffix should rarely be user-visible.
-
-For RV64, the number of spare bits in the capability encoding ensure sufficient future extensibility and therefore no custom formats exist.
-
-
-NOTE: {cheri_base32_ext_name} has insufficient bits available to enable features for all target domains, so multiple {cheri_base32_ext_name}-extending capability formats must exist.
+NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability encoding ensures sufficient future extensibility and therefore few custom formats are expected to exist.
+ {cheri_base32_ext_name}, however, has insufficient bits available to enable features for all target domains, so multiple {cheri_base32_ext_name}-extending capability formats will exist.
 
 [#section_cap_integrity]
 === Integrity of Capabilities
@@ -650,7 +620,8 @@ CHERI enforces the following rules (integrity checks) for all valid capabilities
 
 . The bounds are not <<section_cap_malformed,malformed>>.
 . The capability metadata does not have any bits, or fields set to a reserved value.
-.. An example of a reserved field value is permissions which cannot be legally produced by <<CLRPERM>>.
+
+NOTE: An example of a reserved field value is an illegal set of permissions, such as <<asr_perm>> without <<x_perm>>.
 
 If any of the above rules do not hold for a capability with the {ctag} set, it indicates either:
 
@@ -673,6 +644,8 @@ defining the handling in the architecture allows the behavior to be precisely sp
 === Extended State
 
 As stated above, all state which can hold addresses are extended from XLEN to YLEN bits.
+
+NOTE: A reminder that _all_ YLEN state also has a hardware managed {ctag}.
 
 ==== General Purpose Registers
 
@@ -880,23 +853,19 @@ In <<clen_access_summary_base>>, when there is no read or write width shown, the
 [#sec_cap_checks]
 === Capability checks
 
-With {cheri_base_ext_name}, every memory access performed by a CHERI core must be authorized by a capability.
+Every memory access must be authorized by a valid capability.
 
-Instruction fetches and data memory accesses may result in a fatal exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<AP-field,permissions>>. I.e.,:
+Instruction fetches and data memory accesses raise an exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<AP-field,permissions>>:
 
-* all load instructions requires <<r_perm>>
-* all store instructions require <<w_perm>>
-* all indirect jumps require <<x_perm>> on the target capability
+* All load instructions require <<r_perm>> and are authorized by the capability in `{cs1}`
+* All store instructions require <<w_perm>> and are authorized by the capability in `{cs1}`
+* All indirect jumps require <<x_perm>> on the target capability
 
-Instruction fetch is also authorized by a capability: the program counter capability (<<pcc>>) which extends the PC.
+Instruction fetch and branch execution are authorized by the program counter capability which extends the PC.
 
 NOTE: This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
 
-The authorizing capability is either named explicitly (the base register of a load/store operation) or implicitly (when executing a branch, <<pcc>> is used for authorization).
-
 E.g., `lw t0, 16({abi_creg}sp)` loads a word from memory, getting the address, bounds, and permissions from the `{abi_creg}sp` (capability stack pointer) register.
-
-No other exception paths are added by {cheri_base_ext_name}: in particular, capability manipulations do not raise an exception, but may set {ctag} of the resulting capability to zero if the operation is not permitted.
 
 === Added Instructions
 {cheri_base_ext_name} adds new instructions to operate on capabilities, and redefines part of the RVI/RVE custom encoding space for this purpose.
@@ -1099,13 +1068,13 @@ include::insns/store_32bit_cap.adoc[]
 
 * Whenever an input operand is used as an address (e.g., the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
 * Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead of just XLEN bits.
-  For all other results the high bits of the register and the {ctag} are zeroed.
+  For all other results the high bits of the register and the {ctag} are set to zero.
 * Whenever a capability with a new address is returned, the result is _always_ created using the semantics of the <<SCADDR>> instruction.
 
 `ADD` and `ADDI` are not affected by the rule above.
 Even though they _are_ used for handling addresses, they also have other uses.
 New encodings are used for capability addition: <<CADD>> and <<CADDI>>.
-They must be used for all address incrementing.
+They must be used for all capability address incrementing.
 
 [NOTE]
 ====
@@ -1120,7 +1089,7 @@ Using a single encoding for both is undesirable:
 ====
 
 The rules above apply to the <<rv32,base ISA>> instructions listed in the following subsections, but also apply to instructions added by other extensions.
-Any change to instruction semantics (or remapping of opcodes) for {cheri_base_ext_name} is called out in the chapter defining the extension.
+Any change to instruction semantics for {cheri_base_ext_name} is called out in the chapter defining the extension.
 
 [#section_cheri_int_load_store_insns]
 ==== Changes to load/stores
@@ -1131,7 +1100,7 @@ All load and store instructions behave as described in <<ldst>> with one fundame
   The base address is unchanged, i.e., using the value from `rs1`.
   The metadata and {ctag} are used to <<sec_cap_checks,authorize the access>>.
 
-* For a load instruction, the lower XLEN bits of the result written to the destination register are the same as in the RV32I/RV64I specification.
+* For a load instruction, the lower XLEN bits of the result written to the destination register are the same as in the RV32[IE]/RV64[IE] specification.
 
 All load and store instructions authorized by `{cs1}` raise exceptions if any of these checks fail:
 
@@ -1141,19 +1110,20 @@ All load and store instructions authorized by `{cs1}` raise exceptions if any of
 ifdef::invalid_address_viol[]
 * The virtual address in `{cs1}` must not be invalid if virtual memory is enabled.
 endif::[]
-* For loads, <<r_perm>> must be set in `{cs1}`
-* For stores, <<w_perm>> must be set in `{cs1}`
+* For loads, <<r_perm>> must be granted in `{cs1}`
+* For stores, <<w_perm>> must be granted in `{cs1}`
 * All <<section_cap_integrity,integrity>> checks on `{cs1}` must pass
 
 ^1^ All load/store encodings are _reserved_ if `{cs1}={creg}0` (since dereferencing <<null-cap>> always faults).
 
-All load instructions, except for the {cheri_base_ext_name} <<LOAD_CAP>>, always zero the {ctag} and metadata of the result register.
+All load instructions, except for <<LOAD_CAP>>, always zero the {ctag} and metadata of the result register.
 
-All store instructions, except for the {cheri_base_ext_name} <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
+All store instructions, except for <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
 Therefore, misaligned stores may clear up to two associated {ctag} bits.
 
 The changed interpretation of the base register also applies to all loads, stores and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
-*Under {cheri_base_ext_name} _all_ loads and stores are authorized by `{cs1}`.*
+
+IMPORTANT: Under {cheri_base_ext_name} _all_ loads and stores are authorized by `{cs1}`.
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.,:
 
@@ -1175,7 +1145,7 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
   This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
   In this case, e.g., `new_{pcc} = {SCADDR}(old_{pcc}, offset)`
 * <<JALR_CHERI>> copies `{cs1}` into the <<pcc>>, and increments the address field with the offset.
-  In this case, e.g., `new_{pcc} = {SCADDR}({cs1}, offset)`
+  In this case, e.g., `new_{pcc} = {SCADDR}(Unseal({cs1}, offset))`
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
 
@@ -1224,7 +1194,7 @@ Therefore, multiple capability encodings with observable (but generally unintere
 While the in-memory bit pattern of capabilities across these systems as well as the precision of bounds may differ, software that does not depend on the raw bits in memory is source (and often also binary) compatible with these different capability encodings.
 
 The {rv32y_uni_base_name} follows the same rules as {rv64y_uni_base_name}, and sets different parameter values.
-It also encodes the AP field to use fewer bits.
+It also encodes the <<AP-field>> to use fewer bits.
 
 The currently defined RV32 capability encoding formats are:
 

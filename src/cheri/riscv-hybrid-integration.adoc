@@ -17,7 +17,7 @@ NOTE: Together with <<pcc>>, <<ddc>> enables confining execution to a compartmen
 These compartments provide binary compatibility for existing RV32[IE]/RV64[IE] code.
 Provided that the execution environment has set up <<ddc>> and <<pcc>> appropriately, non-CHERI-aware programs will execute unmodified within these bounds.
 
-For detailed examples of how this extension facilitates co-existence and sandboxing, see the appendix on <<section_hybrid_usage_models>>.
+For detailed examples of how this extension facilitates co-existence and sandboxing, see the appendix in <<section_hybrid_usage_models>>.
 
 {cheri_base_ext_name} implementations which support {cheri_default_ext_name} are typically referred to as CHERI Hybrid.
 Implementations which do not support {cheri_default_ext_name} are referred to as CHERI Purecap and always operate in {cheri_cap_mode_name}.
@@ -37,7 +37,7 @@ Instruction semantics are as defined in the {cheri_base_ext_name} base ISA.
 
 {cheri_int_mode_name}::
 All pointer operands to instructions are interpreted as for the RV32[IE]/RV64[IE] base ISA, i.e., as plain memory addresses without metadata.
-While the base ISA remains RVY (not RVI/RVE), this mode provides backwards compatibility with RVI/RVE.
+While the base ISA remains RVY, this mode provides backwards compatibility with RV32[IE]/RV64[IE].
 Operands are still checked against a capability, but instead of using the metadata from the full `YLEN` register, the bounds and permissions are obtained from <<ddc>> (for data accesses) or <<pcc>> (for instruction accesses).
 +
 [IMPORTANT]
@@ -74,11 +74,11 @@ ifndef::cheri_ratification_v1_only[]
 endif::[]
 <<insn_remapping_16bit_rv64_a>> and <<insn_remapping_16bit_rv64_b>>.
 +
-Instructions which are _modified_ on an {cheri_base_ext_name} architecture (see <<{rvy_i_mod_file_name}>>) _revert to their standard RVI/RVE behavior_.
+Instructions which are _modified_ on an {cheri_base_ext_name} architecture (see <<{rvy_i_mod_file_name}>>) _revert to their standard RV32[IE]/RV64[IE] behavior_.
 +
 All {cheri_base_ext_name} instructions and CSRs are available in addition to all standard RV32[IE]/RV64[IE] instructions and CSRs.
 +
-NOTE: Non-standard extensions with encodings in remapped custom space are _not_ supported.
+NOTE: Non-standard extensions with encodings in remapped custom space may not be supported.
 +
 The authorizing capability for data access is <<ddc>> (as opposed to `rs1`).
 That is, all data memory accesses are implicitly authorized by <<ddc>> with only the memory address sourced from `rs1`.
@@ -87,8 +87,12 @@ NOTE: <<ddc>> is also used to authorize memory instructions added by {cheri_base
 +
 All instruction fetches are authorized by <<pcc>>.
 +
-Prefetches are also checked against the appropriate CSR (<<ddc>> for <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CHERI>>, <<pcc>> for <<PREFETCH_I_CHERI>>) and execute as nops if authorization fails.
-
+Prefetches are also checked against the appropriate capability:
++
+* <<ddc>> for <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CHERI>>,
+* <<pcc>> for <<PREFETCH_I_CHERI>>)
++
+They execute as nops if authorization fails.
 +
 NOTE: Authorization of prefetches is useful to mitigate against side channels, e.g., preventing userspace from fetching kernel memory into a cache.
 +
@@ -116,12 +120,25 @@ NOTE: While the <<p_bit>> can be read or written explicitly using <<GCMODE>> and
 The mode changes when a capability is installed into <<pcc>> (e.g., via an indirect jump, see <<sec_changing_cheri_execution_mode>>).
 
 Capabilities lacking <<x_perm>> may not have a defined <<p_bit>> field in their encoding, and attempting to update this field may be a no-op.
-{cheri_default_ext_name} requires a capability encoding that supports transport of the <<p_bit>> (e.g., <<rv64y_cap_description>>).
+
+{cheri_default_ext_name} requires a capability encoding format that encodes the <<p_bit>> (e.g., <<rv64y_cap_description>>).
 
 * {cheri_mode_name} (P)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
 * {cheri_mode_name} (P)={INT_MODE_VALUE} indicates {cheri_int_mode_name}.
 
-When executing <<CLRPERM>>, if <<x_perm>> is removed while the <<p_bit>> is set to one, and the capability encoding still permits representing the <<p_bit>>, then the <<p_bit>> must be set to zero.
+One additional <<CLRPERM>> rule is added as the <<p_bit>> is only relevant if <<x_perm>> is granted.
+
+[#clrperm-rules-hybrid]
+.{rv64y_uni_base_name} <<CLRPERM>> rules.
+[float="center",align="center",cols="1,1,4",options="header"]
+|===
+| <<CLRPERM>> Rule | Permission   | Valid only if
+| `RV32-hybrid-1`  | <<p_bit>>    | X
+|===
+
+`RV32-hybrid-1` is always run _last_ after all other defined rules as there are no other rules which depend on the presence of the <<p_bit>>.
+
+Infinite capability encodings are required to set the {cheri_mode_name} to {cheri_int_mode_name}({INT_MODE_VALUE}) for compatibility.
 
 [#sec_changing_cheri_execution_mode]
 ==== Changing {cheri_mode_name}
@@ -136,7 +153,7 @@ The <<p_bit>> of <<pcc>> can be updated by the instructions listed in <<tab_cher
 | <<MODESW_CAP>> |{cheri_int_mode_name}| {MODESW_CAP_DESC}
 |=======================
 
-NOTE: When <<JALR_CHERI>> copies `rs1` into <<pcc>> it includes copying the <<p_bit>> and so setting the <<cheri_execution_mode>> of the target instruction.
+NOTE: When <<JALR_CHERI>> copies `rs1` into <<pcc>> it includes copying the <<p_bit>> and so setting the <<cheri_execution_mode>> of the <<pcc>> of the target instruction.
 
 The <<p_bit>> of a <<x_perm>>-granting capability can be read and written by the instructions listed in <<tab_hybrid_summary>>:
 
@@ -156,7 +173,7 @@ NOTE: In addition to the mode switching instructions, the current mode can also 
 For capabilities that do not grant <<x_perm>>,
 <<p_bit>> must always be interpreted and reported as {cap_mode_value} representing {cheri_cap_mode_name}.
 
-NOTE: While this is not phrased as an additional rule for <<CLRPERM>> to follow beyond those of <<sec_permission_transitions>>, capability encodings may nevertheless take advantage of this implication in their representation of architectural CHERI capabilities.
+NOTE: Capability encoding formats which compress the <<AP-field>> may avoid encoding the X=0, P=1 combination.
 
 ==== Observing the {cheri_mode_name}
 
