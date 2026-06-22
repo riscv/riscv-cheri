@@ -35,15 +35,9 @@ When all of the following are true, {cheri_priv_crg_ext} adds two related archit
 
 === {cheri_excep_name_pte_ld}s
 
-{cheri_priv_crg_ext} defines a new fault type:
+_pte_._{pte_cap_r_name_lc}_ and _pte_._{pte_cap_crg_pte_name_lc}_ are used to enable capability loads or AMOs to write a {ctag} to `{cd}`.
 
-* {cheri_excep_name_pte_ld} (cause value {cheri_excep_cause_pte_ld})
-
-In the case of AMOs that could trigger both a {cheri_excep_name_pte_st}, due to storing a valid {ctag}, and a {cheri_excep_name_pte_ld}, the {cheri_excep_name_pte_st} takes priority as shown in <<exception-priority-cheri>>
-
-_pte_._{pte_cap_r_name_lc}_ and _pte_._{pte_cap_crg_pte_name_lc}_ are used to enable capability loads or AMOs to write a {ctag} to {cd}.
-
-When _pte_._{pte_cap_r_name_lc}_ is clear, _pte_._{pte_cap_crg_pte_name_lc}_ controls whether capabilities can write a {ctag} to {cd}.
+When _pte_._{pte_cap_r_name_lc}_ is clear, _pte_._{pte_cap_crg_pte_name_lc}_ controls whether capabilities can write a {ctag} to `{cd}`.
 When clear {ctag}s cannot be written to {cd}, and when set, they can.
 
 When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value that is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
@@ -87,6 +81,9 @@ Implementations that already take synchronous traps on loaded data, such as ECC 
 ^2^ if _pte_._u=1_, `sstatus.U{pte_cap_crg_pte_name}`, else `sstatus.S{pte_cap_crg_pte_name}`.
 
 NOTE: {cheri_excep_name_pte_ld}s may be used to implement the load-barrier primitive from cite:[cornucopia-reloaded].
+
+NOTE: In the case of AMOs that could trigger both a {cheri_excep_name_pte_st}, due to storing a valid {ctag}, and a {cheri_excep_name_pte_ld}, the {cheri_excep_name_pte_st} takes priority as shown in <<exception-priority-cheri>>.
+
 
 === Capability Dirty Tracking
 
