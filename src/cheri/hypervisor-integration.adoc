@@ -23,10 +23,9 @@ VSXLEN).
 The encoding of the VSXL field is the same as the MXL field of **misa**. Only 1
 and 2 are supported values for VSXL. When the implementation supports
 {cheri_base_ext_name} (but not {cheri_default_ext_name}), then <<hstatus>>'s
-VSXL must be read-only as described in xref:mstatus[xrefstyle=short] for
-<<mstatus>>.SXL. When the implementation supports both {cheri_base_ext_name}
-and {cheri_default_ext_name}, then VSXL behaves as described in
-xref:mstatus_y[xrefstyle=short] for mstatus.SXL.
+VSXL must be read-only.
+When the implementation supports both {cheri_base_ext_name}
+and {cheri_default_ext_name}, then VSXL behaves as mstatus.SXL.
 
 The VSBE field controls the endianness of explicit memory accesses
 from VS-mode and implicit memory accesses to VS-level memory management data
@@ -46,8 +45,8 @@ supports {cheri_default_ext_name} as shown in xref:henvcfgreg[xrefstyle=short].
 include::img/henvcfgreg.edn[]
 
 The {CRE} bit controls whether explicit access to CHERI
-registers is permitted when V=1. When <<henvcfg_cheri>>.{CRE}=1 and <<menvcfg>>.{CRE}=1
-and <<misa>>.{CRE}=1, CHERI can be enabled by VS-mode and
+registers is permitted when V=1. When <<henvcfg_cheri>>.{CRE}=1 and <<menvcfg_y>>.{CRE}=1
+and <<misa_y>>.{CRE}=1, CHERI can be enabled by VS-mode and
 VU-mode. When <<henvcfg_cheri>>.{CRE}=0, CHERI is disabled in VS-mode and
 VU-mode as described in xref:section_cheri_disable[xrefstyle=short].
 
@@ -68,8 +67,7 @@ except for the UXL field that controls the value of XLEN for VU-mode.
 The encoding of the UXL field is the same as the MXL field of **misa**. Only 1
 and 2 are supported values for UXL. When the implementation supports
 {cheri_base_ext_name} (but not {cheri_default_ext_name}), then <<vsstatus_y>>.UXL
-must be read-only as described in xref:mstatus[xrefstyle=short] for
-<<mstatus>>.UXL. When the implementation supports both {cheri_base_ext_name}
+must be read-only. When the implementation supports both {cheri_base_ext_name}
 and {cheri_default_ext_name}, then UXL behaves as described in
 xref:mstatus_y[xrefstyle=short] for mstatus.UXL.
 
@@ -105,17 +103,6 @@ The handling of <<vsepc_y>> is otherwise identical to <<mepc_y>>, but in VS-mode
 
 .Virtual supervisor exception program counter capability
 include::img/vsepccreg.edn[]
-
-[#vstval,reftext="vstval"]
-=== Virtual Supervisor Trap Value Register (vstval)
-
-The <<vstval>> register is a VSXLEN-bit read-write register.
-
-<<vstval>> is updated following the same rules as <<mtval>> for CHERI exceptions that are delegated to VS-mode.
-
-.Virtual supervisor trap value register
-[#vstval-format]
-include::img/vstvalreg.edn[]
 
 [#vstidc,reftext="vstidc"]
 === Virtual Supervisor Thread Identifier Capability (vstidc)
