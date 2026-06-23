@@ -915,6 +915,16 @@ include::insns/scaddr_32bit.adoc[]
 For security, capabilities can only be modified in restricted ways.
 Special instructions are provided to copy capabilities or derive a new capability using manipulations such as _shrinking_ the bounds (<<SCBNDS>>), _reducing_ the permissions (<<CLRPERM>>) or _authorizing_ a capability with another one which has a superset (or identical) bounds and permissions (<<CBLD>>).
 
+[#cap_subset,reftext="capability subset"]
+Capability subset::
+Some instructions used the concept of `{cs2}` being a _capability subset_ of `{cs1}`.
+The definition is:
++
+. All permissions granted by either the <<AP-field>> or <<SDP-field>> of `{cs2}` are also granted by those of `{cs1}`, and
+. `{cs2}` 's top bound is less than or equal to `{cs1}` 's top bound, and
+. `{cs2}` 's base bound is greater than or equal to `{cs1}` 's base bound, and
+. `{cs1}` and `{cs2}` pass all <<section_cap_integrity,integrity>> checks
+
 .Summary of {cheri_base_ext_name} instructions that create a modified capability
 [#tab_cap_manip_summary,%autowidth,options=header,align="center",cols="1,4"]
 |=======================
