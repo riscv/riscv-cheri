@@ -71,7 +71,7 @@ The <<root-cap>> capabilities definitions are extended:
 [#zylevels1_acperm_bit_field]
 include::./img/zylevels1-acperm_bit_field.edn[]
 
-The <<zylevels1_gl_flag>>, <<zylevels1_sl_perm>>, and <<zylevels1_lg_perm>> fields are mapped into the <<acperm_bit_field,capability permissions bitfield>> (<<acperm_bit_field>>), used by <<CLRPERM>> and <<GCPERM>>, as shown in <<zylevels1_acperm_bit_field>>.
+The <<zylevels1_gl_flag>>, <<zylevels1_sl_perm>>, and <<zylevels1_lg_perm>> fields are mapped into the <<acperm_bit_field,capability permissions bitfield>> as used by <<CLRPERM>> and <<GCPERM>>, as shown in <<zylevels1_acperm_bit_field>>.
 
 ==== <<CLRPERM>> and the Capability Global (GL) Flag
 <<CLRPERM>> can produce a new capability with its <<zylevels1_gl_flag>> cleared, even if the source capability is sealed.
@@ -143,8 +143,7 @@ NOTE: While a lack of <<zylevels1_lg_perm>> restricts flow by reducing permissio
 
 The definition of <<cap_subset>> has an additional rule:
 
-* The <<zylevels1_gl_flag>> of `{cs2}` is zero, or
-* The <<zylevels1_gl_flag>> of `{cs1}` is one.
+* The <<zylevels1_gl_flag>> of `{cs2}` is zero, or the <<zylevels1_gl_flag>> of `{cs1}` is one.
 
 NOTE: This affects the behavior of <<SCSS>>, <<CBLD>> and <<YSUNSEAL>>.
 
