@@ -196,21 +196,19 @@ Software can query the bounds of a capability held in a general-purpose register
 
 ==== Deriving New Bounds
 
-On system initialization, one or more <<root-cap>> capabilities are available;
-typically, these have bounds which cover all of memory and the maximum permissions set.
-All smaller capabilities are derived from these.
+On system initialization, one or more <<root-cap>> capabilities are available.
+All capabilities with smaller bounds are derived from these.
 
-NOTE: As a reminder, the ISA does not allow the bounds or permissions of a capability with its {ctag} set to be increased (_monotonicity_)
+The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions.
 
-The <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions generate new capabilities from a source capability and a length operand (`rs2` or `imm`).
-The resulting capability has its address set as the _base_ bound and its length as requested, subject to encoding granularity constraints.
-These instructions write the newly generated capability to the destination register.
-The granularity constraints mean that not all requested combinations of _top_ and _base_ bounds can be encoded exactly.
+They all copy `{cs1}` to the output `{cd}`, set the _base_ bound `{cd}` as `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
 
-* <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`. Set the {ctag} to zero if the bounds cannot be encoded exactly.
-* <<SCBNDSI>> sets the _base_ to `{cs1}.address`, and the _length_ to the immediate value. Set the {ctag} to zero if the bounds cannot be encoded exactly.
-* <<SCBNDSR>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`. The bounds may be rounded up if they cannot be encoded exactly.
-** If <<SCBNDSR>> rounds up the requested bounds, they must still be no larger than the initial bounds.
+* <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
+** Set the {ctag} to zero if the bounds cannot be encoded exactly.
+* <<SCBNDSI>> sets the _base_ to `{cs1}.address`, and the _length_ to the immediate value.
+** Set the {ctag} to zero if the bounds cannot be encoded exactly.
+* <<SCBNDSR>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
+** The bounds may be rounded up if they cannot be encoded exactly but must be no larger than the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
 // #some example usage here of CRAM+SCBNDSR would be good#
@@ -1162,18 +1160,57 @@ include::insns/auipc_32bit.adoc[]
 include::insns/jal_32bit.adoc[]
 include::insns/jalr_32bit.adoc[]
 
-==== Changes to BEQ, BNE
+==== BEQ, BNE ({cheri_base_ext_name})
 
 For `beq` and `bne` only, if `rs1≤rs2` then the encoding is RESERVED.
 
-NOTE: These encodings are redundant and may be used by future extensions.
+NOTE: These encodings are redundant and may be used by future extensions, suggestions include branching on {ctag} values only, or YLEN-bit compares.
 
-NOTE: Future behavior for these reserved branch encodings may include branching on {ctag} values only, or YLEN-bit compares.
+NOTE: A future extension may raise an exception on branch instructions if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
 
-If the target of a taken branch lies outside the bounds of <<pcc>>, the next instruction fetch will raise an exception.
+ifdef::cheri_standalone_spec[]
 
-NOTE: A future extension may raise an exception on the branch instruction itself if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
+ifndef::cheri_ratification_v1_only[]
+//this has all been integrated into the relevant chapter
+=== RV32 / {cheri_base32_ext_name} RVC load/store mapping summary
 
+include::rv32c_mapping_table.adoc[]
+endif::[]
+
+<<<
+=== RV64 / {cheri_base64_ext_name} RVC load/store mapping summary
+
+include::rv64c_mapping_table.adoc[]
+
+include::insns/load_16bit_cap_sprel.adoc[]
+include::insns/store_16bit_cap_sprel.adoc[]
+
+
+[#rvy_zca_mod_insn_table, reftext="{rvy_zca_mod_ext_name}"]
+=== {rvy_zca_mod_ext_name}
+
+An {cheri_base_ext_name} core which supports Zca also supports {rvy_zca_mod_ext_name} which _modifies_ the behavior of some instructions.
+
+NOTE: {C_MV_CAP_LC} is renamed from `c.mv` to avoid ambiguity in disassembly.
+
+.{rvy_zca_mod_ext_name} instruction extension
+[#{rvy_zca_mod_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_zca_mod_file_name}.adoc[]
+|==============================================================================
+
+include::insns/addi16sp_16bit.adoc[]
+include::insns/addi4spn_16bit.adoc[]
+include::insns/cmv_16bit.adoc[]
+include::insns/jr_16bit.adoc[]
+ifndef::cheri_ratification_v1_only[]
+//RV32Y only
+include::insns/jal_16bit.adoc[]
+endif::[]
+include::insns/jalr_16bit.adoc[]
+
+endif::[]
 
 :leveloffset: +1
 

@@ -36,7 +36,7 @@ include::{generated_dir}/{rvy_zicsr_mod_file_name}.adoc[]
 [#rvy_zca_insn_table, reftext="{rvy_zca_ext_name}"]
 === {rvy_zca_ext_name}
 
-These 16-bit instructions are supported by any {cheri_base_ext_name} core that includes the standard C extension.
+These 16-bit instructions are supported by any {cheri_base_ext_name} core that includes the standard Zca extension.
 
 Zcf (RV32) and Zcd (RV64) are incompatible with {cheri_base_ext_name}.
 
@@ -47,24 +47,16 @@ Zcf (RV32) and Zcd (RV64) are incompatible with {cheri_base_ext_name}.
 include::{generated_dir}/{rvy_zca_file_name}.adoc[]
 |==============================================================================
 
-ifdef::cheri_standalone_spec[]
-<<<
-//this has all been integrated into the relevant chapter
-=== RV32 / {cheri_base32_ext_name} RVC load/store mapping summary
-
-include::rv32c_mapping_table.adoc[]
-
-<<<
-=== RV64 / {cheri_base64_ext_name} RVC load/store mapping summary
-
-include::rv64c_mapping_table.adoc[]
-
-endif::[]
+ifndef::cheri_standalone_spec[]
 
 include::insns/load_16bit_cap_sprel.adoc[]
 include::insns/store_16bit_cap_sprel.adoc[]
 
+endif::[]
+
 <<<
+
+ifndef::cheri_standalone_spec[]
 
 [#rvy_zca_mod_insn_table, reftext="{rvy_zca_mod_ext_name}"]
 === {rvy_zca_mod_ext_name}
@@ -89,6 +81,8 @@ ifndef::cheri_ratification_v1_only[]
 include::insns/jal_16bit.adoc[]
 endif::[]
 include::insns/jalr_16bit.adoc[]
+
+endif::[]
 
 <<<
 
