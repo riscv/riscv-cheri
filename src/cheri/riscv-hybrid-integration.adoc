@@ -1,3 +1,4 @@
+
 [#section_cheri_hybrid_ext, reftext={cheri_default_ext_name}]
 == "{cheri_default_ext_name}" Extension for {cheri_mode_name}s
 
@@ -9,7 +10,14 @@ When installed in <<pcc>>, the <<p_bit>> determines the current execution mode.
 
 NOTE: The <<p_bit>> determines whether pointers are interpreted as standard RISC-V _Integer Addresses_ or as CHERI _Capabilities_.
 
-{cheri_default_ext_name} adds instructions (see <<{rvy_hybrid_file_name}>>) to query and update the current mode.
+{cheri_default_ext_name} adds the instructions in <<rvy_hybrid_insn_table>> to query and update the current mode, and switch modes.
+
+.{cheri_default_ext_name} instruction extension
+[#rvy_hybrid_insn_table]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_hybrid_file_name}.adoc[]
+|==============================================================================
 
 This extension also adds the default data capability (<<ddc>>), an unprivileged CSR used to authorize data memory accesses when in {cheri_int_mode_name}.
 
@@ -67,7 +75,7 @@ However, this is also confusing since capabilities are also pointers (just not "
 In this naming scheme we want to show the difference in how hardware interprets pointers-type operands: as binary number (i.e., an address), or as a capability pointer (address+metadata).
 ====
 +
-If RVC encodings are supported, load/store encodings will revert to their _non-CHERI encodings_, such as <<C_LOAD_CAP>> reverting to C.FSD for RV64/{cheri_base64_ext_name}.
+If RVC encodings are supported, load/store encodings will revert to their _non-CHERI encodings_, such as {C_LOAD_CAP_NAME} reverting to C.FSD for RV64/{cheri_base64_ext_name}.
 This behavior is summarized in
 ifndef::cheri_ratification_v1_only[]
 <<insn_remapping_16bit_rv32_a>>, <<insn_remapping_16bit_rv32_b>>,
@@ -92,7 +100,7 @@ Prefetches are also checked against the appropriate CSR (<<ddc>> for <<PREFETCH_
 +
 NOTE: Authorization of prefetches is useful to mitigate against side channels, e.g., preventing userspace from fetching kernel memory into a cache.
 +
-Reads to extended CSRs are XLEN-wide, and writes use the semantics of the <<SCADDR>> instruction (see xref:zicsr-section-default[xrefstyle=short]).
+Reads to extended CSRs are XLEN-wide, and writes use the semantics of the <<SCADDR>> instruction (see rvy_zicsr_mod_insn_table).
 
 The _<<cheri_execution_mode>>_ is key in providing backwards compatibility with the base RV32[IE]/RV64[IE] ISAs.
 
@@ -208,8 +216,17 @@ possibly a <<root-rw-cap>> capability).
 .Unprivileged default data capability register
 include::img/ddcreg.edn[]
 
-[#zicsr-section-default]
-=== Zicsr in {cheri_int_mode_name}
+[#rvy_zicsr_mod_insn_table, reftext="{rvy_zicsr_mod_ext_name}"]
+== {rvy_zicsr_mod_ext_name}
+
+.{rvy_zicsr_mod_ext_name} instructions
+[#{rvy_zicsr_mod_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_zicsr_mod_file_name}.adoc[]
+|==============================================================================
+
+{cheri_default_ext_name} makes {cheri_int_mode_name} available.
 
 In addition to the rules in <<rvy_csr_classes>>, when executing in {cheri_int_mode_name}, <<extended_csrs>> are always accessed as XLEN-wide for backwards compatibility.
 The final written value is determined using the semantics of the <<SCADDR>> instruction.
@@ -225,5 +242,5 @@ NOTE: `jvt` depends on Zcmt, and the {cheri_base32_ext_name} version of this sta
 endif::[]
 endif::[]
 
-include::insns/csrr_32bit.adoc[]
-include::insns/csrrw_32bit.adoc[]
+include::insns/csrr_32bit.adoc[leveloffset=-1]
+include::insns/csrrw_32bit.adoc[leveloffset=-1]
