@@ -1180,7 +1180,42 @@ NOTE: These encodings are redundant and may be used by future extensions, sugges
 
 NOTE: A future extension may raise an exception on branch instructions if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
 
+=== {cheri_base_ext_name} ISA summary
+
+[#rvy_insn_table, reftext="{cheri_base_ext_name}"]
+==== {cheri_base_ext_name} added instructions
+
+.{cheri_base_ext_name} added instructions
+[#{rvy_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_file_name}.adoc[]
+|==============================================================================
+
+[#rvy_i_mod_insn_table, reftext="{rvy_i_mod_ext_name}"]
+==== {rvy_i_mod_ext_name}
+
+.{rvy_i_mod_ext_name} instructions
+[#{rvy_i_mod_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_i_mod_file_name}.adoc[]
+|==============================================================================
+
+
 ifdef::cheri_standalone_spec[]
+
+[#rvy_zca_insn_table, reftext="{rvy_zca_ext_name}"]
+== Zca ({cheri_base_ext_name} added and modified instructions)
+
+Zcf (RV32) and Zcd (RV64) are incompatible with {cheri_base_ext_name}.
+
+.{rvy_zca_ext_name} instruction extension
+[#{rvy_zca_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_zca_file_name}.adoc[]
+|==============================================================================
 
 ifndef::cheri_ratification_v1_only[]
 //this has all been integrated into the relevant chapter
@@ -1221,6 +1256,138 @@ ifndef::cheri_ratification_v1_only[]
 include::insns/jal_16bit.adoc[]
 endif::[]
 include::insns/jalr_16bit.adoc[]
+
+endif::[]
+
+[#rvy_zalrsc_insn_table, reftext="{rvy_zalrsc_ext_name}"]
+== {rvy_zalrsc_ext_name}
+
+Specifying {cheri_base_ext_name} and Zalrsc adds atomic capability load and store instructions.
+
+.{rvy_zalrsc_ext_name} instruction extension
+[#{rvy_zalrsc_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_zalrsc_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/load_res_cap_32bit.adoc[leveloffset=-1]
+include::insns/store_cond_cap_32bit.adoc[leveloffset=-1]
+<<<
+endif::[]
+
+[#rvy_zaamo_insn_table, reftext="{rvy_zaamo_ext_name}"]
+== {rvy_zaamo_ext_name}
+
+Specifying {cheri_base_ext_name} and Zaamo gives {rvy_zaamo_ext_name} functionality, which adds atomic capability swap.
+
+.{rvy_zaamo_ext_name} instruction extension
+[#{rvy_zaamo_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_zaamo_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/amoswap_32bit_cap.adoc[leveloffset=-1]
+<<<
+endif::[]
+
+[#rvy_zba_insn_table, reftext="{rvy_zba_ext_name}"]
+== {rvy_zba_ext_name}
+
+Specifying {cheri_base_ext_name} and Zba gives {rvy_zba_ext_name} functionality, which adds more instructions.
+
+.{rvy_zba_ext_name} instruction extension
+[#{rvy_zba_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_zba_file_name}.adoc[]
+|==============================================================================
+
+NOTE: There is currently no {cheri_base_ext_name} equivalent for `add.uw`.
+ A future extension may add such an instruction.
+
+ifdef::cheri_standalone_spec[]
+// For the integrated build, these instruction listings are in the Zba chapter.
+include::insns/sh1234add_32bit.adoc[leveloffset=-1]
+include::insns/sh1234add_uw_32bit.adoc[leveloffset=-1]
+
+<<<
+endif::[]
+
+[#rvy_zicbom_mod_insn_table, reftext="{rvy_zicbom_mod_ext_name}"]
+== {rvy_zicbom_mod_ext_name}
+
+Specifying {cheri_base_ext_name} and Zicbom gives {rvy_zicbom_mod_ext_name} functionality, which extends the checking.
+
+.{rvy_zicbom_mod_ext_name} instruction extension
+[#{rvy_zicbom_mod_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_zicbom_mod_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/cbo.clean.adoc[leveloffset=-1]
+include::insns/cbo.flush.adoc[leveloffset=-1]
+include::insns/cbo.inval.adoc[leveloffset=-1]
+
+<<<
+endif::[]
+
+[#rvy_zicboz_mod_insn_table, reftext="{rvy_zicboz_mod_ext_name}"]
+== {rvy_zicboz_mod_ext_name}
+
+Specifying {cheri_base_ext_name} and Zicboz gives {rvy_zicboz_mod_ext_name} functionality, which extends the checking.
+
+.{rvy_zicboz_mod_ext_name} instruction extension
+[#{rvy_zicboz_mod_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_zicboz_mod_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/cbo.zero.adoc[leveloffset=-1]
+
+<<<
+endif::[]
+
+[#rvy_zicbop_mod_insn_table, reftext="{rvy_zicbop_mod_ext_name}"]
+== {rvy_zicbop_mod_ext_name}
+
+Specifying {cheri_base_ext_name} and Zicbop gives {rvy_zicbop_mod_ext_name} functionality, which extends the checking.
+
+.{rvy_zicbop_mod_ext_name} instruction extension
+[#{rvy_zicbop_mod_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_zicbop_mod_file_name}.adoc[]
+|==============================================================================
+
+ifdef::cheri_standalone_spec[]
+include::insns/prefetch.i.adoc[leveloffset=-1]
+include::insns/prefetch.r.adoc[leveloffset=-1]
+include::insns/prefetch.w.adoc[leveloffset=-1]
+
+<<<
+endif::[]
+
+ifndef::cheri_ratification_v1_only[]
+
+[#rvy_bndsrdw_insn_table, reftext="{rvy_bndsrdw_insn_ext_name}"]
+== {rvy_bndsrdw_insn_ext_name}
+
+{rvy_bndsrdw_insn_ext_name} adds the {SCBNDSRD} instruction.
+
+.{rvy_bndsrdw_insn_ext_name} instruction extension
+[#{rvy_bndsrdw_insn_file_name}]
+[width="100%",options=header,cols="2,5",]
+|==============================================================================
+include::{generated_dir}/{rvy_bndsrdw_insn_file_name}.adoc[]
+|==============================================================================
 
 endif::[]
 
