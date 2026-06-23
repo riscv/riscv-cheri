@@ -870,6 +870,11 @@ E.g., `lw t0, 16({abi_creg}sp)` loads a word from memory, getting the address, b
 === Added Instructions
 {cheri_base_ext_name} adds new instructions to operate on capabilities, and redefines part of the RVI/RVE custom encoding space for this purpose.
 
+. _custom-3_ is renamed to *{cheri_base_ext_name}-A* and is used for standard {cheri_base_ext_name} encodings.
+. _custom-2_ is renamed to *{cheri_base_ext_name}-B* and is used for standard {cheri_base_ext_name} encodings.
+. _custom-1_ is renamed to *{cheri_base_ext_name}-C* and is used for standard {cheri_base_ext_name} encodings.
+. _custom-0_ is still available for custom encodings.
+
 [[rvyopcodemap]]
 .RISC-V base opcode map for {cheri_base_ext_name}, inst[1:0]=11
 [%autowidth.stretch,float="center",align="center",cols=  ">.^4m,  ^.^4m,    ^.^4m,      ^.^4m,    ^.^4m,  ^.^4m,      ^.^4m,           ^.^6m, ^.^4h"]
@@ -882,14 +887,9 @@ E.g., `lw t0, 16({abi_creg}sp)` loads a word from memory, getting the address, b
 |11           |BRANCH |JALR     |_reserved_ |JAL      |SYSTEM |OP-VE      |*{cheri_base_ext_name}-A*         |_reserved_
 |===
 
-Therefore:
-
-. _custom-0_ is still available for custom encodings
-. _custom-1/2/3_ are repurposed as *{cheri_base_ext_name}-C/B/A* in that order.
-
 NOTE: Standard {cheri_base_ext_name} encodings will _never_ be placed in _custom-0_.
 
-NOTE: Parts of *{cheri_base_ext_name}-C/B/A* may be returned to custom space in the future.
+NOTE: Parts of *{cheri_base_ext_name}-A/B/C* may be returned to custom space in the future.
 
 :leveloffset: +1
 
@@ -922,7 +922,7 @@ Capability subset::
 Some instructions used the concept of `{cs2}` being a _capability subset_ of `{cs1}`.
 The definition is:
 +
-. All permissions granted by either the <<AP-field>> or <<SDP-field>> of `{cs2}` are also granted by those of `{cs1}`, and
+. All permissions granted by the <<AP-field>> and the <<SDP-field>> of `{cs2}` are also granted by those of `{cs1}`, and
 . `{cs2}` 's top bound is less than or equal to `{cs1}` 's top bound, and
 . `{cs2}` 's base bound is greater than or equal to `{cs1}` 's base bound, and
 . `{cs1}` and `{cs2}` pass all <<section_cap_integrity,integrity>> checks
@@ -1202,6 +1202,7 @@ include::{generated_dir}/{rvy_file_name}.adoc[]
 include::{generated_dir}/{rvy_i_mod_file_name}.adoc[]
 |==============================================================================
 
+include::rvy64-encoding.adoc[]
 
 ifdef::cheri_standalone_spec[]
 
@@ -1392,8 +1393,6 @@ include::{generated_dir}/{rvy_bndsrdw_insn_file_name}.adoc[]
 endif::[]
 
 :leveloffset: +1
-
-include::rvy64-encoding.adoc[leveloffset=-1]
 
 ifndef::cheri_ratification_v1_only[]
 

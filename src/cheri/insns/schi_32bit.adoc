@@ -13,7 +13,7 @@ Encoding::
 include::wavedrom/schi.adoc[]
 
 Description::
-The {SCHI_BASE} instruction packs the least-significant XLEN-bits of `rs1` and `rs2` into `rd`, and sets `rd.tag=0`.
+The {SCHI_BASE} instruction packs the least-significant XLEN-bits of `rs1` into `rd[XLEN-1:0]` and `rs2` into `rd[YLEN-1:XLEN]`, and set `rd.tag=0`.
 
 Included in::
 <<rvy_insn_table>>
@@ -41,7 +41,7 @@ Encoding::
 Description::
 Copy `{cs1}`  to `{cd}`.
 +
-Replace the capability metadata of `{cs1}` (i.e., bits [YLEN-1:XLEN]) with `rs2` and set `{cd}.tag` to 0.
+Construct a capability in `{cd}` by setting the address from `rs1` and the metadata from `rs2`. Set `{cd}.tag` to 0.
 +
 include::no_tag_affect.adoc[]
 
