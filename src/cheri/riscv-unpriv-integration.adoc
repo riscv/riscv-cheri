@@ -113,8 +113,10 @@ It is stored separately and may be referred to as _out of band_ or _hidden_, and
 It indicates whether a YLEN-bit register or YLEN-aligned memory location contains a valid capability.
 If the {ctag} is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds_overview,bounds>>).
 
-All registers or memory locations able to hold a capability are YLEN bits wide with an additional hidden {ctag} bit.
+All registers or memory locations able to hold a valid capability are YLEN bits wide with an additional hidden {ctag} bit.
 These are referred to as being _YLEN-bit_ in this specification.
+
+NOTE: Not all memory in a real system will support {ctag}s.
 
 The {ctag} cannot be directly set by software; it is _not_ a conventionally accessible bit of state.
 If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
