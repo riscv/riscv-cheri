@@ -196,21 +196,19 @@ Software can query the bounds of a capability held in a general-purpose register
 
 ==== Deriving New Bounds
 
-On system initialization, one or more <<root-cap>> capabilities are available;
-typically, these have bounds which cover all of memory and the maximum permissions set.
-All smaller capabilities are derived from these.
+On system initialization, one or more <<root-cap>> capabilities are available.
+All capabilities with smaller bounds are derived from these.
 
-NOTE: As a reminder, the ISA does not allow the bounds or permissions of a capability with its {ctag} set to be increased (_monotonicity_)
+The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions.
 
-The <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions generate new capabilities from a source capability and a length operand (`rs2` or `imm`).
-The resulting capability has its address set as the _base_ bound and its length as requested, subject to encoding granularity constraints.
-These instructions write the newly generated capability to the destination register.
-The granularity constraints mean that not all requested combinations of _top_ and _base_ bounds can be encoded exactly.
+They all copy `{cs1}` to the output `{cd}`, set the _base_ bound `{cd}` as `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
 
-* <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`. Set the {ctag} to zero if the bounds cannot be encoded exactly.
-* <<SCBNDSI>> sets the _base_ to `{cs1}.address`, and the _length_ to the immediate value. Set the {ctag} to zero if the bounds cannot be encoded exactly.
-* <<SCBNDSR>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`. The bounds may be rounded up if they cannot be encoded exactly.
-** If <<SCBNDSR>> rounds up the requested bounds, they must still be no larger than the initial bounds.
+* <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
+** Set the {ctag} to zero if the bounds cannot be encoded exactly.
+* <<SCBNDSI>> sets the _base_ to `{cs1}.address`, and the _length_ to the immediate value.
+** Set the {ctag} to zero if the bounds cannot be encoded exactly.
+* <<SCBNDSR>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
+** The bounds may be rounded up if they cannot be encoded exactly but must be no larger than the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
 // #some example usage here of CRAM+SCBNDSR would be good#
