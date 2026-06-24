@@ -1,14 +1,10 @@
 Exceptions::
-ifdef::has_cap_data[]
 Store/AMO access fault exception when the effective address is not aligned to YLEN/8.
 +
 Store/AMO access fault if the stored {ctag} is set to one and the PMA is _CHERI {ctag_title} Store Fault_.
-endif::[]
-ifndef::has_cap_data[]
 ifdef::store_cond[]
 If the address is not naturally aligned raise a _Store/AMO address misaligned_ exception or a _Store/AMO access fault_ exception. See <<sec:amo,"Zaamo">> for details on which one is raised.
 +
-endif::[]
 endif::[]
 +
 Exceptions occur when the authorizing capability fails one of the checks listed below:
@@ -18,14 +14,9 @@ Exceptions occur when the authorizing capability fails one of the checks listed 
 | Kind                       | Reason
 | {cheri_excep_name_st}      | {cheri_excep_desc_ytag}
 | {cheri_excep_name_st}      | {cheri_excep_desc_seal}
-| {cheri_excep_name_st}      | {cheri_excep_desc_perm}
-ifndef::has_cap_data[]
-Only <<w_perm>> is required.
-endif::[]
+| {cheri_excep_name_st}      | {cheri_excep_desc_perm} <<w_perm>> is required.
 | {cheri_excep_name_st}      | {cheri_excep_desc_bnds}
 | {cheri_excep_name_st}      | {cheri_excep_desc_intg}
-| Store/AMO address misaligned   | Address is not naturally aligned
 |==============================================================================
 +
 :!store_cond:
-:!has_cap_data:

@@ -504,8 +504,6 @@ For the base set of permissions just defined, the rules in <<base_clrperm_rule_s
 |===
 
 NOTE: These rules enforce sensible permission combinations.
-For example, it makes no sense to allow loading/storing capabilities (<<c_perm>>) if you cannot read or write data (<<r_perm>> or <<w_perm>>).
-Similarly, <<lm_perm>> is only useful if you can already read capabilities (<<c_perm>> and <<r_perm>>), and <<asr_perm>> is restricted to executable capabilities (<<x_perm>>).
 
 Extensions that define new permission bits may also introduce new dependency constraints.
 Currently defined examples are:
@@ -688,10 +686,10 @@ The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA.
 A failing check raises a CHERI exception.
 
-* The {ctag} must be set
-* The capability must not be sealed
-* The capability must grant <<x_perm>>
-* All bytes of the instruction must be in bounds
+* The {ctag} must be set to one.
+* The capability must not be sealed.
+* The capability must grant <<x_perm>>.
+* All bytes of the instruction must be in bounds.
 * All <<section_cap_integrity,integrity>> checks must have passed.
 
 On system initialization the `pc` bounds and permissions must be set such that the program can run successfully (e.g., by setting it to a <<root-rx-cap>> capability to ensure _all_ instructions are in bounds).
@@ -1116,18 +1114,18 @@ All load and store instructions behave as described in <<ldst>> with one fundame
 All load and store instructions authorized by `{cs1}` raise exceptions if any of these checks fail:
 
 * `{cs1}` must not be `{creg}0`^1^
-* The {ctag} (`{cs1}.tag`) must be set
-* `{cs1}` must be unsealed
+* The {ctag} (`{cs1}.tag`) must be set to one.
+* `{cs1}` must be unsealed.
 ifdef::invalid_address_viol[]
 * The virtual address in `{cs1}` must not be invalid if virtual memory is enabled.
 endif::[]
-* For loads, <<r_perm>> must be granted in `{cs1}`
-* For stores, <<w_perm>> must be granted in `{cs1}`
-* All <<section_cap_integrity,integrity>> checks on `{cs1}` must pass
+* For loads, <<r_perm>> must be granted in `{cs1}`.
+* For stores, <<w_perm>> must be granted in `{cs1}`.
+* All <<section_cap_integrity,integrity>> checks on `{cs1}` must pass.
 
 ^1^ All load/store encodings are _reserved_ if `{cs1}={creg}0` (since dereferencing <<null-cap>> always faults).
 
-All load instructions, except for <<LOAD_CAP>>, always zero the {ctag} and metadata of the result register.
+All load instructions, except for <<LOAD_CAP>>, always set the {ctag} and the metadata of the result register to zero.
 
 All store instructions, except for <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
 Therefore, misaligned stores may clear up to two associated {ctag} bits.
@@ -1156,7 +1154,11 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
   This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
   In this case, e.g., `new_{pcc} = {SCADDR}(old_{pcc}, offset)`
 * <<JALR_CHERI>> copies `{cs1}` into the <<pcc>>, and increments the address field with the offset.
-  In this case, e.g., `new_{pcc} = {SCADDR}(Unseal({cs1}, offset))`
+  In this case, e.g., `new_{pcc} = {SCADDR}(Unseal({cs1}), offset)`
+
+NOTE: Using {SCADDR} to update the <<pcc>> address can cause the target <<pcc>> {ctag} to be set to zero which raises a _{cheri_excep_name_pc}_ on the target instruction.
+
+NOTE: A future extension may raise an exception on branch and jump instructions if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
 
@@ -1175,11 +1177,11 @@ include::insns/jalr_32bit.adoc[]
 
 ==== BEQ, BNE ({cheri_base_ext_name})
 
-For `beq` and `bne` only, if `rs1≤rs2` then the encoding is RESERVED.
+For `beq` and `bne` only, if `rs1≤rs2` then the encoding is _reserved_.
 
-NOTE: These encodings are redundant and may be used by future extensions, suggestions include branching on {ctag} values only, or YLEN-bit compares.
+NOTE: The reserved encodings are redundant and may be used by future extensions, suggestions include branching on {ctag} values only, or YLEN-bit compares.
 
-NOTE: A future extension may raise an exception on branch instructions if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
+NOTE: The assembler will need to transform from, e.g., `beq x1, x2` to `beq x2, x1`.
 
 === {cheri_base_ext_name} ISA summary
 

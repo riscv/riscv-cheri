@@ -25,24 +25,16 @@ include::wavedrom/acperm.adoc[]
 Description::
 <<CLRPERM>> performs the following operations:
 
-. Convert the <<AP-field>>, <<SDP-field>>, and any other extension-defined permission-like fields of capability `{cs1}` into a bit field with the
-format shown in xref:acperm_bit_field[xrefstyle=short].
+. Convert the <<AP-field>> and <<SDP-field>> fields of capability `{cs1}` into a bit field with the format shown in xref:acperm_bit_field[xrefstyle=short].
 . The initial value in register `rs2[XLEN-1:0]` is treated as a bit mask that specifies bit positions to be cleared in the bit field. Any bit that is high in `rs2` will cause the corresponding bit to be cleared in the bit field.
 +
 NOTE: Future extensions may include hardwired permission bits, in which case they are not cleared by set bits in `rs2`.
-. Encode the resulting architectural permissions as specified by the encoding in use.
-  This may involve iteratively applying the rules in <<sec_permission_transitions>>,
-  as well as any rules added by extensions or the capability encoding,
-  until a fixed point is reached, arriving at a set of permissions not further reduced by any rule.
-  Any permission-dependent capability metadata is updated to reflect any permissions removed by this procedure.
-  Note that encodings may specify procedures for computing the new permission set; while these must be idempotent and respect the rules of <<sec_permission_transitions>>, they need not be of the form "iterate to fixed point".
-+
-IMPORTANT: Depending on the base ISA and supported extensions, some combinations of permissions cannot be encoded or are not useful.
-In these cases, <<CLRPERM>> will return a minimal sets of permissions, which may be no permissions.
-Therefore, it is possible that requesting to clear a permission also clears others, but <<CLRPERM>> will never _add_ new permissions.
-. Copy `{cs1}` to `{cd}`, and update the <<AP-field>>, <<SDP-field>>, and any others therein with the newly calculated versions.
-. Set `{cd}.tag=0` if `{cs1}` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<CLRPERM>>;
-  extensions must describe whether such changes to their bits also necessitate {ctag} clearing.
+. Encode the resulting architectural permissions as specified by the capability encoding format in use.
+  This involves applying the rules in <<sec_permission_transitions>>, as well as any rules added by extensions or the capability encoding format.
+.. If capability encoding format does not support the request set of permissions then <<CLRPERM>> will return a minimal sets of permissions, which may be no permissions.
+ Therefore, it is possible that requesting to clear a permission also clears others, but <<CLRPERM>> will never _add_ new permissions.
+. Copy `{cs1}` to `{cd}`, and update the <<AP-field>> and <<SDP-field>>s with the newly calculated versions.
+. Set `{cd}.tag=0` if `{cs1}` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<CLRPERM>>.
 . Set `{cd}.tag=0` if any <<section_cap_integrity,integrity>> checks fail.
 
 .Capability permissions bit field
@@ -56,13 +48,6 @@ NOTE: Any future extension that defines new permissions that are a refinement of
 (e.g., finer-grained <<asr_perm>> or those of <<section_zylevels1>>)
 must be allocated to the bits that are currently reported as 1 to ensure forward-compatibility.
  Completely new permissions (e.g., sealing) should use the bits that are reported as zero in the current specification.
-
-[NOTE]
-====
-Extensions like <<section_zylevels1>> introduce bits that are, conceptually, _labels_ on a capability rather than a permission granted by the capability.
-These bits are, nevertheless, still adjusted using the <<CLRPERM>> instruction.
-This avoids the need for a dedicated instruction and allows simultaneous changes of these labels and permissions.
-====
 
 Included in::
 <<rvy_insn_table>>
