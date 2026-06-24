@@ -1,5 +1,5 @@
 [#section_priv_cheri]
-== "Machine/Supervisor-Level ISA ({cheri_base_ext_name})" Extensions, Version 1.0
+== "Machine-Level ISA ({cheri_base_ext_name})" Extensions, Version 1.0
 
 ifdef::cheri_standalone_spec[]
 WARNING: This chapter will appear in the priv spec. Exact location TBD.
@@ -11,6 +11,15 @@ This chapter describes integration of {cheri_base_ext_name} with the RISC-V priv
 
 {cheri_base_ext_name} widens some M-mode CSRs so that they can hold capabilities.
 Additionally, {cheri_base_ext_name} allocates some previously reserved bits in existing CSRs.
+
+[NOTE]
+=====
+`mconfigptr` is not widened, despite representing an address,
+as it is solely for use by _low-level system software_
+and is not interpreted by hardware.
+Such software can be expected to hold suitable <<root-cap>> capabilities
+from which it can derive a capability to the address in this register.
+=====
 
 [#mtvec_y,reftext="mtvec ({cheri_base_ext_name})"]
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
@@ -145,6 +154,10 @@ endif::[]
 {cheri_base_ext_name} sets the Y bit to be 1.
 Either I or E is _also_ set to show how many registers are present.
 
+NOTE: Implementations which allow misa.C to be writable need to legalize <`__x__epc`>
+ on _reading_ if the misa.C value has changed since the value was written as this
+ can cause the read value of bit [1] to change state.
+
 [#mstatus_y, reftext="mstatus ({cheri_base_ext_name})"]
 ==== Machine Status Registers (mstatus and mstatush)
 
@@ -240,7 +253,7 @@ ifdef::cheri_standalone_spec[]
 Bits {cheri_excep_cause_list} of *medeleg* refer to valid CHERI exceptions and so can be used to
 delegate CHERI exceptions to supervisor mode.
 
-==== "Smstateen/Ssstateen" Integration
+==== "Smstateen" Integration
 The TIDC bit in `mstateen0` controls access to the <<stidc>>,
 ifndef::cheri_ratification_v1_only[]
 <<vstidc>>,
@@ -269,7 +282,143 @@ and <<utidc>> CSRs.
 
 endif::[]
 
-[#supervisor-level-widended-csrs-section]
+[#sec_cheri_exception_handling]
+=== CHERI Exception handling
+
+CHERI faults are typically higher priority than standard RISC-V faults. E.g., CHERI faults on the <<pcc>> are higher priority than any other fault effecting the program counter such as Instruction Access Fault.
+
+NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> (if {cheri_default_ext_name} is implemented).
+
+.Valid CHERI exception combination description
+[#cheri_exception_combs_descriptions]
+[width="100%",options=header,cols="2,1,3,4"]
+|=========================================================================================
+| Instructions | Xcause | Description | Check
+4+| *All instructions have these exception checks first*
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> {ctag} is zero
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> is sealed
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not grant <<x_perm>>
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of current instruction out of <<pcc>> bounds^1^
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> failed any <<section_cap_integrity,integrity>> check.
+4+| *CSR/Xret additional exception check*
+| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | 2 | Illegal instruction | <<pcc>> does not grant <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>> or <<CBO_INVAL_CHERI>>
+4+| *Load additional exception checks*
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` {ctag} is zero
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not grant <<r_perm>>
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^2^
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
+| Capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
+4+| *Store/atomic/cache-block-operation additional exception checks*
+| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` {ctag} is zero
+| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
+| All stores,  CBO.ZERO                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant <<w_perm>>
+| All atomics, CBO.CLEAN, CBO.FLUSH, CBO.INVAL   | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant both <<r_perm>> and <<w_perm>>
+| All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^2^
+| CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^2^
+| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^2^
+| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
+| Capability stores                              | 7^3^                       | Store access fault    | Misaligned capability store
+|=========================================================================================
+
+^1^ The <<pcc>> bounds checks includes the case where the bounds could not be decoded and so a minimum sized instruction is not fully in bounds.
+
+^2^ The load/store bounds check includes the case where the bounds could not be decoded as they are malformed.
+
+^3^ Misaligned capability accesses raise access faults instead of misaligned faults since they cannot be emulated in software.
+
+[#CHERI_SPEC,reftext="CHERI Exceptions and speculative execution"]
+=== CHERI Exceptions and speculative execution
+
+NOTE: CHERI adds architectural guarantees that can prove to be microarchitecturally useful.
+ Speculative-execution attacks can -- among other factors -- rely on instructions that fail CHERI permission checks not to take effect.
+ When implementing any of the extensions proposed here, microarchitects need to carefully consider the interaction of late-exception raising and side-channel attacks.
+
+[#section_pma]
+=== Physical Memory Attributes (PMA)
+
+Typically, only parts of the entire memory space need to support CHERI {ctag}s.
+Therefore Physical Memory Attributes are included indicating whether a memory region allows storing CHERI {ctag}s and to define the behavior when attempting to access them.
+
+There are three levels of support:
+
+.CHERI PMAs
+[#cheri_pmas]
+[width="100%",options=header]
+|=========================================================================================
+| PMA                              | Load Behavior    | Store Behavior                      | Comment
+| _CHERI {ctag_title}_             | Load {ctag}      | Store {ctag}                        | Tagged memory supporting {ctag}s
+| _CHERI {ctag_title} Strip_       | Load zero {ctag} | Ignore stored {ctag}                | No support for {ctag}s, ignore them
+| _CHERI {ctag_title} Store Fault_ | Load zero {ctag} | Store/AMO Access Fault on {ctag}^1^ | No support for {ctag}s, trap on storing one
+|=========================================================================================
+
+^1^ The access fault is triggered on all capability stores or atomics such as <<STORE_CAP>> or <<AMOSWAP_CAP>> when <<c_perm>> and <<w_perm>> are granted and the to-be-stored {ctag} is set to one.
+ For SC{LD_ST_DOT_CAP}, the access fault is raised if the to-be-stored {ctag} is set in {cs2} even when the store fails.
+
+Only memory regions that have the _CHERI {ctag_title}_ PMA require storage for {ctag}s.
+
+=== Modified MRET Behavior
+
+<<MRET_CHERI>> reads the full YLEN bits of the <<mepc_y>> register and unseals it prior to exception return if it is sealed as a <<sentry_cap>>.
+
+ifdef::support_varxlen[]
+[#section_cheri_dyn_xlen]
+== "{cheri_priv_m_dyn_xlen_ext}" Extension, Version 1.0
+
+{cheri_priv_m_dyn_xlen_ext} eliminates some restrictions for SXL and UXL imposed in {cheri_priv_m_ext} to allow implementations supporting multiple base ISAs.
+This extension allows the SXL, UXL, MBE, SBE, and UBE fields of <<mstatus_y>> to be writable (which is prohibited by {cheri_priv_m_ext} otherwise).
+
+Changing XLEN::
+Setting the SXL or UXL field to a value that is not MXLEN disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
++
+NOTE: If CHERI must be disabled in a mode for security reasons, software should set {CRE} to 0 regardless of the SXL and UXL fields.
++
+Whenever XLEN in any mode is set to a value less than MXLEN, standard RISC-V rules are followed.
+This means that all operations must ignore source operand register bits above the configured XLEN, and must sign-extend results to fill all MXLEN bits in the destination register.
+Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it is sign-extended to fill MXLEN.
+The integer writing rule from CHERI is followed, so that every register write also zeroes the metadata and {ctag} of the
+destination register.
++
+However, CHERI operations and security checks will continue using the entire hardware register (i.e., YLEN bits) to correctly decode capability bounds.
+
+Changing endianness::
+Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
+
+endif::support_varxlen[]
+
+=== Machine-mode YLEN CSR Summary
+
+<<all_capability_CSRs_m>> shows all YLEN Machine-mode CSRs added or modified by {cheri_base_ext_name}.
+
+.All {cheri_base_ext_name} Machine-Mode CSRs.
+[#all_capability_CSRs_m]
+[width="100%",options=header,cols="2,1,1,1,2,2,4"]
+|==============================================================================
+include::{generated_dir}/csr_permission_m_table_body.adoc[]
+|==============================================================================
+
+NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are a maximum possible value.
+The platform may reset those CSRs to a smaller memory range, or to have fewer permissions.
+
+.Action taken on writing to extended Machine-Mode CSRs
+[#extended_CSR_writing_m]
+[width="100%",options=header,cols="1,1,2,2"]
+|==============================================================================
+include::{generated_dir}/csr_alias_action_m_table_body.adoc[]
+|==============================================================================
+
+Code pointers and data pointers in <<CSR_exevectors_m>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
+
+.YLEN-wide Machine-Mode CSRs storing code pointers or data pointers
+[#CSR_exevectors_m]
+[width="100%",options=header,cols="1,1,1,1"]
+|==============================================================================
+include::{generated_dir}/csr_exevectors_m_table_body.adoc[]
+|==============================================================================
+
+== "Supervisor-Level ISA ({cheri_base_ext_name})" Extensions, Version 1.0
+
+[#supervisor-level-widened-csrs-section]
 === Supervisor-Level CSRs widened by {cheri_base_ext_name}
 
 [#stvec_y,reftext="stvec ({cheri_base_ext_name})"]
@@ -351,7 +500,7 @@ include::img/senvcfgreg.edn[]
 
 {cheri_base_ext_name} adds new exception codes for CHERI exceptions as in <<mcause_y>>.
 
-==== "Smstateen/Ssstateen" Integration
+==== "Ssstateen" Integration
 The TIDC bit in `sstateen0` controls access to the <<utidc>> CSR.
 See <<utidc>> for a description of the usage.
 
@@ -367,111 +516,40 @@ See <<utidc>> for a description of the usage.
 ], config:{bits: 32, lanes: 2, hspace:1024}}
 ....
 
-[#sec_cheri_exception_handling]
-=== CHERI Exception handling
+=== Modified SRET Behavior
 
-CHERI faults are typically higher priority than standard RISC-V faults. E.g., CHERI faults on the <<pcc>> are higher priority than any other fault effecting the program counter such as Instruction Access Fault.
-
-NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> (if {cheri_default_ext_name} is implemented).
-
-.Valid CHERI exception combination description
-[#cheri_exception_combs_descriptions]
-[width="100%",options=header,cols="2,1,3,4"]
-|=========================================================================================
-| Instructions | Xcause | Description | Check
-4+| *All instructions have these exception checks first*
-| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> {ctag} is zero
-| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> is sealed
-| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not grant <<x_perm>>
-| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of current instruction out of <<pcc>> bounds^1^
-| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> failed any <<section_cap_integrity,integrity>> check.
-4+| *CSR/Xret additional exception check*
-| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | 2 | Illegal instruction | <<pcc>> does not grant <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>> or <<CBO_INVAL_CHERI>>
-4+| *Load additional exception checks*
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` {ctag} is zero
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not grant <<r_perm>>
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^2^
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
-| Capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
-4+| *Store/atomic/cache-block-operation additional exception checks*
-| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` {ctag} is zero
-| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
-| All stores,  CBO.ZERO                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant <<w_perm>>
-| All atomics, CBO.CLEAN, CBO.FLUSH, CBO.INVAL   | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant both <<r_perm>> and <<w_perm>>
-| All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^2^
-| CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^2^
-| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^2^
-| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
-| Capability stores                              | 7^3^                       | Store access fault    | Misaligned capability store
-|=========================================================================================
-
-^1^ The <<pcc>> bounds checks includes the case where the bounds could not be decoded and so a minimum sized instruction is not fully in bounds.
-
-^2^ The load/store bounds check includes the case where the bounds could not be decoded as they are malformed.
-
-^3^ Misaligned capability accesses raise access faults instead of misaligned faults since they cannot be emulated in software.
-
-[#CHERI_SPEC,reftext="CHERI Exceptions and speculative execution"]
-=== CHERI Exceptions and speculative execution
-
-NOTE: CHERI adds architectural guarantees that can prove to be microarchitecturally useful.
- Speculative-execution attacks can -- among other factors -- rely on instructions that fail CHERI permission checks not to take effect.
- When implementing any of the extensions proposed here, microarchitects need to carefully consider the interaction of late-exception raising and side-channel attacks.
-
-[#section_pma]
-=== Physical Memory Attributes (PMA)
-
-Typically, only parts of the entire memory space need to support CHERI {ctag}s.
-Therefore Physical Memory Attributes are included indicating whether a memory region allows storing CHERI {ctag}s and to define the behavior when attempting to access them.
-
-There are three levels of support:
-
-.CHERI PMAs
-[#cheri_pmas]
-[width="100%",options=header]
-|=========================================================================================
-| PMA                              | Load Behavior    | Store Behavior                      | Comment
-| _CHERI {ctag_title}_             | Load {ctag}      | Store {ctag}                        | Tagged memory supporting {ctag}s
-| _CHERI {ctag_title} Strip_       | Load zero {ctag} | Ignore stored {ctag}                | No support for {ctag}s, ignore them
-| _CHERI {ctag_title} Store Fault_ | Load zero {ctag} | Store/AMO Access Fault on {ctag}^1^ | No support for {ctag}s, trap on storing one
-|=========================================================================================
-
-^1^ The access fault is triggered on all capability stores or atomics such as <<STORE_CAP>> or <<AMOSWAP_CAP>> when <<c_perm>> and <<w_perm>> are granted and the to-be-stored {ctag} is set to one.
- For SC{LD_ST_DOT_CAP}, the access fault is raised if the to-be-stored {ctag} is set in {cs2} even when the store fails.
-
-Only memory regions that have the _CHERI {ctag_title}_ PMA require storage for {ctag}s.
-
-=== Modified Trap-Return Instructions Behavior
-
-When the {cheri_base_ext_name} base ISA is implemented, the <<otherpriv,trap-return instructions>> (`MRET` and `SRET`) read the full YLEN bits of the <<mepc_y>>/<<sepc_y>> register and unseal it prior to exception return.
+<<SRET_CHERI>> reads the full YLEN bits of the <<sepc_y>> register and unseals it prior to exception return if it is sealed as a <<sentry_cap>>.
 
 include::insns/mret_sret.adoc[]
 
-ifdef::support_varxlen[]
-[#section_cheri_dyn_xlen]
-== "{cheri_priv_m_dyn_xlen_ext}" Extension, Version 1.0
+=== Supervisor-mode YLEN CSR Summary
 
-{cheri_priv_m_dyn_xlen_ext} eliminates some restrictions for SXL and UXL imposed in {cheri_priv_m_ext} to allow implementations supporting multiple base ISAs.
-This extension allows the SXL, UXL, MBE, SBE, and UBE fields of <<mstatus_y>> to be writable (which is prohibited by {cheri_priv_m_ext} otherwise).
+<<all_capability_CSRs_s>> shows all YLEN Supervisor-mode CSRs added or modified by {cheri_base_ext_name}.
 
-Changing XLEN::
-Setting the SXL or UXL field to a value that is not MXLEN disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
-+
-NOTE: If CHERI must be disabled in a mode for security reasons, software should set {CRE} to 0 regardless of the SXL and UXL fields.
-+
-Whenever XLEN in any mode is set to a value less than MXLEN, standard RISC-V rules are followed.
-This means that all operations must ignore source operand register bits above the configured XLEN, and must sign-extend results to fill all MXLEN bits in the destination register.
-Similarly, *pc* bits above XLEN are ignored, and when the *pc* is written, it is sign-extended to fill MXLEN.
-The integer writing rule from CHERI is followed, so that every register write also zeroes the metadata and {ctag} of the
-destination register.
-+
-However, CHERI operations and security checks will continue using the entire hardware register (i.e., YLEN bits) to correctly decode capability bounds.
+.All {cheri_base_ext_name} Supervisor-Mode CSRs.
+[#all_capability_CSRs_s]
+[width="100%",options=header,cols="2,1,1,1,2,2,4"]
+|==============================================================================
+include::{generated_dir}/csr_permission_s_table_body.adoc[]
+|==============================================================================
 
-Changing endianness::
-Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE disables most CHERI features and instructions, as described in xref:section_cheri_disable[xrefstyle=short], while in that privilege mode.
+Code pointers and data pointers in <<CSR_exevectors_s>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
 
-endif::support_varxlen[]
+.Action taken on writing to extended Supervisor-Mode CSRs
+[#extended_CSR_writing_s]
+[width="100%",options=header,cols="1,1,2,2"]
+|==============================================================================
+include::{generated_dir}/csr_alias_action_s_table_body.adoc[]
+|==============================================================================
+
+
+
+.YLEN-wide Supervisor-Mode CSRs storing code pointers or data pointers
+[#CSR_exevectors_s]
+[width="100%",options=header,cols="1,1,1,1"]
+|==============================================================================
+include::{generated_dir}/csr_exevectors_s_table_body.adoc[]
+|==============================================================================
 
 [#section_priv_cheri_vmem]
 == "{cheri_priv_vmem_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
@@ -539,7 +617,7 @@ If _pte_._{pte_cap_rw_name_lc}_=1 then:
 When address translation is in effect for {cheri_base64_ext_name}, the upper bits of virtual
 memory addresses must match for the address to be valid.
 
-The CSRs shown in xref:CSR_exevectors[xrefstyle=short], as well as the <<pcc>>, need not hold all possible invalid addresses.
+The CSRs shown in xref:CSR_exevectors_m[xrefstyle=short] and xref:CSR_exevectors_s[xrefstyle=short], as well as the <<pcc>>, need not hold all possible invalid addresses.
 
 However, the bounds encoding of capabilities depends on the address value if the bounds are not infinite.
 
@@ -796,3 +874,9 @@ xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart 
 ^2^ The {cheri_base_ext_name} compressed instructions operating on capability data are _unavailable_ as their encodings will revert to RV32[IE]/RV64[IE] standard behavior.
 
 ^3^ If {CRE}=0 in M-mode the hart is fully compatible with RV32[IE]/RV64[IE]. For lower privileged modes <<pcc>> or <<ddc>> may not be <<root-cap,root capabilities>> and so the behavior may be restricted.
+
+
+ifndef::cheri_standalone_spec[]
+[#sentry_cap,reftext="sealed entry point capability"]
+Sealed Entry Point Capability::
+endif::[]
