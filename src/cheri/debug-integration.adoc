@@ -98,7 +98,6 @@ apply.
 ==== Core Debug Registers
 
 {cheri_base_ext_name} widens debug CSRs that are designated to hold addresses so that they can hold capabilities.
-These widened debug CSRs are listed in xref:dcsrnames-renamed[xrefstyle=short].
 
 The <<pcc>> must grant <<asr_perm>> to access debug CSRs. This permission is
 automatically provided when the hart enters debug mode as described
@@ -191,7 +190,7 @@ include::img/dscratch1creg.edn[]
 ==== Debug Root Capability Selector (drootcsel)
 
 <<drootcsel>> is a DXLEN-bit debug mode accessible integer CSR.  The address and access details are shown in
-xref:all_capability_CSRs[xrefstyle=short].
+xref:all_capability_CSRs_d[xrefstyle=short].
 
 It selects which <<root-cap>> capability is exposed through <<drootc>>.
 The reset value is `0`, which must cause <<drootc>> to expose a
@@ -209,7 +208,7 @@ include::img/drootcselreg.edn[]
 ==== Debug Root Capability Register (drootc)
 
 <<drootc>> is a debug mode accessible capability CSR. The address and access details are shown in
-xref:all_capability_CSRs[xrefstyle=short].
+xref:all_capability_CSRs_d[xrefstyle=short].
 It exposes the capability selected by <<drootcsel>>.
 
 If {cheri_default_ext_name} is implemented,
@@ -278,5 +277,37 @@ When debug mode is exited, the hart's <<ddc>> is updated to
 the capability stored in <<dddc>>. A debugger may write <<dddc>> to change the
 hart's context.
 
-As shown in xref:CSR_exevectors[xrefstyle=short], <<dddc>> is a data pointer,
+As shown in xref:CSR_exevectors_d[xrefstyle=short], <<dddc>> is a data pointer,
 so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+
+=== Debug-mode YLEN CSR Summary
+
+The tables below show all Supervisor-mode CSRs added or modified by {cheri_base_ext_name}.
+
+.Action taken on writing to extended Debug-Mode CSRs
+[#extended_CSR_writing_d]
+[width="100%",options=header,cols="1,1,2,2"]
+|==============================================================================
+include::{generated_dir}/csr_alias_action_d_table_body.adoc[]
+|==============================================================================
+
+Code pointers and data pointers in <<CSR_exevectors_d>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
+
+.YLEN-wide Debug-Mode CSRs storing code pointers or data pointers
+[#CSR_exevectors_d]
+[width="100%",options=header,cols="1,1,1,1"]
+|==============================================================================
+include::{generated_dir}/csr_exevectors_d_table_body.adoc[]
+|==============================================================================
+
+<<all_capability_CSRs_d>> shows all debug-mode CSRs added or modified by {cheri_base_ext_name}.
+
+.All {cheri_base_ext_name} Debug-Mode CSRs.
+[#all_capability_CSRs_d]
+[width="100%",options=header,cols="2,1,1,1,2,2,4"]
+|==============================================================================
+include::{generated_dir}/csr_permission_d_table_body.adoc[]
+|==============================================================================
+
+NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are a maximum possible value.
+The platform may reset those CSRs to a smaller memory range, or to have fewer permissions.

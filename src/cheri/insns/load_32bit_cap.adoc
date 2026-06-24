@@ -20,34 +20,31 @@ Calculate the effective address of the memory access by adding `{cs1}.address` t
 +
 Authorize the memory access with the capability in `{cs1}`.
 +
-Load a naturally aligned YLEN-bit data value from memory.
+Load a naturally aligned YLEN-bit data value and associated {ctag} from memory.
 +
-If the PMA is _CHERI {ctag_title}_ then load the associated {ctag}, otherwise set the {ctag} to zero.
+NOTE: The loaded {ctag} may be set to zero under platform specified conditions, such as by a hardware based use-after-free prevention scheme.
+ Privileged mechanisms may also set the loaded {ctag} to zero such as PMA settings or virtual memory system page table entry configuration..
 +
-The {ctag} may also be set to 0 under platform specified conditions.
+NOTE: Extensions may also specify additional conditions which set the {ctag} to zero.
 +
-NOTE: Extensions may also specify conditions which set the {ctag} to zero.
+The final value of `{cd}` is determined as follows:
 +
-Use the YLEN-bit data and the {ctag} to determine the value of `{cd}` as specified below.
+. Write the loaded YLEN data to `{cd}` and the loaded {ctag} into `{cd}.tag`
 +
-[NOTE]
-=====
-Platforms may strip loaded {ctag}s for a number of reasons.
-For example:
-
-* The RVY privileged specification permits Physical Memory Attributes (PMAs) that cannot store {ctag}s, as might be the case with MMIO.
- The {ctag}s transported by <<STORE_CAP>> instructions to these regions are set to 0 and so will not read back.
-* The MMU of the RVY privileged specification introduces page mappings that always set loaded {ctag}s to 0 even if the loaded location has a set {ctag}.
- Privileged software can use such mappings to limit capability propagation between virtual address spaces while still allowing for data exchange.
-* CHERIoT platforms use so-called "capability load filters" to allow software (usually shared heap allocators) to ensure that capabilities pointing _to_ deallocated memory cannot be loaded into the register file from memory.
-** A future extension is likely to specify the behavior of the "capability load filter" for embedded CHERI systems.
-=====
+. If `{cs1}` does not grant <<c_perm>> then set `{cd}.tag=0`.
 +
-include::malformed_no_check.adoc[]
+. If `{cd}.tag=1`, `{cs1}` does not grant <<lm_perm>> and `{cd}` is not sealed, then an implicit <<CLRPERM>> is performed to clear <<w_perm>> and <<lm_perm>> from `{cd}`.
 +
-include::load_tag_perms.adoc[]
+NOTE: The implicit <<CLRPERM>> is not required to set `{cd}.tag=0` if the loaded data fails <<section_cap_integrity,integrity>> checks.
+ A suggested implementation is to only check the <<AP-field>> for legal values, and set the whole <<AP-field>> to zero if the check fails.
 +
-:has_cap_data:
+NOTE: Metadata modifications on loaded capabilities are on naturally aligned data.
+ Therefore on the read path from a data cache, the modification typically happens in parallel with data alignment multiplexers.
++
+NOTE: <<section_zylevels1>> adds to the <<CLRPERM>> rules on loaded capability data.
++
+When sending load data to a trace interface, implementations trace the final value written to `{cd}` which may not match the value in memory.
++
 include::load_exceptions.adoc[]
 +
 Included in::

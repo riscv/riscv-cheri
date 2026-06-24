@@ -2,7 +2,12 @@
 == "{cheri_levels1_ext_name}" Extension for CHERI 2-Level Information Flow Control
 
 {cheri_levels1_ext_name} adds an *Information Flow Control* (IFC) mechanism to CHERI.
-It adds one new "level" metadata bit (<<zylevels1_gl_flag>>) to classify capabilities as either *global* or *local*, adds checks to memory operations to control how capabilities can be shared, and adds two new level-related permissions, <<zylevels1_sl_perm,Store Local (SL)>> and <<zylevels1_lg_perm,Load Global (LG)>>.
+
+It adds:
+
+* One new "level" metadata bit (the <<zylevels1_gl_flag>>) to classify capabilities as either *global* or *local*.
+* Checks to memory operations to control how capabilities can be shared.
+* Two new level-related permissions, <<zylevels1_sl_perm,Store Local (SL)>> and <<zylevels1_lg_perm,Load Global (LG)>>.
 
 NOTE: The behavior is an extension as it may be replaced by a future scheme with more than two levels.
 
@@ -67,16 +72,17 @@ The <<root-cap>> capabilities definitions are extended:
 
 === Interaction with <<CLRPERM>> and <<GCPERM>>
 
+
 .Extended capability permissions bit field (see <<acperm_bit_field>>)
 [#zylevels1_acperm_bit_field]
 include::./img/zylevels1-acperm_bit_field.edn[]
 
 The <<zylevels1_gl_flag>>, <<zylevels1_sl_perm>>, and <<zylevels1_lg_perm>> fields are mapped into the <<acperm_bit_field,capability permissions bitfield>> as used by <<CLRPERM>> and <<GCPERM>>, as shown in <<zylevels1_acperm_bit_field>>.
 
-==== <<CLRPERM>> and the Capability Global (GL) Flag
-<<CLRPERM>> can produce a new capability with its <<zylevels1_gl_flag>> cleared, even if the source capability is sealed.
-This differs from architectural and software permissions.
-This applies to both the implicit clearing of permissions during memory loads and explicit <<CLRPERM>> instructions.
+The <<zylevels1_gl_flag>> is treated as a permission by <<CLRPERM>> and <<GCPERM>>.
+
+Unlike actual permissions it is not subject to the sealed check, and so <<CLRPERM>> can produce a new capability with its <<zylevels1_gl_flag>> cleared, even if the source capability is sealed.
+
 
 [#zylevels1-clrperm-rules]
 ==== Additional <<CLRPERM>> permission rules

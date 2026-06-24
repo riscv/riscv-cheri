@@ -1,13 +1,9 @@
 Exceptions::
-ifdef::has_cap_data[]
 Load access fault exception when the effective address is not aligned to YLEN/8.
 +
-endif::[]
-ifndef::has_cap_data[]
 ifdef::load_res[]
 All misaligned load reservations cause a load address misaligned exception to allow software emulation (if the Zam extension is supported), otherwise they take a load access fault exception.
 +
-endif::[]
 endif::[]
 Exceptions occur when the authorizing capability fails one of the checks listed below:
 +
@@ -16,14 +12,9 @@ Exceptions occur when the authorizing capability fails one of the checks listed 
 | Kind                       | Reason
 | {cheri_excep_name_ld}      | {cheri_excep_desc_ytag}
 | {cheri_excep_name_ld}      | {cheri_excep_desc_seal}
-| {cheri_excep_name_ld}      | {cheri_excep_desc_perm}
-ifndef::has_cap_data[]
-Only <<r_perm>> is required.
-endif::[]
+| {cheri_excep_name_ld}      | {cheri_excep_desc_perm} <<r_perm>> is required.
 | {cheri_excep_name_ld}      | {cheri_excep_desc_bnds}
 | {cheri_excep_name_ld}      | {cheri_excep_desc_intg}
-| Load address misaligned    | Address is not naturally aligned
 |==============================================================================
 +
 :!load_res:
-:!has_cap_data:

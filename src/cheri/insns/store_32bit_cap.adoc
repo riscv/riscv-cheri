@@ -23,7 +23,15 @@ Store a naturally aligned YLEN-bit data value in `{cs2}` to memory and the assoc
 +
 include::malformed_no_check.adoc[]
 +
-include::store_tag_perms.adoc[]
+Stored {ctag_title} Value::
++
+The stored {ctag} is set to zero if:
++
+. `{cs2}.tag=0`, or
+. `{cs1}` does not grant <<c_perm>>, or
+. Platform specified conditions or privileged configurations (e.g., PMAs or PTEs) specify that it must be set to zero.
++
+NOTE: Extensions may define further circumstances under which stored capabilities may have their {ctag}s set to zero.
 +
 :has_cap_data:
 include::store_exceptions.adoc[]
