@@ -518,7 +518,8 @@ def get_custom3_insts():
         next_rtype("YSS", rs1="{cs1}", rs2="{cs2}", rd="rd"),
         next_rtype("YSUNSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
         next_rtype("YBLD", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
-        next_rtype("YSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
+        next_rtype("YSENTRY", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
+        #next_rtype("YSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}"), ##YSEAL with rs1!=x0
         next_rtype("YUNSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}", ext="Zyseal"),
         next_rtype("YMODEW", rs1="{cs1}", rd=f"{{cd}}{NEQ}0", ext="Zyhybrid"),
         RVYRType3Op(
