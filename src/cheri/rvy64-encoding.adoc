@@ -5,25 +5,26 @@ This section describes the in-memory format and properties of the capability enc
 
 NOTE: The format is closely modeled upon features from CHERI v9 cite:[cheri-v9-spec], and the bounds encoding scheme is based upon CHERI Concentrate cite:[woodruff2019cheri].
 
-[#section_cap_encoding]
+[#section_cap_encoding64]
 === Capability Encoding
 
 .Capability encoding for {rv64y_uni_base_name}
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
+AP_CMP, ASR and X are concatenated to form the <<AP-field>>.
+
 NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
 
 The encoding diagram above of the capability encoding format includes some fields which depend upon the presence of extensions:
 
 <<section_cheri_hybrid_ext>>::
-When {cheri_default_ext_name} is supported, capabilities include an <<p_bit>> (bit 52).
-If the capability does not grant <<x_perm>> or {cheri_default_ext_name} is not supported, the <<p_bit>> is always _reserved_ and so must be zero in valid capabilities.
+When {cheri_default_ext_name} is supported, capabilities include the <<p_bit>>, otherwise that field is _reserved_.
 
 <<section_zylevels1>>::
-Bits 6 and 7 of the `AP` field are allocated, otherwise they are reserved and set to one.
+When <<section_zylevels1>> is supported, capabilities include the <<zylevels1_gl_flag,GL>> flag, otherwise that field is _reserved_.
 +
-The <<zylevels1_gl_flag,GL>> flag is allocated, otherwise it is reserved and must be zero.
+The AP field is also sized to include two additional permissions which are available as _reserved_ states if <<section_zylevels1>> is not supported.
 
 ==== Capability Encoding Parameter Summary
 
@@ -35,13 +36,11 @@ The <<zylevels1_gl_flag,GL>> flag is allocated, otherwise it is reserved and mus
 | EW          | {cap_rv64_exp_width} | Exponent width for the bounds encoding
 | CAP_MAX_E   | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8    | 0                    | Whether the encoding format includes the L~8~ bit
-| AP_MAX      | all ones             | Value of the <<AP-field>> giving maximum permissions
-| AP_ENC      | ps1                  | Encoding scheme for the <<AP-field>>
+| AP_MAX      | 0x2f                 | Value of the <<AP-field>> giving maximum permissions
+| AP_ENC      | cmp1_rv64ya_1        | Encoding scheme for the <<AP-field>> - all combinations are representable
 | AUIPC_SHIFT | 12                   | Shift distance of the immediate in AUIPC
 | REP_RANGE   | rc1                  | Whether out of bounds addresses are representable
 |==============================================================================
-
-NOTE: All parameters match the default values from <<cap_encoding_param_default_summary>>.
 
 .{rv64y_uni_base_name} extension summary
 [#rvy64_uni_base_name_ext_summary,width="100%",options=header,]
@@ -56,39 +55,52 @@ endif::[]
 |==============================================================================
 
 [#AP-field-encoding64, reftext="AP-field encoding"]
-==== Architectural Permissions (AP) Encoding - `ps1`
+==== Architectural Permissions (AP) Encoding - `cmp1_rv64ya_1`
 
-The permissions field is up to {cap_rv64_perms_width} bits wide and is encoded using one bit per architectural permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
-A permission is granted if its corresponding bit, and those of any dependent permissions, are set;
-otherwise, the capability does not grant that permission.
+The permissions field represents all possible combinations of permissions in an optimized format.
 
-Certain combinations of permissions are impractical.
-For example, <<c_perm>> is superfluous when the capability does not grant either <<r_perm>> or <<w_perm>>.
-Therefore, it is only legal to encode a subset of all combinations and any invalid states are _reserved_ in the <<AP-field>> encoding.
+The following permissions each have a single bit allocated to them:
 
-NOTE: Reserved states can be used in the future to allow additional permissions to be encoded within the <<AP-field>>.
+* <<x_perm>>
+* <<asr_perm>>
 
-.Encoding of architectural permissions for {rv64y_uni_base_name}
-[#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="75%"]
+The combination of <<x_perm>>=0 and <<asr_perm>>=1 is _reserved_ following <<perm_req:base:asr:x,base-3>>.
+
+The remaining permissions have a restricted set of valid combinations and so are encoded into a single field called AP_CMP.
+
+NOTE: Even though <<w_perm>> is valid in all combinations with the base set of permissions, <<section_zylevels1>> restricts its usage and so it is included in AP_CMP.
+ Additionally, AP_CMP is allocated to have 5-bits to allow space for <<section_zylevels1>> without changing the definition.
+ Future extensions may extend it further if necessary or may redefine the _reserved_ states if they are incompatible with <<section_zylevels1>>.
+
+.{rv64y_uni_base_name} AP_CMP (compressed architectural permissions) field
+[#rvy64_uni_base_name_ap_cmp_fmt,width="100%",options=header,cols="^1,^1,^1,^1,^1,5"]
 |==============================================================================
-| Bit | Encoded permission
-| 0   | <<c_perm>>
-| 1   | <<w_perm>>
-| 2   | <<r_perm>>
-| 3   | <<x_perm>>
-| 4   | <<asr_perm>>
-| 5   | <<lm_perm>>
-| 6   | <<zylevels1_lg_perm>> if <<section_zylevels1>> is implemented; reserved `1` otherwise.
-| 7   | <<zylevels1_sl_perm>> if <<section_zylevels1>> is implemented; reserved `1` otherwise.
+| Encoding | R | W | C | LM | Comment
+6+| *R=AP_CMP[2], W=AP_CMP[1], C=AP_CMP[0]*
+| 00000    |   |   |   |    | *No permissions*
+| 00001  5+|                  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
+| 00010    |   | W |   |    |
+| 00011    |   | W | C |    |
+| 00100    | R |   |   |    |
+| 00101    | R |   | C |    |
+| 00110    | R | W |   |    |
+| 00111    | R | W | C |    |
+6+| *W=AP_CMP[1], LM=1*
+6+| *LM implies C,R*
+| 01000  5+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
+| 01001    | R |   | C | LM |
+| 01010  5+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
+| 01011    | R | W | C | LM | *Maximum permissions (AP_CMP_MAX)*
+6+| *Reserved states*
+| 011xx  5+|                  _reserved_ for <<section_zylevels1>>
+| 100xx  5+|                  _reserved_ for <<section_zylevels1>>
+| 10101  5+|                  _reserved_ for Zyseal sealing permission
+| 10110  5+|                  _reserved_ for Zyseal unsealing permission
+| 10111  5+|                  _reserved_ for Zyseal sealing and unsealing permission
+| 11xxx  5+|                  _reserved_ for other future use
 |==============================================================================
 
-NOTE: Future extensions may define new permissions and, if so, must augment the above table.
-
-[#P-field-encoding64, reftext="P-field encoding"]
-==== Capability Mode (P) Encoding
-
-The <<p_bit>> is only assigned meaning when the implementation supports {cheri_default_ext_name} _and_ <<x_perm>> is set.
-In valid capabilities, the bit assigned to the <<p_bit>> must be zero if <<x_perm>> isn't set.
+AP_MAX = {AP_CMP_MAX, 1 (<<asr_perm>>), 1 (<<x_perm>>)} = 0x2F
 
 [#SDP-field64, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
@@ -160,7 +172,7 @@ possible to encode any arbitrary combination of base and top addresses. An
 invalid capability with {ctag} cleared is produced when attempting to construct a
 capability that is not _representable_ because its bounds cannot be correctly
 encoded. The bounds are decoded as described in
-xref:section_cap_encoding[xrefstyle=short].
+xref:section_cap_bounds[xrefstyle=short].
 
 The bounds field has the following components:
 
@@ -179,7 +191,7 @@ is set depending on capability encoding as shown in
 xref:rvy64_uni_base_name_param_summary[xrefstyle=short].
 
 The exponent E indicates the position of T and B within the capability's
-address as described in xref:section_cap_encoding[xrefstyle=short]. The bit
+address as described in xref:section_cap_bounds[xrefstyle=short]. The bit
 width of the exponent (EW) is set depending on the encoding. The
 maximum value of the exponent is calculated as follows:
 
@@ -427,7 +439,7 @@ The top and bottom capability bounds are formed of two or three sections:
 
 The _representable range_ defines the range of addresses which do not corrupt
 the bounds encoding. The encoding was first introduced in
-xref:section_cap_encoding[xrefstyle=short], and is repeated in a different
+xref:section_cap_bounds[xrefstyle=short], and is repeated in a different
 form in xref:comp_addr_bounds[xrefstyle=short] to aid this description.
 
 For the address to be valid for the current bounds encoding, the value
@@ -494,7 +506,7 @@ xref:cap_bounds_map[xrefstyle=short].
 The gap between the object bounds and the bound of the representable range
 is always guaranteed
 to be at least 1/4 of `s`. This is represented by `R = B - 2^MW-2^` in
-xref:section_cap_encoding[xrefstyle=short].
+xref:section_cap_bounds[xrefstyle=short].
 This gives useful guarantees, such that if an executed instruction is in
 <<pcc>> bounds, then it is also guaranteed that the next linear instruction
 is _representable_.

@@ -153,6 +153,58 @@ The definition of <<cap_subset>> has an additional rule:
 
 NOTE: This affects the behavior of <<SCSS>>, <<CBLD>> and <<YSUNSEAL>>.
 
+=== Effect on architectural permission format `cmp1_rv64ya_1`
+
+This format is used by <<rv64y_cap_description>>, and was introduced in <<rvy64_uni_base_name_ap_cmp_fmt>>.
+The states in <<rvy64_uni_base_name_ap_cmp_fmt_levels1>> are added.
+
+.{rv64y_uni_base_name} AP_CMP (compressed architectural permissions) field
+[#rvy64_uni_base_name_ap_cmp_fmt_levels1,width="100%",options=header,cols="^1,^1,^1,^1,^1,^1,^1,5"]
+|==============================================================================
+| Encoding | R | W | C | LM | LG | SL | Comment
+ifdef::full_perms_table[]
+//it's nice to have the full table in one place
+8+| *R=AP_CMP[2], W=AP_CMP[1], C=AP_CMP[0]*
+| 00000    |   |   |   |    |    |    | *No permissions*
+| 00001  7+|                  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
+| 00010    |   | W |   |    |    |    |
+| 00011    |   | W | C |    |    |    |
+| 00100    | R |   |   |    |    |    |
+| 00101    | R |   | C |    |    |    |
+| 00110    | R | W |   |    |    |    |
+| 00111    | R | W | C |    |    |    |
+8+| *W=AP_CMP[1], LM=1*
+8+| *LM implies C,R*
+| 01000  7+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
+| 01001    | R |   | C | LM |    |    |
+| 01010  7+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
+| 01011    | R | W | C | LM |    |    |
+endif::[]
+8+| *W=AP_CMP[1], LM=AP_CMP[0], LG=1*
+8+| *LM,LG imply C,R*
+| 01100    | R |   | C |    | LG |    |
+| 01101    | R |   | C | LM | LG |    |
+| 01110    | R | W | C |    | LG |    |
+| 01111    | R | W | C | LM | LG |    |
+8+| *LG=AP_CMP[1], LM=AP_CMP[0], SL=1*
+8+| *LM,LG imply C,R*
+8+| *SL implies C,W*
+| 10000    |   | W | C |    |    | SL |
+| 10001    | R | W | C | LM |    | SL |
+| 10010    | R | W | C |    | LG | SL |
+| 10011    | R | W | C | LM | LG | SL | *Maximum permissions (AP_CMP_MAX)*
+8+| *Final state to complete the encoding set*
+| 10100    | R | W | C |    |    | SL | SL doesn't imply R so this state needs encoding specifically
+8+| *Reserved states*
+| 10101  7+|                  _reserved_ for sealing permission
+| 10110  7+|                  _reserved_ for unsealing permission
+| 10111  7+|                  _reserved_ for sealing and unsealing permission
+| 11xxx  7+|                  _reserved_ for future use
+|==============================================================================
+
+AP_MAX = {AP_CMP_MAX, 1 (<<asr_perm>>), 1 (<<x_perm>>)} = 0x4F
+
+
 === Rationale and Software Use Cases
 
 The primary goal of {cheri_levels1_ext_name} is to prevent storing pointers to specific memory regions in order to enforce security invariants.

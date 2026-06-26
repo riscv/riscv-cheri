@@ -27,9 +27,9 @@ include::img/cap-encoding-xlen32.edn[]
 | CAP_MAX_E   | {cap_rv32_exp_max}  | Maximum exponent value
 | enableL8    | 1                   | Whether the encoding format includes the L~8~ bit
 | AP_MAX      | 0x8                 | Value of the <<AP-field>> giving maximum permissions
+| AP_ENC      | incmp_rv32ya_1      | Encoding scheme for the <<AP-field>> - not all combinations are representable
 | AUIPC_SHIFT | 12                  | Shift distance of the immediate in AUIPC
 | REP_RANGE   | rc1                 | At least 1/4 of the capability length
-| PERM_ENC    | pc1                 | Compressed permission format number 1
 |==============================================================================
 
 ^1^If {cheri_default_ext_name} is supported, then the infinite capability must represent {cheri_int_mode_name} for compatibility with standard RISC-V code.
@@ -48,9 +48,11 @@ endif::[]
 |==============================================================================
 
 [#AP-field-encoding32, reftext="Compressed AP field"]
-==== Architectural Permissions (AP) Encoding - pc1
+==== Architectural Permissions (AP) Encoding - `incmp_rv32ya_1`
 
-The <<AP-field>> is {cap_rv32_perms_width} bits wide and is encoded using a compressed representation avoiding unused combinations to save encoding space.
+The <<AP-field>> is {cap_rv32_perms_width} bits wide and all permissions in limited combinations.
+It avoids unused combinations of permissions to save encoding space.
+
 The <<AP-field>> is split into four quadrants.
 The quadrant number is taken from AP[4:3].
 The meanings of bits AP[2:0] for each quadrant are shown in <<cap_perms_encoding_nolevels32>>.
@@ -71,10 +73,10 @@ All gaps in <<cap_perms_encoding_nolevels32>> are _reserved_ for future extensio
 8+| AP-encoding table
 8+| *Quadrant 0: Non-capability data read/write - regular future entries have: W=AP[2], R=AP[0]*
 | Field[2:0] | R | W | C | LM | X | ASR | Notes
-| 0          |   |   |   |   |     |   | No permissions^1^
-| 1          | ✔ |   |   |   |     |   | Data RO
-| 4          |   | ✔ |   |   |     |   | Data WO
-| 5          | ✔ | ✔ |   |   |     |   | Data RW
+| 0          |   |   |   |   |    |     | No permissions^1^
+| 1          | ✔ |   |   |   |    |     | Data RO
+| 4          |   | ✔ |   |   |    |     | Data WO
+| 5          | ✔ | ✔ |   |   |    |     | Data RW
 8+| *Quadrant 1: Executable capabilities - regular future entries have: X=1*
 | Field[2:0] | R | W | C | LM | X | ASR | Notes
 | 0          | ✔ | ✔ | ✔ | ✔  | ✔ |  ✔  | Execute + Data & Cap RW + ASR^2^
@@ -83,11 +85,11 @@ All gaps in <<cap_perms_encoding_nolevels32>> are _reserved_ for future extensio
 | 6          | ✔ | ✔ |   |    | ✔ |     | Execute + Data RW
 8+| *Quadrant 2: Restricted capability data read/write - regular future entries have: R=1, C=1, W=AP[2]*
 | Field[2:0] | R | W | C | LM | X | ASR | Notes
-| 3          | ✔ |   | ✔ |   |   |     | Data & Cap RO (no LM)
+| 3          | ✔ |   | ✔ |    |   |     | Data & Cap RO (no LM)
 8+| *Quadrant 3: Capability data read/write - regular future entries have: R=1, C=1, W=AP[2]*
 | Field[2:0] | R | W | C | LM | X | ASR | Notes
-| 3          | ✔ |   | ✔ | ✔ |   |     | Data & Cap RO
-| 7          | ✔ | ✔ | ✔ | ✔ |   |     | Data & Cap RW
+| 3          | ✔ |   | ✔ | ✔  |   |     | Data & Cap RO
+| 7          | ✔ | ✔ | ✔ | ✔  |   |     | Data & Cap RW
 |==============================================================================
 
 ^1^ This is used for the <<null-cap>> capability encoding.
@@ -137,7 +139,7 @@ The <<AP-field>> states shown in <<cap_perms_encoding_nolevels32_hybrid>> are al
 
 ^1^ This replaces the <<root-rx-cap>> and <<root-rw-cap>> capability encoding.
 
-=== {cheri_levels1_ext_name} support
+=== {cheri_levels1_ext_name} Support
 
 {cheri_levels1_ext_name} adds <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>> to the states in <<cap_perms_encoding_nolevels32>>, including allocating some previously reserved entries.
 <<zylevels1_alloc_into_ap_field>> and <<zylevels1_mods_into_ap_field>> show which entries have been allocated or modified to grant LG and/or SL.
