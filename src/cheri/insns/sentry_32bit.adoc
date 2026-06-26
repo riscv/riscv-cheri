@@ -1,5 +1,5 @@
-[#YSEAL,reftext="{YSEAL}"]
-==== {YSEAL}
+[#SENTRY,reftext="{SENTRY}"]
+==== {SENTRY}
 
 include::new_encoding_note.adoc[]
 
@@ -8,15 +8,15 @@ NOTE: *CHERI v9 Note:* this instruction was called CSEALENTRY.
 endif::[]
 
 Synopsis::
-{YSEAL_DESC}
+{SENTRY_DESC}
 
 Mnemonic::
-`{yseal_lc} {cd}, {cs1}, {cs2}`
+`{sentry_lc} {cd}, {cs2}`
 
 Encoding::
 include::wavedrom/sentry.adoc[]
 
-NOTE: `{cs1}{ne}x0` is currently _reserved_.
+NOTE: `{cs1}{ne}x0` is currently _reserved_ to decode as a future YSEAL instruction.
 
 Description::
 Copy `{cs2}` to `{cd}`.
@@ -25,11 +25,10 @@ Seal the capability in `{cd}` by setting `{cd}.ct=1`.
 +
 Set `{cd}.tag=0` if `{cs2}` is sealed.
 +
-NOTE: A future extension may allow `{cs1}{ne}x0` to specify an authorizing capability to perform the sealing action, and also to specify the destination <<sec_cap_type>> value.
- The same extension is likely to add privileged state to _disallow_ the use of `{cs1}=x0` for sealing the output without an authorizing capability.
+NOTE: A future extension will allow YSEAL, which has `{cs1}` specifying an authorizing capability, to perform the sealing action and to specify the destination <<sec_cap_type>> value.
 +
 NOTE: If the capability encoding format does not support a <<CT-field>> of type 1, then this instruction is _reserved_.
- Future capability formats may redefine the behavior for <<CT-field>> values greater than 1.
+ Future capability encoding formats may redefine the behavior for <<CT-field>> values greater than 1.
 
 Included in::
 <<rvy_insn_table>>
@@ -37,27 +36,3 @@ Included in::
 Operation::
 +
 TODO
-
-<<<
-
-[#SENTRY,reftext="{SENTRY}"]
-==== {SENTRY}
-
-Synopsis::
-{SENTRY_DESC}
-
-Mnemonic::
-`{sentry_lc} {cd}, {cs2}`
-
-Encoding::
-{SENTRY} is a pseudoinstruction for <<YSEAL>> with `{cs1}=x0`.
-
-Description::
-Copy `{cs2}` to `{cd}`.
-+
-Seal the capability in `{cd}` as a <<sentry_cap>> by setting `{cd}.ct=1`.
-+
-Set `{cd}.tag=0` if `{cs2}` is sealed.
-
-Included in::
-<<rvy_insn_table>>
