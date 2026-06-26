@@ -413,7 +413,7 @@ This metadata field encodes architecturally defined permissions of the capabilit
 Permissions grant access subject to the <<cap_valid_tag>> being set, the capability being unsealed, and bounds checks passing.
 Any operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP and PMAs, even if the capability grants sufficient permissions.
 The permissions defined in {cheri_base_ext_name} are listed in <<ap_field_summary>>.
-All capability formats must support at least this set of permissions.
+All capability encoding formats must support at least this set of permissions.
 Extensions building on top of {cheri_base_ext_name} may define additional permissions.
 
 NOTE: An example of such an extension is <<section_zylevels1>>.
@@ -610,7 +610,7 @@ REP_RANGE::
  Whether the capability encoding formats guarantees representability of out-of-bounds capability values, `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, or `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed  out of bounds <<section_cap_representable_check,representable range>>.
 
 NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability encoding ensures sufficient future extensibility and therefore few custom formats are expected to exist.
- {cheri_base32_ext_name}, however, has insufficient bits available to enable features for all target domains, so multiple {cheri_base32_ext_name}-extending capability formats will exist.
+ {cheri_base32_ext_name}, however, has insufficient bits available to enable features for all target domains, so multiple {cheri_base32_ext_name}-extending capability encoding formats will exist.
 
 [#section_cap_integrity]
 === Integrity of Capabilities
