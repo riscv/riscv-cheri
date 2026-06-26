@@ -1,43 +1,17 @@
 Permissions::
-ifdef::cap_atomic[]
-Requires the authorizing capability have its {ctag} set and not be sealed.
-+
 Requires <<r_perm>> and <<w_perm>> in the authorizing capability.
+If <<c_perm>> isn't granted then the {ctag} will be stored as zero.
 +
-If <<c_perm>> is not granted then store the memory {ctag} as zero, and load `{cd}.tag` as zero.
-+
-If the authorizing capability does not grant <<lm_perm>>, and the {ctag} of `{cd}` is 1 and `{cd}` is not sealed, then an implicit <<CLRPERM>> clearing <<w_perm>> and <<lm_perm>> is performed to obtain the intermediate permissions on `{cd}` (see <<LOAD_CAP>>).
-+
-Extensions may further (monotonically) modify loaded or stored capabilities via "implicit <<CLRPERM>>-s" and/or outright {ctag} clearing;
-see <<LOAD_CAP>> and <<STORE_CAP>>.
-+
-endif::[]
-ifndef::cap_atomic[]
-Requires <<r_perm>> and <<w_perm>> in the authorizing capability.
-endif::[]
-+
-Requires all bytes of the access to be in capability bounds.
-
 Exceptions::
-ifdef::cap_atomic[]
 Store/AMO access fault exception when the effective address is not aligned to YLEN/8.
-+
-Store/AMO access fault if the stored {ctag} is set to one and the PMA is _CHERI {ctag_title} Store Fault_.
-endif::[]
-ifndef::cap_atomic[]
-If the address is not naturally aligned raise a _Store/AMO address misaligned_ exception or a _Store/AMO access fault_ exception. See <<sec:amo,"Zaamo">> for details on which one is raised.
-endif::[]
 +
 Exceptions occur when the authorizing capability fails one of the checks listed below:
 +
-[%autowidth,options=header,align=center]
+[options=header,align=center,cols="1,1"]
 |==============================================================================
 | Kind                        | Reason
 | {cheri_excep_name_st}       | {cheri_excep_desc_ytag}
 | {cheri_excep_name_st}       | {cheri_excep_desc_seal}
 | {cheri_excep_name_st}       | {cheri_excep_desc_perm} <<w_perm>> and <<r_perm>> are both required.
 | {cheri_excep_name_st}       | {cheri_excep_desc_bnds}
-| Store/AMO address misaligned   | Address is not naturally aligned
 |==============================================================================
-+
-:!cap_atomic:
