@@ -75,21 +75,22 @@ NOTE: Even though <<w_perm>> is valid in all combinations with the base set of p
 .{rv64y_uni_base_name} AP_CMP (compressed architectural permissions) field
 [#rvy64_uni_base_name_ap_cmp_fmt,width="100%",options=header,cols="1,1,1,1,1,5"]
 |==============================================================================
-| Encoding | C | W | R | LM | Comment
-6+| *C=Encoding[2], W=Encoding[1], R=Encoding[0], LM=0*
+| Encoding | R | W | C | LM | Comment
+
+6+| *R=Encoding[2], W=Encoding[1], C=Encoding[0], LM=0*
 | 00000    |   |   |   |    | *No permissions*
-| 00001    |   |   | R |    |
+| 00001  5+|                  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
 | 00010    |   | W |   |    |
-| 00011    |   | W | R |    |
-| 00100  5+|                  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
-| 00101    | C |   | R |    |
-| 00110    | C | W |   |    |
-| 00111    | C | W | R |    |
-6+| *W=Encoding[1], R=Encoding[0], LM=1, LM implies C*
+| 00011    |   | W | C |    |
+| 00100    | R |   |   |    |
+| 00101    | R |   | C |    |
+| 00110    | R | W |   |    |
+| 00111    | R | W | C |    |
+6+| *W=Encoding[1], LM=1, LM implies C, R*
 | 01000  5+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
-| 01001    | C |   | R | LM |
+| 01001    | R |   | C | LM |
 | 01010  5+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
-| 01011    | C | W | R | LM | *Maximum permissions (AP_CMP_MAX)*
+| 01011    | R | W | C | LM | *Maximum permissions (AP_CMP_MAX)*
 6+| *Reserved states*
 | 011xx  5+|                  _reserved_ for <<section_zylevels1>>
 | 100xx  5+|                  _reserved_ for <<section_zylevels1>>
