@@ -25,7 +25,7 @@ E.g., in {rv64y_uni_base_name} :
 . `Y` means that it's a CHERI base
 . `A` is the specific capability encoding format.
 
-NOTE: Future RV64 CHERI capability encoding format could be RV64LYB, RVY64LYC etc. or they may have more descriptive names after the RV64LY prefix.
+NOTE: Future RV64 CHERI capability encoding formats could be RV64LYB, RVY64LYC etc. or they may have more descriptive names after the RV64LY prefix.
 
 Also see xref:sec_cap_encoding_formats[xrefstyle=full].
 
@@ -614,7 +614,7 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 Two parameters used non-numeric values:
 
 AP_ENC::
- Whether permissions in the <<AP-field>> are encoded using a _complete_ (`cmp`) representation allowing all valid combinations or an _incomplete_ (`incmp`) representation which doesn't represent all possible states and so uses fewer encoding bits.
+ Whether permissions in the <<AP-field>> are encoded using a _complete_ (`cmp`) representation allowing all valid combinations or an _incomplete_ (`incmp`) representation which does not represent all possible states and so uses fewer encoding bits.
 REP_RANGE::
  Whether the capability encoding formats guarantees representability of out-of-bounds capability values, `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, or `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed  out of bounds <<section_cap_representable_check,representable range>>.
 
@@ -1079,7 +1079,7 @@ include::insns/store_32bit_cap.adoc[]
 [#section_existing_riscv_insns]
 === Changes to Existing RISC-V Base ISA Instructions
 
-{cheri_base_ext_name} extend existing instructions that are used for handling addresses so that they manipulate a whole capability.
+{cheri_base_ext_name} extends existing instructions that are used for handling addresses so that they manipulate a whole capability.
 
 * Whenever an input operand is used as an address (e.g., the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
 * Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead of just XLEN bits.
@@ -1164,7 +1164,7 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 
 NOTE: Using {SCADDR} to update the <<pcc>> address can cause the target <<pcc>> {ctag} to be set to zero which raises a _{cheri_excep_name_pc}_ on the target instruction.
 
-NOTE: A future extension may raise an exception on branch and jump instructions if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
+NOTE: A future extension may raise an exception on branch and jump instructions if fetching a minimum-sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
 

@@ -31,7 +31,7 @@ Description::
 NOTE: Future extensions may include hardwired permission bits, in which case they are not cleared by set bits in `rs2`.
 . Encode the resulting architectural permissions as specified by the capability encoding format in use.
   This involves applying the rules in <<sec_permission_transitions>>, as well as any rules added by extensions or the capability encoding format.
-.. If capability encoding format does not support the requested set of permissions then <<CLRPERM>> will return a minimal set of permissions, which may be no permissions.
+.. If the capability encoding format does not support the requested set of permissions then <<CLRPERM>> will return a minimal set of permissions, which may be no permissions.
  Therefore, it is possible that requesting to clear a permission also clears others, but <<CLRPERM>> will never _add_ new permissions.
 . Copy `{cs1}` to `{cd}`, and update the <<AP-field>> and <<SDP-field>>s with the newly calculated versions.
 . Set `{cd}.tag=0` if `{cs1}` is sealed and any bits in the <<AP-field>> or <<SDP-field>> were affected by <<CLRPERM>>.

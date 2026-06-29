@@ -242,7 +242,7 @@ Load/store/AMO address misaligned
 |===
 
 ^1^ <<pcc>> bounds are checked against all bytes of fetched instructions.
- If the instructions could not be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
+ If the instructions could not be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum-sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
 ^2^ {cheri_excep_name_pte_ld} is the lowest priority as determining whether to raise the exception may include checking the loaded {ctag}.
 
@@ -326,7 +326,7 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | Capability stores                              | 7^3^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
 
-^1^ The <<pcc>> bounds checks includes the case where the bounds could not be decoded and so a minimum sized instruction is not fully in bounds.
+^1^ The <<pcc>> bounds checks includes the case where the bounds could not be decoded and so a minimum-sized instruction is not fully in bounds.
 
 ^2^ The load/store bounds check includes the case where the bounds could not be decoded as they are malformed.
 
@@ -626,7 +626,7 @@ The CSRs shown in xref:CSR_exevectors_m[xrefstyle=short] and xref:CSR_exevectors
 
 However, the bounds encoding of capabilities depends on the address value if the bounds are not infinite.
 
-Therefore implementations must not convert invalid addresses to other arbitrary invalid addresses in an unrestricted manner if the bounds are not infinite.
+Therefore, implementations must not convert invalid addresses to other arbitrary invalid addresses in an unrestricted manner if the bounds are not infinite.
 
 If the bounds could not be decoded due to the address being invalid, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
 
