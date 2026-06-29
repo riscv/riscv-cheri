@@ -86,7 +86,7 @@ Specific capability encoding formats may support different ISA extensions and ad
 (def boxes-per-row 32)
 (draw-column-headers {:height 50 :font-size 18 :labels (reverse (concat ["0"] (repeat 28 "") ["XLEN-1" "" ""]))})
 
-(draw-box "V"    {:span 1})
+(draw-box "CT"    {:span 1})
 (draw-box "" {:span 1 :borders {}})
 (draw-box "Metadata (bounds, permissions, etc.)"    {:span 30})
 (draw-box "" {:span 2 :borders {}})
@@ -659,14 +659,14 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `x1`, `x2`) are all widened to Y
 (def row-height 100)
 (def row-header-fn nil)
 (def boxes-per-row 65)
-(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (YLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
+(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "" "" "" "2*XLEN-1 (YLEN-1)"] (repeat 28 "") ["XLEN XLEN-1"] (repeat 30 "") ["0"])})
 
-(draw-box "" [:box-first {:span 1}]) (draw-box "{creg}0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
-(draw-box "" [:box-first {:span 1}]) (draw-box "{creg}1" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
+(draw-box "0" [:box-first {:span 1}]) (draw-box "0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
+(draw-box "ct" [:box-first {:span 1}]) (draw-box "{creg}1 (metadata)" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
 (draw-gap "Same layout for {creg}2-{creg}30" {:height 100})
-(draw-box "" [:box-first {:span 1}]) (draw-box "{creg}31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
-(draw-box nil [:box-first {:span 1}]) (draw-box "{pcc}" [:box-related {:span 32}]) (draw-box "{pcc}" [:box-last {:span 32 }])
-(draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
+(draw-box "ct" [:box-first {:span 1}]) (draw-box "{creg}31 (metadata)" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
+(draw-box "ct" [:box-first {:span 1}]) (draw-box "{pcc} (metadata)" [:box-related {:span 32}]) (draw-box "{pcc}" [:box-last {:span 32 }])
+(draw-box "CTag" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
 // When referring to the extended registers, the `x` prefix is replaced with a `y`: i.e., the extended version of `x1` becomes `{creg}1`.
