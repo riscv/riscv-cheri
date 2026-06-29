@@ -24,7 +24,7 @@ When {cheri_default_ext_name} is supported, capabilities include the <<p_bit>>. 
 <<section_zylevels1>>::
 When <<section_zylevels1>> is supported, capabilities include the <<zylevels1_gl_flag,GL>> flag. Otherwise, that field is _reserved_.
 +
-The AP field is also sized to include two additional permissions which are available as _reserved_ states if <<section_zylevels1>> is not supported.
+The AP-field is also sized to include two additional permissions which are available as _reserved_ states if <<section_zylevels1>> is not supported.
 
 ==== Capability Encoding Parameter Summary
 
@@ -523,8 +523,8 @@ the difference between in-memory and architectural format.
 endif::[]
 
 The <<null-cap>> capability is represented with 0 in all fields. This implies
-that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}), so its bounds cover the entire address space such that the
-expanded base is 0 and top is 2^XLEN^.
+that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}).
+The exponent value causes its bounds cover the entire address space, but not permissions are granted and so it cannot be successfully be used to grant authorization.
 
 .Field values of the NULL capability
 [#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]

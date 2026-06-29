@@ -24,8 +24,8 @@ Synopsis::
 {SCBNDS_DESC}
 
 Mnemonics::
-`{scbnds_lc} {cd}, {cs1}, rs2` +
-`{scbndsi_lc} {cd}, {cs1}, imm`
+`{scbnds} {cd}, {cs1}, rs2` +
+`{scbndsi} {cd}, {cs1}, imm`
 
 Encoding::
 include::wavedrom/scbnds_32bit.adoc[]
@@ -77,7 +77,7 @@ The resulting logical encodable regions and step sizes are summarized in the tab
 [NOTE]
 ====
 This immediate encoding scheme achieves coverage of almost all observed immediate values while decoding the 9-bit immediate field without any adders or variable shifts.
-Mapping `imm = 0` to `4096` reclaims the redundant zero encoding (already covered by `{scbnds_lc} dst, src, x0`) to support highly common page-sized objects.
+Mapping `imm = 0` to `4096` reclaims the redundant zero encoding (already covered by `{scbnds} dst, src, x0`) to support highly common page-sized objects.
 
 The hardware implementation is a simple bit-remapping: +
 `result[12] = (imm[8:0] = 0);` +
@@ -97,6 +97,6 @@ sail::execute[clause="SCBNDS(_, _, _)",part=body,unindent]
 
 Operation for {SCBNDSI}::
 +
-TODO
-//this is out of date
-//sail::execute[clause="SCBNDSI(_, _, _, _)",part=body,unindent]
+--
+TBD
+--
