@@ -576,7 +576,7 @@ This capability grants no permissions and any dereference results in raising an 
 CHERI implementations make trade-offs in their "capability encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
 The definition of all CHERI base ISAs includes sufficient details of a capability encoding format to precisely define the execution behavior of all base ISA instructions.
 
-Whilst {cheri_base64_ext_name} has enough bits in the encoding format to prevent such trade-offs in general, the concepts are introduced in here and {cheri_base32_ext_name} formats will make extensive use of them.
+Whilst {cheri_base64_ext_name} has enough bits in the encoding format to prevent such trade-offs in general, the concepts are introduced here and {cheri_base32_ext_name} formats will make extensive use of them.
 
 The name {cheri_base_ext_name} refers generically to CHERI base ISAs, which share common semantics but may have different metadata encodings.
 The {cheri_base_ext_name} name on its own does not describe the complete base ISAs, but defines all the _semantics_ of a {cheri_base_ext_name} machine, where certain behavioral parameters must be filled in by the capability encoding.
@@ -752,7 +752,7 @@ Each thread (as scheduled by the kernel) can have its own context stored in priv
 <<utidc>> allows compartment-switching code to determine the currently running thread without a call into the operating system.
 This is read-only without <<asr_perm>> to prevent a malicious compartment from tricking the switching mechanism into accessing data corresponding to the wrong thread.
 While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
-Extending <<utidc>> to a capability allows a data structure to be shared (guarded by e.g. the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
+Extending <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
 =====
 
 ifdef::cheri_xycfg_csr[]
@@ -790,7 +790,7 @@ The following values for `uycfg` are defined:
 NOTE: Future extensions that change capability encoding must define new values.
 
 Extensions that define encodings derived from <<rv64y_cap_description>>
-and are generally compatible with this encoding (e.g. they only assign meaning to previously reserved bits) must preserve the Base Encoding field (the bottom 8 bits) as `0x01`.
+and are generally compatible with this encoding (e.g., they only assign meaning to previously reserved bits) must preserve the Base Encoding field (the bottom 8 bits) as `0x01`.
 
 [NOTE]
 =====
@@ -1246,7 +1246,7 @@ include::insns/store_16bit_cap_sprel.adoc[]
 [#rvy_zca_mod_insn_table, reftext="{rvy_zca_mod_ext_name}"]
 === {rvy_zca_mod_ext_name}
 
-An {cheri_base_ext_name} core which supports Zca also supports {rvy_zca_mod_ext_name} which _modifies_ the behavior of some instructions.
+An {cheri_base_ext_name} core that supports Zca also supports {rvy_zca_mod_ext_name} which _modifies_ the behavior of some instructions.
 
 NOTE: {C_MV_CAP_LC} is renamed from `c.mv` to avoid ambiguity in disassembly.
 

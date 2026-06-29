@@ -18,9 +18,9 @@ The following features, which are optional in Sdext, must be implemented for
 use with {cheri_base_ext_name}:
 
 * The `hartinfo` register must be implemented.
-* All harts which support {cheri_base_ext_name} must provide
+* All harts that support {cheri_base_ext_name} must provide
   `hartinfo.nscratch` of at least 1 and implement the <<dscratch0_y>> register.
-* All harts which support {cheri_base_ext_name} must provide
+* All harts that support {cheri_base_ext_name} must provide
   `hartinfo.datasize` of at least 1 and `hartinfo.dataaccess` of 0.
 * The program buffer must be implemented, with `abstractcs.progbufsize` of at
   least 4 if `dmstatus.impebreak` is 1, or at least 5 if `dmstatus.impebreak`
@@ -148,7 +148,7 @@ for details.
 
 As a result, the value of <<pcc>> is UNSPECIFIED in debug mode according
 to this specification. The <<pcc>> metadata has no architectural effect in debug
-mode. Therefore <<asr_perm>> is implicitly granted for access to all CSRs for
+mode. Therefore, <<asr_perm>> is implicitly granted for access to all CSRs for
 instruction execution.
 
 On debug mode entry, <<dpc_y>> is updated with the
@@ -218,7 +218,7 @@ the <<root-rx-cap>> exposed when <<drootcsel>> is `0` is further specified as fo
 * The debugger can set the <<p_bit>> to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing <<MODESW_CAP>> from the program buffer.
 ** Executing <<MODESW_CAP>> causes execution of subsequent instructions from the program buffer, starting from the next instruction, to be executed in {cheri_cap_mode_name}.
    It also sets the {cheri_mode_name} to {cheri_cap_mode_name} on future entry into debug mode.
-** Therefore to enable use of a CHERI debugger, only a single <<MODESW_CAP>> needs to be executed once from the program buffer after resetting the core.
+** Therefore, to enable use of a CHERI debugger, only a single <<MODESW_CAP>> needs to be executed once from the program buffer after resetting the core.
 ** The debugger can also execute <<MODESW_INT>> to change the {cheri_mode_name} back to {cheri_int_mode_name}.
    This affects the execution of the next instruction in the program buffer, updates the <<p_bit>> of <<drootc>>, and thereby controls which {cheri_mode_name} to use on the next entry into debug mode.
 
