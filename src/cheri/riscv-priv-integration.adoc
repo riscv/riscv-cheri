@@ -113,7 +113,7 @@ The observable {ctag} is zero when IALIGN=32 and one when IALIGN=16.
 When a trap is taken into M-mode, the pc is written to `mepc.address` following the standard behavior.
 The {ctag} and metadata of the <<pcc>> are also written to <<mepc_y>>.
 
-On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_y>> is unsealed and written to <<pcc>>.
+On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_y>> is unsealed if it is a <<sentry_cap>> and written to <<pcc>>.
 
 <<mepc_y>> follows the rule from `mepc` about not needing to be able to hold all possible <<section_invalid_addr_conv,invalid addresses>>.
 
