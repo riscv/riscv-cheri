@@ -8,7 +8,7 @@ Provide a HINT to hardware that a cache block is likely to be accessed by an
 instruction fetch in the near future
 
 Mnemonic::
-`prefetch.i offset({cs1})`
+`PREFETCH.I offset({cs1})`
 
 Encoding::
 [wavedrom, , svg]
@@ -24,18 +24,22 @@ Encoding::
 ....
 
 Description::
+
 A PREFETCH.I instruction indicates to hardware that the cache block whose
 effective address is the sum of the base address specified in `{cs1}` and the
 sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
-likely to be accessed by an instruction fetch in the near future. The encoding
-is only valid if imm[4:0]=0. The authorizing capability for this operation is
-`{cs1}`. This instruction does not throw any exceptions. However, following
-the rules from xref:rvy[xrefstyle=short], this instruction does not perform a prefetch
-if it is not authorized by `{cs1}`.
+likely to be accessed by an instruction fetch in the near future.
 +
-:prefetch_insn: PREFETCH.I
-:prefetch_perm: <<x_perm>>
-include::prefetch_cap_checks.adoc[]
+The authorizing capability is `{cs1}`.
+This instruction does not throw any exceptions.
++
+The following authorization checks are performed:
+
+* `{cs1}.tag=1`
+* `{cs1}` is not sealed
+* Any bytes of the requested cache line requested are in `{cs1}` bounds
+* `{cs1}` grants <<x_perm>>
+* `{cs1}` passes all <<section_cap_integrity, integrity>> checks
 
 [NOTE]
 ====
@@ -43,6 +47,8 @@ _If the checks above pass, an implementation may opt to cache a copy of the cach
 accessed by an instruction fetch in order to improve memory access latency, but
 this behavior is not required._
 ====
+
+NOTE: If `{cs1}=x0` this instruction executes as a `nop`.
 
 Prerequisites::
 Zicbop, {cheri_base_ext_name}
@@ -53,5 +59,5 @@ Included in::
 Operation::
 [source,sail]
 --
-TODO
+TBD
 --

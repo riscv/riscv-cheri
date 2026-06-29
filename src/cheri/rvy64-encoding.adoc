@@ -19,12 +19,12 @@ NOTE: Reserved bits must be 0 in valid capabilities and are available for future
 The encoding diagram above of the capability encoding format includes some fields which depend upon the presence of extensions:
 
 <<section_cheri_hybrid_ext>>::
-When {cheri_default_ext_name} is supported, capabilities include the <<p_bit>>, otherwise that field is _reserved_.
+When {cheri_default_ext_name} is supported, capabilities include the <<p_bit>>. Otherwise, that field is _reserved_.
 
 <<section_zylevels1>>::
-When <<section_zylevels1>> is supported, capabilities include the <<zylevels1_gl_flag,GL>> flag, otherwise that field is _reserved_.
+When <<section_zylevels1>> is supported, capabilities include the <<zylevels1_gl_flag,GL>> flag. Otherwise, that field is _reserved_.
 +
-The AP field is also sized to include two additional permissions which are available as _reserved_ states if <<section_zylevels1>> is not supported.
+The AP-field is also sized to include two additional permissions which are available as _reserved_ states if <<section_zylevels1>> is not supported.
 
 ==== Capability Encoding Parameter Summary
 
@@ -276,7 +276,7 @@ include ranges which may not be present when the bounds are decoded:
 
 * If E = 0 the lower section does not exist.
 * If E+MW=XLEN then the top section is only the least significant bit of
- c~t~ for the top bound, and top section doesn't exist for the bottom bound.
+ c~t~ for the top bound, and top section does not exist for the bottom bound.
 * If E+MW>XLEN then neither top section exists, and so the bounds are calculated
  with no dependency on the address field _a_.
 
@@ -451,7 +451,7 @@ of the bounds calculation are also unchanged for source and
 destination capabilities.
 
 When E > CAP_MAX_E - 2, the calculation of the top bound is entirely derived
-from `T` and `E` which will be identical for both the source and destination
+from `T` and `E`, which will be identical for both the source and destination
 capabilities, thus guaranteeing that `t == t'`.  Likewise, with such values of E, the
 base bound is entirely derived from `B` and `E` and therefore `b == b'`.
 
@@ -492,8 +492,7 @@ Given that `t[XLEN]` is not part of the representable range check:
 * when `E == CAP_MAX_E - 2`, `t[XLEN-1:E] == T[MW-1:0]` and `b[XLEN-1:E] == B[MW-1:0]`.
 
 Therefore, `T` and `B` are both derived from the capabilities metadata and are
-therefore constant.  Which means that in this case too, the representable
-range check always passes.
+therefore constant.  Therefore, the representable range check always passes in this case too.
 
 As a result:
 
@@ -524,8 +523,8 @@ the difference between in-memory and architectural format.
 endif::[]
 
 The <<null-cap>> capability is represented with 0 in all fields. This implies
-that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}), so its bounds cover the entire address space such that the
-expanded base is 0 and top is 2^XLEN^.
+that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}).
+The exponent value causes its bounds cover the entire address space, but not permissions are granted and so it cannot be successfully be used to grant authorization.
 
 .Field values of the NULL capability
 [#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]

@@ -25,7 +25,7 @@ E.g., in {rv64y_uni_base_name} :
 . `Y` means that it's a CHERI base
 . `A` is the specific capability encoding format.
 
-NOTE: Future RV64 CHERI capability encoding format could be RV64LYB, RVY64LYC etc. or they may have more descriptive names after the RV64LY prefix.
+NOTE: Future RV64 CHERI capability encoding formats could be RV64LYB, RVY64LYC etc. or they may have more descriptive names after the RV64LY prefix.
 
 Also see xref:sec_cap_encoding_formats[xrefstyle=full].
 
@@ -67,7 +67,7 @@ improve their security.
 [#sec_capability_registers]
 === Capability Registers and Format
 
-{cheri_base_ext_name} widens all registers that can hold addresses from `XLEN` to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect its integrity, limit how it is manipulated, and control its use.
+{cheri_base_ext_name} widens all registers that can hold addresses from `XLEN` to `2*XLEN` bits (hereafter referred to as YLEN), adding metadata to protect their integrity, limit how it is manipulated, and control its use.
 In addition to widening to YLEN, each register also gains a one-bit {ctag} which is defined below.
 
 {cheri_base_ext_name} specifies the minimum required fields that the capability encoding format must support, and their semantics.
@@ -86,7 +86,7 @@ Specific capability encoding formats may support different ISA extensions and ad
 (def boxes-per-row 32)
 (draw-column-headers {:height 50 :font-size 18 :labels (reverse (concat ["0"] (repeat 28 "") ["XLEN-1" "" ""]))})
 
-(draw-box "V"    {:span 1})
+(draw-box "CT"    {:span 1})
 (draw-box "" {:span 1 :borders {}})
 (draw-box "Metadata (bounds, permissions, etc.)"    {:span 30})
 (draw-box "" {:span 2 :borders {}})
@@ -108,16 +108,16 @@ endif::[]
 [#cap_valid_tag,reftext="{ctag}"]
 ==== {ctag_title}
 
-The {ctag} is an additional bit added to addressable memory and all YLEN-bit registers.
-It is stored separately and may be referred to as _out of band_ or _hidden_, and is _hardware managed_.
+The {ctag} is a single additional bit associated with YLEN-bit memory locations and YLEN-bit registers.
+It is stored separately (i.e., is _out-of-band_ or _hidden_), and is _hardware managed_.
 It indicates whether a YLEN-bit register or YLEN-aligned memory location contains a valid capability.
-If the {ctag} is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds_overview,bounds>>).
+If the {ctag} is set, the capability is valid and may be used to authorize operations which is typically dereferencing memory (subject to permissions and <<sec_cap_bounds_overview,bounds>> checks).
 
-All registers or memory locations able to hold a valid capability are YLEN bits wide with an additional hidden {ctag} bit.
+All registers or memory locations able to hold a valid capability are YLEN bits wide and have an associated {ctag}.
 These are referred to as being _YLEN-bit_ in this specification.
 
 Not all memory in a real system will support {ctag}s.
-The EEI will define what portions of the address space are able to preserve {ctag}s (some addresses might support storing data only).
+The Execution Environment Interface (EEI) will define what regions of the address space support them.
 
 The {ctag} cannot be directly set by software; it is _not_ a conventionally accessible bit of state.
 If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
@@ -129,7 +129,7 @@ Therefore, whenever an instruction writes a capability with the {ctag} set to a 
 ** This is the _provenance_ check.
 * The requested operation must have been legal and not increase bounds or permissions.
 ** This is the _monotonicity_ check.
-* The instruction may have checked that none of the input capability were corrupted.
+* The instruction may have checked that none of the input capabilities were corrupted.
 ** This is the _integrity_ check. Not all instructions check all input operands for _integrity_.
 
 Capability load/store require the _provenance_ check:
@@ -156,7 +156,7 @@ Examples of such invalid operations include writing only the integer portion (th
 ==== {ctag_cap}s in memory
 
 {ctag_cap}s are tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
-The {ctag} is set to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand.
+Set the {ctag} to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand.
 For example, the <<STORE_CAP>> instruction may set the {ctag} to one if all the instruction's prerequisites are met, but <<ldst,SW>> will always set the {ctag} to zero.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
@@ -180,13 +180,13 @@ NOTE: _Inclusive top_, with XLEN bits, was considered but rejected in favor of t
 
 * The _length_ is (XLEN+1)-bits and is defined to be _top - base_.
 
-Therefore a memory location `A` in the range `base {le} A < top` is within bounds, and so valid to access.
+Therefore, a memory location `A` in the range `base {le} A < top` is within bounds, and so valid to access.
 
 NOTE: Checking every byte of every executed instruction and every byte of every data memory access is fundamental to the memory safety which CHERI provides.
 In a typical load/store unit, the expansion of the bounds from `{cs1}` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
 
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
-Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
+Therefore, small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 One bounds encoding format based upon cite:[woodruff2019cheri] is defined in <<section_cap_bounds>>.
 
 NOTE: Future CHERI bases may use encoding formats with different bounds encoding schemes (see <<sec_cap_encoding_formats>>).
@@ -244,7 +244,7 @@ NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability 
 
 Since the upper bits of the address are used to calculate the top and base bounds, deriving a new capability with a different address could change the resulting bounds.
 All derived capabilities must check that the new address does not change the bounds.
-If they _do_ change then the {ctag} of the derived capability is set to zero, so that it is invalid for use.
+If they _do_ change then set the {ctag} of the derived capability to zero, so that it is invalid for use.
 
 Software can derive a capability with a new address using instructions such as <<SCADDR>>, <<CADD>> and <<CADDI>>.
 
@@ -257,7 +257,7 @@ Therefore, the ISA specification uses the phrase *represented exactly* for this 
 
 A hart supporting {cheri_base_ext_name} has a single byte-addressable address
 space of 2^XLEN^ bytes for all memory accesses. Each memory region capable of
-holding a capability also stores a {ctag} bit for each naturally aligned YLEN bits
+holding a capability also stores a {ctag} for each naturally aligned YLEN bits
 (e.g., 16 bytes in RV64), so that capabilities with their {ctag} set can only be
 stored in naturally aligned addresses. {ctag_cap}s must be atomically bound to the
 data they protect.
@@ -355,7 +355,7 @@ ifndef::cheri_ratification_v1_only[]
 Ambient sealing type::
 Some capability types are said to be _ambiently available_ (or just _ambient_)
 if they do not require specific authority to seal a capability with that type.
-Therefore sentry types can be declared _ambient_.
+Therefore, sentry types can be declared _ambient_.
 For example, if <<SENTRY>> is available on a given platform,
 the type with which it seals capabilities is considered _ambiently available_.
 endif::[]
@@ -404,7 +404,15 @@ They are not used by <<rv64y_cap_description>>, but are by the CHERIoT formats.
 ====
 endif::[]
 
-NOTE: Future extensions may declare new <<CT-field>> values which place restrictions on their usage (e.g. forward/backward-only control flow checks with <<JAL_CHERI>>/<<JALR_CHERI>> for improved CFI).
+[NOTE]
+====
+
+Future extensions and capability encoding formats may declare new <<CT-field>> values, examples of which are:
+
+* Sealed types which cannot be used as a <<sentry_cap>>
+* <<sentry_cap>> types which can be only used for function calls or for function returns for improved CFI.
+
+====
 
 [#AP-field, reftext="AP-field"]
 ==== Architectural Permissions (AP)
@@ -568,7 +576,7 @@ This capability grants no permissions and any dereference results in raising an 
 CHERI implementations make trade-offs in their "capability encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
 The definition of all CHERI base ISAs includes sufficient details of a capability encoding format to precisely define the execution behavior of all base ISA instructions.
 
-Whilst {cheri_base64_ext_name} has enough bits in the encoding format to prevent such trade-offs in general, the concepts are introduced in here and {cheri_base32_ext_name} formats will make extensive use of them.
+Whilst {cheri_base64_ext_name} has enough bits in the encoding format to prevent such trade-offs in general, the concepts are introduced here and {cheri_base32_ext_name} formats will make extensive use of them.
 
 The name {cheri_base_ext_name} refers generically to CHERI base ISAs, which share common semantics but may have different metadata encodings.
 The {cheri_base_ext_name} name on its own does not describe the complete base ISAs, but defines all the _semantics_ of a {cheri_base_ext_name} machine, where certain behavioral parameters must be filled in by the capability encoding.
@@ -606,7 +614,7 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 Two parameters used non-numeric values:
 
 AP_ENC::
- Whether permissions in the <<AP-field>> are encoded using a _complete_ (`cmp`) representation allowing all valid combinations or an _incomplete_ (`incmp`) representation which doesn't represent all possible states and so uses fewer encoding bits.
+ Whether permissions in the <<AP-field>> are encoded using a _complete_ (`cmp`) representation allowing all valid combinations or an _incomplete_ (`incmp`) representation which does not represent all possible states and so uses fewer encoding bits.
 REP_RANGE::
  Whether the capability encoding formats guarantees representability of out-of-bounds capability values, `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, or `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed  out of bounds <<section_cap_representable_check,representable range>>.
 
@@ -631,11 +639,12 @@ If any of the above rules do not hold for a capability with the {ctag} set, it i
 NOTE: These checks are much less rigorous than parity or ECC protection, and are only
 used to detect simple problems with the capability metadata.
 
-Performing these checks is optional except for instructions that are defined to accept arbitrary input bit patterns and can write an output with the {ctag} set.
+Performing integrity checks is generally optional.
+The exception is for instructions that are defined to accept arbitrary input bit patterns and can write an output with the {ctag} set.
 All instructions that require integrity checks have this noted in the instruction description.
 
 NOTE: Currently <<CBLD>> is the only defined instruction that sets the `{ctag}` on an arbitrary bit pattern and therefore _must_ perform an integrity check on the input capability in `{cs2}`.
-For all other instructions, performing these checks is optional unless the hart implements additional reliability features (since malformed capabilities with the {ctag} set cannot exist under normal operating conditions).
+For all other instructions, performing integrity checks is optional unless the hart implements additional reliability features which detect capabilities which lack integrity.
 
 NOTE: Even though valid capabilities which fail the integrity check could not have been legally generated by the local hart,
 defining the handling in the architecture allows the behavior to be precisely specified for all 2^(YLEN+1)^ input values.
@@ -659,14 +668,14 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `x1`, `x2`) are all widened to Y
 (def row-height 100)
 (def row-header-fn nil)
 (def boxes-per-row 65)
-(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "2*XLEN (YLEN)"] (repeat 31 "") ["XLEN"] (repeat 30 "") ["0"])})
+(draw-column-headers {:height 30 :font-size 25 :labels (concat ["" "" "" "" "2*XLEN-1 (YLEN-1)"] (repeat 28 "") ["XLEN XLEN-1"] (repeat 30 "") ["0"])})
 
-(draw-box "" [:box-first {:span 1}]) (draw-box "{creg}0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
-(draw-box "" [:box-first {:span 1}]) (draw-box "{creg}1" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
+(draw-box "0" [:box-first {:span 1}]) (draw-box "0" [:box-related {:span 32}]) (draw-box "x0" [:box-last {:span 32 }])
+(draw-box "ct" [:box-first {:span 1}]) (draw-box "{creg}1 (metadata)" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
 (draw-gap "Same layout for {creg}2-{creg}30" {:height 100})
-(draw-box "" [:box-first {:span 1}]) (draw-box "{creg}31" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
-(draw-box nil [:box-first {:span 1}]) (draw-box "{pcc}" [:box-related {:span 32}]) (draw-box "{pcc}" [:box-last {:span 32 }])
-(draw-box "V" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
+(draw-box "ct" [:box-first {:span 1}]) (draw-box "{creg}31 (metadata)" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
+(draw-box "ct" [:box-first {:span 1}]) (draw-box "{pcc} (metadata)" [:box-related {:span 32}]) (draw-box "{pcc}" [:box-last {:span 32 }])
+(draw-box "CTag" {:span 1 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
 // When referring to the extended registers, the `x` prefix is replaced with a `y`: i.e., the extended version of `x1` becomes `{creg}1`.
@@ -744,7 +753,7 @@ Each thread (as scheduled by the kernel) can have its own context stored in priv
 <<utidc>> allows compartment-switching code to determine the currently running thread without a call into the operating system.
 This is read-only without <<asr_perm>> to prevent a malicious compartment from tricking the switching mechanism into accessing data corresponding to the wrong thread.
 While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
-Extending <<utidc>> to a capability allows a data structure to be shared (guarded by e.g. the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
+Extending <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
 =====
 
 ifdef::cheri_xycfg_csr[]
@@ -782,7 +791,7 @@ The following values for `uycfg` are defined:
 NOTE: Future extensions that change capability encoding must define new values.
 
 Extensions that define encodings derived from <<rv64y_cap_description>>
-and are generally compatible with this encoding (e.g. they only assign meaning to previously reserved bits) must preserve the Base Encoding field (the bottom 8 bits) as `0x01`.
+and are generally compatible with this encoding (e.g., they only assign meaning to previously reserved bits) must preserve the Base Encoding field (the bottom 8 bits) as `0x01`.
 
 [NOTE]
 =====
@@ -1071,7 +1080,7 @@ include::insns/store_32bit_cap.adoc[]
 [#section_existing_riscv_insns]
 === Changes to Existing RISC-V Base ISA Instructions
 
-{cheri_base_ext_name} extend existing instructions that are used for handling addresses so that they manipulate a whole capability.
+{cheri_base_ext_name} extends existing instructions that are used for handling addresses so that they manipulate a whole capability.
 
 * Whenever an input operand is used as an address (e.g., the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
 * Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead of just XLEN bits.
@@ -1090,8 +1099,8 @@ Integer add (`ADD`) and capability add (<<CADD>>) have separate encodings.
 Using a single encoding for both is undesirable:
 
  . Integer ADD is most commonly used for purposes other than address calculations.
- . For high performance implementations which can issue multiple ADDs, it means that the integer ADD units don't need the upper halves of the operands, and don't need the capability check logic on the result.
- . The compiler and/or programmer would have to execute another metadata clearing instruction after each ADD to ensure that compartments don't leak capabilities.
+ . For high performance implementations which can issue multiple ADDs, it means that the integer ADD units do not need the upper halves of the operands, and do not need the capability check logic on the result.
+ . The compiler and/or programmer would have to execute another metadata clearing instruction after each ADD to ensure that compartments do not leak capabilities.
 
 ====
 
@@ -1126,7 +1135,7 @@ endif::[]
 All load instructions, except for <<LOAD_CAP>>, always set the {ctag} and the metadata of the result register to zero.
 
 All store instructions, except for <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
-Therefore, misaligned stores may clear up to two associated {ctag} bits.
+Therefore, misaligned stores may clear up to two associated {ctag}s.
 
 The changed interpretation of the base register also applies to all loads, stores and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
 
@@ -1154,9 +1163,9 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 * <<JALR_CHERI>> copies `{cs1}` into the <<pcc>>, and increments the address field with the offset.
   In this case, e.g., `new_{pcc} = {SCADDR}(Unseal({cs1}), offset)`
 
-NOTE: Using {SCADDR} to update the <<pcc>> address can cause the target <<pcc>> {ctag} to be set to zero which raises a _{cheri_excep_name_pc}_ on the target instruction.
+NOTE: Using {SCADDR} to update the <<pcc>> address can cause the target <<pcc>> {ctag} to be set to zero, that raises a _{cheri_excep_name_pc}_ on the target instruction.
 
-NOTE: A future extension may raise an exception on branch and jump instructions if fetching a minimum sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
+NOTE: A future extension may raise an exception on branch and jump instructions if fetching a minimum-sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
 
@@ -1238,9 +1247,9 @@ include::insns/store_16bit_cap_sprel.adoc[]
 [#rvy_zca_mod_insn_table, reftext="{rvy_zca_mod_ext_name}"]
 === {rvy_zca_mod_ext_name}
 
-An {cheri_base_ext_name} core which supports Zca also supports {rvy_zca_mod_ext_name} which _modifies_ the behavior of some instructions.
+An {cheri_base_ext_name} core that supports Zca also supports {rvy_zca_mod_ext_name} which _modifies_ the behavior of some instructions.
 
-NOTE: {C_MV_CAP_LC} is renamed from `c.mv` to avoid ambiguity in disassembly.
+NOTE: {C_MV_CAP} is renamed from `C.MV` to avoid ambiguity in disassembly.
 
 .{rvy_zca_mod_ext_name} instruction extension
 [#{rvy_zca_mod_file_name}]

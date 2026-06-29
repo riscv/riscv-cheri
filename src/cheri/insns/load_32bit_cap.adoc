@@ -7,7 +7,7 @@ Synopsis::
 {LOAD_CAP_DESC}
 
 Mnemonic::
-`{load_cap_name_lc} {cd}, offset({cs1})`
+`{load_cap_name} {cd}, offset({cs1})`
 
 Encoding::
 include::wavedrom/loadcap.adoc[]
@@ -23,7 +23,7 @@ Authorize the memory access with the capability in `{cs1}`.
 Load a naturally aligned YLEN-bit data value and associated {ctag} from memory.
 +
 NOTE: The loaded {ctag} may be set to zero under platform specified conditions, such as by a hardware based use-after-free prevention scheme.
- Privileged mechanisms may also set the loaded {ctag} to zero such as PMA settings or virtual memory system page table entry configuration..
+ Privileged mechanisms may also set the loaded {ctag} to zero such as PMA settings or virtual memory system page table entry configuration.
 +
 NOTE: Extensions may also specify additional conditions which set the {ctag} to zero.
 +
@@ -35,7 +35,7 @@ The final value of `{cd}` is determined as follows:
 +
 . If `{cd}.tag=1`, `{cs1}` does not grant <<lm_perm>> and `{cd}` is not sealed, then an implicit <<CLRPERM>> is performed to clear <<w_perm>> and <<lm_perm>> from `{cd}`.
 +
-NOTE: The implicit <<CLRPERM>> is not required to set `{cd}.tag=0` if the loaded data fails <<section_cap_integrity,integrity>> checks.
+NOTE: The implicit <<CLRPERM>> is not required to set `{cd}.tag=0` if the loaded data fails any <<section_cap_integrity,integrity>> checks.
  A suggested implementation is to only check the <<AP-field>> for legal values, and set the whole <<AP-field>> to zero if the check fails.
 +
 NOTE: Metadata modifications on loaded capabilities are on naturally aligned data.

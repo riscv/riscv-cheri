@@ -25,9 +25,9 @@ NOTE: Together with <<pcc>>, <<ddc>> enables confining execution to a compartmen
 These compartments provide binary compatibility for existing RV32[IE]/RV64[IE] code.
 Provided that the execution environment has set up <<ddc>> and <<pcc>> appropriately, non-CHERI-aware programs will execute unmodified within these bounds.
 
-For detailed examples of how this extension facilitates co-existence and sandboxing, see the appendix on <<section_hybrid_usage_models>>.
+For detailed examples of how this extension facilitates co-existence and sandboxing, see <<section_hybrid_usage_models>>.
 
-{cheri_base_ext_name} implementations which support {cheri_default_ext_name} are typically referred to as CHERI Hybrid.
+{cheri_base_ext_name} implementations that support {cheri_default_ext_name} are typically referred to as CHERI Hybrid.
 Implementations which do not support {cheri_default_ext_name} are referred to as CHERI Purecap and always operate in {cheri_cap_mode_name}.
 
 Because the base architecture remains {cheri_base_ext_name}, the custom encoding space re-allocated to CHERI remains re-allocated.
@@ -209,7 +209,7 @@ xref:default-csrnames-added[xrefstyle=short].
 <<ddc>> is a read-write, user mode accessible capability CSR.
 It does not require <<asr_perm>> in <<pcc>> for writes or reads.
 Similarly to <<pcc>> authorizing all control flow and instruction fetches, this capability register is implicitly checked to authorize all data memory accesses  when the current CHERI mode is {cheri_int_mode_name}.
-On startup <<ddc>> bounds and permissions must be set such that the program can run successfully
+On system initialization, <<ddc>> bounds and permissions must be set such that the program can run successfully
 (e.g., by setting it to have sufficiently broad bounds and permissions,
 possibly a <<root-rw-cap>> capability).
 

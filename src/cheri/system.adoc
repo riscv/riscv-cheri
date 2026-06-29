@@ -5,7 +5,7 @@ ifdef::cheri_standalone_spec[]
 WARNING: Unclear if this chapter will appear in the priv spec. May just be in the standalone spec.
 endif::[]
 
-CHERI processors need memory systems which support the {ctag}s in memory.
+CHERI processors need memory systems that support the {ctag}s in memory.
 
 There are, or will soon be, a wide range of CHERI systems in existence from tiny IoT devices up to server chips.
 
@@ -37,7 +37,7 @@ This example shows a minimum-sized system where only the local memory is extende
 The {ctag}-aware region is highlighted.
 All {ctag}s are created by the CHERI CPU, and only stored locally. The memory is shared with the system, probably via a secure DMA, which is not {ctag}-aware.
 
-Therefore the connection between CPU and memory is tag-aware, and the connection to the system is not {ctag}-aware.
+Therefore, the connection between CPU and memory is tag-aware, and the connection to the system is not {ctag}-aware.
 
 All writes from the system port to the memory must clear any memory {ctag}s to follow the rules from above.
 
@@ -54,13 +54,13 @@ A region of DRAM is typically reserved for CHERI {ctag} storage.
 
 The {ctag} cache sits on the boundary of the {ctag}-aware and non-tag-aware memory domains, and it provides the bridge between the two.
 It stores {ctag}s locally in its cache, and if there is a miss, it will create an extra bus request to access the region of DRAM reserved for {ctag} storage.
-Therefore in the case of a miss a single access is split into two - one to access the data and one to access the {ctag}.
+Therefore, in the case of a miss a single access is split into two - one to access the data and one to access the {ctag}.
 
 The key property of the {ctag} cache is to preserve the atomic access of data and {ctag}s in the memory system so that all CPUs have a consistent view of {ctag}s and data.
 
-The region of DRAM reserved for {ctag} storage must be accessible only by the {ctag} cache, therefore no bus initiators should be able to write to the DRAM without the transactions passing through the {ctag} cache.
+The region of DRAM reserved for {ctag} storage must only be written by the {ctag} cache, therefore no bus initiators should be able to write to the DRAM without the transactions passing through the {ctag} cache.
 
-Therefore the GPUs and peripherals cannot write to the {ctag} storage in the DRAM or the {ctag} supporting memory data storage region.
+Therefore, the GPUs and peripherals cannot write to the {ctag} storage in the DRAM or the {ctag} supporting memory data storage region.
 These constraints will be part of the design of the network-on-chip.
 It _is_ possible for the GPU and peripherals to read the {ctag} supporting memory data storage region of the DRAM, if required.
 
