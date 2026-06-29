@@ -58,13 +58,14 @@ Software must ensure this is true when writing to <<mtvec_y>>, and the hardware 
 
 <<mtvec_y>> is always updated using the semantics of the <<SCADDR>> instruction and so writing a sealed capability will cause the {ctag} to be set to zero.
 
-NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other executing from other CSRs such as <<mepc_y>>.
+NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other CSRs such as <<mepc_y>>.
 
 <<mtvec_y>> follows the rule from `mtvec` about not needing to be able to hold all possible <<section_invalid_addr_conv, invalid addresses>>.
 
 [#menvcfg_y,reftext="menvcfg ({cheri_base_ext_name})"]
-Machine Environment Configuration (`menvcfg`) Register::
+==== Machine Environment Configuration (`menvcfg`) Register
 
+<<section_cheri_hybrid_ext>> adds the {CRE} bit to *menvcfg*
 
 [#menvcfgmodereg]
 include::img/menvcfgmodereg.edn[]
@@ -285,7 +286,7 @@ endif::[]
 [#sec_cheri_exception_handling]
 === CHERI Exception handling
 
-CHERI faults are typically higher priority than standard RISC-V faults. E.g., CHERI faults on the <<pcc>> are higher priority than any other fault effecting the program counter such as Instruction Access Fault.
+CHERI faults are typically higher priority than standard RISC-V faults. E.g., CHERI faults on the <<pcc>> are higher priority than any other fault affecting the program counter such as Instruction Access Fault.
 
 The overall priority is shown in <<exception-priority-cheri>>.
 
@@ -494,7 +495,7 @@ endif::[]
 [#senvcfg_y,reftext="senvcfg ({cheri_base_ext_name})"]
 ==== Supervisor environment configuration register (senvcfg)
 
-{cheri_default_ext_name} adds a {CRE} bit to *senvcfg*
+<<section_cheri_hybrid_ext>> adds the {CRE} bit to *senvcfg*
 
 .Supervisor environment configuration register (*senvcfg*)
 include::img/senvcfgreg.edn[]
