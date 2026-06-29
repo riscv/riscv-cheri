@@ -180,13 +180,13 @@ NOTE: _Inclusive top_, with XLEN bits, was considered but rejected in favor of t
 
 * The _length_ is (XLEN+1)-bits and is defined to be _top - base_.
 
-Therefore a memory location `A` in the range `base {le} A < top` is within bounds, and so valid to access.
+Therefore, a memory location `A` in the range `base {le} A < top` is within bounds, and so valid to access.
 
 NOTE: Checking every byte of every executed instruction and every byte of every data memory access is fundamental to the memory safety which CHERI provides.
 In a typical load/store unit, the expansion of the bounds from `{cs1}` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
 
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
-Therefore small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
+Therefore, small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 One bounds encoding format based upon cite:[woodruff2019cheri] is defined in <<section_cap_bounds>>.
 
 NOTE: Future CHERI bases may use encoding formats with different bounds encoding schemes (see <<sec_cap_encoding_formats>>).
@@ -355,7 +355,7 @@ ifndef::cheri_ratification_v1_only[]
 Ambient sealing type::
 Some capability types are said to be _ambiently available_ (or just _ambient_)
 if they do not require specific authority to seal a capability with that type.
-Therefore sentry types can be declared _ambient_.
+Therefore, sentry types can be declared _ambient_.
 For example, if <<SENTRY>> is available on a given platform,
 the type with which it seals capabilities is considered _ambiently available_.
 endif::[]
@@ -1098,8 +1098,8 @@ Integer add (`ADD`) and capability add (<<CADD>>) have separate encodings.
 Using a single encoding for both is undesirable:
 
  . Integer ADD is most commonly used for purposes other than address calculations.
- . For high performance implementations which can issue multiple ADDs, it means that the integer ADD units don't need the upper halves of the operands, and don't need the capability check logic on the result.
- . The compiler and/or programmer would have to execute another metadata clearing instruction after each ADD to ensure that compartments don't leak capabilities.
+ . For high performance implementations which can issue multiple ADDs, it means that the integer ADD units do not need the upper halves of the operands, and do not need the capability check logic on the result.
+ . The compiler and/or programmer would have to execute another metadata clearing instruction after each ADD to ensure that compartments do not leak capabilities.
 
 ====
 
@@ -1162,7 +1162,7 @@ These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_
 * <<JALR_CHERI>> copies `{cs1}` into the <<pcc>>, and increments the address field with the offset.
   In this case, e.g., `new_{pcc} = {SCADDR}(Unseal({cs1}), offset)`
 
-NOTE: Using {SCADDR} to update the <<pcc>> address can cause the target <<pcc>> {ctag} to be set to zero which raises a _{cheri_excep_name_pc}_ on the target instruction.
+NOTE: Using {SCADDR} to update the <<pcc>> address can cause the target <<pcc>> {ctag} to be set to zero, that raises a _{cheri_excep_name_pc}_ on the target instruction.
 
 NOTE: A future extension may raise an exception on branch and jump instructions if fetching a minimum-sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
 

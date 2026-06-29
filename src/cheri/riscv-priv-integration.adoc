@@ -51,7 +51,7 @@ Following the standard `mtvec` behavior, the value of `mtvec.address` can be vie
 `HICAUSE` is defined to be the largest interrupt cause value that the implementation can write
 to `__x__cause` when an interrupt is taken.
 
-Therefore the minimum observable address is `mtvec.address & ~3` and the maximum is `(mtvec.address & ~3) + 4 x HICAUSE`.
+Therefore, the minimum observable address is `mtvec.address & ~3` and the maximum is `(mtvec.address & ~3) + 4 x HICAUSE`.
 
 All possible observable values must be <<section_cap_representable_check, represented exactly>>.
 Software must ensure this is true when writing to <<mtvec_y>>, and the hardware sets the {ctag} to zero if any values cannot be <<section_cap_representable_check, represented exactly>>.
@@ -96,7 +96,7 @@ include::img/mepccreg.edn[]
 .  `mepc.address[1]` reads as zero when IALIGN is programmable and is set to 32
 
 As listed above for <<mtvec_y>>, this means that `mepc.address` can represent multiple different values.
-Therefore software must ensure that all possible values are <<section_cap_representable_check, represented exactly>> on writing, otherwise the hardware sets the written {ctag} to zero.
+Therefore, software must ensure that all possible values are <<section_cap_representable_check, represented exactly>> on writing, otherwise the hardware sets the written {ctag} to zero.
 
 Sealed capabilities may be written to <<mepc_y>>.
 The {ctag} is set to zero on writing if:
@@ -303,7 +303,7 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> {ctag} is zero
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> is sealed
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not grant <<x_perm>>
-| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of current instruction out of <<pcc>> bounds^1^
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of the current instruction is out of <<pcc>> bounds^1^
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> failed any <<section_cap_integrity,integrity>> check.
 4+| *CSR/Xret additional exception check*
 | CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | 2 | Illegal instruction | <<pcc>> does not grant <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>> or <<CBO_INVAL_CHERI>>
@@ -311,7 +311,7 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` {ctag} is zero
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not grant <<r_perm>>
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of load access out of `auth_cap` bounds^2^
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of the load access is out of `auth_cap` bounds^2^
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
 | Capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
@@ -319,9 +319,9 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
 | All stores,  CBO.ZERO                          | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant <<w_perm>>
 | All atomics, CBO.CLEAN, CBO.FLUSH, CBO.INVAL   | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant both <<r_perm>> and <<w_perm>>
-| All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of access out of `auth_cap` bounds^2^
-| CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | any byte of cache block out of `auth_cap` bounds^2^
-| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | all bytes of cache block out of `auth_cap` bounds^2^
+| All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the access is out of `auth_cap` bounds^2^
+| CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the cache block is out of `auth_cap` bounds^2^
+| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | All bytes of the cache block is out of `auth_cap` bounds^2^
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
 | Capability stores                              | 7^3^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
@@ -336,14 +336,14 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 === CHERI Exceptions and speculative execution
 
 NOTE: CHERI adds architectural guarantees that can prove to be microarchitecturally useful.
- Speculative-execution attacks can -- among other factors -- rely on instructions that fail CHERI permission checks not to take effect.
+ Speculative-execution attacks can -- among other factors -- rely on instructions that fail CHERI permission checks not to update microarchitectural state.
  When implementing any of the extensions proposed here, microarchitects need to carefully consider the interaction of late-exception raising and side-channel attacks.
 
 [#section_pma]
 === Physical Memory Attributes (PMA)
 
 Typically, only parts of the entire memory space need to support CHERI {ctag}s.
-Therefore Physical Memory Attributes are included indicating whether a memory region allows storing CHERI {ctag}s and to define the behavior when attempting to access them.
+Therefore, Physical Memory Attributes are included indicating whether a memory region allows storing CHERI {ctag}s and to define the behavior when attempting to access them.
 
 There are three levels of support:
 
@@ -358,7 +358,7 @@ There are three levels of support:
 |=========================================================================================
 
 ^1^ The access fault is triggered on all capability stores or atomics such as <<STORE_CAP>> or <<AMOSWAP_CAP>> when <<c_perm>> and <<w_perm>> are granted and the to-be-stored {ctag} is set to one.
- For SC{LD_ST_DOT_CAP}, the access fault is raised if the to-be-stored {ctag} is set in {cs2} even when the store fails.
+ For <<STORE_COND_CAP>>, the access fault is raised if the to-be-stored {ctag} is set in {cs2} even when the store fails.
 
 Only memory regions that have the _CHERI {ctag_title}_ PMA require storage for {ctag}s.
 
@@ -590,7 +590,7 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 [NOTE]
 ====
 As {cheri_base32_ext_name} has no field allocated in the PTE, capability loads and stores operate as normal.
-Therefore the {cheri_base_ext_name} field is reserved in the RV64 PTE formats only (e.g. <<sv39pte>>) for use by {cheri_base64_ext_name} extensions.
+Therefore, the {cheri_base_ext_name} field is reserved in the RV64 PTE formats only (e.g. <<sv39pte>>) for use by {cheri_base64_ext_name} extensions.
 The principle is that extensions, such as <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> may redefine the usage of the {cheri_base_ext_name} field by adding an enable bit into `Xstatus`.
 ====
 
@@ -845,7 +845,7 @@ NOTE: In this way M-mode software cannot disable any CHERI checks once they have
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
 * Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces
-** Therefore the encodings in <<rvy_insn_table>> and <<rvy_hybrid_insn_table>> are no longer available.
+** Therefore, the encodings in <<rvy_insn_table>> and <<rvy_hybrid_insn_table>> are no longer available.
 * Natively YLEN CSRs are no longer available.
 * Only XLEN CSR access is permitted.
 ** This is identical to {cheri_int_mode_name} access.
