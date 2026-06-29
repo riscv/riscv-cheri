@@ -108,16 +108,16 @@ endif::[]
 [#cap_valid_tag,reftext="{ctag}"]
 ==== {ctag_title}
 
-The {ctag} is an additional bit added to addressable memory and all YLEN-bit registers.
-It is stored separately and may be referred to as _out of band_ or _hidden_, and is _hardware managed_.
+The {ctag} is a single additional bit associated with YLEN-bit memory locations and YLEN-bit registers.
+It is stored separately (i.e., is _out-of-band_ or _hidden_), and is _hardware managed_.
 It indicates whether a YLEN-bit register or YLEN-aligned memory location contains a valid capability.
-If the {ctag} is set, the capability is valid and can be dereferenced (contingent on checks such as permissions or <<sec_cap_bounds_overview,bounds>>).
+If the {ctag} is set, the capability is valid and may be used to authorize operations which is typically dereferencing memory (subject to permissions and <<sec_cap_bounds_overview,bounds>> checks).
 
-All registers or memory locations able to hold a valid capability are YLEN bits wide with an additional hidden {ctag}.
+All registers or memory locations able to hold a valid capability are YLEN bits wide and have an associated {ctag}.
 These are referred to as being _YLEN-bit_ in this specification.
 
 Not all memory in a real system will support {ctag}s.
-The EEI will define what portions of the address space are able to preserve {ctag}s (some addresses might support storing data only).
+The Execution Environment Interface (EEI) will define what regions of the address space support them.
 
 The {ctag} cannot be directly set by software; it is _not_ a conventionally accessible bit of state.
 If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
