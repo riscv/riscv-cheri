@@ -85,6 +85,48 @@ no way to discover the former property.
   setting `transfer` to 1 and `write` to 0).
 ====
 
+==== Access Register Command
+
+The _Access Register_ abstract command has optional support for accessing YLEN registers.
+
+If `aarsize` matches YLEN then all YLEN-bits should be accessible via the command.
+This requires enough `data<n>` registers to be supported to cover the entire data width (2 for {cheri_base32_ext_name} or 4 for {cheri_base64_ext_name}).
+
+Implementations can choose to also support accessing {ctag}s as part of the access register command.
+
+`aarsize=7` is defined to represent full capability access.
+
+The `data<n>` register mapping is as shown in <<debug_data_aarsize_7>>.
+
+.Data register mapping when `aarsize=7`
+[#debug_data_aarsize_7]
+[width="100%",options=header,cols="1,1,1,1,1"]
+|=====
+|ISA                    | arg0/return value| arg1^1^     | arg2        | {ctag}
+|{cheri_base32_ext_name}| data0,data1      | data2       | data3,data4 | data5
+|{cheri_base64_ext_name}| data0-data3      | data4,data5 | data6-data9 | data10
+|=====
+
+^1^ arg1 represents an address so never needs to exceed DXLEN.
+ Each `data<n>` register is 32-bit so a maximum of 2 is required.
+
+Bit 0 of `data5` or `data10` contain the {ctag} which is either written to, or read from, the target register.
+All other bits in that `data` register are UNSPECIFIED.
+
+When a capability is written it must be a <<cap_subset>> of the capability in <<drootc>>.
+If not then the destination {ctag} is set to zero.
+
+NOTE: For the capability subset: `cap2` is the capability being written and `cap` 1 is the value of <<drootc>>.
+
+NOTE: It is valid for root capabilities not to cover the entire possible address space.
+ In this case the debugger cannot claim access to more memory than is permitted by <<drootc>>.
+
+==== Access Memory Command
+
+The _Access Memory_ abstract command does not support accessing {ctag}s.
+
+NOTE: A future version of this specification may supporting accessing {ctag}s in memory by permitted `aarsize=7`.
+
 ==== Core Debug Registers
 
 {cheri_base_ext_name} widens debug CSRs that are designated to hold addresses so that they can hold capabilities.
