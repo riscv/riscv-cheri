@@ -8,6 +8,11 @@ include::trigger-integration.adoc[]
 
 {cheri_base_ext_name} harts should be able to access capabilities in registers and in memory via the external debugger.
 
+This can be achieved by at least one of:
+
+. Implementing a program buffer configured as specified below.
+. Supporting `aarsize=7` for abstract commands which access registers and memory, or both.
+
 ==== Program Buffer
 
 If a Program Buffer is implemented, this section shows how it can be configured and used to access capabilities.
@@ -121,11 +126,13 @@ NOTE: For the capability subset: `cap2` is the capability being written and `cap
 NOTE: It is valid for root capabilities not to cover the entire possible address space.
  In this case the debugger cannot claim access to more memory than is permitted by <<drootc>>.
 
+NOTE: Any register write with `aarsize{ne}7` causes the {ctag} (if present) to be set to zero.
+
 ==== Access Memory Command
 
-The _Access Memory_ abstract command does not support accessing {ctag}s.
+The _Access Memory_ abstract command supports accessing {ctag}s when `aarsize=7`, using the `data<n>` register format specified in <<debug_data_aarsize_7>>.
 
-NOTE: A future version of this specification may supporting accessing {ctag}s in memory by permitted `aarsize=7`.
+NOTE: If `aarsize{ne}7` then {ctag}s are always read and written as zero.
 
 ==== Core Debug Registers
 
