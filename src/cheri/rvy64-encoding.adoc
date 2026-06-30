@@ -12,7 +12,9 @@ NOTE: The format is closely modeled upon features from CHERI v9 cite:[cheri-v9-s
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
-AP_CMP, ASR and X are concatenated to form the <<AP-field>>.
+NOTE: A* represents <<asr_perm>>
+
+NOTE: AP_CMP, ASR, X  and optional P are concatenated to form the <<AP-field>>.
 
 NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
 
@@ -94,9 +96,9 @@ NOTE: Even though <<w_perm>> is valid in all combinations with the base set of p
 6+| *Reserved states*
 | 011xx  5+|                  _reserved_ for <<section_zylevels1>>
 | 100xx  5+|                  _reserved_ for <<section_zylevels1>>
-| 10101  5+|                  _reserved_ for Zyseal sealing permission
-| 10110  5+|                  _reserved_ for Zyseal unsealing permission
-| 10111  5+|                  _reserved_ for Zyseal sealing and unsealing permission
+| 10101  5+|                  _reserved_, possibly for future sealing permission
+| 10110  5+|                  _reserved_, possibly for future unsealing permission
+| 10111  5+|                  _reserved_, possibly for future sealing and unsealing permission
 | 11xxx  5+|                  _reserved_ for other future use
 |==============================================================================
 
