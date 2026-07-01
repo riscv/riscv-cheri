@@ -114,7 +114,7 @@ The `data<n>` register mapping is as shown in <<debug_data_aarsize_7>>.
 |=====
 
 ^1^ arg1 represents an address so never needs to exceed DXLEN.
- Each `data<n>` register is 32-bit so a maximum of 2 is required.
+ Each `data<n>` register is 32-bit so a maximum of 2 are required.
 
 Bit 0 of `data5` or `data10` contain the {ctag} which is either written to, or read from, the target register.
 All other bits in that `data` register are UNSPECIFIED.
@@ -127,13 +127,13 @@ NOTE: For the capability subset: `cap2` is the capability being written and `cap
 NOTE: It is valid for root capabilities not to cover the entire possible address space.
  In this case the debugger cannot claim access to more memory than is permitted by <<drootc>>.
 
-NOTE: Any register write with `aarsize{ne}7` causes the {ctag} (if present) to be set to zero.
+NOTE: If `aarsize{ne}7` then {ctag}s are always read and written as zero.
 
 ==== Access Memory Command
 
 Implementations can choose to support accessing full capabilities, including the {ctag}s, via the the _Access Memory_ abstract command. Full capability access is denoted by `aamsize=7` and uses the `data<n>` register assignments specified in <<debug_data_aarsize_7>>.
 
-NOTE: If `aarsize{ne}7` then {ctag}s are always read and written as zero.
+NOTE: If `aamsize{ne}7` then {ctag}s are always read and written as zero.
 
 ==== Core Debug Registers
 
