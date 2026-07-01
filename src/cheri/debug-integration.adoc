@@ -93,9 +93,13 @@ no way to discover the former property.
 
 ==== Access Register Command
 
-The _Access Register_ abstract command has optional support for accessing YLEN registers.
+When an YLEN-wide register is accessible via _Access Register_ abstract command, then:
 
-If `aarsize` matches YLEN then all YLEN-bits should be accessible via the command.
+- Reads of YLEN bits or any smaller amounts of bits must be supported.
+- Writes of YLEN bits must be supported.
+- Writes of smaller amounts of bits than YLEN may optionally be supported but it is UNSPECIFIED what happens to the higher bits.
+
+NOTE: The debugger can change the low XLEN bits of a YLEN wide register by performing a read-modify-write sequence.
 This requires enough `data<n>` registers to be supported to cover the entire data width (2 for {cheri_base32_ext_name} or 4 for {cheri_base64_ext_name}).
 
 Implementations can choose to also support accessing {ctag}s as part of the access register command.
