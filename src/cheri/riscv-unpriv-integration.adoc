@@ -556,13 +556,13 @@ NOTE: Implementations are not required to provide access to the entire address s
 
 [#root-rx-cap,reftext="Root Executable"]
 Root Executable Capability::
-An unsealed capability that has bounds covering all addresses
+An unsealed capability that has bounds nominally covering all addresses
 and grants at least all of <<x_perm>>, <<r_perm>>, <<c_perm>>, <<lm_perm>>, and <<asr_perm>>.
 Extensions introducing new permissions may require these to be provided by root executable capabilities.
 
 [#root-rw-cap,reftext="Root Data"]
 Root Data Capability::
-An unsealed capability that has bounds covering all addresses
+An unsealed capability that has bounds nominally covering all addresses
 and grants at least all of <<r_perm>>, <<w_perm>>, <<c_perm>>, and <<lm_perm>>.
 Extensions introducing new permissions may require these to be provided by root data capabilities.
 
@@ -928,13 +928,13 @@ Special instructions are provided to copy capabilities or derive a new capabilit
 
 [#cap_subset,reftext="capability subset"]
 Capability subset::
-Some instructions use the concept of `{cs2}` being a _capability subset_ of `{cs1}`.
+Some instructions use the concept of `cap2` being a _capability subset_ of `cap1`.
 The definition is:
 +
-. All permissions granted by the <<AP-field>> and the <<SDP-field>> of `{cs2}` are also granted by those of `{cs1}`, and
-. `{cs2}` 's top bound is less than or equal to `{cs1}` 's top bound, and
-. `{cs2}` 's base bound is greater than or equal to `{cs1}` 's base bound, and
-. `{cs1}` and `{cs2}` pass all <<section_cap_integrity,integrity>> checks
+. All permissions granted by the <<AP-field>> and the <<SDP-field>> of `cap2` are also granted by those of `cap1`, and
+. `cap2` 's top bound is less than or equal to `cap1` 's top bound, and
+. `cap2` 's base bound is greater than or equal to `cap1` 's base bound, and
+. `cap1` and `cap2` pass all <<section_cap_integrity,integrity>> checks
 
 .Summary of {cheri_base_ext_name} instructions that create a modified capability
 [#tab_cap_manip_summary,%autowidth,options=header,align="center",cols="1,4"]
