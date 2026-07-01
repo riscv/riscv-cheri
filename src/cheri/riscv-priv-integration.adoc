@@ -837,6 +837,9 @@ The effective CHERI-enable for the current privilege is:
 
 NOTE: On reset CHERI is always disabled for backwards compatibility: <<misa_y>>.{CRE} resets to zero, <<ddc>>, <<pcc>>, Xtvec, Xepc are nominally <<root-cap,root capabilities>>.
 
+NOTE: Resetting `<<misa_y>>.{CRE}` to zero for compatiblity means that the reset value is _not_ the maximal set of supported extensions.
+ This aspect is key for CHERI, CHERI oblivious software runs identically on a CHERI core in {cheri_int_mode_name} as on a non-CHERI core.
+
 `<<misa_y>>.{CRE}` is a WARL field.
 M-mode software can freely set it to one, but then it can only be set back to zero if <<ddc>>, <<pcc>>, Xtvec, Xepc are root capabilities so that no CHERI configuration has taken effect.
 
