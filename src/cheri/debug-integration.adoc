@@ -11,7 +11,7 @@ include::trigger-integration.adoc[]
 This can be achieved by at least one of:
 
 . Implementing a program buffer configured as specified below.
-. Supporting `aarsize=7` for abstract commands which access registers and memory, or both.
+. Supporting full capability access for both Access Register and Access Memory abstract commands (`aarsize=7` and `aamsize=7`).
 
 ==== Program Buffer
 
@@ -19,15 +19,16 @@ If a Program Buffer is implemented, this section shows how it can be configured 
 
 * `hartinfo` must be implemented.
 * `hartinfo.nscratch` is at least 1 and the <<dscratch0_y>> register is implemented.
-* `hartinfo.datasize` is at least 1 and `hartinfo.dataaccess` of 0.
-* `abstractcs.progbufsize` of at least 4 if `dmstatus.impebreak` is 1, or at least 5 if `dmstatus.impebreak` is 0.
+* `hartinfo.datasize` is at least 1 and `hartinfo.dataaccess` is 0.
+* `abstractcs.progbufsize` is at least 4 if `dmstatus.impebreak` is 1, or at least 5 if `dmstatus.impebreak` is 0.
 
 [NOTE]
 ====
 These requirements allow a debugger to read and write capabilities in integer
 registers without disturbing other registers.  These requirements may be
 relaxed if some other means of accessing capabilities in integer registers,
-such as an extension of the Access Register abstract command, is added.
+These requirements allow a debugger to read and write capabilities in integer
+registers without disturbing other registers.
 
 The sequences below demonstrate how a debugger can read and write a capability in `{creg}1` using the program buffer if:
 
@@ -130,7 +131,7 @@ NOTE: Any register write with `aarsize{ne}7` causes the {ctag} (if present) to b
 
 ==== Access Memory Command
 
-The _Access Memory_ abstract command supports accessing {ctag}s when `aarsize=7`, using the `data<n>` register format specified in <<debug_data_aarsize_7>>.
+Implementations can choose to support accessing full capabilities, including the {ctag}s, via the the _Access Memory_ abstract command. Full capability access is denoted by `aamsize=7` and uses the `data<n>` register assignments specified in <<debug_data_aarsize_7>>.
 
 NOTE: If `aarsize{ne}7` then {ctag}s are always read and written as zero.
 
