@@ -24,7 +24,7 @@ from which it can derive a capability to the address in this register.
 [#mtvec_y,reftext="mtvec ({cheri_base_ext_name})"]
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
-The mtvec register is widened to an executable capability.
+The `mtvec` register is widened to a capability.
 Its reset value is nominally a <<root-rx-cap>> capability.
 
 NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of a <<root-rx-cap>> capability after reset.
@@ -39,7 +39,7 @@ NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setti
 
 NOTE: Care must be taken however that suitable root capabilities are available to software after reset if this CSR does not represent one.
 
-When traps are taken into machine mode, the pc is updated following the standard `mtvec` behavior.
+When traps are taken into machine mode, the `pc` is updated following the standard `mtvec` behavior.
 The {ctag} and metadata from <<mtvec_y>> are also written to the <<pcc>>.
 
 Following the standard `mtvec` behavior, the value of `mtvec.address` can be viewed with a range of different addresses:
@@ -73,7 +73,7 @@ include::img/menvcfgmodereg.edn[]
 [#mscratch_y, reftext="mscratch ({cheri_base_ext_name})"]
 ==== Machine Scratch Capability Register (mscratch)
 
-The *mscratch* register is widened to a capability.
+The `mscratch` register is widened to a capability.
 
 {TAG_RESET_MCSR}
 
@@ -83,7 +83,7 @@ include::img/mscratchcreg.edn[]
 [#mepc_y,reftext="mepc ({cheri_base_ext_name})"]
 ==== Machine Exception Program Counter Capability (mepc)
 
-The *mepc* register is widened to a capability.
+The `mepc` register is widened to a capability.
 Its reset value is nominally a <<root-rx-cap>> capability.
 
 .Machine exception program counter capability register
@@ -111,7 +111,7 @@ In the following case the value of the {ctag} observable in the CSR depends on t
 
 The observable {ctag} is zero when IALIGN=32 and one when IALIGN=16.
 
-When a trap is taken into M-mode, the pc is written to `mepc.address` following the standard behavior.
+When a trap is taken into M-mode, the `pc` is written to `mepc.address` following the standard behavior.
 The {ctag} and metadata of the <<pcc>> are also written to <<mepc_y>>.
 
 On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_y>> is unsealed if it is a <<sentry_cap>> and written to <<pcc>>.
@@ -429,7 +429,7 @@ include::{generated_dir}/csr_exevectors_m_table_body.adoc[]
 [#stvec_y,reftext="stvec ({cheri_base_ext_name})"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
 
-The *stvec* register is widened to a capability.
+The `stvec` register is widened to a capability.
 
 {ROOT_RX_RESET_SCSR}
 
@@ -441,7 +441,7 @@ The handling of <<stvec_y>> is identical to <<mtvec_y>>, but in supervisor mode.
 [#sscratch_y, reftext="sscratch ({cheri_base_ext_name})"]
 ==== Supervisor Scratch Capability Register (sscratch)
 
-The *sscratch* register is widened to a capability.
+The `sscratch` register is widened to a capability.
 
 {TAG_RESET_SCSR}
 
@@ -451,7 +451,7 @@ include::img/sscratchcreg.edn[]
 [#sepc_y,reftext="sepc ({cheri_base_ext_name})"]
 ==== Supervisor Exception Program Counter Capability (sepc)
 
-The *sepc* register is widened to an executable capability.
+The `sepc` register is widened to a capability.
 
 {ROOT_RX_RESET_SCSR}
 
@@ -790,7 +790,7 @@ YADDRW::
 {MODESW_INT}::
    See the unprivileged manual for the definition of {MODESW_INT}.
 
-[#default-csrnames-added, reftext="Unprivileged YLEN-wide CSRs added in {cheri_default_ext_name}"]
+[#unpriv-csrnames-added, reftext="Unprivileged YLEN-wide CSRs added in {cheri_default_ext_name}"]
 Unprivileged YLEN-wide CSRs added in {cheri_default_ext_name}::
   See the unprivileged manual for the table of these CSRs.
 
