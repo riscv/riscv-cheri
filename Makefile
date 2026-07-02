@@ -19,7 +19,7 @@
 #   docker pull ghcr.io/riscv/riscv-docs-base-container-image:latest
 #
 
-DOCS := riscv-privileged riscv-unprivileged riscv-cheri riscv-cheri-full
+DOCS := riscv-privileged riscv-unprivileged riscv-cheri riscv-cheri-debug riscv-cheri-full
 
 RELEASE_TYPE ?= draft
 GIT_SHORT_HASH ?= -$(shell git rev-parse --short HEAD || true)
@@ -155,6 +155,7 @@ SAIL_ASCIIDOC_JSON = $(CHERI_GEN_DIR)/riscv_RV64.json
 .PHONY: all build clean build-docs build-pdf build-html build-epub build-tags build-norm-rules docker-pull-latest generate generate-cheri-tables
 
 all: build
+html: build/riscv-privileged.html build/riscv-unprivileged.html build/riscv-cheri.html build/riscv-cheri-debug.html build/riscv-cheri-full.html
 
 $(CHERI_GEN_DIR):
 	mkdir -p "$@"
