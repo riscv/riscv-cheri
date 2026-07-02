@@ -211,7 +211,7 @@ They all copy `{cs1}` to the output `{cd}`, set the _base_ bound `{cd}` as `{cs1
 * <<SCBNDSI>> sets the _base_ to `{cs1}.address`, and the _length_ to the immediate value.
 ** Set the {ctag} to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSR>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
-** The bounds may be rounded up if they cannot be encoded exactly but must be no larger than the initial bounds.
+** The bounds may be extended if they cannot be encoded exactly but must be no larger than the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
 // #some example usage here of CRAM+SCBNDSR would be good#
@@ -638,7 +638,7 @@ If any of the above rules do not hold for a capability with the {ctag} set, it i
 NOTE: These checks are much less rigorous than parity or ECC protection, and are only
 used to detect simple problems with the capability metadata.
 
-Instructions that are defined to accept arbitrary input bit patterns and can write an output with the {ctag} set, must perform an an integrity check on the input capability if its {ctag} is set to zero.
+Instructions that are defined to accept arbitrary input bit patterns, and can write an output with the {ctag} set, _must_ perform an integrity check on the input capability if its {ctag} is set to zero.
 All instructions that require integrity checks have this noted in the instruction description.
 
 NOTE: Currently <<CBLD>> is the only defined instruction that sets the `{ctag}` on an arbitrary bit pattern and therefore _must_ perform an integrity check on the input capability in `{cs2}`.
@@ -1217,7 +1217,7 @@ ifdef::cheri_standalone_spec[]
 [#rvy_zca_insn_table, reftext="{rvy_zca_ext_name}"]
 == Zca ({cheri_base_ext_name} added and modified instructions)
 
-Zcf (RV32) and Zcd (RV64) are incompatible with {cheri_base_ext_name} cores executing in {cheri_cap_mode_name}.
+Zcf (RV32) and Zcd (RV64) are incompatible with {cheri_base_ext_name} harts executing in {cheri_cap_mode_name}.
 
 .{rvy_zca_ext_name} instruction extension
 [#{rvy_zca_file_name}]
@@ -1384,13 +1384,13 @@ include::insns/prefetch.w.adoc[leveloffset=-1]
 <<<
 endif::[]
 
-=== User-mode YLEN CSR Summary
+== User-mode YLEN CSR Summary
 
 <<all_capability_CSRs_u>> shows all YLEN User-Mode CSRs added or modified by {cheri_base_ext_name}.
 
 .All {cheri_base_ext_name} User-Mode CSRs.
 [#all_capability_CSRs_u]
-[width="100%",options=header,cols="2,1,1,1,1,2,2,4"]
+[width="100%",options=header,cols="2,1,1,1,2,2,4"]
 |==============================================================================
 include::{generated_dir}/csr_permission_u_table_body.adoc[]
 |==============================================================================

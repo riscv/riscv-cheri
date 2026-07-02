@@ -158,7 +158,7 @@ NOTE: Y is read only unless <<section_cheri_hybrid_ext>> is implemented.
 
 Either I or E is _also_ set to show how many registers are present.
 
-NOTE: Implementations which allow misa.C to be writable need to legalize <<mtvec_y>>/<<stvec_y>>
+NOTE: Implementations which allow misa.C to be writable need to legalize <<mepc_y,Xepc>>
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.
 
@@ -322,7 +322,7 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All atomics, CBO.CLEAN, CBO.FLUSH, CBO.INVAL   | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant both <<r_perm>> and <<w_perm>>
 | All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the access is out of `auth_cap` bounds^2^
 | CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the cache block is out of `auth_cap` bounds^2^
-| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | All bytes of the cache block is out of `auth_cap` bounds^2^
+| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | All bytes of the cache block are out of `auth_cap` bounds^2^
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
 | Capability stores                              | 7^3^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
@@ -398,7 +398,7 @@ endif::support_varxlen[]
 
 .All {cheri_base_ext_name} Machine-Mode CSRs.
 [#all_capability_CSRs_m]
-[width="100%",options=header,cols="2,1,1,1,1,2,2,4"]
+[width="100%",options=header,cols="2,1,1,1,2,2,4"]
 |==============================================================================
 include::{generated_dir}/csr_permission_m_table_body.adoc[]
 |==============================================================================
@@ -534,7 +534,7 @@ include::insns/mret_sret.adoc[]
 
 .All {cheri_base_ext_name} Supervisor-Mode CSRs.
 [#all_capability_CSRs_s]
-[width="100%",options=header,cols="2,1,1,1,1,2,2,4"]
+[width="100%",options=header,cols="2,1,1,1,2,2,4"]
 |==============================================================================
 include::{generated_dir}/csr_permission_s_table_body.adoc[]
 |==============================================================================
@@ -616,6 +616,8 @@ If _pte_._{pte_cap_rw_name_lc}_=0 then:
 If _pte_._{pte_cap_rw_name_lc}_=1 then:
 
 * All capability loads and capability stores operate as normal.
+
+NOTE: rvy[2:0] follow the standard reserved behavior for PTE bits.
 
 [#section_invalid_addr_conv,reftext="Invalid address conversion"]
 === Invalid Virtual Address Handling

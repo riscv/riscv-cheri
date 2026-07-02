@@ -243,9 +243,9 @@ If EF = 1:
     T[EW / 2 - 1:0] = TE
     B[EW / 2 - 1:0] = BE
     LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
-    LMSB            = (XLEN == 32) ? L~8~ : 0
+    LMSB            = (XLEN == 32) ? L8 : 0
 else:
-    E               = CAP_MAX_E - ( (XLEN == 32) ? { L~8~, TE, BE } : { TE, BE } )
+    E               = CAP_MAX_E - ( (XLEN == 32) ? { L8, TE, BE } : { TE, BE } )
     T[EW / 2 - 1:0] = 0
     B[EW / 2 - 1:0] = 0
     LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
@@ -415,7 +415,7 @@ If the address _a'_ is outside the _representable range_, then the derived capab
 An artifact of the bounds encoding is that if the new address
 causes `t != t'`, then it is also the case that `b != b'`.
 
-The inverse is also true, if `b != b'` then `t != t'`.
+The converse is also true, if `b != b'` then `t != t'`.
 
 Therefore, for representable range checking, it is acceptable
 to either check `t == t'` or `b == b'`.

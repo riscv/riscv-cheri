@@ -100,7 +100,7 @@ end box
 
 M -> M: Create Library Code Capability\n(mode bit = {CAP_MODE_VALUE})
 M -> M: Set DDC to NULL
-M -> L: Call via ""JALR_CHERI"" (Switches to {cheri_cap_mode_name_nofmt})
+M -> L: Call via ""JALR"" (Switches to {cheri_cap_mode_name_nofmt})
 L -> L: Execute Sandboxed Code
 L -> M: Return via return capability (Switches to {cheri_int_mode_name_nofmt})
 M -> M: Restore DDC
@@ -214,7 +214,7 @@ The privileged architecture defines enable bits (often denoted as `{CRE}`) in CS
 
 Reset State::
 On reset, CHERI is disabled for privilege levels below machine-mode to ensure backwards compatibility with standard RISC-V software.
-This behavior applies to cores that support execution in both {cheri_cap_mode_name} and {cheri_int_mode_name}.
+This behavior applies to harts that support execution in both {cheri_cap_mode_name} and {cheri_int_mode_name}.
 
 Enabling CHERI::
 A higher privilege mode must set the appropriate enable bits to allow a lower privilege mode to use CHERI instructions or switch between {cheri_cap_mode_name} and {cheri_int_mode_name}.
