@@ -29,6 +29,7 @@ def generate_adoc():
 
     r3_grouped = {}
     for i in rvy_insts.regular_3op_insns:
+        assert i.f3.val == Custom3Funct3.REGULAR, i
         if isinstance(i.f7.val, int):
             r3_grouped.setdefault(i.f7.val, []).append(i)
 
@@ -73,12 +74,13 @@ def generate_adoc():
         adoc += "|===\n\n"
         table_num += 1
 
-    adoc += f"\n== {table_num}. AMO Sub-opcode Allocations (funct3=100)\n\n"
+    adoc += f"\n== {table_num}. AMO Sub-opcode Allocations (funct3={format(Custom3Funct3.AMO.value[0], '03b')}\n\n"
     adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
     adoc += "| funct7[6:3] \\ funct7[2:0] | 000 | 001 | 010 | 011 | 100 | 101 | 110 | 111\n\n"
 
     amo_grouped = {}
     for i in rvy_insts.amo_insns:
+        assert i.f3.val == Custom3Funct3.AMO, i
         matching_f7s = []
         if isinstance(i, AMOType) and isinstance(i.f5_fixed.val, int):
             base_f7 = i.f5_fixed.val << 2
@@ -98,12 +100,12 @@ def generate_adoc():
     adoc += "|===\n"
     table_num += 1
 
-    adoc += f"\n== {table_num}. MISC Sub-opcode Allocations (funct3=101)\n\n"
+    misc_f3 = Custom3Funct3.MISC
+    adoc += f"\n== {table_num}. MISC Sub-opcode Allocations (funct3={format(misc_f3.value[0], '03b')})\n\n"
     adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
     adoc += "| funct7[6:3] \\ funct7[2:0] | 000 | 001 | 010 | 011 | 100 | 101 | 110 | 111\n\n"
 
     misc_grouped = {}
-    misc_f3 = Custom3Funct3.MISC
     for i in rvy_insts.misc_insns:
         if i.op.val == MajorOpcode.RVY_A and i.f3.val == misc_f3:
             matching_f7s = []
