@@ -153,48 +153,48 @@ The definition of <<cap_subset>> has an additional rule:
 
 NOTE: This affects the behavior of <<SCSS>>, <<CBLD>> and <<YSUNSEAL>>.
 
-=== Effect on architectural permission format `cmp1_rv64ya_1`
+=== Effect on architectural permission format `full1_rv64ya_1`
 
-This format is used by <<rv64y_cap_description>>, and was introduced in <<rvy64_uni_base_name_ap_cmp_fmt>>.
-The states in <<rvy64_uni_base_name_ap_cmp_fmt_levels1>> are added.
+This format is used by <<rv64y_cap_description>>, and was introduced in <<rvy64_uni_base_name_ap_fmt>>.
+The states in <<rvy64_uni_base_name_ap_fmt_levels1>> are added.
 
-.{rv64y_uni_base_name} AP_CMP (compressed architectural permissions) field
-[#rvy64_uni_base_name_ap_cmp_fmt_levels1,width="100%",options=header,cols="^1,^1,^1,^1,^1,^1,^1,5"]
+.{rv64y_uni_base_name} AP field encoding (additions from {cheri_levels1_ext_name})
+[#rvy64_uni_base_name_ap_fmt_levels1,width="100%",options=header,cols="^1,^1,^1,^1,^1,^1,^1,5"]
 |==============================================================================
-| Encoding | R | W | C | LM | LG | SL | Comment
+| AP[6:2] | R | W | C | LM | LG | SL | Comment
 ifdef::full_perms_table[]
 //it's nice to have the full table in one place
-8+| *R=AP_CMP[2], W=AP_CMP[1], C=AP_CMP[0]*
-| 00000    |   |   |   |    |    |    | *No permissions*
-| 00001  7+|                  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
-| 00010    |   | W |   |    |    |    |
-| 00011    |   | W | C |    |    |    |
-| 00100    | R |   |   |    |    |    |
-| 00101    | R |   | C |    |    |    |
-| 00110    | R | W |   |    |    |    |
-| 00111    | R | W | C |    |    |    |
-8+| *W=AP_CMP[1], LM=1*
-8+| *LM implies C,R*
-| 01000  7+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
-| 01001    | R |   | C | LM |    |    |
-| 01010  7+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
-| 01011    | R | W | C | LM |    |    |
+8+| *AP[6:5]=00: AP[4]=R, AP[3]=W, AP[2]=C*
+| *00* 000 |   |   |   |    | | | *No permissions* (NULL capability)
+| *00* 001 7+|  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
+| *00* 010 |   | W |   |    | | |
+| *00* 011 |   | W | C |    | | |
+| *00* 100 | R |   |   |    | | |
+| *00* 101 | R |   | C |    | | |
+| *00* 110 | R | W |   |    | | |
+| *00* 111 | R | W | C |    | | |
+8+| *AP[6:4]=010: LM=1, AP[3]=W*
+8+| *LM implies C and R*
+| *010* 00 7+|  _reserved_ due to <<perm_req:base:lm:c-and-r,base-2>>
+| *010* 01 | R |   | C | LM | | |
+| *010* 10 7+|  _reserved_ due to <<perm_req:base:lm:c-and-r,base-2>>
+| *010* 11 | R | W | C | LM | | | *Maximum base permissions*
 endif::[]
-8+| *W=AP_CMP[1], LM=AP_CMP[0], LG=1*
-8+| *LM,LG imply C,R*
-| 01100    | R |   | C |    | LG |    |
-| 01101    | R |   | C | LM | LG |    |
-| 01110    | R | W | C |    | LG |    |
-| 01111    | R | W | C | LM | LG |    |
-8+| *LG=AP_CMP[1], LM=AP_CMP[0], SL=1*
-8+| *LM,LG imply C,R*
-8+| *SL implies C,W*
-| 10000    |   | W | C |    |    | SL |
-| 10001    | R | W | C | LM |    | SL |
-| 10010    | R | W | C |    | LG | SL |
-| 10011    | R | W | C | LM | LG | SL | *Maximum permissions (AP_CMP_MAX)*
+8+| *AP[6:5]=01: LG=1, AP[3]=W, AP[2]=LM*
+8+| *LM and LG imply C and R*
+| *01* 100    | R |   | C |    | LG |    |
+| *01* 101    | R |   | C | LM | LG |    |
+| *01* 110    | R | W | C |    | LG |    |
+| *01* 111    | R | W | C | LM | LG |    |
+8+| *AP[6:4]=100: SL=1, AP[3]=LG, AP[2]=LM*
+8+| *LM and LG imply C and R*
+8+| *SL implies C and W*
+| *100* 00    |   | W | C |    |    | SL |
+| *100* 01    | R | W | C | LM |    | SL |
+| *100* 10    | R | W | C |    | LG | SL |
+| *100* 11    | R | W | C | LM | LG | SL | *Maximum base+levels1 permissions*
 8+| *Final state to complete the encoding set*
-| 10100    | R | W | C |    |    | SL | SL does not imply R so this state needs encoding specifically
+| 10100    | R | W | C |    |    | SL | SL does not imply R, so this state needs explicit encoding
 8+| *Reserved states*
 | 10101  7+|                  _reserved_, possibly for future sealing permission
 | 10110  7+|                  _reserved_, possibly for future unsealing permission
@@ -202,7 +202,7 @@ endif::[]
 | 11xxx  7+|                  _reserved_ for future use
 |==============================================================================
 
-AP_MAX = {AP_CMP_MAX, 1 (<<asr_perm>>), 1 (<<x_perm>>)} = 0x4F
+AP_MAX = 0x4F (AP[6:2]=10011, ASR=1, X=1: R, W, C, LM, LG, SL, ASR, X all granted)
 
 
 === Rationale and Software Use Cases
