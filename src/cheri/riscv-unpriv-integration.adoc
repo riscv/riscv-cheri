@@ -605,7 +605,7 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 | enableL8    | 0/1                  | 0                    | Whether the encoding format includes the L~8~ bit
 4+| *Parameters used for permissions encoding in the <<AP-field>>*
 | AP_MAX      | integer values       | all ones             | Value of the <<AP-field>> giving maximum permissions
-| AP_ENC      | cmp<suffix>/ incmp<suffix>| ps1             | Encoding scheme for the <<AP-field>>
+| AP_ENC      | full<suffix>/ part<suffix>| full1             | Encoding scheme for the <<AP-field>>
 4+| *Other parameters*
 | AUIPC_SHIFT | integer values up to 12 | 12                | Shift distance of the immediate in AUIPC
 | REP_RANGE   | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
@@ -614,7 +614,7 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 Two parameters used non-numeric values:
 
 AP_ENC::
- Whether permissions in the <<AP-field>> are encoded using a _complete_ (`cmp`) representation allowing all valid combinations or an _incomplete_ (`incmp`) representation which does not represent all possible states and so uses fewer encoding bits.
+ Whether permissions in the <<AP-field>> are encoded using a _full_ (`full`) representation allowing all valid combinations of permissions, or a _partial_ (`part`) representation which does not represent all possible combinations and so uses fewer encoding bits.
 REP_RANGE::
  Whether the capability encoding formats guarantees representability of out-of-bounds capability values, `rc1`, where the encoding uses one additional bit and uses a _centered_ out-of-bounds region, or `r0` where zero bits are used for out-of-bounds capabilities and there is no guaranteed  out of bounds <<section_cap_representable_check,representable range>>.
 
