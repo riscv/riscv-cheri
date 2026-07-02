@@ -1386,6 +1386,41 @@ include::insns/prefetch.w.adoc[leveloffset=-1]
 <<<
 endif::[]
 
+=== User-mode YLEN CSR Summary
+
+<<all_capability_CSRs_u>> shows all YLEN User-Mode CSRs added or modified by {cheri_base_ext_name}.
+
+.All {cheri_base_ext_name} User-Mode CSRs.
+[#all_capability_CSRs_u]
+[width="100%",options=header,cols="2,1,1,1,1,2,2,4"]
+|==============================================================================
+include::{generated_dir}/csr_permission_u_table_body.adoc[]
+|==============================================================================
+
+NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are a maximum possible value.
+The platform may reset those CSRs to a smaller memory range, or to have fewer permissions.
+
+.Action taken on writing to extended User-Mode CSRs
+[#extended_CSR_writing_u]
+[width="100%",options=header,cols="1,1,1,2,2"]
+|==============================================================================
+include::{generated_dir}/csr_alias_action_u_table_body.adoc[]
+|==============================================================================
+
+Code pointers and data pointers in <<CSR_exevectors_u>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
+
+ifndef::cheri_standalone_spec[]
+[#section_invalid_addr_conv,reftext="invalid address conversion"]
+NOTE: See the privileged specification for the definition of invalid address handling.
+endif::[]
+
+.YLEN-wide User-Mode CSRs storing code pointers or data pointers
+[#CSR_exevectors_u]
+[width="100%",options=header,cols="1,1,1,1,1"]
+|==============================================================================
+include::{generated_dir}/csr_exevectors_u_table_body.adoc[]
+|==============================================================================
+
 ifndef::cheri_ratification_v1_only[]
 
 [#rvy_bndsrdw_insn_table, reftext="{rvy_bndsrdw_insn_ext_name}"]

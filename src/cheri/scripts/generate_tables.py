@@ -375,7 +375,7 @@ class csr_added_purecap_mode_s(table):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "S"
 
 class csr_alias_action_d(table):
-    cols = ["RVY CSR", "Width", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Extension", "Width", "Action on XLEN write", "Action on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -399,7 +399,7 @@ class csr_alias_action_d(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "D"
 
 class csr_alias_action_m(table):
-    cols = ["RVY CSR", "Width", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Extension", "Width", "Action on XLEN write", "Action on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -423,7 +423,7 @@ class csr_alias_action_m(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "M"
 
 class csr_alias_action_s(table):
-    cols = ["RVY CSR", "Width", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Extension", "Width", "Action on XLEN write", "Action on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -446,8 +446,32 @@ class csr_alias_action_s(table):
     def check(self, row):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "S"
 
+class csr_alias_action_u(table):
+    cols = ["RVY CSR", "Extension", "Width", "Action on XLEN write", "Action on YLEN write"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write("|" + "|".join(self.cols) + "\n")
+        self.indices = []
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i < 1:
+                    outStr += "|" + insn_xref(row[i])
+                else:
+                    outStr += "|" + row[i]
+            self.write_row(row, outStr)
+
+    def check(self, row):
+        return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "U"
+
 class csr_perms_d(table):
-    cols = ["RVY CSR", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Extension", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -471,7 +495,7 @@ class csr_perms_d(table):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "D"
 
 class csr_perms_m(table):
-    cols = ["RVY CSR", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Extension", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -495,7 +519,7 @@ class csr_perms_m(table):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "M"
 
 class csr_perms_s(table):
-    cols = ["RVY CSR", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Extension", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -518,8 +542,32 @@ class csr_perms_s(table):
     def check(self, row):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "S"
 
+class csr_perms_u(table):
+    cols = ["RVY CSR", "Extension", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write("|" + "|".join(self.cols) + "\n")
+        self.indices = []
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i == 0:
+                    outStr += "|" + insn_xref(row[i])
+                else:
+                    outStr += "|" + row[i]
+            self.write_row(row, outStr)
+
+    def check(self, row):
+        return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "U"
+
 class csr_exevectors_d(table):
-    cols = ["RVY CSR", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["RVY CSR", "Extension", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -548,7 +596,7 @@ class csr_exevectors_d(table):
         ))
 
 class csr_exevectors_m(table):
-    cols = ["RVY CSR", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["RVY CSR", "Extension", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -576,7 +624,7 @@ class csr_exevectors_m(table):
             or row[self.header.index("Data Pointer")] == "✔"
         ))
 class csr_exevectors_s(table):
-    cols = ["RVY CSR", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["RVY CSR", "Extension", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -599,6 +647,34 @@ class csr_exevectors_s(table):
     def check(self, row):
         return (
             row[self.header.index("Mode")] == "S" and (
+            row[self.header.index("Code Pointer")] == "✔"
+            or row[self.header.index("Unseal On Execution")] == "✔"
+            or row[self.header.index("Data Pointer")] == "✔"
+        ))
+class csr_exevectors_u(table):
+    cols = ["RVY CSR", "Extension", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    indices = []
+
+    def __init__(self, filename, header):
+        super().__init__(filename, header)
+        self.file.write("|" + "|".join(self.cols) + "\n")
+        self.indices = []
+        for i in self.cols:
+            self.indices.append(self.header.index(i))
+
+    def update(self, row):
+        if self.check(row):
+            outStr = ""
+            for i in self.indices:
+                if i == 0:
+                    outStr += "|" + insn_xref(row[i])
+                else:
+                    outStr += "|" + row[i]
+            self.write_row(row, outStr)
+
+    def check(self, row):
+        return (
+            row[self.header.index("Mode")] == "U" and (
             row[self.header.index("Code Pointer")] == "✔"
             or row[self.header.index("Unseal On Execution")] == "✔"
             or row[self.header.index("Data Pointer")] == "✔"
@@ -634,13 +710,16 @@ if __name__ == "__main__":
         tables.append(csr_alias_action_d(output_file(args, "csr_alias_action_d_table_body.adoc"), header))
         tables.append(csr_alias_action_m(output_file(args, "csr_alias_action_m_table_body.adoc"), header))
         tables.append(csr_alias_action_s(output_file(args, "csr_alias_action_s_table_body.adoc"), header))
+        tables.append(csr_alias_action_u(output_file(args, "csr_alias_action_u_table_body.adoc"), header))
         tables.append(csr_added_legacy(output_file(args, "csr_added_hybrid_table_body.adoc"), header))
         tables.append(csr_perms_d(output_file(args, "csr_permission_d_table_body.adoc"), header))
         tables.append(csr_perms_m(output_file(args, "csr_permission_m_table_body.adoc"), header))
         tables.append(csr_perms_s(output_file(args, "csr_permission_s_table_body.adoc"), header))
+        tables.append(csr_perms_u(output_file(args, "csr_permission_u_table_body.adoc"), header))
         tables.append(csr_exevectors_d(output_file(args, "csr_exevectors_d_table_body.adoc"), header))
         tables.append(csr_exevectors_m(output_file(args, "csr_exevectors_m_table_body.adoc"), header))
         tables.append(csr_exevectors_s(output_file(args, "csr_exevectors_s_table_body.adoc"), header))
+        tables.append(csr_exevectors_u(output_file(args, "csr_exevectors_u_table_body.adoc"), header))
 
         for row in reader:
             for t in tables:
