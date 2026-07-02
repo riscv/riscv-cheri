@@ -832,15 +832,15 @@ When using a system with {cheri_default_ext_name}, it may be desirable to config
 
 The effective CHERI-enable for the current privilege is:
 
-* Machine: `<<misa_y>>.{CRE}`
-* Supervisor: `<<misa_y>>.{CRE} & <<menvcfg_y>>.{CRE}`
-* User: `<<misa_y>>.{CRE} & <<menvcfg_y>>.{CRE} & <<senvcfg_y>>.{CRE}`
+* Machine: `<<misa_y,misa>>.{CRE}`
+* Supervisor: `<<misa_y,misa>>.{CRE} & <<menvcfg_y,menvcfg>>.{CRE}`
+* User: `<<misa_y,misa>>.{CRE} & <<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}`
 
 The reset values are:
 
-* `<<misa_y>>.{CRE}=1`
-* `<<menvcfg_y>>.{CRE}=0`
-* `<<senvcfg_y>>.{CRE}=0`
+* `<<misa_y,misa>>.{CRE}=1`
+* `<<menvcfg_y,menvcfg>>.{CRE}=0`
+* `<<senvcfg_y,senvcfg>>.{CRE}=0`
 * <<pcc>>.<<p_bit>>={INT_MODE_VALUE} (for {cheri_int_mode_name}).
 * <<ddc>>, <<pcc>>, Xtvec, Xepc are nominally <<root-cap,root capabilities>>.
 
