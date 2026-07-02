@@ -835,13 +835,16 @@ The effective CHERI-enable for the current privilege is:
 * Supervisor: `<<misa_y>>.{CRE} & <<menvcfg_y>>.{CRE}`
 * User: `<<misa_y>>.{CRE} & <<menvcfg_y>>.{CRE} & <<senvcfg_y>>.{CRE}`
 
-NOTE: On reset CHERI is always disabled for backwards compatibility: <<misa_y>>.{CRE} resets to zero, <<ddc>>, <<pcc>>, Xtvec, Xepc are nominally <<root-cap,root capabilities>>.
+The reset values are:
 
-NOTE: Resetting `<<misa_y>>.{CRE}` to zero for compatiblity means that the reset value is _not_ the maximal set of supported extensions.
- This aspect is key for CHERI, CHERI oblivious software runs identically on a CHERI core in {cheri_int_mode_name} as on a non-CHERI core.
+* `<<misa_y>>.{CRE}=1`
+* `<<menvcfg_y>>.{CRE}=0`
+* `<<senvcfg_y>>.{CRE}=0`
+* <<pcc>>.<<p_bit>>={INT_MODE_VALUE} (for {cheri_int_mode_name}).
+* <<ddc>>, <<pcc>>, Xtvec, Xepc are nominally <<root-cap,root capabilities>>.
 
 `<<misa_y>>.{CRE}` is a WARL field.
-M-mode software can freely set it to one, but then it can only be set back to zero if <<ddc>>, <<pcc>>, Xtvec, Xepc are root capabilities so that no CHERI configuration has taken effect.
+M-mode can only set it to zero if <<ddc>>, <<pcc>>, Xtvec, Xepc are root capabilities so that no CHERI configuration has taken effect.
 
 NOTE: In this way M-mode software cannot disable any CHERI checks once they have been configured.
 
