@@ -1,4 +1,6 @@
-[appendix]
+include::attributes.adoc[]
+include::../symbols.adoc[]
+
 [#section_debug_integration_ext]
 == Integrating {cheri_base_ext_name} with Debug
 
@@ -130,7 +132,7 @@ Implementations can choose to also support accessing {ctag}s as part of the acce
 When a capability is written it must be derivable from the set of root capabilities available in <<drootc>>.
 If not then the destination {ctag} is set to zero.
 
-NOTE: If there is only a single root capability, then the derivable check is a <<cap_subset>> of the written capability against the capability in <<drootc>>.
+NOTE: If there is only a single root capability, then the derivable check is a capability subset check of the written capability against the capability in <<drootc>>.
  If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability encoding format.
 
 If `aarsize{ne}7` then {ctag}s are always read and written as zero.
@@ -161,34 +163,34 @@ The dpc register is widened so that it can hold a capability.
 include::img/dpccreg.edn[]
 
 When the hart is in debug mode, the _RISC-V Debug Specification_ does not specify
-how the PC is updated, and says that PC-relative instructions may be illegal. This concept
-is extended to include any instruction which reads or updates <<pcc>>, which refers to
-all jumps, conditional branches and <<AUIPC_CHERI>>. The exceptions are <<MODESW_CAP>> and <<MODESW_INT>>,
+how the `pc` is updated, and says that PC-relative instructions may be illegal. This concept
+is extended to include any instruction which reads or updates PC, which refers to
+all jumps, conditional branches and `AUIPC`. The exceptions are `{MODESW_CAP}` and `{MODESW_INT}`,
 which _are_ supported if {cheri_default_ext_name} is implemented, see <<drootc>>
 for details.
 
-As a result, the value of <<pcc>> is UNSPECIFIED in debug mode according
-to this specification. The <<pcc>> metadata has no architectural effect in debug
-mode. Therefore, <<asr_perm>> is implicitly granted for access to all CSRs for
+As a result, the value of the `pc` is UNSPECIFIED in debug mode according
+to this specification. The `pc` metadata has no architectural effect in debug
+mode. Therefore, `ASR-permission` is implicitly granted for access to all CSRs for
 instruction execution.
 
 On debug mode entry, <<dpc_y>> is updated with the
-capability in <<pcc>>, whose address field equals to the address of the next
+capability in the `pc`, whose address field equals to the address of the next
 instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
 
-When leaving debug mode, the value in <<dpc_y>> is unsealed if it is a <<sentry_cap>> and is written to <<pcc>>.
+When leaving debug mode, the value in <<dpc_y>> is unsealed if it is a {sentry_cap_uc} and is written to PC.
 
 NOTE: A debugger may write <<dpc_y>> to change where the hart resumes and its mode, permissions, sealing or bounds.
- The value saved from the <<pcc>> on debug mode entry cannot be sealed.
+ The value saved from the `pc` on debug mode entry cannot be sealed.
 
-The legalization of <<dpc_y>> follows the same rules described for <<mepc_y>>.
+The legalization of <<dpc_y>> follows the same rules described for `mepc`.
 
 One possible implementation choice for debug mode exit is DRET.
 
 [#dscratch0_y,reftext="dscratch0 ({cheri_base_ext_name})"]
 ===== Debug Scratch Register 0 (dscratch0)
 
-The dscratch0 register is widened so that it can hold a capability.
+The `dscratch0` register is widened so that it can hold a capability.
 
 {TAG_RESET_DCSR}
 
@@ -198,7 +200,7 @@ include::img/dscratch0creg.edn[]
 [#dscratch1_y,reftext="dscratch1 ({cheri_base_ext_name})"]
 ===== Debug Scratch Register 1 (dscratch1)
 
-The dscratch1 register is widened so that it can hold a capability.
+The `dscratch1` register is widened so that it can hold a capability.
 
 {TAG_RESET_DCSR}
 
@@ -211,9 +213,9 @@ include::img/dscratch1creg.edn[]
 <<drootcsel>> is a DXLEN-bit debug mode accessible integer CSR.  The address and access details are shown in
 xref:all_capability_CSRs_d[xrefstyle=short].
 
-It selects which <<root-cap>> capability is exposed through <<drootc>>.
+It selects which Root capability is exposed through <<drootc>>.
 The reset value is `0`, which must cause <<drootc>> to expose a
-<<root-rx-cap>> capability.
+Root Executable capability.
 
 Other capability values may be defined for exposure through <<drootc>>
 by the capability encoding,
@@ -231,17 +233,17 @@ xref:all_capability_CSRs_d[xrefstyle=short].
 It exposes the capability selected by <<drootcsel>>.
 
 If {cheri_default_ext_name} is implemented,
-the <<root-rx-cap>> exposed when <<drootcsel>> is `0` is further specified as follows:
+the Root Executable exposed when <<drootcsel>> is `0` is further specified as follows:
 
-* The <<p_bit>> is reset to {cheri_int_mode_name} ({INT_MODE_VALUE}).
-* The debugger can set the <<p_bit>> to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing <<MODESW_CAP>> from the program buffer.
-** Executing <<MODESW_CAP>> causes execution of subsequent instructions from the program buffer, starting from the next instruction, to be executed in {cheri_cap_mode_name}.
+* The `P-bit` is reset to {cheri_int_mode_name} ({INT_MODE_VALUE}).
+* The debugger can set the `P-bit` to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing `{MODESW_CAP}` from the program buffer.
+** Executing `{MODESW_CAP}` causes execution of subsequent instructions from the program buffer, starting from the next instruction, to be executed in {cheri_cap_mode_name}.
    It also sets the {cheri_mode_name} to {cheri_cap_mode_name} on future entry into debug mode.
-** Therefore, to enable use of a CHERI debugger, only a single <<MODESW_CAP>> needs to be executed once from the program buffer after resetting the core.
-** The debugger can also execute <<MODESW_INT>> to change the {cheri_mode_name} back to {cheri_int_mode_name}.
-   This affects the execution of the next instruction in the program buffer, updates the <<p_bit>> of <<drootc>>, and thereby controls which {cheri_mode_name} to use on the next entry into debug mode.
+** Therefore, to enable use of a CHERI debugger, only a single `{MODESW_CAP}` needs to be executed once from the program buffer after resetting the core.
+** The debugger can also execute `{MODESW_INT}` to change the {cheri_mode_name} back to {cheri_int_mode_name}.
+   This affects the execution of the next instruction in the program buffer, updates the `P-bit` of <<drootc>>, and thereby controls which {cheri_mode_name} to use on the next entry into debug mode.
 
-The <<p_bit>> of this capability is _only_ updated by executing <<MODESW_CAP>> or <<MODESW_INT>> from the program buffer.
+The `P-bit` of this capability is _only_ updated by executing `{MODESW_CAP}` or `{MODESW_INT}` from the program buffer.
 
 .Debug root capability register
 include::img/drootcreg.edn[]
@@ -252,12 +254,12 @@ include::insns/dret.adoc[leveloffset=+1]
 === Integrating {cheri_default_ext_name} with Sdext
 
 A new debug default data capability (<<dddc>>) CSR is added at the CSR number
-shown in xref:unpriv-csrnames-added[xrefstyle=short].
+shown in xref:all_capability_CSRs_d[xrefstyle=short].
 
-{cheri_default_ext_name} allows <<MODESW_CAP>> and <<MODESW_INT>> to execute in debug mode.
+{cheri_default_ext_name} allows `{MODESW_CAP}` and `{MODESW_INT}` to execute in debug mode.
 
 When entering debug mode, whether the core enters {cheri_int_mode_name} or
-{cheri_cap_mode_name} is controlled by the <<p_bit>> in the <<drootc>> capability selected by <<drootcsel>> value 0.
+{cheri_cap_mode_name} is controlled by the `P-bit` in the <<drootc>> capability selected by <<drootcsel>> value 0.
 
 The current mode can be read by setting <<drootcsel>> to `0` and then reading <<drootc>>.
 
@@ -269,10 +271,10 @@ csrr   {creg}1, drootc
 {gcmode_lc} x1, {creg}1
 ----
 
-NOTE: There is no <<section_cheri_disable,CHERI enable/disable bit>> for debug mode, so CHERI register and instruction access is always permitted in debug mode.
+NOTE: There is no CHERI enable/disable bit for debug mode, so CHERI register and instruction access is always permitted.
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* The mode change instructions <<MODESW_CAP>> and <<MODESW_INT>> are new
+NOTE: *CHERI v9 Note:* The mode change instructions `{MODESW_CAP}` and `{MODESW_INT}` are new
 and the requirement to support them in debug mode is also new.
 endif::[]
 
@@ -280,7 +282,7 @@ endif::[]
 ==== Debug Default Data Capability CSR (dddc)
 
 <<dddc>> is a debug mode accessible capability CSR. The address is shown in
-xref:unpriv-csrnames-added[xrefstyle=short].
+xref:all_capability_CSRs_d[xrefstyle=short].
 
 {TAG_RESET_DCSR}
 
@@ -289,17 +291,17 @@ xref:unpriv-csrnames-added[xrefstyle=short].
 .Debug default data capability
 include::img/dddcreg.edn[]
 
-Upon entry to debug mode, <<ddc>> is saved in <<dddc>>. <<ddc>> is set to a
-<<root-rw-cap>> capability with an unchanged address.
+Upon entry to debug mode, `ddc` is saved in <<dddc>>. `ddc` is set to a
+Root Data capability with an unchanged address.
 
-NOTE: If the <<root-rw-cap>> capability does not cover all of memory then <<ddc>> must be updated using the semantics of <<SCADDR>>.
+NOTE: If the Root Data capability does not cover all of memory then `ddc` must be updated using the semantics of `{SCADDR}`.
 
-When debug mode is exited by executing <<DRET_CHERI>>, the hart's <<ddc>> is updated to the capability stored in <<dddc>>.
-When debug mode is exited the hart's <<ddc>> is updated to the capability stored in <<dddc>>, which may have been updated by the debugger.
+When debug mode is exited by executing <<DRET_CHERI>>, the hart's `ddc` is updated to the capability stored in <<dddc>>.
+When debug mode is exited the hart's `ddc` is updated to the capability stored in <<dddc>>, which may have been updated by the debugger.
 A debugger may write <<dddc>> to change the hart's context.
 
 As shown in xref:CSR_exevectors_d[xrefstyle=short], <<dddc>> is a data pointer,
-so it does not need to be able to hold all possible invalid addresses (see <<section_invalid_addr_conv>>).
+so it does not need to be able to hold all possible invalid addresses.
 
 === Debug Mode YLEN CSR Summary
 
@@ -312,7 +314,7 @@ The tables below show all debug mode CSRs added or modified by {cheri_base_ext_n
 include::{generated_dir}/csr_alias_action_d_table_body.adoc[]
 |==============================================================================
 
-Code pointers and data pointers in <<CSR_exevectors_d>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
+Code pointers and data pointers in <<CSR_exevectors_d>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to invalid address conversion on writing.
 
 .YLEN-wide Debug-Mode CSRs storing code pointers or data pointers
 [#CSR_exevectors_d]
@@ -325,10 +327,10 @@ include::{generated_dir}/csr_exevectors_d_table_body.adoc[]
 
 .All {cheri_base_ext_name} debug mode CSRs.
 [#all_capability_CSRs_d]
-[width="100%",options=header,cols="2,1,1,1,2,2,4"]
+[width="100%",options=header,cols="2,1,1,1,1,2,2,4"]
 |==============================================================================
 include::{generated_dir}/csr_permission_d_table_body.adoc[]
 |==============================================================================
 
-NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are a maximum possible value.
+NOTE: Where reset values are specified as a Root Executable or Root Data Capability they are a maximum possible value.
 The platform may reset those CSRs to a smaller memory range, or to have fewer permissions.

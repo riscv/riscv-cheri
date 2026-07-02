@@ -13,14 +13,14 @@ Encoding::
 include::wavedrom/dret.adoc[]
 
 Description::
-<<DRET_CHERI>> returns from debug mode.
-It unseals <<dpc_y>> if it is sealed as a <<sentry_cap>> and writes the result into <<pcc>>.
-It also restores <<ddc>> from <<dddc>>.
+`DRET` returns from debug mode.
+It unseals <<dpc_y>> if it is sealed as a {sentry_cap_uc} and writes the result into the `pc`.
+It also restores `ddc` from <<dddc>>.
 
-NOTE: The <<DRET_CHERI>> instruction is a documented method of exiting debug mode.
+NOTE: The `DRET` instruction is a documented method of exiting debug mode.
 However, it is a pseudoinstruction to return that technically does not execute
-from the program buffer or memory. It does not require the <<pcc>> to
-grant <<asr_perm>> so it never raises an exception.
+from the program buffer or memory. It does not require the `pc` to
+grant `ASR-permission` so it never raises an exception.
 
 NOTE: The definition of `DRET` is not part of Sdext, and is suggested as an implementation choice in the _RISC-V Debug Specification_.
 This specification assumes the recommended specification including the recommended encoding.
