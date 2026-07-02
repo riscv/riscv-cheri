@@ -12,16 +12,14 @@ NOTE: The format is closely modeled upon features from CHERI v9 cite:[cheri-v9-s
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
-NOTE: A* represents <<asr_perm>>
-
-NOTE: AP_CMP, ASR, X  and optional P are concatenated to form the <<AP-field>>.
+NOTE: AP[6:2] encodes R/W/C/LM permissions; AP[1] is <<asr_perm>>; AP[0] is <<x_perm>>.
 
 NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
 
 The encoding diagram above of the capability encoding format includes some fields which depend upon the presence of extensions:
 
 <<section_cheri_hybrid_ext>>::
-When {cheri_default_ext_name} is supported, capabilities include the <<p_bit>>. Otherwise, that field is _reserved_.
+When <<section_cheri_hybrid_ext>> is supported, capabilities include the <<p_bit>>. Otherwise, that field is _reserved_.
 
 <<section_zylevels1>>::
 When <<section_zylevels1>> is supported, capabilities include the <<zylevels1_gl_flag,GL>> flag. Otherwise, that field is _reserved_.
@@ -39,7 +37,7 @@ The AP-field is also sized to include two additional permissions which are avail
 | CAP_MAX_E   | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8    | 0                    | Whether the encoding format includes the L~8~ bit
 | AP_MAX      | 0x2f                 | Value of the <<AP-field>> giving maximum permissions
-| AP_ENC      | cmp1_rv64ya_1        | Encoding scheme for the <<AP-field>> - all combinations are representable
+| AP_ENC      | full1_rv64ya_1       | Encoding scheme for the <<AP-field>> - all combinations are representable
 | AUIPC_SHIFT | 12                   | Shift distance of the immediate in AUIPC
 | REP_RANGE   | rc1                  | Whether out of bounds addresses are representable
 |==============================================================================
@@ -57,52 +55,51 @@ endif::[]
 |==============================================================================
 
 [#AP-field-encoding64, reftext="AP-field encoding"]
-==== Architectural Permissions (AP) Encoding - `cmp1_rv64ya_1`
+==== Architectural Permissions (AP) Encoding - `full1_rv64ya_1`
 
-The permissions field represents all possible combinations of permissions in an optimized format.
+The <<AP-field>> encodes all permissions in a compact format.
+<<x_perm>> and <<asr_perm>> each occupy a dedicated single bit (AP[0] and AP[1] respectively).
+The remaining permissions (R, W, C, LM) have a restricted set of valid combinations due to the dependency rules in <<base_clrperm_rule_summary>>; they are encoded together in AP[6:2] to exploit these constraints.
 
-The following permissions each have a single bit allocated to them:
+NOTE: AP[1] encodes <<asr_perm>> and AP[0] encodes <<x_perm>>.
+The combination ASR=1, X=0 is _reserved_ following <<perm_req:base:asr:x,base-3>>.
 
-* <<x_perm>>
-* <<asr_perm>>
+NOTE: <<w_perm>> is valid in all combinations with R, C, LM in the base ISA, but <<section_zylevels1>> restricts its usage.
+ AP[6:2] is allocated with 5 bits to leave space for <<section_zylevels1>> states without requiring a definition change.
+ Future extensions may redefine the _reserved_ states if they are incompatible with <<section_zylevels1>>.
 
-The combination of <<x_perm>>=0 and <<asr_perm>>=1 is _reserved_ following <<perm_req:base:asr:x,base-3>>.
+The encoding of AP[6:2] is shown in <<rvy64_uni_base_name_ap_fmt>>.
 
-The remaining permissions have a restricted set of valid combinations and so are encoded into a single field called AP_CMP.
-
-NOTE: Even though <<w_perm>> is valid in all combinations with the base set of permissions, <<section_zylevels1>> restricts its usage and so it is included in AP_CMP.
- Additionally, AP_CMP is allocated to have 5-bits to allow space for <<section_zylevels1>> without changing the definition.
- Future extensions may extend it further if necessary or may redefine the _reserved_ states if they are incompatible with <<section_zylevels1>>.
-
-.{rv64y_uni_base_name} AP_CMP (compressed architectural permissions) field
-[#rvy64_uni_base_name_ap_cmp_fmt,width="100%",options=header,cols="^1,^1,^1,^1,^1,5"]
+.{rv64y_uni_base_name} AP[6:2] encoding (R/W/C/LM permissions)
+[#rvy64_uni_base_name_ap_fmt,width="100%",options=header,cols="^2,^1,^1,^1,^1,4"]
 |==============================================================================
-| Encoding | R | W | C | LM | Comment
-6+| *R=AP_CMP[2], W=AP_CMP[1], C=AP_CMP[0]*
-| 00000    |   |   |   |    | *No permissions*
-| 00001  5+|                  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
-| 00010    |   | W |   |    |
-| 00011    |   | W | C |    |
-| 00100    | R |   |   |    |
-| 00101    | R |   | C |    |
-| 00110    | R | W |   |    |
-| 00111    | R | W | C |    |
-6+| *W=AP_CMP[1], LM=1*
-6+| *LM implies C,R*
-| 01000  5+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
-| 01001    | R |   | C | LM |
-| 01010  5+|                  _reserved_  due to <<perm_req:base:lm:c-and-r,base-2>>
-| 01011    | R | W | C | LM | *Maximum permissions (AP_CMP_MAX)*
-6+| *Reserved states*
-| 011xx  5+|                  _reserved_ for <<section_zylevels1>>
-| 100xx  5+|                  _reserved_ for <<section_zylevels1>>
-| 10101  5+|                  _reserved_, possibly for future sealing permission
-| 10110  5+|                  _reserved_, possibly for future unsealing permission
-| 10111  5+|                  _reserved_, possibly for future sealing and unsealing permission
-| 11xxx  5+|                  _reserved_ for other future use
+| AP[6:2] | R | W | C | LM | Comment
+6+| *AP[6:5]=00: AP[4]=R, AP[3]=W, AP[2]=C*
+| *00* 000 |   |   |   |    | *No permissions* (NULL capability)
+| *00* 001 5+|  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
+| *00* 010 |   | W |   |    |
+| *00* 011 |   | W | C |    |
+| *00* 100 | R |   |   |    |
+| *00* 101 | R |   | C |    |
+| *00* 110 | R | W |   |    |
+| *00* 111 | R | W | C |    |
+6+| *AP[6:4]=010: LM=1, AP[3]=W*
+6+| *LM implies C and R*
+| *010* 00 5+|  _reserved_ due to <<perm_req:base:lm:c-and-r,base-2>>
+| *010* 01 | R |   | C | LM |
+| *010* 10 5+|  _reserved_ due to <<perm_req:base:lm:c-and-r,base-2>>
+| *010* 11 | R | W | C | LM | *Maximum base permissions*
+6+| *Reserved for <<section_zylevels1>> (AP[6:4]=011 and 100)*
+| 011xx 5+|  _reserved_ for <<section_zylevels1>>
+| 100xx 5+|  _reserved_ for <<section_zylevels1>>
+6+| *Reserved for future extensions*
+| 10101 5+|  _reserved_, possibly for future sealing permission
+| 10110 5+|  _reserved_, possibly for future unsealing permission
+| 10111 5+|  _reserved_, possibly for future sealing and unsealing permission
+| 11xxx 5+|  _reserved_ for other future use
 |==============================================================================
 
-AP_MAX = {AP_CMP_MAX, 1 (<<asr_perm>>), 1 (<<x_perm>>)} = 0x2F
+AP_MAX = 0x2F (AP[6:2]=01011, AP[1]=1, AP[0]=1: R, W, C, LM, ASR, X all granted)
 
 [#SDP-field64, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
