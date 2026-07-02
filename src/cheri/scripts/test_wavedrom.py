@@ -142,6 +142,20 @@ def test_ybndswi():
     assert inst.as_wavedrom() == expected
 
 
+def test_ymodew(insn_map):
+    inst = get_insn_def("YMODEW")
+    expected = [
+        "{reg: [",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
+        "  {bits:  5, name: '{cd}≠0',     attr: ['5', 'dest'],             type: 2},",
+        "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
+        "  {bits:  5, name: '{cs1}',      attr: ['5', 'src1'],             type: 4},",
+        "  {bits:  5, name: 'rs2',        attr: ['5', 'src2'],             type: 4},",
+        "  {bits:  7, name: 'funct7',     attr: ['7', '{SCMODE}=0101011'], type: 3},",
+        "]}",
+    ]
+    assert inst.as_wavedrom() == expected
+
 def test_modesw_merge(insn_map):
     # YMODESWY and YMODESWI
     insns = [insn_map["YMODESWY"], insn_map["YMODESWI"]]
@@ -149,11 +163,11 @@ def test_modesw_merge(insn_map):
     expected = [
         "{reg: [",
         "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
-        "  {bits:  5, name: '{cd}=x0',    attr: ['5', '{cd}=x0'],          type: 2},",
+        "  {bits:  5, name: '{cd}=0',     attr: ['5', '{cd}=0'],           type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
-        "  {bits:  5, name: '{cs1}=x0',   attr: ['5', '{cs1}=x0'],         type: 4},",
+        "  {bits:  5, name: '{cs1}=0',    attr: ['5', '{cs1}=0'],          type: 4},",
         "  {bits:  5, name: 'rs2',        attr: ['5', '{MODESW_CAP}=00000', '{MODESW_INT}=00001'], type: 3},",
-        "  {bits:  7, name: 'funct7',     attr: ['7', '{SCMODE}=0110011'], type: 3},",
+        "  {bits:  7, name: 'funct7',     attr: ['7', '{SCMODE}=0101011'], type: 3},",
         "]}",
     ]
     assert Instruction.as_merged_wavedrom(insns) == expected
