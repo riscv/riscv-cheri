@@ -170,7 +170,11 @@ ifdef::cheri_standalone_spec[]
 [#xstatus_pte]
 === U{pte_cap_crg_pte_name} CSR field
 
-The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({pte_cap_fc_enable}).
+The `mstatus`, `sstatus`
+ifndef::cheri_ratification_v1_only[]
+and `vsstatus`
+endif::[]
+CSRs include the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({pte_cap_fc_enable}).
 
 [#mstatusreg_pte]
 .Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
@@ -250,6 +254,8 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
 ], config:{lanes: 4, hspace:1024}}
 ....
 
+ifndef::cheri_ratification_v1_only[]
+
 [#vsstatusreg_pte]
 .Virtual Supervisor-mode status (*vsstatus*) register when VSXLEN=64
 [wavedrom, ,svg,subs=attributes+]
@@ -280,4 +286,5 @@ The `mstatus`, `sstatus` and `vsstatus` CSRs include the Userspace Capability Re
 ], config:{lanes: 4, hspace:1024}}
 ....
 
+endif::[]
 endif::[]
