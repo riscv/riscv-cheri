@@ -432,7 +432,7 @@ The top and bottom capability bounds are formed of two or three sections:
 [#comp_addr_bounds,options=header,align="center",cols="2,4,2,2"]
 |==============================================================================
 | Configuration   | Upper Section (if E + MW < XLEN) | Middle Section | Lower Section
-| EF=0            | address[XLEN-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
+| EF=0            | address[XLEN-1:E + MW] + ct | T[MW - 1:0] | {E{0b0}}
 | EF=1, i.e., E=0 | address[XLEN-1:MW] + ct   2+| T[MW - 1:0]
 |==============================================================================
 
@@ -476,7 +476,7 @@ Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follo
 Inspection of xref:t_bound_msb_inversion_truth_table[xrefstyle=short] shows
 that `output_t[XLEN]` does not depend on `input_t[XLEN]` as:
 
-* `output_t[XLEN] = {input_t[XLEN-1], b[XLEN-1]} == 2'b01`.
+* `output_t[XLEN] = {input_t[XLEN-1], b[XLEN-1]} == 0b01`.
 
 This leads to the conclusions:
 
