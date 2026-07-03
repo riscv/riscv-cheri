@@ -116,7 +116,7 @@ The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> value
 this field directly encodes the values `0` and `1`:
 
 * The encoded value `0` indicates an _unsealed_ type.
-* The encoded value `1` indicates an _sealed_ type which can unsealed if in `{cs1}` passed to <<JALR_CHERI>>, and is used to _seal_ the capability written to `{cd}`.
+* The encoded value `1` indicates a _sealed_ type which is _unsealed_ if passed to <<JALR_CHERI>> in `{cs1}`, and is used to _seal_ the capability written to `{cd}`.
 
 ifndef::cheri_ratification_v1_only[]
 ifdef::cheri_v9_annotations[]
@@ -243,9 +243,9 @@ If EF = 1:
     T[EW / 2 - 1:0] = TE
     B[EW / 2 - 1:0] = BE
     LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
-    LMSB            = (XLEN == 32) ? L~8~ : 0
+    LMSB            = (XLEN == 32) ? L8 : 0
 else:
-    E               = CAP_MAX_E - ( (XLEN == 32) ? { L~8~, TE, BE } : { TE, BE } )
+    E               = CAP_MAX_E - ( (XLEN == 32) ? { L8, TE, BE } : { TE, BE } )
     T[EW / 2 - 1:0] = 0
     B[EW / 2 - 1:0] = 0
     LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
@@ -415,7 +415,7 @@ If the address _a'_ is outside the _representable range_, then the derived capab
 An artifact of the bounds encoding is that if the new address
 causes `t != t'`, then it is also the case that `b != b'`.
 
-The inverse is also true, if `b != b'` then `t != t'`.
+The converse is also true, if `b != b'` then `t != t'`.
 
 Therefore, for representable range checking, it is acceptable
 to either check `t == t'` or `b == b'`.
@@ -432,7 +432,7 @@ The top and bottom capability bounds are formed of two or three sections:
 [#comp_addr_bounds,options=header,align="center",cols="2,4,2,2"]
 |==============================================================================
 | Configuration   | Upper Section (if E + MW < XLEN) | Middle Section | Lower Section
-| EF=0            | address[XLEN-1:E + MW] + ct | T[MW - 1:0] | {E{1'b0}}
+| EF=0            | address[XLEN-1:E + MW] + ct | T[MW - 1:0] | zeroes(E)
 | EF=1, i.e., E=0 | address[XLEN-1:MW] + ct   2+| T[MW - 1:0]
 |==============================================================================
 
@@ -476,7 +476,7 @@ Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follo
 Inspection of xref:t_bound_msb_inversion_truth_table[xrefstyle=short] shows
 that `output_t[XLEN]` does not depend on `input_t[XLEN]` as:
 
-* `output_t[XLEN] = {input_t[XLEN-1], b[XLEN-1]} == 2'b01`.
+* `output_t[XLEN] = {input_t[XLEN-1], b[XLEN-1]} == 0b01`.
 
 This leads to the conclusions:
 
@@ -523,7 +523,7 @@ endif::[]
 
 The <<null-cap>> capability is represented with 0 in all fields. This implies
 that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}).
-The exponent value causes its bounds cover the entire address space, but not permissions are granted and so it cannot be successfully be used to grant authorization.
+The exponent value causes its bounds cover the entire address space, but no permissions are granted and so it cannot be successfully be used to grant authorization.
 
 .Field values of the NULL capability
 [#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]

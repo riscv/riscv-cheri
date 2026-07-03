@@ -94,7 +94,10 @@ no way to discover the former property.
 
 Abstract commands are optionally extended to access full capabilities.
 
-`aarsize/aarmsize=7` represent full capability access.
+`aarsize/aamsize=7` represent full capability access.
+
+When a capability is written via an abstract command it must be derivable from the set of root capabilities available in <<drootc>>.
+If not then the destination {ctag} is set to zero.
 
 The `data<n>` register mapping for full capability accesses is as shown in <<debug_data_aarsize_7>>.
 
@@ -129,10 +132,7 @@ The requirement to support YLEN-wide access mandates that enough `data<n>` regis
 
 Implementations can choose to also support accessing {ctag}s as part of the access register command by supporting `aarsize=7`.
 
-When a capability is written it must be derivable from the set of root capabilities available in <<drootc>>.
-If not then the destination {ctag} is set to zero.
-
-NOTE: If there is only a single root capability, then the derivable check is a capability subset check of the written capability against the capability in <<drootc>>.
+NOTE: If there is only a single root capability, then the derivable check is a _capability subset_ of the written capability against the capability in <<drootc>>.
  If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability encoding format.
 
 If `aarsize{ne}7` then {ctag}s are always read and written as zero.
@@ -210,8 +210,8 @@ include::img/dscratch1creg.edn[]
 [#drootcsel,reftext="drootcsel"]
 ===== Debug Root Capability Selector (drootcsel)
 
-<<drootcsel>> is a DXLEN-bit debug mode accessible integer CSR.  The address and access details are shown in
-xref:all_capability_CSRs_d[xrefstyle=short].
+<<drootcsel>> is a DXLEN-bit debug mode accessible integer CSR.
+The address and access details are shown in xref:all_capability_CSRs_d[xrefstyle=short].
 
 It selects which Root capability is exposed through <<drootc>>.
 The reset value is `0`, which must cause <<drootc>> to expose a
@@ -222,15 +222,17 @@ by the capability encoding,
 and may be selected by having the debugger write to this register.
 Writes are WARL, so the debugger may confirm that its selection has been applied.
 
-.Debug root capability register
+.Debug root capability selector register
 include::img/drootcselreg.edn[]
 
 [#drootc,reftext="drootc"]
 ===== Debug Root Capability Register (drootc)
 
-<<drootc>> is a debug mode accessible capability CSR. The address and access details are shown in
-xref:all_capability_CSRs_d[xrefstyle=short].
+<<drootc>> is a debug mode accessible capability CSR.
+The address and access details are shown in xref:all_capability_CSRs_d[xrefstyle=short].
 It exposes the capability selected by <<drootcsel>>.
+
+<<drootc>> is DRW; writes are ignored (WARL with no writable fields).
 
 If {cheri_default_ext_name} is implemented,
 the Root Executable exposed when <<drootcsel>> is `0` is further specified as follows:
@@ -253,8 +255,7 @@ include::insns/dret.adoc[leveloffset=+1]
 [#section_hybrid_debug_integration]
 === Integrating {cheri_default_ext_name} with Sdext
 
-A new debug default data capability (<<dddc>>) CSR is added at the CSR number
-shown in xref:all_capability_CSRs_d[xrefstyle=short].
+A new debug default data capability (<<dddc>>) CSR is added.
 
 {cheri_default_ext_name} allows `{MODESW_CAP}` and `{MODESW_INT}` to execute in debug mode.
 
@@ -281,8 +282,7 @@ endif::[]
 [#dddc,reftext="dddc"]
 ==== Debug Default Data Capability CSR (dddc)
 
-<<dddc>> is a debug mode accessible capability CSR. The address is shown in
-xref:all_capability_CSRs_d[xrefstyle=short].
+<<dddc>> is a debug mode accessible capability CSR.
 
 {TAG_RESET_DCSR}
 
@@ -327,7 +327,7 @@ include::{generated_dir}/csr_exevectors_d_table_body.adoc[]
 
 .All {cheri_base_ext_name} debug mode CSRs.
 [#all_capability_CSRs_d]
-[width="100%",options=header,cols="2,1,1,1,1,2,2,4"]
+[width="100%",options=header,cols="2,1,1,1,2,2,4"]
 |==============================================================================
 include::{generated_dir}/csr_permission_d_table_body.adoc[]
 |==============================================================================

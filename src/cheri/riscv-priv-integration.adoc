@@ -1,10 +1,6 @@
 [#section_priv_cheri]
 == "Machine-Level ISA ({cheri_base_ext_name})" Extensions, Version 1.0
 
-ifdef::cheri_standalone_spec[]
-WARNING: This chapter will appear in the priv spec. Exact location TBD.
-endif::[]
-
 This chapter describes integration of {cheri_base_ext_name} with the RISC-V privileged architecture.
 
 === Machine-Level CSRs widened by {cheri_base_ext_name}
@@ -56,7 +52,7 @@ Therefore, the minimum observable address is `mtvec.address & ~3` and the maximu
 All possible observable values must be <<section_cap_representable_check, represented exactly>>.
 Software must ensure this is true when writing to <<mtvec_y>>, and the hardware sets the {ctag} to zero if any values cannot be <<section_cap_representable_check, represented exactly>>.
 
-<<mtvec_y>> is always updated using the semantics of the <<SCADDR>> instruction and so writing a sealed capability will cause set the {ctag} to zero.
+<<mtvec_y>> is always updated using the semantics of the <<SCADDR>> instruction and so writing a sealed capability will cause the {ctag} to be set to zero.
 
 NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other CSRs such as <<mepc_y>>.
 
@@ -152,10 +148,13 @@ endif::[]
 [#misa_y, reftext="misa ({cheri_base_ext_name})"]
 ==== Machine ISA (`misa`) Register
 
-{cheri_base_ext_name} sets the Y bit to be 1.
+{cheri_base_ext_name} sets the Y bit to be read-only one.
+
+NOTE: An extension such as <<section_cheri_hybrid_ext>> must be implemented for the Y bit to be writable.
+
 Either I or E is _also_ set to show how many registers are present.
 
-NOTE: Implementations which allow misa.C to be writable need to legalize <<mtvec_y>>/<<stvec_y>>
+NOTE: Implementations which allow misa.C to be writable need to legalize `__x__epc`
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.
 
@@ -215,12 +214,10 @@ First encountered page fault or access fault
 Instruction access fault
 
 | .>|2 +
-{cheri_excep_cause_pc} +
 0 +
 8,9,11 +
 3 +
 3 .<|Illegal instruction +
-{cheri_excep_name_pc} due to {pcc} <<asr_perm>> clear +
 Instruction address misaligned +
 Environment call +
 Environment break +
@@ -321,7 +318,7 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All atomics, CBO.CLEAN, CBO.FLUSH, CBO.INVAL   | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` does not grant both <<r_perm>> and <<w_perm>>
 | All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the access is out of `auth_cap` bounds^2^
 | CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the cache block is out of `auth_cap` bounds^2^
-| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | All bytes of the cache block is out of `auth_cap` bounds^2^
+| CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | All bytes of the cache block are out of `auth_cap` bounds^2^
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
 | Capability stores                              | 7^3^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
@@ -335,9 +332,13 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 [#CHERI_SPEC,reftext="CHERI Exceptions and speculative execution"]
 === CHERI Exceptions and speculative execution
 
-NOTE: CHERI adds architectural guarantees that can prove to be microarchitecturally useful.
- Speculative-execution attacks can -- among other factors -- rely on instructions that fail CHERI permission checks not to update microarchitectural state.
- When implementing any of the extensions proposed here, microarchitects need to carefully consider the interaction of late-exception raising and side-channel attacks.
+NOTE: Not sure where this small section should go, or even if it should be expanded and paced in a supporting document.
+
+NOTE: CHERI adds architectural guarantees that can prove to be micro-architecturally useful for reducing side-channels caused by speculative-execution.
+ +
+ Programmers should be able rely on instructions that fail CHERI permission checks not to update microarchitectural state, e.g., not updating cache state for a load which fails a bound check.
+ +
+ When implementing an {cheri_base_ext_name} hart, micro-architects need to carefully consider the interaction of raising exceptions late in the pipeline, speculation windows and the resulting side-channel attacks.
 
 [#section_pma]
 === Physical Memory Attributes (PMA)
@@ -397,7 +398,7 @@ endif::support_varxlen[]
 
 .All {cheri_base_ext_name} Machine-Mode CSRs.
 [#all_capability_CSRs_m]
-[width="100%",options=header,cols="2,1,1,1,1,2,2,4"]
+[width="100%",options=header,cols="2,1,1,1,2,2,4"]
 |==============================================================================
 include::{generated_dir}/csr_permission_m_table_body.adoc[]
 |==============================================================================
@@ -533,7 +534,7 @@ include::insns/mret_sret.adoc[]
 
 .All {cheri_base_ext_name} Supervisor-Mode CSRs.
 [#all_capability_CSRs_s]
-[width="100%",options=header,cols="2,1,1,1,1,2,2,4"]
+[width="100%",options=header,cols="2,1,1,1,2,2,4"]
 |==============================================================================
 include::{generated_dir}/csr_permission_s_table_body.adoc[]
 |==============================================================================
@@ -615,6 +616,8 @@ If _pte_._{pte_cap_rw_name_lc}_=0 then:
 If _pte_._{pte_cap_rw_name_lc}_=1 then:
 
 * All capability loads and capability stores operate as normal.
+
+NOTE: rvy[2:0] follow the standard reserved behavior for PTE bits.
 
 [#section_invalid_addr_conv,reftext="Invalid address conversion"]
 === Invalid Virtual Address Handling
@@ -831,20 +834,20 @@ When using a system with {cheri_default_ext_name}, it may be desirable to config
 
 The effective CHERI-enable for the current privilege is:
 
-* Machine: `<<misa_y>>.{CRE}`
-* Supervisor: `<<misa_y>>.{CRE} & <<menvcfg_y>>.{CRE}`
-* User: `<<misa_y>>.{CRE} & <<menvcfg_y>>.{CRE} & <<senvcfg_y>>.{CRE}`
+* Machine: `<<misa_y,misa>>.{CRE}`
+* Supervisor: `<<misa_y,misa>>.{CRE} & <<menvcfg_y,menvcfg>>.{CRE}`
+* User: `<<misa_y,misa>>.{CRE} & <<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}`
 
 The reset values are:
 
-* `<<misa_y>>.{CRE}=1`
-* `<<menvcfg_y>>.{CRE}=0`
-* `<<senvcfg_y>>.{CRE}=0`
+* `<<misa_y,misa>>.{CRE}=1`
+* `<<menvcfg_y,menvcfg>>.{CRE}=0`
+* `<<senvcfg_y,senvcfg>>.{CRE}=0`
 * <<pcc>>.<<p_bit>>={INT_MODE_VALUE} (for {cheri_int_mode_name}).
-* <<ddc>>, <<pcc>>, Xtvec, Xepc are nominally <<root-cap,root capabilities>>.
+* <<ddc>>, <<pcc>>, `__x__tvec`, `__x__epc` are nominally <<root-cap,root capabilities>>.
 
 `<<misa_y>>.{CRE}` is a WARL field.
-M-mode can only set it to zero if <<ddc>>, <<pcc>>, Xtvec, Xepc are root capabilities so that no CHERI configuration has taken effect.
+M-mode can only set it to zero if <<ddc>>, <<pcc>>, `__x__tvec`, `__x__epc` are root capabilities so that no CHERI configuration has taken effect.
 
 NOTE: In this way M-mode software cannot disable any CHERI checks once they have been configured.
 

@@ -155,7 +155,7 @@ SAIL_ASCIIDOC_JSON = $(CHERI_GEN_DIR)/riscv_RV64.json
 .PHONY: all build clean build-docs build-pdf build-html build-epub build-tags build-norm-rules docker-pull-latest generate generate-cheri-tables
 
 all: build
-html: build/riscv-privileged.html build/riscv-unprivileged.html build/riscv-cheri.html build/riscv-cheri-debug.html build/riscv-cheri-full.html
+html: build/riscv-cheri.html build/riscv-cheri-debug.html build/riscv-cheri-full.html build/riscv-privileged.html build/riscv-unprivileged.html
 
 $(CHERI_GEN_DIR):
 	mkdir -p "$@"

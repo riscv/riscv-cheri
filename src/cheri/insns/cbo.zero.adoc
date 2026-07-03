@@ -10,13 +10,13 @@ Mnemonic::
 `CBO.ZERO 0({cs1})`
 
 Encoding::
-[wavedrom, , svg]
+[wavedrom, ,svg,subs=attributes+]
 ....
 {reg: [
   {bits: 7,  name: 'opcode',    attr: ['7','MISC-MEM=0001111'],  type: 8},
   {bits: 5,  name: 'funct5',    attr: ['5','CBO=00000'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','CBO=010'],  type: 8},
-  {bits: 5,  name: 'rs1≠0',     attr: ['5','base'],     type: 4},
+  {bits: 5,  name: 'rs1{ne}0',  attr: ['5','base'],     type: 4},
   {bits: 12, name: 'funct12',   attr: ['12','CBO.ZERO=00.0100'],   type: 3},
 ]}
 ....
@@ -29,6 +29,7 @@ bytes atomically although each individual write must atomically set the {ctag}
 of the corresponding aligned YLEN-bit location to zero. The authorizing capability
 for this instruction is `{cs1}`.
 
+Exceptions::
 include::store_exceptions.adoc[]
 
 Prerequisites::
@@ -39,6 +40,6 @@ Included in::
 
 Operation::
 [source,SAIL,subs="verbatim,quotes"]
---
-TBD
---
+----
+SAIL TO BE UPDATED
+----

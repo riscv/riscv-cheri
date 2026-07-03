@@ -471,7 +471,7 @@ class csr_alias_action_u(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "U"
 
 class csr_perms_d(table):
-    cols = ["RVY CSR", "Extension", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Extension", "Width", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -495,7 +495,7 @@ class csr_perms_d(table):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "D"
 
 class csr_perms_m(table):
-    cols = ["RVY CSR", "Extension", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Extension", "Width", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -519,7 +519,7 @@ class csr_perms_m(table):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "M"
 
 class csr_perms_s(table):
-    cols = ["RVY CSR", "Extension", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Extension", "Width", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -543,7 +543,7 @@ class csr_perms_s(table):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "S"
 
 class csr_perms_u(table):
-    cols = ["RVY CSR", "Extension", "Prerequisites", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Extension", "Width", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
