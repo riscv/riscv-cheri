@@ -137,7 +137,7 @@ end box
 
 P -> P: Create Non-CHERI Code Capability\n(mode bit = {INT_MODE_VALUE})
 P -> P: Load capability into DDC\n(heap, globals, stack)
-P -> N: Call via ""JALR_CHERI"" (Switches to {cheri_int_mode_name_nofmt})
+P -> N: Call via ""JALR"" (Switches to {cheri_int_mode_name_nofmt})
 N -> N: Execute Legacy Code
 N -> P: Return via return capability (Switches to {cheri_cap_mode_name_nofmt})
 P -> P: Restore DDC to NULL
@@ -174,9 +174,9 @@ end box
 note over J: Running in {cheri_int_mode_name_nofmt}
 
 == Accessing C Runtime Data ==
-J -> J: Execute ""MODESW_CAP"" (Switches to {cheri_cap_mode_name_nofmt})
+J -> J: Execute ""YMODESWY"" (Switches to {cheri_cap_mode_name_nofmt})
 J -> J: Access runtime data using\nexplicit capabilities
-J -> J: Execute ""MODESW_INT"" (Switches to {cheri_int_mode_name_nofmt})
+J -> J: Execute ""YMODESWI"" (Switches to {cheri_int_mode_name_nofmt})
 
 == Calling Runtime Helpers ==
 J -> R: Call helper (Sealed Entry Point Capability) (Switches to {cheri_cap_mode_name_nofmt})
