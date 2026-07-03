@@ -308,7 +308,7 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> is sealed
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> does not grant <<x_perm>>
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of the current instruction is out of <<pcc>> bounds^1^
-| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> failed any <<section_cap_integrity,integrity>> check.
+| All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> fails any <<section_cap_integrity,integrity>> checks.
 4+| *CSR/Xret additional exception check*
 | CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | 2 | Illegal instruction | <<pcc>> does not grant <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>> or <<CBO_INVAL_CHERI>>
 4+| *Load additional exception checks*
@@ -316,7 +316,7 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not grant <<r_perm>>
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of the load access is out of `auth_cap` bounds^2^
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` fail any <<section_cap_integrity,integrity>> checks.
 | Capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` {ctag} is zero
@@ -326,7 +326,7 @@ NOTE: `auth_cap` is `{cs1}`, unless in {cheri_int_mode_name} when it is <<ddc>> 
 | All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the access is out of `auth_cap` bounds^2^
 | CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the cache block is out of `auth_cap` bounds^2^
 | CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | All bytes of the cache block are out of `auth_cap` bounds^2^
-| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` failed any <<section_cap_integrity,integrity>> check.
+| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` fail any <<section_cap_integrity,integrity>> checks.
 | Capability stores                              | 7^3^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
 

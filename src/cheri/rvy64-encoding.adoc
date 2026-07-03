@@ -82,11 +82,13 @@ NOTE: Future extensions which define new permissions must augment <<cap_perms_en
 
 There are 9 bits in total allocated to the <<AP-field>> and the <<p_bit>>.
 
-Once all of the permission rules in <<base_clrperm_rule_summary>>, <<zylevels1_clrperm_table>> and <<zyhybrid_clrperm_table>> have been applied, the total valid combinations of permissions totals 180.
+* The total valid combinations of C, W, R, LM, LG and SL are 18.
+* The total valid combinations of X, ASR and P are 5.
+* The two groups are fully orthogonal.
 
-Encoding 180 valid states in 9 bits, which allows for 512 states, is inefficient.
+Therefore there are 90 valid combinations encoded in 9-bits, which is inefficient.
 
-Future extensions or capability encoding formats may address this by implementing a more compact <<AP-field>> and <<p_bit>> encoding that is fully _compatible for all software_ to increase the number of reserved bits.
+Future extensions or capability encoding formats may address this by implementing a more compact joint <<AP-field>> and <<p_bit>> encoding that is fully _compatible for all software_ to increase the number of reserved bits.
 
 Such as encoding would have observable differences in the in-memory representation of capabilities.
 
