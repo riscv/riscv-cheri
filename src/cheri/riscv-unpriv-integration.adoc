@@ -239,7 +239,7 @@ E, MW and R in the figure are all introduced in xref:section_cap_bounds_decoding
 
 The maximum range of address values that the pointer can take without changing the calculation of the bounds is defined by the <<section_cap_representable_check,representable range>>.
 
-NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability encoding had separate 64-bit values for the base and top memory bounds, and another for metadata fields.
+NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability encoding with separate 64-bit values for the base and top memory bounds, and another for metadata fields.
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
 Since the upper bits of the address are used to calculate the top and base bounds, deriving a new capability with a different address could change the resulting bounds.
@@ -475,7 +475,7 @@ endif::[]
 
 [#asr_perm,reftext="ASR-permission"]
 Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to all privileged CSRs, some unprivileged CSRs and some privileged instructions.
-<<asr_perm>> permission checks always use the permission in the <<pcc>>.
+<<asr_perm>> checks always use the permission in the <<pcc>>.
 
 In the unprivileged {cheri_base_ext_name} ISA, the following are affected by <<asr_perm>>:
 
