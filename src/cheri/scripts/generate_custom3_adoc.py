@@ -74,7 +74,7 @@ def generate_adoc():
         adoc += "|===\n\n"
         table_num += 1
 
-    adoc += f"\n== {table_num}. AMO Sub-opcode Allocations (funct3={format(Custom3Funct3.AMO.value[0], '03b')}\n\n"
+    adoc += f"\n== {table_num}. AMO Sub-opcode Allocations (funct3={format(Custom3Funct3.AMO.value[0], '03b')})\n\n"
     adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
     adoc += "| funct7[6:3] \\ funct7[2:0] | 000 | 001 | 010 | 011 | 100 | 101 | 110 | 111\n\n"
 
