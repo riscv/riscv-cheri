@@ -148,9 +148,16 @@ endif::[]
 [#misa_y, reftext="misa ({cheri_base_ext_name})"]
 ==== Machine ISA (`misa`) Register
 
-{cheri_base_ext_name} sets the Y bit to be read-only one.
+When the base ISA is {cheri_base_ext_name}, the Y bit is one.
 
-NOTE: An extension such as <<section_cheri_hybrid_ext>> must be implemented for the Y bit to be writable.
+`<<misa_y,misa>>.{CRE}` is a WARL field.
+If the implementation supports a writable <<misa_y,misa>>.{CRE}, it can only be set to zero if all registers used for implicit CHERI checks are currently configured as root capabilities.
+
+These implicit check registers are <<pcc>>, `__x__tvec`, `__x__epc`.
+
+NOTE: The list includes <<ddc>> if <<section_cheri_hybrid_ext>> is implemented.
+
+NOTE: This restriction ensures M-mode software cannot drop CHERI checks by modifying <<misa_y,misa>> once they have been configured.
 
 Either I or E is _also_ set to show how many registers are present.
 
@@ -828,39 +835,37 @@ per-privilege enable bits.
 
 endif::[]
 
-When using a system with {cheri_default_ext_name}, it may be desirable to configure some (or all) privilege levels such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
+When using a system with {cheri_default_ext_name}, it may be desirable to configure privilege levels below Machine-mode such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
 
-{cheri_default_ext_name} includes functions to disable CHERI by making the {CRE} bit of <<misa_y>>, <<menvcfg_y>>, and <<senvcfg_y>> writable.
+{cheri_default_ext_name} includes functions to disable CHERI by making the {CRE} bit of <<menvcfg_y>> and <<senvcfg_y>> writable.
+
+{cheri_default_ext_name} adds <<ddc>>, which must be in its reset state for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
 
 The effective CHERI-enable for the current privilege is:
 
-* Machine: `<<misa_y,misa>>.{CRE}`
-* Supervisor: `<<misa_y,misa>>.{CRE} & <<menvcfg_y,menvcfg>>.{CRE}`
-* User: `<<misa_y,misa>>.{CRE} & <<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}`
+* Machine-mode:    always enabled
+* Supervisor-mode: `<<menvcfg_y,menvcfg>>.{CRE}`
+* User-mode:       `<<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}`
 
 The reset values are:
 
-* `<<misa_y,misa>>.{CRE}=1`
 * `<<menvcfg_y,menvcfg>>.{CRE}=0`
 * `<<senvcfg_y,senvcfg>>.{CRE}=0`
 * <<pcc>>.<<p_bit>>={INT_MODE_VALUE} (for {cheri_int_mode_name}).
 * <<ddc>>, <<pcc>>, `__x__tvec`, `__x__epc` are nominally <<root-cap,root capabilities>>.
 
-`<<misa_y>>.{CRE}` is a WARL field.
-M-mode can only set it to zero if <<ddc>>, <<pcc>>, `__x__tvec`, `__x__epc` are root capabilities so that no CHERI configuration has taken effect.
-
-NOTE: In this way M-mode software cannot disable any CHERI checks once they have been configured.
-
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
 * Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces
-** Therefore, the encodings in <<rvy_insn_table>> and <<rvy_hybrid_insn_table>> are no longer available.
-* Natively YLEN CSRs are no longer available.
+** Therefore, {cheri_base_ext_name} instructions are longer available.
+* No natively YLEN CSRs are available.
 * Only XLEN CSR access is permitted.
 ** This is identical to {cheri_int_mode_name} access.
 
 Disabling CHERI has no effect on implicit accesses or security checks.
-The last capability written to <<pcc>> and <<ddc>> before disabling CHERI will be used to authorize instruction execution and data memory accesses respectively.
+
+* The last capability written to <<pcc>> and <<ddc>> before disabling CHERI is used to authorize instruction execution and data memory accesses respectively.
+* Exceptions and interrupts use the full capability version of `__x__tvec` and `__x__epc`.
 
 [NOTE]
 ====
@@ -869,7 +874,7 @@ from interfering with the correct operation of higher-privileged {cheri_int_mode
 that does not perform <<ddc>> switches on trap entry and return.
 ====
 
-xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart for the different CHERI modes, while executing outside debug mode.
+xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart for the different CHERI modes.
 
 .Hart's behavior depending on the effective <<section_cheri_disable,CHERI enable>> and <<cheri_execution_mode>>
 [#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
@@ -878,17 +883,15 @@ xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart 
 | Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
 | Natively YLEN CSRs available         | ✘                 | ✔                     | ✔
 | Extended YLEN CSR access width       | XLEN              | XLEN                  | YLEN
-| CHERI instructions available         | ✘                 | ✔^2^                  | ✔
+| 16-bit {cheri_base_ext_name} instructions available  | ✘                 | ✘                     | ✔
+| Wider {cheri_base_ext_name} instructions available   | ✘                 | ✔                     | ✔
 | _custom-1/2/3_ available for custom use| ✔                 | ✘                     | ✘
-| Summary                              | **_Fully RV32[IE]/RV64[IE] compatible_**^3^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
+| Summary                              | **_Fully RV32[IE]/RV64[IE] compatible_**^2^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
 |==============================================================================
 
 ^1^ _{CRE}_ represents the effective CHERI enable for the current privilege mode.
 
-^2^ The {cheri_base_ext_name} compressed instructions operating on capability data are _unavailable_ as their encodings will revert to RV32[IE]/RV64[IE] standard behavior.
-
-^3^ If {CRE}=0 in M-mode the hart is fully compatible with RV32[IE]/RV64[IE]. For lower privileged modes <<pcc>> or <<ddc>> may not be <<root-cap,root capabilities>> and so the behavior may be restricted.
-
+^2^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, `__x__tvec`, `__x__epc` and <<ddc>> have not been changed from their reset state.
 
 ifndef::cheri_standalone_spec[]
 [#sentry_cap,reftext="sealed entry point capability"]
