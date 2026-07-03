@@ -148,9 +148,13 @@ endif::[]
 [#misa_y, reftext="misa ({cheri_base_ext_name})"]
 ==== Machine ISA (`misa`) Register
 
-{cheri_base_ext_name} sets the Y bit to be read-only one.
+When the base ISA is {cheri_base_ext_name}, the Y bit is one.
 
-NOTE: An extension such as <<section_cheri_hybrid_ext>> must be implemented for the Y bit to be writable.
+`<<misa_y,misa>>.{CRE}` is a WARL field.
+If the implementation supports a writable <<misa_y,misa>>.{CRE}, it can only be set to zero if all registers used for implicit CHERI checks are currently configured as root capabilities.
+These implicit check registers are <<pcc>>, `__x__tvec`, `__x__epc`, and <<ddc>> (if {cheri_default_ext_name} is implemented).
+
+NOTE: This restriction ensures M-mode software cannot drop CHERI checks by modifying <<misa_y,misa>> once they have been configured.
 
 Either I or E is _also_ set to show how many registers are present.
 
@@ -845,11 +849,6 @@ The reset values are:
 * `<<senvcfg_y,senvcfg>>.{CRE}=0`
 * <<pcc>>.<<p_bit>>={INT_MODE_VALUE} (for {cheri_int_mode_name}).
 * <<ddc>>, <<pcc>>, `__x__tvec`, `__x__epc` are nominally <<root-cap,root capabilities>>.
-
-`<<misa_y>>.{CRE}` is a WARL field.
-M-mode can only set it to zero if <<ddc>>, <<pcc>>, `__x__tvec`, `__x__epc` are root capabilities so that no CHERI configuration has taken effect.
-
-NOTE: In this way M-mode software cannot disable any CHERI checks once they have been configured.
 
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
