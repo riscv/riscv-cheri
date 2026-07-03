@@ -12,19 +12,20 @@ NOTE: The format is closely modeled upon features from CHERI v9 cite:[cheri-v9-s
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
-NOTE: AP[6:2] encodes <<r_perm,R>>/<<w_perm,W>>/<<c_perm,C>>/<<lm_perm,LM>> permissions; AP[1] is <<asr_perm,ASR>>; AP[0] is <<x_perm,X>>.
-
 NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
 
 The encoding diagram above of the capability encoding format includes some fields which depend upon the presence of extensions:
 
 <<section_cheri_hybrid_ext>>::
-When <<section_cheri_hybrid_ext>> is supported, capabilities include the <<p_bit>>. Otherwise, that field is _reserved_.
+When <<section_cheri_hybrid_ext>> is implemented
++
+* The <<p_bit>> is implemented, otherwise _reserved zero_.
 
 <<section_zylevels1>>::
-When <<section_zylevels1>> is supported, capabilities include the <<zylevels1_gl_flag,GL>> flag. Otherwise, that field is _reserved_.
+When <<section_zylevels1>> is implemented:
 +
-The AP-field is also sized to include two additional permissions which are available as _reserved_ states if <<section_zylevels1>> is not supported.
+* The <<zylevels1_gl_flag,GL>> flag is implemented, otherwise _reserved zero_.
+* The <<AP-field>> includes <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>. Otherwise both are _reserved one_.
 
 ==== Capability Encoding Parameter Summary
 
@@ -55,51 +56,41 @@ endif::[]
 |==============================================================================
 
 [#AP-field-encoding64, reftext="AP-field encoding"]
-==== Architectural Permissions (AP) Encoding - `full1_rv64ya_1`
+==== Architectural Permissions (AP) Encoding
 
-The <<AP-field>> encodes all permissions in a compact format.
-<<x_perm>> and <<asr_perm>> each occupy a dedicated single bit (AP[0] and AP[1] respectively).
-The remaining permissions (R, W, C, LM) have a restricted set of valid combinations due to the dependency rules in <<base_clrperm_rule_summary>>; they are encoded together in AP[6:2] to exploit these constraints.
+The permissions field is {cap_rv64_perms_width} bits wide and is encoded using one bit per architectural permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
+It is only legal to encode a subset of all combinations, but this capability encoding does not make use of this redundancy as there are sufficient reserved bits.
 
-NOTE: AP[1] encodes <<asr_perm>> and AP[0] encodes <<x_perm>>.
-The combination ASR=1, X=0 is _reserved_ following <<perm_req:base:asr:x,base-3>>.
-
-NOTE: <<w_perm>> is valid in all combinations with R, C, LM in the base ISA, but <<section_zylevels1>> restricts its usage.
- AP[6:2] is allocated with 5 bits to leave space for <<section_zylevels1>> states without requiring a definition change.
- Future extensions may redefine the _reserved_ states if they are incompatible with <<section_zylevels1>>.
-
-The encoding of AP[6:2] is shown in <<rvy64_uni_base_name_ap_fmt>>.
-
-.{rv64y_uni_base_name} AP[6:2] encoding (R/W/C/LM permissions)
-[#rvy64_uni_base_name_ap_fmt,width="100%",options=header,cols="^2,^1,^1,^1,^1,4"]
+.Encoding of architectural permissions for {rv64y_uni_base_name}
+[#cap_perms_encoding64,align="center",options=header,cols="^10%,90%",width="75%"]
 |==============================================================================
-| AP[6:2] | R | W | C | LM | Comment
-6+| *AP[6:5]=00: AP[4]=R, AP[3]=W, AP[2]=C*
-| *00* 000 |   |   |   |    | *No permissions* (NULL capability)
-| *00* 001 5+|  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
-| *00* 010 |   | W |   |    |
-| *00* 011 |   | W | C |    |
-| *00* 100 | R |   |   |    |
-| *00* 101 | R |   | C |    |
-| *00* 110 | R | W |   |    |
-| *00* 111 | R | W | C |    |
-6+| *AP[6:4]=010: LM=1, AP[3]=W*
-6+| *LM implies C and R*
-| *010* 00 5+|  _reserved_ due to <<perm_req:base:lm:c-and-r,base-2>>
-| *010* 01 | R |   | C | LM |
-| *010* 10 5+|  _reserved_ due to <<perm_req:base:lm:c-and-r,base-2>>
-| *010* 11 | R | W | C | LM | *Maximum base permissions*
-6+| *Reserved for <<section_zylevels1>> (AP[6:4]=011, 100)*
-| *011* xx 5+|  _reserved_ for <<section_zylevels1>>
-| *100* xx 5+|  _reserved_ for <<section_zylevels1>>
-6+| *Reserved for future extensions*
-| 10101 5+|  _reserved_, possibly for future sealing permission
-| 10110 5+|  _reserved_, possibly for future unsealing permission
-| 10111 5+|  _reserved_, possibly for future sealing and unsealing permission
-| 11xxx 5+|  _reserved_ for other future use
+| Bit | Encoded permission
+| 0   | <<c_perm>>
+| 1   | <<w_perm>>
+| 2   | <<r_perm>>
+| 3   | <<x_perm>>
+| 4   | <<asr_perm>>
+| 5   | <<lm_perm>>
+| 6   | <<zylevels1_lg_perm>> (<<section_zylevels1>>)
+| 7   | <<zylevels1_sl_perm>> (<<section_zylevels1>>)
 |==============================================================================
 
-AP_MAX = 0x2F (AP[6:2]=01011, AP[1]=1, AP[0]=1: R, W, C, LM, ASR, X all granted)
+NOTE: Future extensions which define new permissions must augment <<cap_perms_encoding64>>.
+
+[NOTE]
+====
+
+There are 9 bits in total allocated to the <<AP-field>> and the <<p_bit>>.
+
+Once all of the permission rules in <<base_clrperm_rule_summary>> and <<zylevels1_clrperm_table>> have been applied, and also the <<p_bit>> validity depends upon <<x_perm>> (see <<sec_p_bit_hybrid_rule>>) the total valid combinations of permissions totals 180.
+
+Encoding 180 valid states in 9 bits, which allows for 512 states, is inefficient.
+
+Future extensions or capability encoding formats may address this by implementing a more compact <<AP-field>> and <<p_bit>> encoding that is fully _compatible for all software_ to increase the number of reserved bits.
+
+Such as encoding would have observable differences in the in-memory representation of capabilities.
+
+====
 
 [#SDP-field64, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
