@@ -72,7 +72,6 @@ The <<root-cap>> capabilities definitions are extended:
 
 === Interaction with <<CLRPERM>> and <<GCPERM>>
 
-
 .Extended capability permissions bit field (see <<acperm_bit_field>>)
 [#zylevels1_acperm_bit_field]
 include::./img/zylevels1-acperm_bit_field.edn[]
@@ -82,7 +81,6 @@ The <<zylevels1_gl_flag>>, <<zylevels1_sl_perm>>, and <<zylevels1_lg_perm>> fiel
 The <<zylevels1_gl_flag>> is treated as a permission by <<CLRPERM>> and <<GCPERM>>.
 
 Unlike actual permissions it is not subject to the sealed check, and so <<CLRPERM>> can produce a new capability with its <<zylevels1_gl_flag>> cleared, even if the source capability is sealed.
-
 
 [#zylevels1-clrperm-rules]
 ==== Additional <<CLRPERM>> permission rules
@@ -152,58 +150,6 @@ The definition of <<cap_subset>> has an additional rule:
 * The <<zylevels1_gl_flag>> of `cap2` is zero, or the <<zylevels1_gl_flag>> of `cap1` is one.
 
 NOTE: This affects the behavior of <<SCSS>>, <<CBLD>> and <<YSUNSEAL>>.
-
-=== Effect on architectural permission format `full1_rv64ya_1`
-
-This format is used by <<rv64y_cap_description>>, and was introduced in <<rvy64_uni_base_name_ap_fmt>>.
-The states in <<rvy64_uni_base_name_ap_fmt_levels1>> are added.
-
-.{rv64y_uni_base_name} AP field encoding (additions from {cheri_levels1_ext_name})
-[#rvy64_uni_base_name_ap_fmt_levels1,width="100%",options=header,cols="^1,^1,^1,^1,^1,^1,^1,5"]
-|==============================================================================
-| AP[6:2] | R | W | C | LM | LG | SL | Comment
-ifdef::full_perms_table[]
-//it's nice to have the full table in one place
-8+| *AP[6:5]=00: AP[4]=R, AP[3]=W, AP[2]=C*
-| *00* 000 |   |   |   |    | | | *No permissions* (NULL capability)
-| *00* 001 7+|  _reserved_ due to <<perm_req:base:c:r-or-w,base-1>>
-| *00* 010 |   | W |   |    | | |
-| *00* 011 |   | W | C |    | | |
-| *00* 100 | R |   |   |    | | |
-| *00* 101 | R |   | C |    | | |
-| *00* 110 | R | W |   |    | | |
-| *00* 111 | R | W | C |    | | |
-8+| *AP[6:4]=010: LM=1, AP[3]=W*
-8+| *LM implies C and R*
-| *010* 00 7+|  _reserved_ due to <<perm_req:base:lm:c-and-r,base-2>>
-| *010* 01 | R |   | C | LM | | |
-| *010* 10 7+|  _reserved_ due to <<perm_req:base:lm:c-and-r,base-2>>
-| *010* 11 | R | W | C | LM | | | *Maximum base permissions*
-endif::[]
-8+| *AP[6:5]=01: LG=1, AP[3]=W, AP[2]=LM*
-8+| *LM and LG imply C and R*
-| *01* 100    | R |   | C |    | LG |    |
-| *01* 101    | R |   | C | LM | LG |    |
-| *01* 110    | R | W | C |    | LG |    |
-| *01* 111    | R | W | C | LM | LG |    |
-8+| *AP[6:4]=100: SL=1, AP[3]=LG, AP[2]=LM*
-8+| *LM and LG imply C and R*
-8+| *SL implies C and W*
-| *100* 00    |   | W | C |    |    | SL |
-| *100* 01    | R | W | C | LM |    | SL |
-| *100* 10    | R | W | C |    | LG | SL |
-| *100* 11    | R | W | C | LM | LG | SL | *Maximum base+levels1 permissions*
-8+| *Final state to complete the encoding set*
-| 10100    | R | W | C |    |    | SL | SL does not imply R, so this state needs explicit encoding
-8+| *Reserved states*
-| 10101  7+|                  _reserved_, possibly for future sealing permission
-| 10110  7+|                  _reserved_, possibly for future unsealing permission
-| 10111  7+|                  _reserved_, possibly for future sealing and unsealing permission
-| 11xxx  7+|                  _reserved_ for future use
-|==============================================================================
-
-AP_MAX = 0x4F (AP[6:2]=10011, ASR=1, X=1: R, W, C, LM, LG, SL, ASR, X all granted)
-
 
 === Rationale and Software Use Cases
 
