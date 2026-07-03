@@ -158,13 +158,18 @@ The <<p_bit>> of a <<x_perm>>-granting capability can be read and written by the
 
 NOTE: In addition to the mode switching instructions, the current mode can also be updated by setting the <<p_bit>> of a target capability using <<SCMODE>> followed by a <<JALR_CHERI>>.
 
-[#sec_p_bit_hybrid_rule]
-==== Representation of the <<p_bit>> in the capability encoding
+[#zyhybrid-clrperm-rules]
+==== Additional <<CLRPERM>> permission rule
 
-For capabilities that do not grant <<x_perm>>,
-<<p_bit>> must always be interpreted and reported as {cap_mode_value} representing {cheri_cap_mode_name}.
+The following <<CLRPERM>> permission rule is added:
 
-NOTE: While this is not phrased as an additional rule for <<CLRPERM>> to follow beyond those of <<sec_permission_transitions>>, capability encodings may nevertheless take advantage of this implication in their representation of architectural CHERI capabilities.
+.<<CLRPERM>> permission rules for {cheri_default_ext_name}.
+[#zyhybrid_clrperm_table,float="center",align="center",cols="2,2,4",options="header"]
+|===
+| <<CLRPERM>> Rule | Permission | Valid only if
+| [[perm_req:zyhybrid:p:x-and-p,{cheri_default_ext_name}-1]]{cheri_default_ext_name}-1 +
+                   | <<p_bit>> | <<x_perm>>
+|===
 
 ==== Observing the {cheri_mode_name}
 
