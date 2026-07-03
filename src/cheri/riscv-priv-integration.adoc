@@ -158,7 +158,7 @@ NOTE: An extension such as <<section_cheri_hybrid_ext>> must be implemented for 
 
 Either I or E is _also_ set to show how many registers are present.
 
-NOTE: Implementations which allow misa.C to be writable need to legalize <<mepc_y,Xepc>>
+NOTE: Implementations which allow misa.C to be writable need to legalize `__x__epc`
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.
 
@@ -844,10 +844,10 @@ The reset values are:
 * `<<menvcfg_y,menvcfg>>.{CRE}=0`
 * `<<senvcfg_y,senvcfg>>.{CRE}=0`
 * <<pcc>>.<<p_bit>>={INT_MODE_VALUE} (for {cheri_int_mode_name}).
-* <<ddc>>, <<pcc>>, Xtvec, Xepc are nominally <<root-cap,root capabilities>>.
+* <<ddc>>, <<pcc>>, `__x__tvec`, `__x__epc` are nominally <<root-cap,root capabilities>>.
 
 `<<misa_y>>.{CRE}` is a WARL field.
-M-mode can only set it to zero if <<ddc>>, <<pcc>>, Xtvec, Xepc are root capabilities so that no CHERI configuration has taken effect.
+M-mode can only set it to zero if <<ddc>>, <<pcc>>, `__x__tvec`, `__x__epc` are root capabilities so that no CHERI configuration has taken effect.
 
 NOTE: In this way M-mode software cannot disable any CHERI checks once they have been configured.
 
