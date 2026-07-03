@@ -196,9 +196,12 @@ _Reserved_
 [#norm:misa_x_op]#The "X" bit will be set if there are any non-standard extensions.#
 
 [#norm:misa_y_op]#The "Y" bit will be set if the base architecture is {cheri_base_ext_name}.
-In this case "I" or "E" will also be set showing the number of X registers available.#
+In this case "I" or "E" will also be set showing the number of X registers available.
+`<<misa_y,misa>>.{CRE}` is a WARL field.
+If the implementation supports a writable <<misa_y,misa>>.{CRE}, it can only be set to zero if all registers used for implicit CHERI checks are currently configured as root capabilities.
+These implicit check registers are <<pcc>>, `__x__tvec`, `__x__epc`, and <<ddc>> (if {cheri_default_ext_name} is implemented).#
 
-NOTE: The {cheri_default_ext_name} extension makes the "Y" bit writable.
+NOTE: This restriction ensures M-mode software cannot drop CHERI checks by modifying <<misa_y,misa>> once they have been configured.
 
 [#norm:misa_b_op]#When the "B" bit is 1, the implementation supports the instructions provided by the
 Zba, Zbb, and Zbs extensions.# When the "B" bit is 0, it indicates that the
