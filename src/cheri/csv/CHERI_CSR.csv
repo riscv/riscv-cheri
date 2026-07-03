@@ -4,15 +4,15 @@ Always update the CSR with `{SCADDR}` even if the address didn't change.","Apply
 direct write if address didn't change","✔","","✔","Sdext","Debug Program Counter Capability","v1","","","","","","","","","","","","","","","","","","","",""
 "dscratch0_y","Sdext","YLEN","0x7b2","dscratch0","D","DRW","tag=0, otherwise specified by the platform","Update the CSR using `{SCADDR}`.","Direct write","","","","Sdext","Debug Scratch Capability 0","v1","","","","","","","","","","","","","","","","","","","",""
 "dscratch1_y","Sdext","YLEN","0x7b3","dscratch1","D","DRW","tag=0, otherwise specified by the platform","Update the CSR using `{SCADDR}`.","Direct write","","","","Sdext","Debug Scratch Capability 1","v1","","","","","","","","","","","","","","","","","","","",""
-"mscratch_y","RVI","YLEN","0x340","mscratch","M","MRW, <<asr_perm>>","tag=0, otherwise specified by the platform","Update the CSR using <<SCADDR>>.","Direct write","","","","M-mode","Machine Scratch Capability","v1","","","","","","","","","","","","","","","","","","","",""
-"sscratch_y","RVI","YLEN","0x140","sscratch","S","SRW, <<asr_perm>>","tag=0, otherwise specified by the platform","Update the CSR using <<SCADDR>>.","Direct write","","","","S-mode","Supervisor Scratch Capability","v1","","","","","","","","","","","","","","","","","","","",""
+"mscratch_y","M-mode","YLEN","0x340","mscratch","M","MRW, <<asr_perm>>","tag=0, otherwise specified by the platform","Update the CSR using <<SCADDR>>.","Direct write","","","","M-mode","Machine Scratch Capability","v1","","","","","","","","","","","","","","","","","","","",""
+"sscratch_y","S-mode","YLEN","0x140","sscratch","S","SRW, <<asr_perm>>","tag=0, otherwise specified by the platform","Update the CSR using <<SCADDR>>.","Direct write","","","","S-mode","Supervisor Scratch Capability","v1","","","","","","","","","","","","","","","","","","","",""
 "vsscratch_y","H","YLEN","0x240","vsscratch","VS","HRW, <<asr_perm>>","tag=0, otherwise specified by the platform","Update the CSR using <<SCADDR>>.","Direct write","","","","H","Virtual Supervisor Scratch Capability","post-v1","","","","","","","","","","","","","","","","","","","",""
-"mtvec_y","RVI","YLEN","0x305","mtvec","M","MRW, <<asr_perm>>","Nominally <<root-rx-cap>>","Apply <<section_invalid_addr_conv>>.
+"mtvec_y","M-mode","YLEN","0x305","mtvec","M","MRW, <<asr_perm>>","Nominally <<root-rx-cap>>","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change, including the MODE field in the address for simplicity.
 Vector range check if vectored mode is programmed.","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change, including the MODE field in the address for simplicity.
 Vector range check if vectored mode is programmed.","✔","","","M-mode","Machine Trap-Vector Base-Address Capability","v1","","","","","","","","","","","","","","","","","","","",""
-"stvec_y","RVI","YLEN","0x105","stvec","S","SRW, <<asr_perm>>","Nominally <<root-rx-cap>>","Apply <<section_invalid_addr_conv>>.
+"stvec_y","S-mode","YLEN","0x105","stvec","S","SRW, <<asr_perm>>","Nominally <<root-rx-cap>>","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change, including the MODE field in the address for simplicity.
 Vector range check if vectored mode is programmed.","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change, including the MODE field in the address for simplicity.
@@ -22,10 +22,10 @@ Always update the CSR with <<SCADDR>> even if the address didn't change, includi
 Vector range check if vectored mode is programmed.","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change, including the MODE field in the address for simplicity.
 Vector range check if vectored mode is programmed.","✔","","","H","Virtual Supervisor Trap-Vector Base-Address Capability","post-v1","","","","","","","","","","","","","","","","","","","",""
-"mepc_y","RVI","YLEN","0x341","mepc","M","MRW, <<asr_perm>>","Nominally <<root-rx-cap>>","Apply <<section_invalid_addr_conv>>.
+"mepc_y","M-mode","YLEN","0x341","mepc","M","MRW, <<asr_perm>>","Nominally <<root-rx-cap>>","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change.","Apply <<section_invalid_addr_conv>> and update the CSR with the result if the address changed,
 direct write if address didn't change","✔","","✔","M-mode","Machine Exception Program Counter Capability","v1","","","","","","","","","","","","","","","","","","","",""
-"sepc_y","RVI","YLEN","0x141","sepc","S","SRW, <<asr_perm>>","Nominally <<root-rx-cap>>","Apply <<section_invalid_addr_conv>>.
+"sepc_y","S-mode","YLEN","0x141","sepc","S","SRW, <<asr_perm>>","Nominally <<root-rx-cap>>","Apply <<section_invalid_addr_conv>>.
 Always update the CSR with <<SCADDR>> even if the address didn't change.","Apply <<section_invalid_addr_conv>> and update the CSR with the result if the address changed,
 direct write if address didn't change","✔","","✔","S-mode","Supervisor Exception Program Counter Capability","v1","","","","","","","","","","","","","","","","","","","",""
 "vsepc_y","H","YLEN","0x241","vsepc","VS","HRW, <<asr_perm>>","Nominally <<root-rx-cap>>","Apply <<section_invalid_addr_conv>>.
