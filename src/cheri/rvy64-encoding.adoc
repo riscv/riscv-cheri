@@ -214,7 +214,7 @@ inverted to ensure that the <<null-cap>> capability is encoded as zero without t
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base addresses respectively. +
-When EF=0, the exponent `E=CAP_MAX_E - ( (XLEN == 32) ? { L~8~, TE, BE } : { TE, BE } )`,
+When EF=0, the exponent `E=CAP_MAX_E - ( enableL8 ? { L~8~, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
 and base addresses respectively. E is computed by subtracting from the maximum
 possible exponent CAP_MAX_E which can be efficiently implemented in hardware
@@ -226,17 +226,17 @@ endif::[]
 
 [source]
 ----
-EW        = (XLEN == 32) ? 5 : 6
-CAP_MAX_E = XLEN - MW + 2
+// EW, CAP_MAX_E, enableL8 are all specified
+// in the capability encoding format parameter table
 
 If EF = 1:
     E               = 0
     T[EW / 2 - 1:0] = TE
     B[EW / 2 - 1:0] = BE
     LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
-    LMSB            = (XLEN == 32) ? L8 : 0
+    LMSB            = enableL8 ? L8 : 0
 else:
-    E               = CAP_MAX_E - ( (XLEN == 32) ? { L8, TE, BE } : { TE, BE } )
+    E               = CAP_MAX_E - ( enableL8 ? { L8, TE, BE } : { TE, BE } )
     T[EW / 2 - 1:0] = 0
     B[EW / 2 - 1:0] = 0
     LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
@@ -381,6 +381,9 @@ malformedMSB =  (E == CAP_MAX_E     && B         != 0)
 malformedLSB =  (E  < 0) || (E == 0 && enableL8)
 malformed    =  !EF && (malformedMSB || malformedLSB)
 ----
+NOTE: The above includes a special case for encodings where `enableL8=1`.
+      In this case, the effect of the L~8~ bit in the `EF=0` format would be the same as the effect of the implied `LMSB` when `E=0` in the `EF=1` format.
+      Cases where `EF=1`, `E=0` are therefore redundant, so declared malformed when `enableL8=1`.
 
 Capabilities with malformed bounds:
 
