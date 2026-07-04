@@ -7,7 +7,7 @@ endif::[]
 
 CHERI processors need memory systems that support the {ctag}s in memory.
 
-There are, or will soon be, a wide range of CHERI systems in existence from tiny IoT devices up to server chips.
+CHERI systems may range from tiny IoT devices up to server chips.
 
 There are two types of bus connections used in SoCs which contain CHERI CPUs:
 
@@ -23,9 +23,9 @@ The fundamental rule for any CHERI system is that the {ctag} and data are always
 . Update any data bytes without also writing the {ctag}
 .. This implies setting the {ctag} to zero if a non-CHERI aware bus master overwrites a capability in memory
 . Read a {ctag} value with mismatched (stale or newer) data
-. Write a {ctag} without also writing the data.
+. Set a {ctag} without also atomically writing the associated data.
 
-NOTE: Clearing {ctag}s in memory does not necessarily require updating the associated data.
+NOTE: Clearing a {ctag} may be performed without changing the associated data, provided stale tagged data can never be observed.
 
 === Small CHERI system example
 
