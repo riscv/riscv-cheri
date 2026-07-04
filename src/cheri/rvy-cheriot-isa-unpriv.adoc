@@ -69,7 +69,7 @@ That is, they differ only in their granted _permissions_, thus:
   <<r_perm,R>>, <<w_perm,W>>, <<c_perm,C>>, <<lm_perm,LM>>,
   <<zylevels1_lg_perm,LG>>, and <<zylevels1_sl_perm,SL>>.
 
-* It defines a _root sealing_ capability grants exactly all of
+* It defines a _root sealing_ capability that grants exactly all of
   <<zyseal_se_perm,SE>>, <<zyseal_us_perm,US>>, and <<zycheriot_u0_perm,U0>>.
 
 This set of root capabilities satisfies the following properties,
@@ -145,7 +145,7 @@ to modify the behavior of <<JALR_CHERI>>:
   and will be unsealed prior to installation into <<pcc>>.
 
 * Two values, {cheriot_sentry_ot_bd} and {cheriot_sentry_ot_be},
-  are used by <<JALR_CHERI>> and <<JAL_CHERI>> to seal the return capability when `rd` is `ra`.
+  are used by <<JALR_CHERI>> and <<JAL_CHERI>> to seal the return capability when `{cd}` is `ra`.
   The choice between the two depends on privileged machine state.
   If `{cd}` is not `ra`, then the return capability is not sealed.
 
@@ -180,7 +180,7 @@ draws further distinction between the various forward and backward types.
 [NOTE]
 =====
 All of the <<sentry_cap>> <<sec_cap_type>> values defined herein
-need be encodable only if the capability grants <<x_perm>>,
+need only be encodable if the capability grants <<x_perm>>,
 as required by <<JALR_CHERI>> of the capability to be installed into <<pcc>>.
 {cheriot_unpriv_ext_name} imposes no architectural requirement for,
 or semantics upon,
