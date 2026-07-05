@@ -123,7 +123,8 @@ The <<p_bit>> (P) is only architecturally relevant for capabilities granting <<x
 NOTE: While the <<p_bit>> can be read or written explicitly using <<GCMODE>> and <<SCMODE>>, these instructions do not change the current execution mode.
 The mode changes when a capability is installed into <<pcc>> (e.g., via an indirect jump, see <<sec_changing_cheri_execution_mode>>).
 
-Capabilities lacking <<x_perm>> may not have a defined <<p_bit>> field in their encoding, and attempting to update this field may be a no-op.
+The <<p_bit>> is only valid in capabilities that grant <<x_perm>> (see <<zyhybrid-clrperm-rules>>).
+Capabilities that do not grant <<x_perm>> therefore do not carry a meaningful <<p_bit>>, and <<SCMODE>> does not modify their <<p_bit>>.
 {cheri_default_ext_name} requires a capability encoding that supports transport of the <<p_bit>> (e.g., <<rv64y_cap_description>>).
 
 * {cheri_mode_name} (P)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
