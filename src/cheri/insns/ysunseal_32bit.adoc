@@ -86,7 +86,19 @@ it must use <<GCTYPE>> on the sealed capability.
 =====
 endif::[]
 Operation::
+// YSUNSEAL is not in the Sail model; it reuses the CBLD logic but additionally
+// requires cs2 to be tagged and sealed, and always unseals the result.
 [source,SAIL,subs="verbatim,quotes"]
 ----
-SAIL TO BE UPDATED
+let cs1_val = C(cs1);
+let cs2_val = C(cs2);
+
+let tag = cs1_val.tag &
+          not(capIsSealed(cs1_val)) &
+          cs2_val.tag &
+          capIsSealed(cs2_val) &
+          capIsSubset(cs2_val, cs1_val); /* subset checks for malformed bounds, perms, reserved bits */
+
+C(cd) = { unsealCap(cs2_val) with tag = tag };
+RETIRE_SUCCESS
 ----

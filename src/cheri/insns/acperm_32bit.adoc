@@ -47,7 +47,23 @@ This ensures software forward-compatibility: for example, a kernel that does not
 Such dependent permissions must be allocated to the bits that are currently reported as 1 to ensure forward-compatibility
 
 Operation::
+// Manual code here since the JSON one still has rs2 inverted.
 [source,SAIL,subs="verbatim,quotes"]
 ----
-SAIL TO BE UPDATED
+let cs1_val = C(cs1);
+let rs2_val = X(rs2);
+
+let cond = capIsSealed(cs1_val) | not(capReservedValid(cs1_val));
+let inCap = clearTagIf(cs1_val, cond);
+
+let old_perms = packPerms(getArchPermsLegalized(inCap), inCap.sd_perms).bits;
+
+let new_perms = old_perms & not(rs2_val);
+
+let (new_arch_perms, new_sd_perms) = unpackPerms(struct {bits = new_perms});
+let newCap = { setArchPerms(inCap, new_arch_perms) with sd_perms = new_sd_perms };
+
+C(cd) = newCap;
+RETIRE_SUCCESS
 ----
+//sail::execute[clause="ACPERM(_, _, _)",part=body,unindent]

@@ -20,9 +20,12 @@ NOTE: The only valid shift amount is `XLEN` (as required by <<GCHI>>).
 A future extension may add an arbitrary shift distance.
 
 Operation::
+// SRLIY is not in the Sail model yet.
+// The only architecturally valid shamt is XLEN, i.e. this is equivalent to YHIR.
 [source,SAIL,subs="verbatim,quotes"]
 ----
-SAIL TO BE UPDATED
+X(rd) = truncate(capToBits(C(rs1)) >> shamt, xlen);
+RETIRE_SUCCESS
 ----
 
 <<<
