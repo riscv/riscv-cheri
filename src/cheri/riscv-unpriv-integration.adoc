@@ -175,12 +175,12 @@ A partially or fully out-of-bounds data access or instruction fetch raises an ex
 Every capability has two memory address bounds: _base_ representing the lowest accessible byte, and _top_ representing one byte above the highest accessible byte.
 
 * The _base_ is XLEN bits and is _inclusive_.
-* The _top_ is (XLEN+1)-bits and is _exclusive_.
+* The _top_ is (XLEN+1) bits and is _exclusive_.
 +
 NOTE: _Inclusive top_, with XLEN bits, was considered but rejected in favor of the _exclusive top_ (with an additional bit to allow covering the entire address space).
   Using _exclusive top_ allows representing a zero-length capability starting at address zero, which is not possible with _inclusive top_ unless you introduce a special value for `-1`.
 
-* The _length_ is (XLEN+1)-bits and is defined to be _top - base_.
+* The _length_ is (XLEN+1) bits and is defined to be _top - base_.
 
 Therefore, a memory location `A` in the range `base {le} A < top` is within bounds, and so valid to access.
 
@@ -206,7 +206,7 @@ All capabilities with smaller bounds are derived from these.
 
 The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions.
 
-They all copy `{cs1}` to the output `{cd}`, set the _base_ bound `{cd}` as `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
+They all copy `{cs1}` to the output `{cd}`, set the _base_ bound of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
 
 * <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
 ** Set the {ctag} to zero if the bounds cannot be encoded exactly.
@@ -472,7 +472,7 @@ NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is simila
 endif::[]
 
 [#asr_perm,reftext="ASR-permission"]
-Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to all privileged CSRs, some unprivileged CSRs and some privileged instructions.
+Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to all privileged CSRs and some unprivileged CSRs, and the execution of some privileged instructions.
 <<asr_perm>> checks always use the permission in the <<pcc>>.
 
 In the unprivileged {cheri_base_ext_name} ISA, the following are affected by <<asr_perm>>:
@@ -608,7 +608,7 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 | REP_RANGE   | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
 |==============================================================================
 
-Two parameters used non-numeric values:
+Two parameters use non-numeric values:
 
 AP_ENC::
  Whether permissions in the <<AP-field>> are encoded using a _full_ (`full`) representation allowing all valid combinations of permissions, or a _partial_ (`part`) representation which does not represent all possible combinations and so uses fewer encoding bits.
@@ -648,7 +648,7 @@ defining the handling in the architecture allows the behavior to be precisely sp
 
 === Extended State
 
-As stated above, all state which can hold addresses are extended from XLEN to YLEN bits.
+As stated above, all state which can hold addresses is extended from XLEN to YLEN bits.
 
 NOTE: A reminder that _all_ YLEN state also has a hardware managed {ctag}.
 

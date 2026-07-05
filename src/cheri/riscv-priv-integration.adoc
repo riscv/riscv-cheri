@@ -191,7 +191,7 @@ NOTE: CHERI does not need to make use of execute only memory for security reason
 
 {cheri_base_ext_name} adds new exception codes for CHERI exceptions that *mcause* must be able to represent.
 The new exception codes are listed in
-<<exception-cause-cheri>> and the priorities are listed in xref:exception-priority-cheri[xrefstyle=short] respectively.
+<<exception-cause-cheri>> and the priorities are listed in xref:exception-priority-cheri[xrefstyle=short].
 
 [[exception-cause-cheri]]
 .Synchronous exception causes for {cheri_base_ext_name}.
@@ -316,7 +316,7 @@ NOTE: In the table below `auth_cap` is `{cs1}`, unless {cheri_default_ext_name} 
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not grant <<r_perm>>
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of the load access is out of `auth_cap` bounds^2^
-| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` fail any <<section_cap_integrity,integrity>> checks.
+| All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` fails any <<section_cap_integrity,integrity>> checks.
 | Capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` {ctag} is zero
@@ -326,7 +326,7 @@ NOTE: In the table below `auth_cap` is `{cs1}`, unless {cheri_default_ext_name} 
 | All stores, all atomics                        | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the access is out of `auth_cap` bounds^2^
 | CBO.ZERO, CBO.INVAL                            | {cheri_excep_cause_st}     | {cheri_excep_name_st} | Any byte of the cache block is out of `auth_cap` bounds^2^
 | CBO.CLEAN, CBO.FLUSH                           | {cheri_excep_cause_st}     | {cheri_excep_name_st} | All bytes of the cache block are out of `auth_cap` bounds^2^
-| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` fail any <<section_cap_integrity,integrity>> checks.
+| All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` fails any <<section_cap_integrity,integrity>> checks.
 | Capability stores                              | 7^3^                       | Store access fault    | Misaligned capability store
 |=========================================================================================
 
