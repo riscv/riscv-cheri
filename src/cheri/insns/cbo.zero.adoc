@@ -36,7 +36,21 @@ Prerequisites::
 Zicboz, {cheri_base_ext_name}
 
 Operation::
+// Not bundled in the JSON due to build system, inserted manually for now.
 [source,SAIL,subs="verbatim,quotes"]
 ----
-SAIL TO BE UPDATED
+let cache_block_size = 2 ^ plat_cache_block_size_exp();
+let negative_offset = (X(cs1) & ~(zero_extend(ones(plat_cache_block_size_exp())))) - X(cs1);
+match ext_data_get_addr(cs1, negative_offset, Cache(Zero), cache_block_size) {
+  Ext_DataAddr_Error(e) => { ext_handle_data_check_error(e); RETIRE_FAIL },
+  Ext_DataAddr_OK(vaddr) => match translateAddr(vaddr, Write(Data)) {
+    TR_Failure(e, ext_ptw) => { handle_translate_exception(vaddr - negative_offset, e, ext_ptw); RETIRE_FAIL },
+    TR_Address(paddr, pbmt, _) => {
+      let ep = effectivePrivilege(Cache(Zero), mstatus, cur_privilege());
+      let _ = mem_write_value_priv_meta(pbmt, paddr, cache_block_size, zeros(),
+                                        Cache(Zero), ep, default_meta, false, false, false);
+      RETIRE_SUCCESS
+    }
+  }
+}
 ----
