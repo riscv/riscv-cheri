@@ -38,21 +38,21 @@ NOTE: Care must be taken however that suitable root capabilities are available t
 When traps are taken into machine mode, the `pc` is updated following the standard `mtvec` behavior.
 The {ctag} and metadata from <<mtvec_y>> are also written to the <<pcc>>.
 
-Following the standard `mtvec` behavior, the value of `mtvec.address` can be viewed with a range of different addresses:
+As with the standard `mtvec` register, the address observed through <<mtvec_y>> is not simply the stored base address:
 
-. The MODE field is included in `mtvec.address[1:0]` but it does not form part of the trap vector address.
-. When MODE=Vectored, the trap vector address is incremented by four times the interrupt number.
-. CSR reads include MODE in `mtvec.address[1:0]`.
+. `mtvec.address[1:0]` holds the MODE field, which selects the trap-vector mode and does not form part of the trap-vector base address.
+. When MODE=Vectored, the effective trap-vector address is the base address plus four times the interrupt cause.
+. An explicit CSR read returns the base address with the MODE field in `mtvec.address[1:0]`.
 
-`HICAUSE` is defined to be the largest interrupt cause value that the implementation can write
-to `__x__cause` when an interrupt is taken.
+`HICAUSE` is the largest interrupt cause value that the implementation can write to `__x__cause` when an interrupt is taken.
+The set of addresses that can therefore be observed through <<mtvec_y>> ranges from a minimum of `mtvec.address & ~3` to a maximum of `(mtvec.address & ~3) + 4 x HICAUSE`.
 
-Therefore, the minimum observable address is `mtvec.address & ~3` and the maximum is `(mtvec.address & ~3) + 4 x HICAUSE`.
+Every read of <<mtvec_y>>, whether implicit (taking a trap) or explicit (a CSR read), forms the observed address using the semantics of the <<SCADDR>> instruction, inserting the MODE bits and, in Vectored mode, adding the cause offset.
+This has two consequences:
 
-All possible observable values must be <<section_cap_representable_check, represented exactly>>.
-Software must ensure this is true when writing to <<mtvec_y>>, and the hardware sets the {ctag} to zero if any values cannot be <<section_cap_representable_check, represented exactly>>.
-
-<<mtvec_y>> is always updated using the semantics of the <<SCADDR>> instruction and so writing a sealed capability will cause the {ctag} to be set to zero.
+* All of the observable addresses must be <<section_cap_representable_check, represented exactly>>.
+  Software must ensure this holds when writing <<mtvec_y>>, and the hardware sets the {ctag} to zero if any observable address cannot be <<section_cap_representable_check, represented exactly>>.
+* A sealed capability written to <<mtvec_y>> is always read back with its {ctag} cleared, because the <<SCADDR>> address update invalidates a sealed capability even when the address value is unchanged.
 
 NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other CSRs such as <<mepc_y>>.
 
