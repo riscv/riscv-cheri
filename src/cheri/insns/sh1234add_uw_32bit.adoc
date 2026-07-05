@@ -52,8 +52,19 @@ include::rep_range_check.adoc[]
 include::malformed_cs2_clear_tag.adoc[]
 
 Operation::
+// Manually updated for the current spec, sail JSON file omitted SH4ADD.UW
 [source,SAIL,subs="verbatim,quotes"]
 ----
-SAIL TO BE UPDATED
+let rs1_val = X(rs1);
+let cs2_val = C(cs2);
+let shamt : range(1,4) = match op {
+  RISCV_SH1ADDUW => 1,
+  RISCV_SH2ADDUW => 2,
+  RISCV_SH3ADDUW => 3,
+  RISCV_SH4ADDUW => 4,
+};
+let result = incCapAddrChecked(cs2_val, zero_extend(rs1_val[31..0]) << shamt);
+C(cd) = result;
+RETIRE_SUCCESS
 ----
 //sail::execute[clause="ZBA_RTYPEUW_capmode(_, _, _, _)",part=body,unindent]
