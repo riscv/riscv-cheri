@@ -139,7 +139,7 @@ Capability load/store require the _provenance_ check:
 * Any store that wrote the capability to memory was correctly authorized.
 * Any load that read the capability from memory was correctly authorized.
 
-When an operation fails a check, either due to software error or malicious intent, then the operation raises an exception or sets the resulting {ctag} to zero.
+When an operation fails a check, the operation raises an exception or sets the resulting {ctag} to zero, as defined by each instruction.
 
 For a capability to be valid, the {ctag} must be set, otherwise a capability is invalid.
 
@@ -159,7 +159,7 @@ Examples of such invalid operations include writing only the integer portion (th
 
 {ctag_cap}s are tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
 The implementation must set the {ctag} to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand.
-For example, the <<STORE_CAP>> instruction may set the {ctag} to one if all the instruction's prerequisites are met, but <<ldst,SW>> will always set the {ctag} to zero.
+For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, but <<ldst,SW>> will always set the {ctag} to zero.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
 
@@ -211,9 +211,9 @@ The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instruc
 They all copy `{cs1}` to the output `{cd}`, set the _base_ bound of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
 
 * <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
-** Set the {ctag} to zero if the bounds cannot be encoded exactly.
+** The {ctag} is set to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSI>> sets the _base_ to `{cs1}.address`, and the _length_ to the immediate value.
-** Set the {ctag} to zero if the bounds cannot be encoded exactly.
+** The {ctag} is set to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSR>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
 ** If the requested bounds cannot be encoded exactly, the result uses the smallest representable bounds that contain the requested range and remain within the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
@@ -246,8 +246,8 @@ NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability 
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
 Since the upper bits of the address are used to calculate the top and base bounds, deriving a new capability with a different address could change the resulting bounds.
-All derived capabilities must check that the new address does not change the bounds.
-If they _do_ change then set the {ctag} of the derived capability to zero, so that it is invalid for use.
+All instructions that derive a capability with a new address must check that the new address does not change the bounds.
+If the bounds _do_ change then the {ctag} of the derived capability is set to zero, so that it is invalid for use.
 
 Software can derive a capability with a new address using instructions such as <<SCADDR>>, <<CADD>> and <<CADDI>>.
 
