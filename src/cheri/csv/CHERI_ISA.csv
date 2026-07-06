@@ -47,12 +47,12 @@ C_JR_CHERI,C.CJR,{rvy_zca_mod_ext_name},✔,✔,,,,C2,,,{C_JR_CHERI_DESC},MODE==
 DRET_CHERI,same,DRET,✔,✔,,,SYSTEM,,,,"Return from debug mode, sets <<ddc>> from <<dddc>> and <<pcc>> from <<dpc_y>>",MODE<D,,,,,,,,v1
 MRET_CHERI,same,M,✔,✔,,,SYSTEM,,,,"Return from machine mode handler, sets <<pcc>> from <<mtvec_y>>","MODE<M,{pcc}.ASR==0",,,,,,,,v1
 SRET_CHERI,same,S,✔,✔,,,SYSTEM,,,,"Return from supervisor mode handler, sets <<pcc>> from <<stvec_y>>","MODE<S,{pcc}.ASR==0",mstatus.TSR==1 AND MODE==S,,,,,,,v1
-"CSRRW_CHERI,CSRRW ({cheri_base_ext_name})",same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR write,CSR permission fault,,,,,,,,v1
-"CSRRS_CHERI,CSRRS ({cheri_base_ext_name})",same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR set,CSR permission fault,,,,,,,,v1
-"CSRRC_CHERI,CSRRC ({cheri_base_ext_name})",same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR clear ,CSR permission fault,,,,,,,,v1
-"CSRRWI_CHERI,CSRRWI ({cheri_base_ext_name})",same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR write (immediate form),CSR permission fault,,,,,,,,v1
-"CSRRSI_CHERI,CSRRSI ({cheri_base_ext_name})",same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR set (immediate form),CSR permission fault,,,,,,,,v1
-"CSRRCI_CHERI,CSRRCI ({cheri_base_ext_name})",same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR clear (immediate form),CSR permission fault,,,,,,,,v1
+CSRRW_CHERI,same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR write,CSR permission fault,,,,,,,,v1
+CSRRS_CHERI,same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR set,CSR permission fault,,,,,,,,v1
+CSRRC_CHERI,same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR clear ,CSR permission fault,,,,,,,,v1
+CSRRWI_CHERI,same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR write (immediate form),CSR permission fault,,,,,,,,v1
+CSRRSI_CHERI,same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR set (immediate form),CSR permission fault,,,,,,,,v1
+CSRRCI_CHERI,same,{rvy_zicsr_mod_ext_name},✔,✔,,,SYSTEM,,,,CSR clear (immediate form),CSR permission fault,,,,,,,,v1
 CBO_INVAL_CHERI,same,{rvy_zicbom_mod_ext_name},✔,✔,,2,MISC-MEM,,,,Cache block invalidate (implemented as clean),MODE<M AND menvcfg.CBIE[0]==0,MODE<S AND senvcfg.CBIE[0]==0,{pcc}.ASR==0,,,,,,v1
 CBO_CLEAN_CHERI,same,{rvy_zicbom_mod_ext_name},✔,✔,,2,MISC-MEM,,,,Cache block clean,MODE<M AND menvcfg.CBIE[0]==0,MODE<S AND senvcfg.CBIE[0]==0,,,,,,,v1
 CBO_FLUSH_CHERI,same,{rvy_zicbom_mod_ext_name},✔,✔,,2,MISC-MEM,,,,Cache block flush,MODE<M AND menvcfg.CBIE[0]==0,MODE<S AND senvcfg.CBIE[0]==0,,,,,,,v1
@@ -71,14 +71,14 @@ CM_MVSA01_CHERI,same,Zcmp,✔,✔,,,,C2,,,Move two integer registers,,,,,,,,,v1
 CM_MVA01S_CHERI,same,Zcmp,✔,✔,,,,C2,,,Move two integer registers,,,,,,,,,v1
 CM_JALT_CHERI,same,Zcmt,✔,✔,,,,C2,,,Table jump and link,,,,,,,,,v1
 CM_JT_CHERI,same,Zcmt,✔,✔,,,,C2,,,Table jump,,,,,,,,,v1
-"SH1ADD_CHERI,{SH1ADD_CHERI}",N/A,{rvy_zba_ext_name},✔,✔,,,OP,,,,"shift and add, representability check ",,,,,,,,,v1
-"SH2ADD_CHERI,{SH2ADD_CHERI}",N/A,{rvy_zba_ext_name},✔,✔,,,OP,,,,"shift and add, representability check ",,,,,,,,,v1
-"SH3ADD_CHERI,{SH3ADD_CHERI}",N/A,{rvy_zba_ext_name},✔,✔,,,OP,,,,"shift and add, representability check ",,,,,,,,,v1
-"SH4ADD_CHERI,{SH4ADD_CHERI} ({cheri_base64_ext_name})",N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add, representability check ",,,,,,,,,v1
-"SH1ADD_UW_CHERI,{SH1ADD_UW_CHERI} ({cheri_base64_ext_name})",N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add unsigned word, representability check ",,,,,,,,,v1
-"SH2ADD_UW_CHERI,{SH2ADD_UW_CHERI} ({cheri_base64_ext_name})",N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add unsigned word, representability check ",,,,,,,,,v1
-"SH3ADD_UW_CHERI,{SH3ADD_UW_CHERI} ({cheri_base64_ext_name})",N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add unsigned word, representability check ",,,,,,,,,v1
-"SH4ADD_UW_CHERI,{SH4ADD_UW_CHERI} ({cheri_base64_ext_name})",N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add unsigned word, representability check ",,,,,,,,,v1
+SH1ADD_CHERI,N/A,{rvy_zba_ext_name},✔,✔,,,OP,,,,"shift and add, representability check ",,,,,,,,,v1
+SH2ADD_CHERI,N/A,{rvy_zba_ext_name},✔,✔,,,OP,,,,"shift and add, representability check ",,,,,,,,,v1
+SH3ADD_CHERI,N/A,{rvy_zba_ext_name},✔,✔,,,OP,,,,"shift and add, representability check ",,,,,,,,,v1
+SH4ADD_CHERI,N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add, representability check ",,,,,,,,,v1
+SH1ADD_UW_CHERI,N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add unsigned word, representability check ",,,,,,,,,v1
+SH2ADD_UW_CHERI,N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add unsigned word, representability check ",,,,,,,,,v1
+SH3ADD_UW_CHERI,N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add unsigned word, representability check ",,,,,,,,,v1
+SH4ADD_UW_CHERI,N/A,{rvy_zba_ext_name},,✔,,,OP,,,,"shift and add unsigned word, representability check ",,,,,,,,,v1
 HLV_CAP,HLV.C,{rvy_h_ext_name},✔,✔,,,SYSTEM,,,,Hypervisor virtual machine load capability,V=1,MODE==U AND hstatus.HU=0,,,,,,,post-v1
 HSV_CAP,HSV.C,{rvy_h_ext_name},✔,✔,,,SYSTEM,,,,Hypervisor virtual machine store capability,V=1,MODE==U AND hstatus.HU=0,,,,,,,post-v1
 {YSEAL},YSEAL,{cheri_seal_ext_name},✔,✔,,,OP,R-type,,,{YSEAL_DESC},,,,,,,,,v1
