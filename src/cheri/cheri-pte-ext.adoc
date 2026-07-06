@@ -12,12 +12,13 @@ Page-Based 39-bit Virtual-Memory System (Sv39)::
 .Sv39 page table entry.
 include::../images/bytefield/sv39pte.edn[]
 
+NOTE: Diagram included in the standalone specification for reference only.
+
 endif::[]
 
 {cheri_priv_crg_ext} implies Sv39.
 
 The {cheri_priv_crg_ext} extension is enabled when the `{pte_cap_fc_enable}` bit is set.
-This bit resides in `mstatus` and is accessible through the `sstatus` view of `mstatus`.
 
 NOTE: `sstatus.{pte_cap_fc_enable}` affects the interpretation of the _pte_._rvy_ field.
 
@@ -46,14 +47,16 @@ When all of the following are true, {cheri_priv_crg_ext} adds two related archit
 . The authorizing capability has <<c_perm>>.
 . The PMA is set to _CHERI {ctag_title}_.
 
-NOTE: It may make sense to subdivide this into two extensions as _Capability Dirty Tracking_ is more generally useful than {cheri_excep_name_pte_ld}s.
+NOTE: It may make sense to subdivide this into two extensions as _Capability Dirty Tracking_ is more generally useful than _{cheri_excep_name_pte_ld}s_.
 
 === {cheri_excep_name_pte_ld}s
 
 _pte_._{pte_cap_r_name_lc}_ and _pte_._{pte_cap_crg_pte_name_lc}_ are used to enable capability loads or AMOs to write a {ctag} to `{cd}`.
 
-When _pte_._{pte_cap_r_name_lc}_ is clear, _pte_._{pte_cap_crg_pte_name_lc}_ controls whether capabilities can write a {ctag} to `{cd}`.
-When it is clear, {ctag}s cannot be written to `{cd}`; when it is set, they can.
+When _pte_._{pte_cap_r_name_lc}_ is clear, _pte_._{pte_cap_crg_pte_name_lc}_ controls whether capabilities can write a {ctag} to `{cd}`:
+
+* When it is clear, {ctag}s cannot be written to `{cd}`.
+* When it is set, they can.
 
 When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value that is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
 
@@ -167,128 +170,3 @@ Checking the stored {ctag} is less of a burden to the implementation than checki
 NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
 
 NOTE: The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
-
-ifdef::cheri_standalone_spec[]
-
-[#xstatus_pte]
-=== U{pte_cap_crg_pte_name} CSR field
-
-The `mstatus`, `sstatus`
-ifndef::cheri_ratification_v1_only[]
-and `vsstatus`
-endif::[]
-CSRs include the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({pte_cap_fc_enable}).
-These fields reside in `mstatus`; the other CSRs provide the standard restricted views of them.
-
-[#mstatusreg_pte]
-.Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
-[wavedrom, ,svg,subs=attributes+]
-....
-{reg: [
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SIE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MIE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SPIE'},
-  {bits:  1, name: 'UBE'},
-  {bits:  1, name: 'MPIE'},
-  {bits:  1, name: 'SPP'},
-  {bits:  2, name: 'VS[1:0]'},
-  {bits:  2, name: 'MPP[1:0]'},
-  {bits:  2, name: 'FS[1:0]'},
-  {bits:  2, name: 'XS[1:0]'},
-  {bits:  1, name: 'MPRV'},
-  {bits:  1, name: 'SUM'},
-  {bits:  1, name: 'MXR'},
-  {bits:  1, name: 'TVM'},
-  {bits:  1, name: 'TW'},
-  {bits:  1, name: 'TSR'},
-  {bits:  1, name: 'SPELP'},
-  {bits:  1, name: 'SDT'},
-  {bits:  7, name: 'WPRI'},
-  {bits:  2, name: 'UXL[1:0]'},
-  {bits:  2, name: 'SXL[1:0]'},
-  {bits:  1, name: 'SBE'},
-  {bits:  1, name: 'MBE'},
-  {bits:  1, name: 'GVA'},
-  {bits:  1, name: 'MPV'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MPELP'},
-  {bits:  1, name: 'MDT'},
-  {bits: 16, name: 'WPRI'},
-  {bits:  1, name: '{pte_cap_fc_enable}'},
-  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
-  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SD'},
-], config:{lanes: 4, hspace:1024}}
-....
-
-[#sstatusreg_pte]
-.Supervisor-mode status (*sstatus*) register when SXLEN=64
-[wavedrom, ,svg,subs=attributes+]
-....
-{reg: [
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SIE'},
-  {bits:  3, name: 'WPRI'},
-  {bits:  1, name: 'SPIE'},
-  {bits:  1, name: 'UBE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SPP'},
-  {bits:  2, name: 'VS[1:0]'},
-  {bits:  2, name: 'WPRI'},
-  {bits:  2, name: 'FS[1:0]'},
-  {bits:  2, name: 'XS[1:0]'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SUM'},
-  {bits:  1, name: 'MXR'},
-  {bits:  3, name: 'WPRI'},
-  {bits:  1, name: 'SPELP'},
-  {bits:  1, name: 'SDT'},
-  {bits:  7, name: 'WPRI'},
-  {bits:  2, name: 'UXL[1:0]'},
-  {bits: 25, name: 'WPRI'},
-  {bits:  1, name: '{pte_cap_fc_enable}'},
-  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
-  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SD'},
-], config:{lanes: 4, hspace:1024}}
-....
-
-ifndef::cheri_ratification_v1_only[]
-
-[#vsstatusreg_pte]
-.Virtual Supervisor-mode status (*vsstatus*) register when VSXLEN=64
-[wavedrom, ,svg,subs=attributes+]
-....
-{reg: [
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SIE'},
-  {bits:  3, name: 'WPRI'},
-  {bits:  1, name: 'SPIE'},
-  {bits:  1, name: 'UBE'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SPP'},
-  {bits:  2, name: 'VS[1:0]'},
-  {bits:  2, name: 'WPRI'},
-  {bits:  2, name: 'FS[1:0]'},
-  {bits:  2, name: 'XS[1:0]'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'MXR'},
-  {bits:  1, name: 'SUM'},
-  {bits: 12, name: 'WPRI'},
-  {bits:  2, name: 'UXL[1:0]'},
-  {bits: 25, name: 'WPRI'},
-  {bits:  1, name: '{pte_cap_fc_enable}'},
-  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
-  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
-  {bits:  1, name: 'WPRI'},
-  {bits:  1, name: 'SD'}
-], config:{lanes: 4, hspace:1024}}
-....
-
-endif::[]
-endif::[]
