@@ -16,14 +16,14 @@ def generate_adoc():
     rvy_insts = get_custom3_insts()
     f3_map = Custom3Funct3.get_map()
 
-    adoc = "=== 1. Funct3 Allocations\n\n"
+    adoc = "=== Funct3 Allocations\n\n"
     adoc += '[cols="^1,^3",options="header",stripes="even"]\n|===\n'
     adoc += "| funct3 | Instruction(s)\n\n"
     for i in range(8):
         adoc += f"| *{format(i, '03b')}* | {f3_map[i]}\n"
     adoc += "|===\n\n"
 
-    adoc += "=== 2. R-Type 3-Operand (funct3=000)\n\n"
+    adoc += "=== R-Type 3-Operand (funct3=000)\n\n"
     adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
     adoc += "| funct7[6:3] \\ funct7[2:0] | 000 | 001 | 010 | 011 | 100 | 101 | 110 | 111\n\n"
 
@@ -52,9 +52,8 @@ def generate_adoc():
         if isinstance(i.rs2.val, int) and hasattr(i, "f7") and isinstance(i.f7.val, int):
             r2_by_f7.setdefault(i.f7.val, []).append(i)
 
-    table_num = 3
     for f7_val, r2_insts in sorted(r2_by_f7.items()):
-        adoc += f"=== {table_num}. R-Type 1-Op/2-Op (funct3=000, funct7={format(f7_val, '07b')})\n"
+        adoc += f"=== R-Type 1-Op/2-Op (funct3=000, funct7={format(f7_val, '07b')})\n"
         adoc += "_Note: The 5-bit rs2 field is split into columns rs2[4:3] and rows rs2[2:0]._\n\n"
         adoc += '[cols="^1,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
         adoc += "| rs2[2:0] \\ rs2[4:3] | 00 | 01 | 10 | 11\n\n"
@@ -72,9 +71,8 @@ def generate_adoc():
                 row_str += f" | {name}"
             adoc += row_str + "\n"
         adoc += "|===\n\n"
-        table_num += 1
 
-    adoc += f"\n== {table_num}. AMO Sub-opcode Allocations (funct3={format(Custom3Funct3.AMO.value[0], '03b')})\n\n"
+    adoc += f"\n=== AMO Sub-opcode Allocations (funct3={format(Custom3Funct3.AMO.value[0], '03b')})\n\n"
     adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
     adoc += "| funct7[6:3] \\ funct7[2:0] | 000 | 001 | 010 | 011 | 100 | 101 | 110 | 111\n\n"
 
@@ -98,10 +96,9 @@ def generate_adoc():
             row_str += f" | {name}"
         adoc += row_str + "\n"
     adoc += "|===\n"
-    table_num += 1
 
     misc_f3 = Custom3Funct3.MISC
-    adoc += f"\n== {table_num}. MISC Sub-opcode Allocations (funct3={format(misc_f3.value[0], '03b')})\n\n"
+    adoc += f"\n=== MISC Sub-opcode Allocations (funct3={format(misc_f3.value[0], '03b')})\n\n"
     adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
     adoc += "| funct7[6:3] \\ funct7[2:0] | 000 | 001 | 010 | 011 | 100 | 101 | 110 | 111\n\n"
 
