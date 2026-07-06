@@ -61,6 +61,36 @@ delegate CHERI exceptions to supervisor mode.
 [#vsstatus_y,reftext="vsstatus"]
 === Virtual Supervisor Status Register (vsstatus)
 
+[#vsstatusreg_pte]
+.Virtual Supervisor-mode status (*vsstatus*) register when VSXLEN=64
+[wavedrom, ,svg,subs=attributes+]
+....
+{reg: [
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SIE'},
+  {bits:  3, name: 'WPRI'},
+  {bits:  1, name: 'SPIE'},
+  {bits:  1, name: 'UBE'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SPP'},
+  {bits:  2, name: 'VS[1:0]'},
+  {bits:  2, name: 'WPRI'},
+  {bits:  2, name: 'FS[1:0]'},
+  {bits:  2, name: 'XS[1:0]'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'MXR'},
+  {bits:  1, name: 'SUM'},
+  {bits: 12, name: 'WPRI'},
+  {bits:  2, name: 'UXL[1:0]'},
+  {bits: 25, name: 'WPRI'},
+  {bits:  1, name: '{pte_cap_fc_enable}'},
+  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SD'}
+], config:{lanes: 4, hspace:1024}}
+....
+
 The <<vsstatus_y>> register operates as described above
 except for the UXL field that controls the value of XLEN for VU-mode.
 
