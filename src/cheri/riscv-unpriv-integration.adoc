@@ -1200,11 +1200,13 @@ include::insns/jalr_32bit.adoc[]
 ==== BEQ, BNE ({cheri_base_ext_name})
 
 For `beq` and `bne` only, if `rs1≤rs2` then the encoding is _reserved_.
+This includes all encodings with `rs1=rs2`.
 
 NOTE: The reserved encodings are redundant and may be used by future extensions, suggestions include branching on {ctag} values only, or YLEN-bit compares.
 
 NOTE: For `beq rs1, rs2, offset` and `bne rs1, rs2, offset`, assemblers must emit the operand order whose register-number ordering is not reserved.
 For example, `beq x1, x2, offset` is emitted as `beq x2, x1, offset`.
+For the reserved `rs1=rs2` case, `j`/`jal` can be used instead of an always-taken `beq rs1, rs1, offset`, and a never-taken `bne rs1, rs1, offset` is equivalent to a `nop`.
 
 === {cheri_base_ext_name} ISA summary
 

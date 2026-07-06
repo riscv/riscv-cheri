@@ -167,9 +167,63 @@ NOTE: Implementations which allow misa.C to be writable need to legalize `__x__e
  can cause the read value of bit [1] to change state.
 
 [#mstatus_y, reftext="mstatus ({cheri_base_ext_name})"]
-==== Machine Status Registers (mstatus and mstatush)
+==== Machine Status Registers (mstatus)
 
-The *mstatus* and *mstatush* registers have two additional restrictions:
+`mstatus` includes the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({pte_cap_fc_enable}).
+These fields reside in `mstatus`; the other CSRs provide the standard restricted views of them.
+
+The definitions of the following fields are furnished by the <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> extension:
+
+* Userspace Capability Read Generation (U{pte_cap_crg_pte_name})
+* Supervisor Capability Read Generation (S{pte_cap_crg_pte_name})
+* The Capability Read Generation Enable bit ({pte_cap_fc_enable}).
+
+[#mstatusreg_pte]
+.Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
+[wavedrom, ,svg,subs=attributes+]
+....
+{reg: [
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SIE'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'MIE'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SPIE'},
+  {bits:  1, name: 'UBE'},
+  {bits:  1, name: 'MPIE'},
+  {bits:  1, name: 'SPP'},
+  {bits:  2, name: 'VS[1:0]'},
+  {bits:  2, name: 'MPP[1:0]'},
+  {bits:  2, name: 'FS[1:0]'},
+  {bits:  2, name: 'XS[1:0]'},
+  {bits:  1, name: 'MPRV'},
+  {bits:  1, name: 'SUM'},
+  {bits:  1, name: 'MXR'},
+  {bits:  1, name: 'TVM'},
+  {bits:  1, name: 'TW'},
+  {bits:  1, name: 'TSR'},
+  {bits:  1, name: 'SPELP'},
+  {bits:  1, name: 'SDT'},
+  {bits:  7, name: 'WPRI'},
+  {bits:  2, name: 'UXL[1:0]'},
+  {bits:  2, name: 'SXL[1:0]'},
+  {bits:  1, name: 'SBE'},
+  {bits:  1, name: 'MBE'},
+  {bits:  1, name: 'GVA'},
+  {bits:  1, name: 'MPV'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'MPELP'},
+  {bits:  1, name: 'MDT'},
+  {bits: 16, name: 'WPRI'},
+  {bits:  1, name: '{pte_cap_fc_enable}'},
+  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SD'},
+], config:{lanes: 4, hspace:1024}}
+....
+
+*mstatus* for {cheri_base_ext_name} has additional restrictions on XLEN and endianness:
 
 * The MXL, SXL and UXL fields that control the
 value of XLEN for S-mode and U-mode must be read-only and equal to MXL in {cheri_base_ext_name} implementations.
@@ -186,6 +240,14 @@ NOTE: These restrictions may be relaxed by a future extension. Such an extension
 MXR has no effect on the CHERI permission checking.
 
 NOTE: CHERI does not need to make use of execute only memory for security reasons, and so MXR has no relevance.
+
+ifndef::cheri_ratification_v1_only[]
+[#mstatush_y, reftext="mstatush ({cheri_base_ext_name})"]
+==== Machine Status High Bits Register (mstatush)
+
+#Spec to be written for RV32#
+
+endif::[]
 
 [#mcause_y, reftext="mcause ({cheri_base_ext_name})"]
 ==== Machine Cause Register (mcause)
@@ -446,6 +508,52 @@ The `stvec` register is widened to a capability.
 include::img/stveccreg.edn[]
 
 The handling of <<stvec_y>> is identical to <<mtvec_y>>, but in supervisor mode.
+
+[#sstatus_y, reftext="sstatus ({cheri_base_ext_name})"]
+==== Supervisor Status Registers (sstatus)
+
+[#sstatusreg_pte]
+.Supervisor-mode status (*sstatus*) register when SXLEN=64
+[wavedrom, ,svg,subs=attributes+]
+....
+{reg: [
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SIE'},
+  {bits:  3, name: 'WPRI'},
+  {bits:  1, name: 'SPIE'},
+  {bits:  1, name: 'UBE'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SPP'},
+  {bits:  2, name: 'VS[1:0]'},
+  {bits:  2, name: 'WPRI'},
+  {bits:  2, name: 'FS[1:0]'},
+  {bits:  2, name: 'XS[1:0]'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SUM'},
+  {bits:  1, name: 'MXR'},
+  {bits:  3, name: 'WPRI'},
+  {bits:  1, name: 'SPELP'},
+  {bits:  1, name: 'SDT'},
+  {bits:  7, name: 'WPRI'},
+  {bits:  2, name: 'UXL[1:0]'},
+  {bits: 25, name: 'WPRI'},
+  {bits:  1, name: '{pte_cap_fc_enable}'},
+  {bits:  1, name: 'S{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'U{pte_cap_crg_pte_name}'},
+  {bits:  1, name: 'WPRI'},
+  {bits:  1, name: 'SD'},
+], config:{lanes: 4, hspace:1024}}
+....
+
+`sstatus` makes visible the U{pte_cap_crg_pte_name}, S{pte_cap_crg_pte_name} and {pte_cap_fc_enable} fields added to <<mstatus_y>>.
+
+ifndef::cheri_ratification_v1_only[]
+[#sstatush_y, reftext="sstatush ({cheri_base_ext_name})"]
+==== Status Status High Bits Register (sstatush)
+
+#Spec to be written for RV32#
+
+endif::[]
 
 [#sscratch_y, reftext="sscratch ({cheri_base_ext_name})"]
 ==== Supervisor Scratch Capability Register (sscratch)

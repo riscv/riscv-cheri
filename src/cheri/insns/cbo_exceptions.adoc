@@ -29,5 +29,10 @@ endif::cbo_inval[]
 
 |==============================================================================
 
+ifdef::cbo_clean_flush[]
+NOTE: CBO.CLEAN and CBO.FLUSH only require one byte of the cache block to be within the authorizing capability's bounds because these operations do not reveal or modify any data, so performing them on a partially covered cache block is harmless.
+CBO.INVAL and CBO.ZERO destroy or overwrite the contents of the entire cache block and therefore require every byte of the cache block to be within bounds.
+endif::cbo_clean_flush[]
+
 :!cbo_clean_flush:
 :!cbo_inval:
