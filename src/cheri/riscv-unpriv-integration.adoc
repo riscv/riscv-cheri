@@ -73,7 +73,7 @@ In addition to widening to YLEN, each register also gains a one-bit {ctag} which
 
 {cheri_base_ext_name} specifies the minimum required fields that the capability encoding format must support, and their semantics.
 This version of {cheri_base_ext_name} defines only little-endian capability memory layouts.
-The memory representation of capabilities is always `2*XLEN` (`YLEN`) bits wide and holds the address in the first `XLEN` bits of memory followed by the metadata.
+The memory representation of capabilities is always `2*XLEN` (`YLEN`) bits wide and holds the address in the lower `XLEN` bits of memory and the metadata in the upper `XLEN` bits.
 
 {cheri_base_ext_name} is designed to be highly extensible by allowing different capability encoding formats to exist.
 Specific capability encoding formats may support different ISA extensions and add new architectural permissions.
@@ -159,7 +159,7 @@ Examples of such invalid operations include writing only the integer portion (th
 
 {ctag_cap}s are tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
 The implementation must set the {ctag} to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand.
-For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, but <<ldst,SW>> will always set the {ctag} to zero.
+For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, including `{cs2}` 's {ctag} being set to one, but <<ldst,SW>> will always set the stored {ctag} to zero.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
 
