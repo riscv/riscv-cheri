@@ -268,7 +268,7 @@ data they protect.
 Address arithmetic is modulo 2^XLEN^, so the byte at address 2^XLEN^ - 1 is adjacent to the byte at address zero.
 A capability's <<section_cap_representable_check>> is also circular, so address 0 is within the <<section_cap_representable_check>> of a capability where address 2^XLEN^ - 1 is within the bounds.
 
-However, the decoded top address of a capability is XLEN + 1 bits wide and does *not* wrap.
+However, the decoded top bound address of a capability is XLEN + 1 bits wide and does *not* wrap.
 For example, a hypothetical capability with base 2^XLEN^ - 1 and top 2^XLEN^ + 1 is not a subset of the infinite capability and authorizes access to the last byte of the address space only, and does not authorize access to the byte at address 0.
 
 Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
