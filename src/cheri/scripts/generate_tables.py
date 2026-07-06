@@ -544,11 +544,14 @@ class csr_perms_s(table):
 
 class csr_perms_u(table):
     cols = ["RVY CSR", "Extension", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    # The unprivileged specification cannot talk about reset values, initial
+    # values are defined by the EEI instead.
+    display_cols = ["RVY CSR", "Extension", "Width", "Address", "Permissions", "Initial Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
         super().__init__(filename, header)
-        self.file.write("|" + "|".join(self.cols) + "\n")
+        self.file.write("|" + "|".join(self.display_cols) + "\n")
         self.indices = []
         for i in self.cols:
             self.indices.append(self.header.index(i))
