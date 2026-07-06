@@ -38,7 +38,11 @@ Copy the capability from register `{cs1}` to register `{cd}`.
 Set the base address of its bounds to the value of `{cs1}.address` and
 set the length of its bounds to `rs2[XLEN-1:0]` for <<SCBNDS>>, or `imm` for <<SCBNDSI>>.
 +
-Set `{cd}.tag=0` if `{cs1}.tag=0`, `{cs1}` is sealed or if `{cd}` 's bounds exceed `{cs1}` 's bounds.
+Set `{cd}.tag=0` if `{cs1}.tag=0`.
++
+Set `{cd}.tag=0` if `{cs1}` is sealed.
++
+Set `{cd}.tag=0` if `{cd}` 's bounds exceed `{cs1}` 's bounds.
 +
 Set `{cd}.tag=0` if the requested bounds cannot be encoded exactly.
 +
@@ -80,12 +84,12 @@ This immediate encoding scheme achieves coverage of almost all observed immediat
 Mapping `imm = 0` to `4096` reclaims the redundant zero encoding (already covered by `{scbnds} dst, src, x0`) to support highly common page-sized objects.
 
 The hardware implementation is a simple bit-remapping: +
-`result[12] = (imm[8:0] = 0);` +
+`result[12] = (imm[8:0] == 0);` +
 `result[11:9] = imm[8] ? imm[7:5] : 0;` +
-`result[8] = imm[8] ? (imm[7:5] = 0b000 || imm[4]) : 0;` +
+`result[8] = imm[8] ? (imm[7:5] == 0b000 || imm[4]) : 0;` +
 `result[7:4] = imm[8] ? imm[3:0] : imm[7:4];` +
-`result[3] = imm[8] ? (imm[7:4] = 0b0001) : imm[3];` +
-`result[2:0] = imm[8] ? 0 : imm[2:0];`.
+`result[3] = imm[8] ? (imm[7:4] == 0b0001) : imm[3];` +
+`result[2:0] = imm[8] ? 0 : imm[2:0];`
 ====
 
 Included in::
