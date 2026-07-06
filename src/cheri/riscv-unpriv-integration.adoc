@@ -845,7 +845,7 @@ When accessing CSRs these rules are followed:
 . Accesses to <<xlen_csrs>> are as specified by Zicsr
 . Accesses to <<ylen_csrs>> and <<extended_csrs>>, using CSRRW will:
 .. Read YLEN bits
-.. Write YLEN bits, and will write the {ctag} to zero if any <<section_cap_integrity,integrity>> checks fail
+.. Write YLEN bits, and will write the {ctag} to zero if the written value fails any of the checks in xref:section_cap_integrity[xrefstyle=full]
 . Accesses to <<ylen_csrs>> and <<extended_csrs>>, using instructions other than CSRRW will:
 .. Read YLEN bits
 .. For CSRRS/CSRRC, compute the XLEN-bit address-field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN source operand.
@@ -866,8 +866,8 @@ The assembler pseudoinstruction to read a capability CSR `csrr {cd}, csr`, is en
 |CSRR[C\|S]  rs1!=x0  |YLEN         | XLEN
 |CSRRWI      rd==x0   |             | XLEN
 |CSRRWI      rd!=x0   |YLEN         | XLEN
-|CSRR[C\|S]I uimm==x0 |YLEN         |
-|CSRR[C\|S]I uimm!=x0 |YLEN         | XLEN
+|CSRR[C\|S]I uimm==0  |YLEN         |
+|CSRR[C\|S]I uimm!=0  |YLEN         | XLEN
 |=======================
 
 In <<clen_access_summary_base>>, when there is no read or write width shown, the CSR access is _not_ made and there are no side-effects following standard Zicsr rules.
