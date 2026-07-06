@@ -31,15 +31,19 @@ sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
 likely to be accessed by an instruction fetch in the near future.
 +
 The authorizing capability is `{cs1}`.
-This instruction does not throw any exceptions.
+This instruction does not raise any exceptions.
 +
 The following authorization checks are performed:
 
 * `{cs1}.tag=1`
 * `{cs1}` is not sealed
-* Any bytes of the requested cache line requested are in `{cs1}` bounds
+* At least one byte of the requested cache block is within `{cs1}` 's bounds
 * `{cs1}` grants <<x_perm>>
 * `{cs1}` passes all <<section_cap_integrity, integrity>> checks
+
+If any of these checks fail, the instruction executes as a `nop` and no prefetch is performed.
+
+NOTE: Only one byte of the cache block is required to be within bounds because a hardware prefetcher is permitted to prefetch the same cache block in the background.
 
 [NOTE]
 ====
