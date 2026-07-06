@@ -47,7 +47,7 @@ def test_ybaser():
         "  {bits:  5, name: 'rd',         attr: ['5', 'dest'],             type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
         "  {bits:  5, name: '{cs1}',      attr: ['5', 'src'],              type: 4},",
-        "  {bits:  5, name: 'rs2',        attr: ['5', '{GCBASE}=00000'],   type: 3},",
+        "  {bits:  5, name: 'funct5',     attr: ['5', '{GCBASE}=00000'],   type: 3},",
         "  {bits:  7, name: 'funct7',     attr: ['7', 'RVY-2OP-YX=1111010'], type: 3},",
         "]}",
     ]
@@ -193,7 +193,7 @@ def test_ymv():
         "  {bits:  5, name: '{cd}',       attr: ['5', 'dest'],             type: 2},",
         "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
         "  {bits:  5, name: '{cs1}',      attr: ['5', 'src'],              type: 4},",
-        "  {bits:  5, name: 'rs2',        attr: ['5', '{CMV}: rs2=x0'],    type: 3},",
+        "  {bits:  5, name: 'rs2',        attr: ['5', '{CMV}: rs2=0'],     type: 3},",
         "  {bits:  7, name: 'funct7',     attr: ['7', '{CADD}=0000011'],   type: 3},",
         "]}",
     ]
