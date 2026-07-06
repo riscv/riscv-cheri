@@ -1094,7 +1094,7 @@ include::insns/store_32bit_cap.adoc[]
 {cheri_base_ext_name} extends existing instructions that are used for handling addresses so that they manipulate a whole capability.
 
 * Whenever an input operand is used as an address (e.g., the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
-* Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register, writes a full capability register instead of just XLEN bits.
+* Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register writes a full capability register instead of just XLEN bits.
   For all other results the high bits of the register and the {ctag} are set to zero.
 * Whenever a capability with a new address is returned, the result is _always_ created using the semantics of the <<SCADDR>> instruction.
 
@@ -1178,7 +1178,7 @@ NOTE: Using {SCADDR} to update the <<pcc>> address can cause the target <<pcc>> 
 
 NOTE: A future extension may raise an exception on branch and jump instructions if fetching a minimum-sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
 
-These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions, e.g.:
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions.
 
 .Changed RISC-V base ISA PC relative instructions summary in {cheri_base_ext_name}
 [#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
