@@ -25,7 +25,8 @@ zero extend and write the result to `rd`.
 +
 All bits in the `[23:0]` range that are reserved or assigned to extensions that are not implemented by the current hart always report 1.
 +
-All architectural permission bits in `rd` are set to 0 if any <<section_cap_integrity,integrity>> checks fail.
+If `{cs1}` fails any <<section_cap_integrity,integrity>> checks, all currently allocated permission bits in `rd` report 0.
+The hardwired bits described above are unaffected and still report 1.
 
 .Capability permissions bit field
 [#gcperm_bit_field]
