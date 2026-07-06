@@ -44,14 +44,14 @@ As with the standard `mtvec` register, the address observed through <<mtvec_y>> 
 . When MODE=Vectored, the effective trap-vector address is the base address plus four times the interrupt cause.
 . An explicit CSR read returns the base address with the MODE field in `mtvec.address[1:0]`.
 
-`HICAUSE` is the largest interrupt cause value that the implementation can write to `__x__cause` when an interrupt is taken.
+`HICAUSE` is defined to be the largest interrupt cause value that the implementation can write to `__x__cause` when an interrupt is taken.
 The set of addresses that can therefore be observed through <<mtvec_y>> ranges from a minimum of `mtvec.address & ~3` to a maximum of `(mtvec.address & ~3) + 4 x HICAUSE`.
 
-Every read of <<mtvec_y>>, whether implicit (taking a trap) or explicit (a CSR read), forms the observed address using the semantics of the <<SCADDR>> instruction, inserting the MODE bits and, in Vectored mode, adding the cause offset.
+Every read of <<mtvec_y>>, whether implicit (taking a trap) or explicit (a CSR read), forms the observed address using the semantics of the <<SCADDR>> instruction, either inserting the MODE bits or, in Vectored mode, adding the cause offset.
 This has two consequences:
 
 * All of the observable addresses must be <<section_cap_representable_check, represented exactly>>.
-  Software must ensure this holds when writing <<mtvec_y>>, and the hardware sets the {ctag} to zero if any observable address cannot be <<section_cap_representable_check, represented exactly>>.
+  Software must ensure this property holds when writing <<mtvec_y>>, and the hardware sets the {ctag} to zero if any observable address cannot be <<section_cap_representable_check, represented exactly>>.
 * A sealed capability written to <<mtvec_y>> is always read back with its {ctag} cleared, because the <<SCADDR>> address update invalidates a sealed capability even when the address value is unchanged.
 
 NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other CSRs such as <<mepc_y>>.
