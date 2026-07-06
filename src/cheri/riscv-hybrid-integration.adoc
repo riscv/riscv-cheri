@@ -50,10 +50,10 @@ Operands are still checked against a capability, but instead of using the metada
 +
 [IMPORTANT]
 ====
-#ARC-NOTE: Naming of these modes is still an open ARC comment.#
-#The goal is to differentiate interpretation of pointers as plain integer addresses vs. full capabilities with metadata.#
-#The names {cheri_int_mode_name} and {cheri_cap_mode_name} match compiler terminology (integral vs. non-integral pointers).#
+#ARC-NOTE: Please confirm the names of the two {cheri_mode_name}s.#
+#The names {cheri_int_mode_name} and {cheri_cap_mode_name} distinguish interpreting pointer operands as plain integer addresses vs. full capabilities with metadata, and match compiler terminology (integral vs. non-integral pointers).#
 
+////
 The following options have been considered:
 
 [cols="1,1,2", options="header"]
@@ -73,6 +73,7 @@ The following options have been considered:
 One past suggestion was "Pointer Mode" vs "Capability Mode".
 However, this is also confusing since capabilities are also pointers (just not "classic" pointers that are a number).
 In this naming scheme we want to show the difference in how hardware interprets pointers-type operands: as binary number (i.e., an address), or as a capability pointer (address+metadata).
+////
 ====
 +
 If RVC encodings are supported, load/store encodings will revert to their _non-CHERI encodings_, such as {C_LOAD_CAP_NAME} reverting to C.FSD for RV64/{cheri_base64_ext_name}.
