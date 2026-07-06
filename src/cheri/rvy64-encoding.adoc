@@ -206,9 +206,10 @@ uses a floating point representation to encode the bounds relative to the
 capability address. The base and top addresses from the bounds are decoded as
 shown below.
 
-WARNING: The pseudocode below does not have a formal notation.
-It is a place-holder until the sail implementation has been integrated in the specification.
-In this notation, `/` means "integer division", `[]` are the bit-select operators, and arithmetic is signed.
+The pseudocode below is normative.
+In this notation, `/` means "integer division", `[]` are the bit-select operators, `{}` is bit concatenation, `?:` is the conditional operator, and arithmetic is signed.
+
+NOTE: The pseudocode is intentionally simpler than the equivalent definitions in the SAIL model.
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The IE bit from CHERI v9 is renamed EF and its value is
@@ -357,13 +358,12 @@ space:
 
 [source]
 ----
-if ( (E < (CAP_MAX_E - 1)) && (t[XLEN: XLEN - 1] - b[XLEN - 1] > 1) )
+if ( (E < (CAP_MAX_E - 1)) && (t[XLEN: XLEN - 1] - {0b0, b[XLEN - 1]}) >= 0b10)
     t[XLEN] = !t[XLEN]
 ----
 NOTE: The comparison is _unsigned_.
 
-That is, invert the most significant bit of _t_ if the decoded length of the
-capability is larger than E.
+That is, invert the most significant bit of _t_ if the decoded top and base are one address space (2^XLEN^ bytes) or more apart, and E is too small to allow this.
 
 NOTE: A capability has infinite bounds if E=CAP_MAX_E and it is not
 malformed (see xref:section_cap_malformed[xrefstyle=short]); this check is
