@@ -23,10 +23,11 @@ Convert the unpacked <<AP-field>> and <<SDP-field>>s of capability `{cs1}`
 into a bit field, with the same format as used by <<CLRPERM>> (see <<gcperm_bit_field>>),
 zero extend and write the result to `rd`.
 +
-All bits in the `[23:0]` range that are reserved or assigned to extensions that are not implemented by the current hart always report 1.
+All bits in the `[23:0]` range that are reserved or assigned to extensions that are not implemented by the current hart are hardwired to 1.
 +
 If `{cs1}` fails any <<section_cap_integrity,integrity>> checks, all currently allocated permission bits in `rd` report 0.
-The hardwired bits described above are unaffected and still report 1.
++
+NOTE: The hardwired bits described above are unaffected and still report 1.
 
 .Capability permissions bit field
 [#gcperm_bit_field]
