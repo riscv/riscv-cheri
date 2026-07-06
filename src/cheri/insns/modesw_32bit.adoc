@@ -24,8 +24,18 @@ Set the current {cheri_mode_name} in <<pcc>>.
 * {MODESW_INT}: If the current mode in <<pcc>> is {cheri_cap_mode_name} ({CAP_MODE_VALUE}), then the <<p_bit>> in <<pcc>> is set to {cheri_int_mode_name} ({INT_MODE_VALUE}). Otherwise no effect.
 
 Operation::
+// Manually updated for the current spec: MODESW.CAP and MODESW.INT are separate
+// instructions now. The Sail model additionally updates drootc (from the debug
+// specification) when in debug mode; that line is omitted here as this specification
+// does not include the debug extension.
+WARNING: Manually written code, to be replaced when updated SAIL is available.
 [source,SAIL,subs="verbatim,quotes"]
 ----
-SAIL TO BE UPDATED
+let target : ExecutionMode = match op {
+  MODESW_CAP => CapPtrMode,
+  MODESW_INT => IntPtrMode,
+};
+set_next_pcc(setCapMode(PCC, target));
+RETIRE_SUCCESS
 ----
 //sail::execute[clause="MODESW()",part=body,unindent]

@@ -31,7 +31,15 @@ NOTE: If the capability encoding format does not support a <<CT-field>> of type 
  Future capability encoding formats may redefine the behavior for <<CT-field>> values greater than 1.
 
 Operation::
+// The Sail SENTRY clause seals its cs1 operand; the current instruction seals
+// cs2 (cs1 is reserved for a future YSEAL) and also invalidates on a failed
+// integrity check.
+WARNING: Manually written code, to be replaced when updated SAIL is available.
 [source,SAIL,subs="verbatim,quotes"]
 ----
-SAIL TO BE UPDATED
+let cs2_val = C(cs2);
+let inCap = clearTagIf(cs2_val, capIsSealed(cs2_val) | not(capReservedValid(cs2_val)));
+C(cd) = sealCap(inCap);
+RETIRE_SUCCESS
 ----
+//sail::execute[clause="SENTRY(_, _)",part=body,unindent]

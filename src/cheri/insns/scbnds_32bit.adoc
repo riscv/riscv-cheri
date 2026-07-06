@@ -94,14 +94,30 @@ The hardware implementation is a simple bit-remapping: +
 ====
 
 Operation for {SCBNDS}::
-[source,SAIL,subs="verbatim,quotes"]
-----
-SAIL TO BE UPDATED
-----
-//sail::execute[clause="SCBNDS(_, _, _)",part=body,unindent]
++
+sail::execute[clause="SCBNDS(_, _, _)",part=body,unindent]
 
 Operation for {SCBNDSI}::
+// YBNDSWI in the JSON uses a different immediate, add it manually.
+WARNING: Manually written code, to be replaced when updated SAIL is available.
 [source,SAIL,subs="verbatim,quotes"]
 ----
-SAIL TO BE UPDATED
+let cs1_val = C(cs1);
+// Decode the requested length from the 9-bit immediate.
+let length : xlenbits =
+  if imm == 0b000000000 then to_bits(xlen, 4096)
+  else if imm[8] == bitzero then zero_extend(imm[7 .. 0])
+  else if imm[7 .. 5] == 0b000 then zero_extend(0b1 @ imm[3 .. 0] @ imm[4 .. 4] @ 0b000)
+  else zero_extend(imm[7 .. 0] @ 0b0000);
+let newBase = cs1_val.address;
+let newTop : CapLenBits = zero_extend(newBase) + zero_extend(length);
+// inCapBoundsNoWrap returns false if the input bounds are malformed.
+let inBounds = inCapBoundsNoWrap(cs1_val, newBase, unsigned(length));
+let (exact, newCap) : (bool, Capability) = setCapBounds(cs1_val, newBase, newTop);
+let cond = not(inBounds & exact) |
+           boundsMalformed(newCap) |
+           not(capReservedValid(newCap)) |
+           capIsSealed(newCap);
+C(cd) = clearTagIf(newCap, cond);
+RETIRE_SUCCESS
 ----
