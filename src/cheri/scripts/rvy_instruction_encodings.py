@@ -292,7 +292,10 @@ def insn_xref(i: Instruction, use_guards: bool = True) -> str:
         anchor = "LOAD_CAP"
     elif name == "SY":
         anchor = "STORE_CAP"
-    xref = f"<<{anchor},{name}>>" if anchor else f"<<{name}>>"
+    # YHIR is a pseudoinstruction for SRLIY; mark it as such so the encoding
+    # overview does not look like a double allocation.
+    display = f"{name} (pseudo)" if name == "YHIR" else name
+    xref = f"<<{anchor},{display}>>" if anchor else f"<<{display}>>"
     if use_guards and i.is_post_v1:
         return f"\nifndef::cheri_ratification_v1_only[]\n{xref}\nendif::[]\n"
     return xref

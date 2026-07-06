@@ -209,7 +209,7 @@ The new exception codes are listed in
 
 [[exception-priority-cheri]]
 .Synchronous exception priority in decreasing priority order for {cheri_base_ext_name}.
-[%autowidth,float="center",align="center",cols="<,>,<",options="header",]
+[float="center",align="center",cols="<2,>2,<9",options="header",]
 |===
 |Priority |Exc.Code |Description
 |_Highest_ |3 |Instruction address breakpoint
@@ -317,7 +317,7 @@ NOTE: In the table below `auth_cap` is `{cs1}`, unless {cheri_default_ext_name} 
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` does not grant <<r_perm>>
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | Any byte of the load access is out of `auth_cap` bounds^2^
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` fails any <<section_cap_integrity,integrity>> checks.
-| Capability loads                               | 5^2^                       | Load access fault     | Misaligned capability load
+| Capability loads                               | 5^3^                       | Load access fault     | Misaligned capability load
 4+| *Store/atomic/cache-block-operation additional exception checks*
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` {ctag} is zero
 | All stores, all atomics, all CBOs              | {cheri_excep_cause_st}     | {cheri_excep_name_st} | `auth_cap` is sealed
@@ -343,7 +343,7 @@ NOTE: Not sure where this small section should go, or even if it should be expan
 
 NOTE: CHERI adds architectural guarantees that can prove to be micro-architecturally useful for reducing side-channels caused by speculative-execution.
  +
- Programmers should be able rely on instructions that fail CHERI permission checks not to update microarchitectural state, e.g., not updating cache state for a load which fails a bound check.
+ Programmers should be able to rely on instructions that fail CHERI permission checks not to update microarchitectural state, e.g., not updating cache state for a load which fails a bound check.
  +
  When implementing an {cheri_base_ext_name} hart, micro-architects need to carefully consider the interaction of raising exceptions late in the pipeline, speculation windows and the resulting side-channel attacks.
 
@@ -410,7 +410,7 @@ endif::support_varxlen[]
 include::{generated_dir}/csr_permission_m_table_body.adoc[]
 |==============================================================================
 
-NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are a maximum possible value.
+NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are the maximum possible values.
 The platform may reset those CSRs to a smaller memory range, or to have fewer permissions.
 
 .Action taken on writing to extended Machine-Mode CSRs
@@ -469,7 +469,7 @@ The handling of <<sepc_y>> is identical to <<mepc_y>>, but in supervisor mode (i
 include::img/sepccreg.edn[]
 
 [#supervisor-level-added-csrs-section]
-=== Supervisor-Level CSRs added {cheri_base_ext_name}
+=== Supervisor-Level CSRs added by {cheri_base_ext_name}
 
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
@@ -546,8 +546,6 @@ include::insns/mret_sret.adoc[]
 include::{generated_dir}/csr_permission_s_table_body.adoc[]
 |==============================================================================
 
-Code pointers and data pointers in <<CSR_exevectors_s>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
-
 .Action taken on writing to extended Supervisor-Mode CSRs
 [#extended_CSR_writing_s]
 [width="100%",options=header,cols="1,1,1,2,2"]
@@ -555,7 +553,7 @@ Code pointers and data pointers in <<CSR_exevectors_s>> are WARL CSRs that do no
 include::{generated_dir}/csr_alias_action_s_table_body.adoc[]
 |==============================================================================
 
-
+Code pointers and data pointers in <<CSR_exevectors_s>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
 
 .YLEN-wide Supervisor-Mode CSRs storing code pointers or data pointers
 [#CSR_exevectors_s]
@@ -837,7 +835,7 @@ endif::[]
 
 When using a system with {cheri_default_ext_name}, it may be desirable to configure privilege levels below Machine-mode such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
 
-{cheri_default_ext_name} includes functions to disable CHERI by making the {CRE} bit of <<menvcfg_y>> and <<senvcfg_y>> writable.
+{cheri_default_ext_name} includes the ability to disable CHERI by making the {CRE} bit of <<menvcfg_y>> and <<senvcfg_y>> writable.
 
 {cheri_default_ext_name} adds <<ddc>>, which must be in its reset state for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
 
@@ -857,7 +855,7 @@ The reset values are:
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
 * Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces
-** Therefore, {cheri_base_ext_name} instructions are longer available.
+** Therefore, {cheri_base_ext_name} instructions are no longer available.
 * No natively YLEN CSRs are available.
 * Only XLEN CSR access is permitted.
 ** This is identical to {cheri_int_mode_name} access.
