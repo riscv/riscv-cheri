@@ -15,7 +15,7 @@ include::wavedrom/amoswap_cap.adoc[]
 include::load_store_creg0.adoc[]
 
 Description::
-Atomic swap of capability type, authorized by the capability in `{cs1}`.
+Atomic swap of capabilities, authorized by the capability in `{cs1}`.
 +
 The operation is equivalent to an atomically executed sequence of:
 +
@@ -23,7 +23,8 @@ The operation is equivalent to an atomically executed sequence of:
 +
 `<<STORE_CAP,{store_cap_name}>> {cs2}, 0({cs1})`
 +
-With the proviso that `{cd}` is only updated if no exceptions are raised and that if `{cd}={cs1}` or `{cd}={cs2}` the <<STORE_CAP>> is unaffected.
+`{cd}` is only updated if no exceptions are raised.
+The value stored to memory is the original value of `{cs2}`, even if `{cd}={cs1}` or `{cd}={cs2}`.
 
 include::atomic_exceptions.adoc[]
 
