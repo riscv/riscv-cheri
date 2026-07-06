@@ -88,8 +88,8 @@ Beyond the `JALR` behaviors specified by {cheriot_unpriv_ext_name},
   updates the hart's `xstatus.xIE` bit as per <<tab_cheriot_priv_sentry_irq>>.
 
 * A successfully retiring `JALR` or `JAL` whose `{cd}` is `ra` will
-  seal its written-back return capability based on the hart's `xstatus.xIE` bit
-  as of the _prior_ instruction's retirement.
+  seal its written-back return capability based on the value of the hart's `xstatus.xIE` bit
+  immediately before this instruction's execution.
   If that bit is `0`,
   the return capability is sealed with {cheriot_sentry_ot_bd};
   otherwise, {cheriot_sentry_ot_be} is used.
@@ -135,7 +135,7 @@ not tantamount to handing it the ability to wedge the machine.
 `xshwm` and `xshwmb`.
 Both are freely read but require <<asr_perm>> for explicit writes from software.
 Writes are WARL, with legal values being addresses with capability alignment
-(that is, multiples of YLEN bits in octet bytes).
+(that is, addresses aligned to `YLEN/8` bytes).
 Store instructions targeting addresses
 between the values held in `xshwm` and `xshwmb`
 cause `xshwm` to be updated to the lowest targeted address
@@ -161,7 +161,7 @@ This section is non-normative,
 as it introduces no new behavior not already permitted by the
 {cheri_base_ext_name} unprivileged architecture.
 It is meant to be informative detail about how CHERIoT platforms
-avail themselves of a particular architectural affordances therein.
+avail themselves of a particular architectural affordance therein.
 =====
 
 As part of providing _heap temporal_ safety,
@@ -181,7 +181,7 @@ in which software's dynamic allocation heap(s) are to reside
 with a per-memory-block _revocation bitmap_,
 a bit-vector wherein each bit corresponds to a capability-sized memory granule.
 (That is, with each capability-sized and -aligned region of the primal memory.)
-Such memory block(s) are said to be _revokable_.
+Such memory block(s) are said to be _revocable_.
 These revocation bitmaps are also exposed (as memory) to software.
 When `{load_cap_name_lc}` transfers a valid capability (one with a set {ctag})
 from memory (revokable or not) into a hart's register file,

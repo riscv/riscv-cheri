@@ -32,7 +32,7 @@ Implementations which do not support {cheri_default_ext_name} are referred to as
 
 Because the base architecture remains {cheri_base_ext_name}, the custom encoding space re-allocated to CHERI remains re-allocated.
 
-NOTE: If an implementation needs to be able access custom encodings in spaces which have been reallocated, then privileged software should disable CHERI entirely.
+NOTE: If an implementation needs to be able to access custom encodings in spaces which have been reallocated, then privileged software should disable CHERI entirely.
 
 [#cheri_execution_mode,reftext="{cheri_mode_name}"]
 === {cheri_mode_name}s
@@ -52,7 +52,7 @@ Operands are still checked against a capability, but instead of using the metada
 ====
 #ARC-NOTE: Naming of these modes is still an open ARC comment.#
 #The goal is to differentiate interpretation of pointers as plain integer addresses vs. full capabilities with metadata.#
-#The current placeholder names {cheri_int_mode_name} and {cheri_cap_mode_name} match compiler terminology (integral vs. non-integral pointers).#
+#The names {cheri_int_mode_name} and {cheri_cap_mode_name} match compiler terminology (integral vs. non-integral pointers).#
 
 The following options have been considered:
 
@@ -64,7 +64,7 @@ The following options have been considered:
 | Non-CHERI Pointer Mode | CHERI Pointer Mode | Same again just with  "Pointer"
 | Address Mode | Capability Mode |
 | Address Pointer Mode | Capability Pointer Mode | "Address Pointer" is a bit odd
-| (Non-CHERI) Address Mode | (CHERI) Capability Mode | Older rejected proposal, parens are a bit awkward
+| (Non-CHERI) Address Mode | (CHERI) Capability Mode | Parentheses are a bit awkward
 | Integer Mode | Capability Mode | CHERIv9 naming scheme.
 | RVI Mode | RVY Mode | Omits RVE, should it be RVI/RVE mode?
 | RVI Pointer Mode | RVY Pointer Mode | Again omits RVE
@@ -123,7 +123,8 @@ The <<p_bit>> (P) is only architecturally relevant for capabilities granting <<x
 NOTE: While the <<p_bit>> can be read or written explicitly using <<GCMODE>> and <<SCMODE>>, these instructions do not change the current execution mode.
 The mode changes when a capability is installed into <<pcc>> (e.g., via an indirect jump, see <<sec_changing_cheri_execution_mode>>).
 
-Capabilities lacking <<x_perm>> may not have a defined <<p_bit>> field in their encoding, and attempting to update this field may be a no-op.
+The <<p_bit>> is only valid in capabilities that grant <<x_perm>> (see <<zyhybrid-clrperm-rules>>).
+Capabilities that do not grant <<x_perm>> therefore do not carry a meaningful <<p_bit>>, so <<SCMODE>> cannot not modify their <<p_bit>>.
 {cheri_default_ext_name} requires a capability encoding that supports transport of the <<p_bit>> (e.g., <<rv64y_cap_description>>).
 
 * {cheri_mode_name} (P)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
@@ -202,7 +203,7 @@ xref:unpriv-csrnames-added[xrefstyle=short].
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
 |YLEN CSR|Permissions|Description
-|<<ddc>>|URW|User Default Data Capability
+|<<ddc>>|URW|Default Data Capability
 |===
 
 [#ddc,reftext="ddc"]

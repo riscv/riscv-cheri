@@ -8,7 +8,7 @@ IMPORTANT: {not_v1_ratification_package_freeze}
 
 The {cheri_base_ext_name} base architecture defines <<sealed_cap, sealed capabilities>>.
 The <<CBLD>>, <<JALR_CHERI>>, and <<YSUNSEAL>> instructions
-and the <<YSEAL>> instruction with <<CT-field>>>1
+and the <<YSEAL>> instruction with <<CT-field>> > 1
 allow platforms to build and consume sealed capabilities in
 particular ways.
 This extension introduces a more general,
@@ -17,9 +17,8 @@ the introduction and elimination of sealed capability forms,
 in keeping with CHERI's _principle of intentional use_.
 
 This extension first introduces a fundamentally new _kind_ of capabilities,
-"**type** capabilities",
-whose address space and borne authority range not over _memory_
-but rather <<sec_cap_type>>-s.
+"**type** capabilities", that do not authorize memory access.
+Instead, their address and bounds identify a range of <<sec_cap_type>> values.
 As subsequently detailed, these capabilities, and their new permissions,
 will serve as authorizing capabilities to new instructions
 which perform transformations of other capabilities' <<sec_cap_type>> fields:
@@ -68,11 +67,11 @@ not do so intrinsically.
 
 [#zyseal_se_perm,reftext="SE-permission"]
 Seal Permission (SE):: Permit the bearer to <<YSEAL>> capabilities
-at the in-bound types of this capability.
+with type values that are within the bounds of this capability.
 
 [#zyseal_us_perm,reftext="US-permission"]
 Unseal Permission (US):: Permit the bearer to <<YUNSEAL>> capabilities
-at the in-bound types of this capability.
+with type values that are within the bounds of this capability.
 
 === Interaction with <<CLRPERM>> and <<GCPERM>>
 

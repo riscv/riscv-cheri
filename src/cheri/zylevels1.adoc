@@ -161,28 +161,32 @@ There are many uses of this mechanism, but two examples are listed below.
 Software can use these features to prevent pointers from leaking between different memory regions or privilege domains that have different security properties.
 The general pattern is to mark sensitive capabilities as local (by clearing their <<zylevels1_gl_flag>>) and ensuring that destination memory regions are accessed through authorities that lack the <<zylevels1_sl_perm>>.
 
-*   **Intra-program flow (e.g., Stack-to-Heap):**
-    To prevent pointers to short-lived memory (like the stack) from leaking into long-lived memory (like the heap), software marks all stack pointers as local.
-    If the authorities for the heap lack the <<zylevels1_sl_perm>>, any attempt to store a stack pointer into the heap results in the hardware invalidating the stored capability.
-    This ensures stack pointers are strictly confined to registers and the stack itself.
+* *Intra-program flow (e.g., Stack-to-Heap):*
++
+To prevent pointers to short-lived memory (like the stack) from leaking into long-lived memory (like the heap), software marks all stack pointers as local.
+If the authorities for the heap lack the <<zylevels1_sl_perm>>, any attempt to store a stack pointer into the heap results in the hardware invalidating the stored capability.
+This ensures stack pointers are strictly confined to registers and the stack itself.
 
-*   **Cross-domain flow (e.g., Kernel-to-User):**
-    These features also apply across privilege boundaries.
-    For example, a kernel can ensure that the capability authorizing a write to userspace (e.g., for a `copy_to_user` operation) lacks the <<zylevels1_sl_perm>>.
-    Even if a kernel bug causes it to accidentally attempt to copy sensitive, local kernel capabilities into the user's buffer, the hardware will invalidate those capabilities.
-    This prevents unintentional leaks of usable capabilities to a less-privileged domain.
+* *Cross-domain flow (e.g., Kernel-to-User):*
++
+These features also apply across privilege boundaries.
+For example, a kernel can ensure that the capability authorizing a write to userspace (e.g., for a `copy_to_user` operation) lacks the <<zylevels1_sl_perm>>.
+Even if a kernel bug causes it to accidentally attempt to copy sensitive, local kernel capabilities into the user's buffer, the hardware will invalidate those capabilities.
+This prevents unintentional leaks of usable capabilities to a less-privileged domain.
 
 ==== Enforcing Shallow vs. Deep No-Capture Guarantees
 
 When passing a capability to a less-trusted function, a caller often wants to enforce "no-capture" guarantees, ensuring the callee cannot hold onto the capability after returning.
 {cheri_levels1_ext_name} provides two levels of protection against capability capture.
 
-*   **Shallow no-capture (via <<zylevels1_gl_flag>> and <<zylevels1_sl_perm>>):**
-    The caller makes the argument capability local by clearing its <<zylevels1_gl_flag>>.
-    Because the callee's global variables and persistent data structures are accessed through capabilities that lack the <<zylevels1_sl_perm>>, the callee cannot store the local argument capability into them.
-    This enforces a shallow guarantee: the callee cannot capture the argument itself, but it might still load a <<levels_globalcap>> _through_ the argument and capture that.
+* *Shallow no-capture (via <<zylevels1_gl_flag>> and <<zylevels1_sl_perm>>):*
++
+The caller makes the argument capability local by clearing its <<zylevels1_gl_flag>>.
+Because the callee's global variables and persistent data structures are accessed through capabilities that lack the <<zylevels1_sl_perm>>, the callee cannot store the local argument capability into them.
+This enforces a shallow guarantee: the callee cannot capture the argument itself, but it might still load a <<levels_globalcap>> _through_ the argument and capture that.
 
-*   **Deep no-capture (via <<zylevels1_lg_perm>>):**
-    To solve the shallow limitation, the caller also removes the <<zylevels1_lg_perm>> from the argument capability.
-    If the callee loads any capability through this argument, the hardware automatically removes the loaded capability's <<zylevels1_gl_flag>> and <<zylevels1_lg_perm>>.
-    This enforces a deep no-capture guarantee: the callee is prevented from capturing the argument _and_ anything reachable from it.
+* *Deep no-capture (via <<zylevels1_lg_perm>>):*
++
+To solve the shallow limitation, the caller also removes the <<zylevels1_lg_perm>> from the argument capability.
+If the callee loads any capability through this argument, the hardware automatically removes the loaded capability's <<zylevels1_gl_flag>> and <<zylevels1_lg_perm>>.
+This enforces a deep no-capture guarantee: the callee is prevented from capturing the argument _and_ anything reachable from it.

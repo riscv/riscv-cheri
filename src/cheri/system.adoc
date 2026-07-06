@@ -7,7 +7,7 @@ endif::[]
 
 CHERI processors need memory systems that support the {ctag}s in memory.
 
-There are, or will soon be, a wide range of CHERI systems in existence from tiny IoT devices up to server chips.
+CHERI systems range from tiny IoT devices up to server chips.
 
 There are two types of bus connections used in SoCs which contain CHERI CPUs:
 
@@ -16,16 +16,16 @@ There are two types of bus connections used in SoCs which contain CHERI CPUs:
 .. These buses will write the {ctag} to memory as an extension of the data write.
 . Non-{ctag}-aware buses, i.e., current non-CHERI-aware buses.
 .. Reads of tagged memory will not read the {ctag}.
-.. Writes to tagged memory will set the {ctag} of any YLEN-aligned YLEN-wide memory location to zero where any byte matches the memory write.
+.. Writes to tagged memory will set the {ctag} of any YLEN-aligned YLEN-wide memory location to zero where any byte is overwritten by the memory write.
 
 The fundamental rule for any CHERI system is that the {ctag} and data are always accessed atomically. For every naturally aligned YLEN-wide memory location, it must never be possible to:
 
 . Update any data bytes without also writing the {ctag}
 .. This implies setting the {ctag} to zero if a non-CHERI aware bus master overwrites a capability in memory
 . Read a {ctag} value with mismatched (stale or newer) data
-. Write a {ctag} without also writing the data.
+. Set a {ctag} without also atomically writing the associated data.
 
-NOTE: Clearing {ctag}s in memory does not necessarily require updating the associated data.
+NOTE: Clearing a {ctag} may be performed without changing the associated data, provided stale tagged data can never be observed.
 
 === Small CHERI system example
 
