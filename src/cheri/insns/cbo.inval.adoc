@@ -24,6 +24,9 @@ Encoding::
 Description::
 A CBO.INVAL instruction performs an invalidate operation on the cache block whose effective address is the base address specified in `{cs1}`.
 The authorizing capability for this instruction is `{cs1}`.
++
+Executing CBO.INVAL requires <<asr_perm>> in <<pcc>>, even when CSR state causes it to perform a flush operation instead of an invalidation.
+An illegal instruction exception is raised if <<asr_perm>> is not granted, matching the behavior of <<MRET_CHERI>>, <<SRET_CHERI>> and CSR accesses that require <<asr_perm>>.
 
 :cbo_inval:
 include::cbo_exceptions.adoc[]
