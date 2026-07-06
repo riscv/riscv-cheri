@@ -835,7 +835,7 @@ endif::[]
 
 When using a system with {cheri_default_ext_name}, it may be desirable to configure privilege levels below Machine-mode such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
 
-{cheri_default_ext_name} includes functions to disable CHERI by making the {CRE} bit of <<menvcfg_y>> and <<senvcfg_y>> writable.
+{cheri_default_ext_name} includes the ability to disable CHERI by making the {CRE} bit of <<menvcfg_y>> and <<senvcfg_y>> writable.
 
 {cheri_default_ext_name} adds <<ddc>>, which must be in its reset state for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
 
@@ -855,7 +855,7 @@ The reset values are:
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 
 * Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces
-** Therefore, {cheri_base_ext_name} instructions are longer available.
+** Therefore, {cheri_base_ext_name} instructions are no longer available.
 * No natively YLEN CSRs are available.
 * Only XLEN CSR access is permitted.
 ** This is identical to {cheri_int_mode_name} access.
