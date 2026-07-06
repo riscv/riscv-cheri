@@ -16,7 +16,8 @@ endif::[]
 
 {cheri_priv_crg_ext} implies Sv39.
 
-The {cheri_priv_crg_ext} extension is enabled when the `sstatus.{pte_cap_fc_enable}` bit is set.
+The {cheri_priv_crg_ext} extension is enabled when the `{pte_cap_fc_enable}` bit is set.
+This bit resides in `mstatus` and is accessible through the `sstatus` view of `mstatus`.
 
 NOTE: `sstatus.{pte_cap_fc_enable}` affects the interpretation of the _pte_._rvy_ field.
 
@@ -177,6 +178,7 @@ ifndef::cheri_ratification_v1_only[]
 and `vsstatus`
 endif::[]
 CSRs include the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({pte_cap_fc_enable}).
+These fields reside in `mstatus`; the other CSRs provide the standard restricted views of them.
 
 [#mstatusreg_pte]
 .Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
