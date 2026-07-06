@@ -668,14 +668,14 @@ The <<gprs,XLEN-wide integer registers>> (e.g., `x1`, `x2`) are all widened to Y
 (def row-height 100)
 (def row-header-fn nil)
 (def boxes-per-row 66)
-(draw-column-headers {:height 30 :font-size 25 :labels (concat ["1" "0" "" "" "" "2*XLEN-1 (YLEN-1)"] (repeat 28 "") ["XLEN XLEN-1"] (repeat 30 "") ["0"])})
+(draw-column-headers {:height 30 :font-size 25 :labels (concat ["YLEN" "" "" "" "" "2*XLEN-1 (YLEN-1)"] (repeat 28 "") ["XLEN XLEN-1"] (repeat 30 "") ["0"])})
 
 (draw-box "0" [:box-first {:span 2}]) (draw-box "x0 (all bits including {ctag} zero)" [:box-last {:span 64 }])
 (draw-box "CT" [:box-first {:span 2}]) (draw-box "{creg}1 (metadata)" [:box-related {:span 32}]) (draw-box "x1" [:box-last {:span 32 }])
 (draw-gap "Same layout for {creg}2-{creg}30" {:height 100})
 (draw-box "CT" [:box-first {:span 2}]) (draw-box "{creg}31 (metadata)" [:box-related {:span 32}]) (draw-box "x31" [:box-last {:span 32 }])
 (draw-box "CT" [:box-first {:span 2}]) (draw-box "{pcc} (metadata)" [:box-related {:span 32}]) (draw-box "{pcc}" [:box-last {:span 32 }])
-(draw-box "Capability tag" {:span 2 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
+(draw-box "CTag" {:span 2 :borders {}}) (draw-box "Metadata" {:span 32 :borders {}}) (draw-box "Address" {:span 32 :borders {}})
 ----
 
 // When referring to the extended registers, the `x` prefix is replaced with a `y`: i.e., the extended version of `x1` becomes `{creg}1`.
