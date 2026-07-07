@@ -35,10 +35,9 @@ NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setti
 
 NOTE: Care must be taken however that suitable root capabilities are available to software after reset if this CSR does not represent one.
 
-When traps are taken into machine mode, the `pc` is updated following the standard `mtvec` behavior.
-The {ctag} and metadata from <<mtvec_y>> are also written to the <<pcc>>.
+When a trap is taken into machine mode, the capability in <<mtvec_y>> is installed in the <<pcc>>, with the address determined by the standard `mtvec` behavior.
 
-As with the standard `mtvec` register, the address observed through <<mtvec_y>> is not simply the stored base address:
+As in the standard `mtvec` definition, the address observed through <<mtvec_y>> is not simply the stored base address:
 
 . `mtvec.address[1:0]` holds the MODE field, which selects the trap-vector mode and does not form part of the trap-vector base address.
 . When MODE=Vectored, the effective trap-vector address is the base address plus four times the interrupt cause.
@@ -56,7 +55,7 @@ This has two consequences:
 
 NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other CSRs such as <<mepc_y>>.
 
-<<mtvec_y>> follows the rule from `mtvec` about not needing to be able to hold all possible <<section_invalid_addr_conv, invalid addresses>>.
+Following the standard `mtvec` rules, <<mtvec_y>> need not be able to hold all possible <<section_invalid_addr_conv, invalid addresses>>.
 
 [#menvcfg_y,reftext="menvcfg ({cheri_base_ext_name})"]
 ==== Machine Environment Configuration (`menvcfg`) Register
@@ -702,6 +701,7 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 
 ====
 
+[#section_pte_rvy,reftext="_pte_._rvy_ field"]
 === The _pte_._{cheri_base_ext_name_lc}_ field for capability flow control
 
 [NOTE]
@@ -733,7 +733,8 @@ If _pte_._{pte_cap_rw_name_lc}_=1 then:
 
 * All capability loads and capability stores operate as normal.
 
-NOTE: rvy[2:0] follow the standard reserved behavior for PTE bits.
+NOTE: The reserved bits _pte_._{rv64y_pte4_field_name_lc}[2:0]_ follow the standard reserved behavior for PTE bits.
+They are allocated by <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>, which redefines the entire _pte_._{rv64y_pte4_field_name_lc}_ field when enabled.
 
 [#section_invalid_addr_conv,reftext="Invalid address conversion"]
 === Invalid Virtual Address Handling
