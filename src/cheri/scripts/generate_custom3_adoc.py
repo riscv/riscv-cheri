@@ -24,8 +24,9 @@ def generate_adoc():
     adoc += "|===\n\n"
 
     adoc += "=== R-Type 3-Operand (funct3=000)\n\n"
-    adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
-    adoc += "| funct7[6:3] \\ funct7[2:0] | 000 | 001 | 010 | 011 | 100 | 101 | 110 | 111\n\n"
+    adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",stripes="even"]\n|===\n'
+    adoc += ".2+h| funct7[6:3] 8+h| funct7[2:0]\n"
+    adoc += "h| 000 h| 001 h| 010 h| 011 h| 100 h| 101 h| 110 h| 111\n\n"
 
     r3_grouped = {}
     for i in rvy_insts.regular_3op_insns:
@@ -55,8 +56,9 @@ def generate_adoc():
     for f7_val, r2_insts in sorted(r2_by_f7.items()):
         adoc += f"=== R-Type 1-Op/2-Op (funct3=000, funct7={format(f7_val, '07b')})\n"
         adoc += "_Note: The 5-bit rs2 field is split into columns rs2[4:3] and rows rs2[2:0]._\n\n"
-        adoc += '[cols="^1,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
-        adoc += "| rs2[2:0] \\ rs2[4:3] | 00 | 01 | 10 | 11\n\n"
+        adoc += '[cols="^1,^a,^a,^a,^a",stripes="even"]\n|===\n'
+        adoc += ".2+h| rs2[2:0] 4+h| rs2[4:3]\n"
+        adoc += "h| 00 h| 01 h| 10 h| 11\n\n"
 
         r2_grouped = {}
         for i in r2_insts:
@@ -73,8 +75,9 @@ def generate_adoc():
         adoc += "|===\n\n"
 
     adoc += f"\n=== AMO Sub-opcode Allocations (funct3={format(Custom3Funct3.AMO.value[0], '03b')})\n\n"
-    adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
-    adoc += "| funct7[6:3] \\ funct7[2:0] | 000 | 001 | 010 | 011 | 100 | 101 | 110 | 111\n\n"
+    adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",stripes="even"]\n|===\n'
+    adoc += ".2+h| funct7[6:3] 8+h| funct7[2:0]\n"
+    adoc += "h| 000 h| 001 h| 010 h| 011 h| 100 h| 101 h| 110 h| 111\n\n"
 
     amo_grouped = {}
     for i in rvy_insts.amo_insns:
@@ -99,8 +102,9 @@ def generate_adoc():
 
     misc_f3 = Custom3Funct3.MISC
     adoc += f"\n=== MISC Sub-opcode Allocations (funct3={format(misc_f3.value[0], '03b')})\n\n"
-    adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",options="header",stripes="even"]\n|===\n'
-    adoc += "| funct7[6:3] \\ funct7[2:0] | 000 | 001 | 010 | 011 | 100 | 101 | 110 | 111\n\n"
+    adoc += '[cols="^1,^a,^a,^a,^a,^a,^a,^a,^a",stripes="even"]\n|===\n'
+    adoc += ".2+h| funct7[6:3] 8+h| funct7[2:0]\n"
+    adoc += "h| 000 h| 001 h| 010 h| 011 h| 100 h| 101 h| 110 h| 111\n\n"
 
     misc_grouped = {}
     for i in rvy_insts.misc_insns:
