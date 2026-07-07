@@ -191,7 +191,7 @@ The bounds field has the following components:
 .{rv64y_uni_base_name} capability bounds encoding fields
 [#rvy64_uni_base_name_bndsenc_param_summary,width="100%",options=header,cols="1,4"]
 |==============================================================================
-| Parameter | Description
+| Variable  | Description
 | T         | Value substituted into the capability's address to decode the top address.
 | TE        | Value either substituted into the exponent or the top address depending on EF.
 | B         | Value substituted into the capability's address to decode the base address.
@@ -208,7 +208,7 @@ EF=1: The exponent is zero; TE, BE and L8 form part of the address bounds.
 The variables in <<rvy64_uni_base_name_bndsenc_param_summary>> are either taken directly from the capability metadata (see <<cap_encoding_xlen64_field_table>>) or, in the case of the upper and lower bits of `T` and `B`, are calculated from it.
 They are used as shown in the <<bounds_variable_usage,pseudo-code>> below.
 
-The bit width of T and B are defined in terms of the mantissa width (MW) which
+The bit widths of T and B are defined in terms of the mantissa width (MW) which
 is set depending on capability encoding as shown in
 xref:rvy64_uni_base_name_param_summary[xrefstyle=short].
 
@@ -233,8 +233,8 @@ when the {ctag} is set (see xref:section_cap_malformed[xrefstyle=short]).
 
 The metadata is encoded in a compressed format termed CHERI Concentrate cite:[woodruff2019cheri]. It
 uses a floating point representation to encode the bounds relative to the
-capability address. The base and top addresses from the bounds are decoded as
-shown below.
+capability address. The following subsections describe how the base and top
+addresses are decoded from the metadata.
 
 The pseudocode below is normative.
 In this notation, `/` means "integer division", `[]` are the bit-select operators, `{}` is bit concatenation, `?:` is the conditional operator, and arithmetic is signed.
@@ -364,7 +364,7 @@ xref:base_bound_dec[xrefstyle=short].
 
 NOTE: XLEN and MW are constant parameters, but E is decoded from the capability metadata, and so the bit positions of the boundaries between the sections vary.
 
-NOTE: The top bound (_t_) has an additional bit so that the top bounds can include the top byte of memory.
+NOTE: The top bound (_t_) has an additional bit so that the bounds can include the topmost byte of memory.
 
 .Decoding of the XLEN+1 wide top (_t_) bound
 [#top_bound_dec]
