@@ -384,8 +384,8 @@ malformedLSB =  (E  < 0) || (E == 0 && enableL8)
 malformed    =  !EF && (malformedMSB || malformedLSB)
 ----
 NOTE: The above includes a special case for encodings where `enableL8=1`.
-      In this case, the effect of the L~8~ bit in the `EF=0` format would be the same as the effect of the implied `LMSB` when `E=0` in the `EF=1` format.
-      Cases where `EF=1`, `E=0` are therefore redundant, so declared malformed when `enableL8=1`.
+      In this case, an `EF=0` encoding that decodes to `E=0` (with its implied `LMSB` of one) expresses the same bounds as the `EF=1` format with the L~8~ bit set.
+      The `EF=0`, `E=0` encodings are therefore redundant, so they are declared malformed when `enableL8=1`, leaving `EF=1` as the canonical encoding.
 
 Capabilities with malformed bounds:
 
