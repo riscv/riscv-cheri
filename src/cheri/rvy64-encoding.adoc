@@ -27,6 +27,25 @@ When <<section_zylevels1>> is implemented:
 * The <<zylevels1_gl_flag,GL>> flag is implemented, otherwise _reserved zero_.
 * The <<AP-field>> includes <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>. Otherwise both are _reserved one_.
 
+.{rv64y_uni_base_name} capability encoding format metadata fields
+[#cap_encoding_xlen64_field_table,width="100%",options=header,cols="1,1,4"]
+|==============================================================================
+| Field      | Bit range | Comment
+| SDP        | 63:60     | <<SDP-field64, Software Defined Permissions>>.
+| AP         | 52:45     | <<AP-field, Architectural Permissions>>.
+| P          | 44        | <<p_bit, Pointer Mode>> (<<section_cheri_hybrid_ext>> only).
+| GL         | 43        | <<zylevels1_gl_flag, GLobal flag>> (<<section_zylevels1>> only).
+| CT         | 27        | <<CT-field, Capability Type field>>.
+| EF         | 26        | Exponent format   for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| T[11:3]    | 25:17     | Top address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| TE         | 16:14     | Top address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| B[13:3]    | 13:3      | Base address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| BE         | 2:0       | Base address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+3+| All other fields are _reserved_
+|==============================================================================
+
+NOTE: T[2:0] and B[2:0] are implicitly zero.
+
 ==== Capability Encoding Parameter Summary
 
 .{rv64y_uni_base_name} capability encoding format parameters
@@ -163,20 +182,28 @@ The capability can be used to access any memory location A in the range base
 possible to encode any arbitrary combination of base and top addresses. An
 invalid capability with {ctag} cleared is produced when attempting to construct a
 capability that is not _representable_ because its bounds cannot be correctly
-encoded. The bounds are decoded as described in
-xref:section_cap_bounds[xrefstyle=short].
+encoded.
 
 The bounds field has the following components:
 
-* *T:* Value substituted into the capability's address to decode the top
-address
-* *B:* Value substituted into the capability's address to decode the base
-address
-* *E:* Exponent that determines the position at which B and T are substituted
-into the capability's address
-* *EF:* Exponent format flag indicating the encoding for T, B and E
-    ** The exponent is stored in T and B if EF=0, so it is 'internal'
-    ** The exponent is zero if EF=1
+.{rv64y_uni_base_name} capability bounds encoding fields
+[#rvy64_uni_base_name_bndsenc_param_summary,width="100%",options=header,cols="1,4"]
+|==============================================================================
+| Parameter | Description
+| T[MW-1:0] | Value substituted into the capability's address to decode the top address.
+| TE        | Value either substituted into the exponent or the top address depending on EF.
+| B         | Value substituted into the capability's address to decode the base address.
+| BE        | Value either substituted into the exponent or the base address depending on EF.
+| E         | Exponent that determines the position at which B and T are substituted into the capability's address.
+| L8        | Value used to form either the MSB of the exponent or the MSB of the top bound.
+| EF        | Exponent format flag indicating the encoding for T, B and E: +
+1. The exponent is calculated from TE and BE, and conditionally L8, if EF=0, so it is 'internal'. +
+2. The exponent is zero if EF=1, TE, BE and L8 form part of the address bounds.
+|==============================================================================
+
+The variables in <<rvy64_uni_base_name_bndsenc_param_summary>> are used as shown in <<bounds_variable_usage,pseudo-code>> below.
+
+
 
 The bit width of T and B are defined in terms of the mantissa width (MW) which
 is set depending on capability encoding as shown in
@@ -227,11 +254,16 @@ base addresses by assuming that T and B are at bit 0 and performing a logical
 bitwise shift left by E.
 endif::[]
 
+anchor:bounds_variable_usage[]
+
+In the pseudo-code below:
+
+* `EF`, `T`, `TE`, `B` and `BE` are all encoded in the capability metadata, see <<cap_encoding_xlen64_field_table>>
+** `L8` is also a capability metadata field but only encoded if enableL8=1.
+* `EW`, `MW, `CAP_MAX_E` and `enableL8` are all capability encoding format parameters, see <<rvy64_uni_base_name_param_summary>>.
+
 [source]
 ----
-// EW, CAP_MAX_E, enableL8 are all specified
-// in the capability encoding format parameter table
-
 If EF = 1:
     E               = 0
     T[EW / 2 - 1:0] = TE
