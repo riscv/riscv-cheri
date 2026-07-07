@@ -18,6 +18,27 @@ include::img/cap-encoding-xlen32.edn[]
 
 ==== Capability Encoding Summary
 
+The bit ranges in <<cap_encoding_xlen32_field_table>> are relative to the XLEN-bit metadata, i.e., the upper half of the in-memory representation.
+
+.{rv32y_uni_base_name} capability encoding format metadata fields
+[#cap_encoding_xlen32_field_table,width="100%",options=header,cols="1,1,4"]
+|==============================================================================
+| Field      | Bit range | Comment
+| SDP        | 31:30     | <<SDP-field, Software Defined Permissions>>.
+| AP         | 29:25     | <<AP-field-encoding32, Architectural Permissions>> (includes fields for <<section_cheri_hybrid_ext>> and <<section_zylevels1>>).
+| GL         | 24        | <<zylevels1_gl_flag, Global (GL) flag>> (<<section_zylevels1>> only).
+| CT         | 20        | <<CT-field, Capability Type field>>.
+| EF         | 19        | Exponent format for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| L8         | 18        | Exponent or top bound MSB for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| T[7:2]     | 17:12     | Top address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| TE         | 11:10     | Top address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| B[9:2]     | 9:2       | Base address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| BE         | 1:0       | Base address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+3+| All other fields are _reserved_
+|==============================================================================
+
+NOTE: T[9:8], T[1:0] and B[1:0] are not specified by the metadata fields and are calculated as shown in <<section_cap_bounds_decoding>>.
+
 .{rv32y_uni_base_name} parameter summary
 [#rvy32_uni_base_name_param_summary,width="100%",options=header,cols="1,1,4"]
 |==============================================================================
@@ -118,7 +139,7 @@ When encoding permissions the following rules are run once _in order_:
 In addition to <<rvy32_uni_base_name_param_summary>> {cheri_default_ext_name} redefines the following parameter:
 
 .{rv32y_uni_base_name} parameter summary with {cheri_default_ext_name} support.
-[#rvy64_uni_base_name_param_summary_hybrid,width="100%",cols="1,2,4",options=header,]
+[#rvy32_uni_base_name_param_summary_hybrid,width="100%",cols="1,2,4",options=header,]
 |==============================================================================
 | Parameter | Value                | Comment
 | AP_MAX    | 0x9                  | Value of the <<AP-field>> giving maximum permissions
