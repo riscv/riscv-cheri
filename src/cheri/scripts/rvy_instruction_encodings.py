@@ -210,8 +210,12 @@ class Instruction(TableEntry):
                 target_cell = insn_cells[i]
 
                 attr_val = target_cell.wavedrom_label
-                if not collapse_identical_labels or attr_val not in attr_vals:
-                    attr_vals.append(attr_val)
+                # A tuple label is rendered as multiple attr rows (used to keep
+                # long labels from overflowing narrow fields).
+                new_vals = list(attr_val) if isinstance(attr_val, tuple) else [attr_val]
+                for v in new_vals:
+                    if not collapse_identical_labels or v not in attr_vals:
+                        attr_vals.append(v)
 
             display_name = rep_cell.value_for_wavedrom
             attr = f"['{bits}', " + ", ".join(f"'{a}'" for a in attr_vals) + "]"
@@ -348,7 +352,7 @@ class IType(Instruction):
         rd_label: str = "dest",
         rs1_label: str = "src",
         imm_label: str = "imm",
-        fixed_label: Optional[str] = None,
+        fixed_label: Union[str, tuple, None] = None,
         fixed_name: Optional[str] = None,
     ):
         super().__init__(name, op, f3, ext, comment)
@@ -667,6 +671,9 @@ def get_custom3_insts():
                 rd_label="dest",
                 rs1_label="src",
                 imm_label="imm",
+                # Split the label over two rows: a single row overflows the
+                # 3-bit field at the left edge of the diagram and gets clipped.
+                fixed_label=("{SCBNDSI}", "=111"),
             ),
         ],
     )

@@ -152,6 +152,7 @@ When the base ISA is {cheri_base_ext_name}, the Y bit is one.
 
 `<<misa_y,misa>>.{CRE}` is a WARL field.
 If the implementation supports a writable <<misa_y,misa>>.{CRE}, it can only be set to zero if all registers used for implicit CHERI checks are currently configured as root capabilities.
+Otherwise, the write to <<misa_y,misa>>.{CRE} is ignored.
 
 These implicit check registers are <<pcc>>, `__x__tvec`, `__x__epc`.
 
@@ -159,7 +160,7 @@ NOTE: The list includes <<ddc>> if <<section_cheri_hybrid_ext>> is implemented.
 
 NOTE: This restriction ensures M-mode software cannot drop CHERI checks by modifying <<misa_y,misa>> once they have been configured.
 
-Either I or E is _also_ set to show how many registers are present.
+Either misa.I or misa.E is _also_ set to indicate whether 32 or 16 general purpose registers are present.
 
 NOTE: Implementations which allow misa.C to be writable need to legalize `__x__epc`
  on _reading_ if the misa.C value has changed since the value was written as this
@@ -224,8 +225,8 @@ The definitions of the following fields are furnished by the <<section_cheri_pri
 
 *mstatus* for {cheri_base_ext_name} has additional restrictions on XLEN and endianness:
 
-* The MXL, SXL and UXL fields that control the
-value of XLEN for S-mode and U-mode must be read-only and equal to MXL in {cheri_base_ext_name} implementations.
+* The MXL field, and the SXL and UXL fields that control the
+value of XLEN for S-mode and U-mode, must be read-only in {cheri_base_ext_name} implementations, with SXL and UXL equal to MXL.
   Only 1 and 2 are supported values.
 
 * The MBE, SBE, and UBE fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only in {cheri_base_ext_name} implementations.
@@ -468,7 +469,7 @@ endif::support_varxlen[]
 
 .All {cheri_base_ext_name} Machine-Mode CSRs.
 [#all_capability_CSRs_m]
-[width="100%",options=header,cols="2,1,1,1,2,2,4"]
+[width="100%",options=header,cols="3,3,2,2,3,3,5"]
 |==============================================================================
 include::{generated_dir}/csr_permission_m_table_body.adoc[]
 |==============================================================================
@@ -476,7 +477,7 @@ include::{generated_dir}/csr_permission_m_table_body.adoc[]
 NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are the maximum possible values.
 The platform may reset those CSRs to a smaller memory range, or to have fewer permissions.
 
-.Action taken on writing to extended Machine-Mode CSRs
+.Action taken on writing to YLEN-bit and extended Machine-Mode CSRs
 [#extended_CSR_writing_m]
 [width="100%",options=header,cols="1,1,1,2,2"]
 |==============================================================================
@@ -651,12 +652,12 @@ include::insns/mret_sret.adoc[]
 
 .All {cheri_base_ext_name} Supervisor-Mode CSRs.
 [#all_capability_CSRs_s]
-[width="100%",options=header,cols="2,1,1,1,2,2,4"]
+[width="100%",options=header,cols="3,3,2,2,3,3,5"]
 |==============================================================================
 include::{generated_dir}/csr_permission_s_table_body.adoc[]
 |==============================================================================
 
-.Action taken on writing to extended Supervisor-Mode CSRs
+.Action taken on writing to YLEN-bit and extended Supervisor-Mode CSRs
 [#extended_CSR_writing_s]
 [width="100%",options=header,cols="1,1,1,2,2"]
 |==============================================================================
@@ -746,7 +747,7 @@ The CSRs shown in xref:CSR_exevectors_m[xrefstyle=short] and xref:CSR_exevectors
 
 However, the bounds encoding of capabilities depends on the address value if the bounds are not infinite.
 
-Therefore, implementations must not convert invalid addresses to other arbitrary invalid addresses in an unrestricted manner if the bounds are not infinite.
+Therefore, if the bounds are not infinite, implementations must not convert an invalid address to a different invalid address, except as permitted by the rules in the following subsections.
 
 If the bounds could not be decoded due to the address being invalid, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
 
@@ -949,7 +950,7 @@ When using a system with {cheri_default_ext_name}, it may be desirable to config
 
 {cheri_default_ext_name} includes the ability to disable CHERI by making the {CRE} bit of <<menvcfg_y>> and <<senvcfg_y>> writable.
 
-{cheri_default_ext_name} adds <<ddc>>, which must be in its reset state for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
+{cheri_default_ext_name} adds <<ddc>>, which must be configured as a <<root-rw-cap>> for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
 
 The effective CHERI-enable for the current privilege is:
 
@@ -975,7 +976,7 @@ The following occurs when executing code in a privilege mode that has CHERI disa
 Disabling CHERI has no effect on implicit accesses or security checks.
 
 * The last capability written to <<pcc>> and <<ddc>> before disabling CHERI is used to authorize instruction execution and data memory accesses respectively.
-* Exceptions and interrupts use the full capability version of `__x__tvec` and `__x__epc`.
+* Exceptions and interrupts use the full capability held in `__x__tvec` and `__x__epc`.
 
 [NOTE]
 ====

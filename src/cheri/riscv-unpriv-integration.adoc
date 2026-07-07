@@ -23,6 +23,8 @@ For example, in {rv64y_uni_base_name}:
 . `Y` denotes a CHERI base.
 . `A` denotes the capability encoding format.
 
+NOTE: This naming scheme is based on the RISC-V https://lists.riscv.org/g/tech-unprivileged/topic/longer_base_name_proposal/116854896["longer base name" proposal], which allows base ISA names longer than two characters.
+
 NOTE: Future RV64 CHERI capability encoding formats could be named RV64LYB, RV64LYC, and so on, or they may have more descriptive names after the RV64LY prefix.
 
 Also see xref:sec_cap_encoding_formats[xrefstyle=full].
@@ -71,7 +73,7 @@ In addition to widening to YLEN, each register also gains a one-bit {ctag} which
 
 {cheri_base_ext_name} specifies the minimum required fields that the capability encoding format must support, and their semantics.
 This version of {cheri_base_ext_name} defines only little-endian capability memory layouts.
-The memory representation of capabilities holds the address in the first `XLEN` bits of memory followed by the metadata.
+The memory representation of capabilities is always `2*XLEN` (`YLEN`) bits wide and holds the address in the lower `XLEN` bits of memory and the metadata in the upper `XLEN` bits.
 
 {cheri_base_ext_name} is designed to be highly extensible by allowing different capability encoding formats to exist.
 Specific capability encoding formats may support different ISA extensions and add new architectural permissions.
@@ -137,7 +139,7 @@ Capability load/store require the _provenance_ check:
 * Any store that wrote the capability to memory was correctly authorized.
 * Any load that read the capability from memory was correctly authorized.
 
-When an operation fails a check, either due to software error or malicious intent, then the operation raises an exception or sets the resulting {ctag} to zero.
+When an operation fails a check, either due to software error or malicious intent, the operation raises an exception or sets the resulting {ctag} to zero, as defined by each instruction.
 
 For a capability to be valid, the {ctag} must be set, otherwise a capability is invalid.
 
@@ -157,7 +159,7 @@ Examples of such invalid operations include writing only the integer portion (th
 
 {ctag_cap}s are tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
 The implementation must set the {ctag} to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand.
-For example, the <<STORE_CAP>> instruction may set the {ctag} to one if all the instruction's prerequisites are met, but <<ldst,SW>> will always set the {ctag} to zero.
+For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, including `{cs2}` 's {ctag} being set to one, but <<ldst,SW>> will always set the stored {ctag} to zero.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
 
@@ -209,9 +211,9 @@ The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instruc
 They all copy `{cs1}` to the output `{cd}`, set the _base_ bound of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
 
 * <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
-** Set the {ctag} to zero if the bounds cannot be encoded exactly.
+** The {ctag} is set to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSI>> sets the _base_ to `{cs1}.address`, and the _length_ to the immediate value.
-** Set the {ctag} to zero if the bounds cannot be encoded exactly.
+** The {ctag} is set to zero if the bounds cannot be encoded exactly.
 * <<SCBNDSR>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
 ** If the requested bounds cannot be encoded exactly, the result uses the smallest representable bounds that contain the requested range and remain within the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
@@ -244,8 +246,8 @@ NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability 
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
 Since the upper bits of the address are used to calculate the top and base bounds, deriving a new capability with a different address could change the resulting bounds.
-All derived capabilities must check that the new address does not change the bounds.
-If they _do_ change then set the {ctag} of the derived capability to zero, so that it is invalid for use.
+All instructions that derive a capability with a new address must check that the new address does not change the bounds.
+If the bounds _do_ change then the {ctag} of the derived capability is set to zero, so that the capability becomes invalid.
 
 Software can derive a capability with a new address using instructions such as <<SCADDR>>, <<CADD>> and <<CADDI>>.
 
@@ -843,7 +845,7 @@ When accessing CSRs these rules are followed:
 . Accesses to <<xlen_csrs>> are as specified by Zicsr
 . Accesses to <<ylen_csrs>> and <<extended_csrs>>, using CSRRW will:
 .. Read YLEN bits
-.. Write YLEN bits, and will write the {ctag} to zero if any <<section_cap_integrity,integrity>> checks fail
+.. Write YLEN bits, and will write the {ctag} to zero if the written value fails any of the checks in xref:section_cap_integrity[xrefstyle=full]
 . Accesses to <<ylen_csrs>> and <<extended_csrs>>, using instructions other than CSRRW will:
 .. Read YLEN bits
 .. For CSRRS/CSRRC, compute the XLEN-bit address-field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN source operand.
@@ -864,8 +866,8 @@ The assembler pseudoinstruction to read a capability CSR `csrr {cd}, csr`, is en
 |CSRR[C\|S]  rs1!=x0  |YLEN         | XLEN
 |CSRRWI      rd==x0   |             | XLEN
 |CSRRWI      rd!=x0   |YLEN         | XLEN
-|CSRR[C\|S]I uimm==x0 |YLEN         |
-|CSRR[C\|S]I uimm!=x0 |YLEN         | XLEN
+|CSRR[C\|S]I uimm==0  |YLEN         |
+|CSRR[C\|S]I uimm!=0  |YLEN         | XLEN
 |=======================
 
 In <<clen_access_summary_base>>, when there is no read or write width shown, the CSR access is _not_ made and there are no side-effects following standard Zicsr rules.
@@ -1241,8 +1243,14 @@ ifdef::cheri_standalone_spec[]
 [#rvy_zca_insn_table, reftext="{rvy_zca_ext_name}"]
 == Zca ({cheri_base_ext_name} added and modified instructions)
 
+ifndef::cheri_ratification_v1_only[]
 Zcf (RV32) and Zcd (RV64) are incompatible with the {cheri_base_ext_name} base ISA, as their encodings are reused for the capability loads and stores below.
 On harts that also implement {cheri_default_ext_name}, these encodings revert to Zcf/Zcd when executing in {cheri_int_mode_name} (see xref:cheri_execution_mode[xrefstyle=full]).
+endif::[]
+ifdef::cheri_ratification_v1_only[]
+Zcd (RV64) is incompatible with the {cheri_base_ext_name} base ISA, as its encodings are reused for the capability loads and stores below.
+On harts that also implement {cheri_default_ext_name}, these encodings revert to Zcd when executing in {cheri_int_mode_name} (see xref:cheri_execution_mode[xrefstyle=full]).
+endif::[]
 
 .{rvy_zca_ext_name} instruction extension
 [#{rvy_zca_file_name}]
@@ -1415,15 +1423,15 @@ endif::[]
 
 .All {cheri_base_ext_name} User-Mode CSRs.
 [#all_capability_CSRs_u]
-[width="100%",options=header,cols="2,1,1,1,2,2,4"]
+[width="100%",options=header,cols="3,3,2,2,3,3,5"]
 |==============================================================================
 include::{generated_dir}/csr_permission_u_table_body.adoc[]
 |==============================================================================
 
-NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are a maximum possible value.
-The platform may reset those CSRs to a smaller memory range, or to have fewer permissions.
+NOTE: Where initial values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are the maximum possible value.
+The EEI may initialize those CSRs to cover a smaller memory range, or to grant fewer permissions.
 
-.Action taken on writing to extended User-Mode CSRs
+.Action taken on writing to YLEN-bit and extended User-Mode CSRs
 [#extended_CSR_writing_u]
 [width="100%",options=header,cols="1,1,1,2,2"]
 |==============================================================================
