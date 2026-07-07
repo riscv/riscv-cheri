@@ -125,7 +125,7 @@ NOTE: While the <<p_bit>> can be read or written explicitly using <<GCMODE>> and
 The mode changes when a capability is installed into <<pcc>> (e.g., via an indirect jump, see <<sec_changing_cheri_execution_mode>>).
 
 The <<p_bit>> is only valid in capabilities that grant <<x_perm>> (see <<zyhybrid-clrperm-rules>>).
-Capabilities that do not grant <<x_perm>> therefore do not carry a meaningful <<p_bit>>, so <<SCMODE>> cannot not modify their <<p_bit>>.
+Capabilities that do not grant <<x_perm>> therefore do not carry a meaningful <<p_bit>>, so <<SCMODE>> cannot modify their <<p_bit>>.
 {cheri_default_ext_name} requires a capability encoding that supports transport of the <<p_bit>> (e.g., <<rv64y_cap_description>>).
 
 * {cheri_mode_name} (P)={CAP_MODE_VALUE} indicates {cheri_cap_mode_name}.
@@ -175,10 +175,10 @@ The following <<CLRPERM>> permission rule is added:
 
 ==== Observing the {cheri_mode_name}
 
-The effective {cheri_mode_name} cannot be determined just by reading the <<p_bit>> from <<pcc>> since it also depends on the execution environment.
+The effective {cheri_mode_name} cannot be determined just by reading the <<p_bit>> from the <<pcc>> since it also depends on the execution environment.
 The following code sequence demonstrates how a program can observe the current, effective {cheri_mode_name}.
-It will write, to `x1`, the value `1` for {cheri_cap_mode_name} (wherein `pc` has a set {ctag})
-or `0` for {cheri_int_mode_name} (wherein `pc` is just an address and has a clear {ctag}):
+It will write, to `x1`, the value `1` for {cheri_cap_mode_name} (where <<AUIPC_CHERI>> derives a valid capability from the <<pcc>>)
+or `0` for {cheri_int_mode_name} (where `auipc` reverts to its standard behavior and writes an integer result with a clear {ctag}):
 
 [source,subs=attributes+]
 ----
