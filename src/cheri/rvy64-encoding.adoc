@@ -88,13 +88,12 @@ There are 9 bits in total allocated to the <<AP-field>> and the <<p_bit>>.
 
 Therefore there are 90 valid combinations encoded in 9-bits.
 
-Future extensions or capability encoding formats may address this by implementing a more compact joint <<AP-field>> and <<p_bit>> encoding that is fully _compatible for all software_ to increase the number of reserved bits.
+Future extensions or capability encoding formats may leverage these reserved patterns to implement a more compact joint <<AP-field>> and <<p_bit>> encoding that is fully _compatible for all software_ to increase the number of reserved bits.
 
-The existing encoding is not dense but is beneficial for the timing of reading capability data from data caches, as an implicit <<CLRPERM>> is required to filter loaded permissions.
-The current encoding removes the need to unpack and repack permissions, which a more compact encoding is likely to need.
-
-
-Such an encoding would have observable differences in the in-memory representation of capabilities.
+// The existing encoding is not dense but is beneficial for the timing of reading capability data from data caches, as an implicit <<CLRPERM>> is required to filter loaded permissions.
+// The current encoding removes the need to unpack and repack permissions, which a more compact encoding is likely to need.
+//
+// Such an encoding would have observable differences in the in-memory representation of capabilities.
 
 ====
 
