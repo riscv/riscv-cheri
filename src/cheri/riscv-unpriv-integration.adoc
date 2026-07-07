@@ -139,7 +139,7 @@ Capability load/store require the _provenance_ check:
 * Any store that wrote the capability to memory was correctly authorized.
 * Any load that read the capability from memory was correctly authorized.
 
-When an operation fails a check, the operation raises an exception or sets the resulting {ctag} to zero, as defined by each instruction.
+When an operation fails a check, either due to software error or malicious intent, the operation raises an exception or sets the resulting {ctag} to zero, as defined by each instruction.
 
 For a capability to be valid, the {ctag} must be set, otherwise a capability is invalid.
 
@@ -247,7 +247,7 @@ NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability 
 
 Since the upper bits of the address are used to calculate the top and base bounds, deriving a new capability with a different address could change the resulting bounds.
 All instructions that derive a capability with a new address must check that the new address does not change the bounds.
-If the bounds _do_ change then the {ctag} of the derived capability is set to zero, so that it is invalid for use.
+If the bounds _do_ change then the {ctag} of the derived capability is set to zero, so that the capability becomes invalid.
 
 Software can derive a capability with a new address using instructions such as <<SCADDR>>, <<CADD>> and <<CADDI>>.
 
