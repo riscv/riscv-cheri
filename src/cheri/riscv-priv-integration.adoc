@@ -159,6 +159,7 @@ These implicit check registers are <<pcc>>, `__x__tvec`, `__x__epc`.
 NOTE: The list includes <<ddc>> if <<section_cheri_hybrid_ext>> is implemented.
 
 NOTE: This restriction ensures M-mode software cannot drop CHERI checks by modifying <<misa_y,misa>> once they have been configured.
+ The exact behavior of the restriction is implementation defined, and does not need to, for example, check that capability bounds have been narrowed and then reprogrammed _back_ to infinity. Detecting any bounds reduction is sufficient.
 
 Either misa.I or misa.E is _also_ set to indicate whether 32 or 16 general purpose registers are present.
 
