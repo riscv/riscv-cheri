@@ -195,11 +195,13 @@ The bounds field has the following components:
 | B         | Value substituted into the capability's address to decode the base address.
 | BE        | Value either substituted into the exponent or the base address depending on EF.
 | E         | Exponent that determines the position at which T and B are substituted into the capability's address.
-| L8        | Value used to form either the MSB of the exponent or the MSB of the top bound.
+| L~8~^1^   | Value used to form either the MSB of the exponent or the MSB of the top bound.
 | EF        | Exponent format flag indicating the encoding for T, B and E: +
 EF=0: The exponent is calculated from TE and BE, and conditionally L8, so it is 'internal'. +
 EF=1: The exponent is zero, TE, BE and L8 form part of the address bounds.
 |==============================================================================
+
+^1^ Only valid if `enableL8=1`.
 
 The variables in <<rvy64_uni_base_name_bndsenc_param_summary>> are taken directly from the capability metadata (see <<cap_encoding_xlen64_field_table>>) and used as shown in the <<bounds_variable_usage,pseudo-code>> below.
 
