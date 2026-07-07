@@ -18,15 +18,17 @@ include::img/cap-encoding-xlen32.edn[]
 
 ==== Capability Encoding Summary
 
+The bit ranges in <<cap_encoding_xlen32_field_table>> are relative to the XLEN-bit metadata, i.e., the upper half of the in-memory representation.
+
 .{rv32y_uni_base_name} capability encoding format metadata fields
 [#cap_encoding_xlen32_field_table,width="100%",options=header,cols="1,1,4"]
 |==============================================================================
 | Field      | Bit range | Comment
 | SDP        | 31:30     | <<SDP-field, Software Defined Permissions>>.
 | AP         | 29:25     | <<AP-field-encoding32, Architectural Permissions>> (includes fields for <<section_cheri_hybrid_ext>> and <<section_zylevels1>>).
-| GL         | 24        | <<zylevels1_gl_flag, GLobal flag>> (<<section_zylevels1>> only).
+| GL         | 24        | <<zylevels1_gl_flag, Global (GL) flag>> (<<section_zylevels1>> only).
 | CT         | 20        | <<CT-field, Capability Type field>>.
-| EF         | 19        | Exponent format   for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| EF         | 19        | Exponent format for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | L8         | 18        | Exponent or top bound MSB for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | T[7:2]     | 17:12     | Top address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | TE         | 11:10     | Top address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.

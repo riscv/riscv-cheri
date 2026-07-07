@@ -27,6 +27,8 @@ When <<section_zylevels1>> is implemented:
 * The <<zylevels1_gl_flag,GL>> flag is implemented, otherwise _reserved zero_.
 * The <<AP-field>> includes <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>. Otherwise both are _reserved one_.
 
+The bit ranges in <<cap_encoding_xlen64_field_table>> are relative to the XLEN-bit metadata, i.e., the upper half of the in-memory representation.
+
 .{rv64y_uni_base_name} capability encoding format metadata fields
 [#cap_encoding_xlen64_field_table,width="100%",options=header,cols="1,1,4"]
 |==============================================================================
@@ -34,9 +36,9 @@ When <<section_zylevels1>> is implemented:
 | SDP        | 63:60     | <<SDP-field64, Software Defined Permissions>>.
 | AP         | 52:45     | <<AP-field, Architectural Permissions>>, see <<cap_perms_encoding64>>.
 | P          | 44        | <<p_bit, Pointer Mode>> (<<section_cheri_hybrid_ext>> only).
-| GL         | 43        | <<zylevels1_gl_flag, GLobal flag>> (<<section_zylevels1>> only).
+| GL         | 43        | <<zylevels1_gl_flag, Global (GL) flag>> (<<section_zylevels1>> only).
 | CT         | 27        | <<CT-field, Capability Type field>>.
-| EF         | 26        | Exponent format   for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| EF         | 26        | Exponent format for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | T[11:3]    | 25:17     | Top address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | TE         | 16:14     | Top address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | B[13:3]    | 13:3      | Base address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
@@ -198,19 +200,19 @@ The bounds field has the following components:
 | L~8~^1^   | Value used to form either the MSB of the exponent or the MSB of the top bound.
 | EF        | Exponent format flag indicating the encoding for T, B and E: +
 EF=0: The exponent is calculated from TE and BE, and conditionally L8, so it is 'internal'. +
-EF=1: The exponent is zero, TE, BE and L8 form part of the address bounds.
+EF=1: The exponent is zero; TE, BE and L8 form part of the address bounds.
 |==============================================================================
 
 ^1^ Only valid if `enableL8=1`.
 
-The variables in <<rvy64_uni_base_name_bndsenc_param_summary>> are taken directly from the capability metadata (see <<cap_encoding_xlen64_field_table>>) and used as shown in the <<bounds_variable_usage,pseudo-code>> below.
+The variables in <<rvy64_uni_base_name_bndsenc_param_summary>> are either taken directly from the capability metadata (see <<cap_encoding_xlen64_field_table>>) or calculated from it, and are used as shown in the <<bounds_variable_usage,pseudo-code>> below.
 
 The bit width of T and B are defined in terms of the mantissa width (MW) which
 is set depending on capability encoding as shown in
 xref:rvy64_uni_base_name_param_summary[xrefstyle=short].
 
 The exponent E indicates the position of `T` and `B` within the capability's
-address as described in xref:section_cap_bounds[xrefstyle=short]. The bit
+address as described in xref:section_cap_bounds_format[xrefstyle=short]. The bit
 width of the exponent (`EW`) is set depending on the encoding. The
 maximum value of the exponent is calculated as follows:
 
@@ -356,7 +358,7 @@ alignment boundaries.
 The bounds are formed of three sections as shown in xref:top_bound_dec[xrefstyle=short] and
 xref:base_bound_dec[xrefstyle=short].
 
-NOTE: XLEN and MW are constant parameters, but E is decoded from the capability metadata, and so the bit positions of the boundaries between the sections varies.
+NOTE: XLEN and MW are constant parameters, but E is decoded from the capability metadata, and so the bit positions of the boundaries between the sections vary.
 
 NOTE: The top bound (_t_) has an additional bit so that the top bounds can include the top byte of memory.
 
