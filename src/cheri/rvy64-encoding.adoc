@@ -264,6 +264,7 @@ In the pseudo-code below:
 * `EF`, `T`, `TE`, `B` and `BE` are all encoded in the capability metadata, see <<cap_encoding_xlen64_field_table>>
 ** `L8` is also a capability metadata field but only encoded if `enableL8=1`.
 * `EW`, `MW`, `CAP_MAX_E` and `enableL8` are all capability encoding format parameters, see <<rvy64_uni_base_name_param_summary>>.
+* `LCout` and `LMSB` are intermediate values used to reconstitute the top two bits of `T`, see below.
 
 [source]
 ----
@@ -289,7 +290,7 @@ T and B are both MW bits wide, and are formed of different bit ranges:
 * `B[MW - 1:EW / 2]` is taken directly from the capability metadata.
 * `B[EW / 2 - 1:0]`  is as specified in the pseudo-code above.
 
-The EF bit selects between two cases:
+The design rationale for the two EF cases is as follows:
 
 1. `EF = 1`: The exponent is 0. When `enableL8=1`, `L~8~` encodes the MSB of the length,
 which can be used to derive T[MW-1:MW-2], forming a full MW-wide T field.
@@ -300,16 +301,15 @@ that this bit is implied by `E`.
 
 To save space in the encoding metadata, the top two bits of T are not stored directly but reconstituted as follows:
 
-The most significant two bits of T can be derived from B using
-the equality `T = B + L`, where `L[MW - 2]` is known from the values of `EF` and `E`
-(as well as L~8~ when `enableL8=1`).
-A carry out is implied if `T[MW - 3:0] < B[MW - 3:0]` since it is
-guaranteed that the top is larger than the base.
-
 [source]
 ----
 T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
 ----
+
+This derivation relies on the equality `T = B + L`, where `L` is the encoded length of the capability.
+`LMSB` is the value of `L[MW - 2]`, which is known from the values of `EF` and `E` (as well as L~8~ when `enableL8=1`).
+`LCout` is the carry out from the lower bits, which is implied by `T[MW - 3:0] < B[MW - 3:0]` since it is
+guaranteed that the top is larger than the base.
 
 [#section_cap_bounds_correction_factors]
 ===== Correction Factors
