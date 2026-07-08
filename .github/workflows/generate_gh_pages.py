@@ -64,12 +64,13 @@ def get_repo_details() -> str:
 def stage_snapshot_local(build_dir: Path) -> None:
     """Stages snapshot from local build files (main branch workflow runs)."""
     print("Staging snapshot from local build...")
-    for spec in ["unprivileged", "privileged", "riscv-cheri", "riscv-cheri-full"]:
+    for spec in ["unprivileged", "privileged", "riscv-cheri", "riscv-cheri-debug", "riscv-cheri-full"]:
         (DIST_DIR / "snapshot" / spec).mkdir(parents=True, exist_ok=True)
 
     shutil.copy(build_dir / "riscv-unprivileged.html", DIST_DIR / "snapshot/unprivileged/index.html")
     shutil.copy(build_dir / "riscv-privileged.html", DIST_DIR / "snapshot/privileged/index.html")
     shutil.copy(build_dir / "riscv-cheri.html", DIST_DIR / "snapshot/riscv-cheri/index.html")
+    shutil.copy(build_dir / "riscv-cheri-debug.html", DIST_DIR / "snapshot/riscv-cheri-debug/index.html")
     shutil.copy(build_dir / "riscv-cheri-full.html", DIST_DIR / "snapshot/riscv-cheri-full/index.html")
 
     # Root index.html remains the latest active spec snapshot
@@ -89,7 +90,7 @@ def stage_snapshot_download(repo: str) -> None:
 
     if pages_url:
         print(f"Pages URL is {pages_url}")
-        for spec in ["unprivileged", "privileged", "riscv-cheri", "riscv-cheri-full"]:
+        for spec in ["unprivileged", "privileged", "riscv-cheri", "riscv-cheri-debug", "riscv-cheri-full"]:
             (DIST_DIR / "snapshot" / spec).mkdir(parents=True, exist_ok=True)
 
         def download_file(url_path: str, dest_path: str) -> None:
@@ -106,13 +107,14 @@ def stage_snapshot_download(repo: str) -> None:
         download_file("snapshot/unprivileged/index.html", "snapshot/unprivileged/index.html")
         download_file("snapshot/privileged/index.html", "snapshot/privileged/index.html")
         download_file("snapshot/riscv-cheri/index.html", "snapshot/riscv-cheri/index.html")
+        download_file("snapshot/riscv-cheri-debug/index.html", "snapshot/riscv-cheri-debug/index.html")
         download_file("snapshot/riscv-cheri-full/index.html", "snapshot/riscv-cheri-full/index.html")
 
         # Root index.html remains the latest active spec snapshot
         download_file("snapshot/riscv-cheri/index.html", "index.html")
     else:
         print("Warning: Creating placeholder snapshots.")
-        for spec in ["unprivileged", "privileged", "riscv-cheri", "riscv-cheri-full"]:
+        for spec in ["unprivileged", "privileged", "riscv-cheri", "riscv-cheri-debug", "riscv-cheri-full"]:
             (DIST_DIR / "snapshot" / spec).mkdir(parents=True, exist_ok=True)
             with open(DIST_DIR / "snapshot" / spec / "index.html", "w") as out_file:
                 out_file.write("Snapshot not available.")
@@ -214,6 +216,8 @@ def generate_snapshot_block() -> str:
                     label = "Unprivileged"
                 elif "privileged" in lower_d:
                     label = "Privileged"
+                elif "debug" in lower_d:
+                    label = "CHERI Debug Specification"
                 elif "cheri" in lower_d:
                     label = "CHERI Specification"
                 else:
@@ -296,6 +300,8 @@ def generate_releases_block(versions: List[str], version_assets: Dict[str, List[
                         label = "Unprivileged"
                     elif "privileged" in lower_spec:
                         label = "Privileged"
+                    elif "debug" in lower_spec:
+                        label = "CHERI Debug Specification"
                     else:
                         label = spec.replace("-", " ").replace("_", " ").title()
 
