@@ -18,6 +18,7 @@ The RISC-V Instruction Set Manual is organized into the following volumes:
 - **HTML snapshots of the latest commit** can be viewed at the following locations:
   - [Standalone CHERI specification](https://riscv.github.io/riscv-cheri/)
   - [Standalone CHERI specification with additional non-frozen chapters](https://riscv.github.io/riscv-cheri/snapshot/riscv-cheri-full/)
+  - [RISC-V Debug Specification for CHERI Extensions](https://riscv.github.io/riscv-cheri/snapshot/riscv-cheri-debug/)
   - [Unprivileged spec](https://riscv.github.io/riscv-cheri/snapshot/unprivileged/)
   - [Privileged spec](https://riscv.github.io/riscv-cheri/snapshot/privileged/)
 
