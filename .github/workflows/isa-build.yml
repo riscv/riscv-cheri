@@ -91,6 +91,29 @@ jobs:
           path: ${{ github.workspace }}/build/riscv-cheri.epub
           retention-days: 7
 
+      # Upload the riscv-cheri-debug PDF file
+      - name: Upload riscv-cheri-debug.pdf
+        if: steps.build_files.outcome == 'success'
+        uses: actions/upload-artifact@v7
+        with:
+          name: riscv-cheri-debug-${{ env.SHORT_SHA }}.pdf
+          path: ${{ github.workspace }}/build/riscv-cheri-debug.pdf
+          retention-days: 7
+      - name: Upload riscv-cheri-debug.html
+        if: steps.build_files.outcome == 'success'
+        uses: actions/upload-artifact@v7
+        with:
+          name: riscv-cheri-debug-${{ env.SHORT_SHA }}.html
+          path: ${{ github.workspace }}/build/riscv-cheri-debug.html
+          retention-days: 7
+      - name: Upload riscv-cheri-debug.epub
+        if: steps.build_files.outcome == 'success'
+        uses: actions/upload-artifact@v7
+        with:
+          name: riscv-cheri-debug-${{ env.SHORT_SHA }}.epub
+          path: ${{ github.workspace }}/build/riscv-cheri-debug.epub
+          retention-days: 7
+
       # Upload the riscv-cheri-full PDF file
       - name: Upload riscv-cheri-full.pdf
         if: steps.build_files.outcome == 'success'
@@ -175,7 +198,7 @@ jobs:
           echo "RELEASE_VERSION=${VERSION}" >> $GITHUB_ENV
 
           cd ${{ github.workspace }}/build
-          for base in riscv-cheri riscv-cheri-full riscv-privileged riscv-unprivileged; do
+          for base in riscv-cheri riscv-cheri-debug riscv-cheri-full riscv-privileged riscv-unprivileged; do
             for ext in pdf html epub; do
               cp "${base}.${ext}" "${base}-${VERSION}.${ext}"
             done
