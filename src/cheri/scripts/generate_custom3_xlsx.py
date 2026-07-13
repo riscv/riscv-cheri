@@ -223,13 +223,17 @@ def generate_xlsx():
         if isinstance(i.f7.val, int):
             r3_grouped.setdefault(i.f7.val, []).append(i.name)
 
+    # funct7 values used by the 1-op/2-op encodings (detailed in the
+    # per-funct7 tables below).
+    twoop_f7s = {i.f7.val for i in rvy_insts.regular_2op_insns if isinstance(i.f7.val, int)}
+
     headers = ["funct7[6:3] \\ funct7[2:0]"] + [format(c, "03b") for c in range(8)]
     write_table_header("2. R-Type 3-Operand (funct3=000)", headers)
     for r in range(16):
         row_data = [f"{format(r, '04b')} (0x{r:X})"]
         for c in range(8):
             f7 = (r << 3) | c
-            if f7 == 0x7F:
+            if f7 in twoop_f7s:
                 name = "1OP/2OP"
             else:
                 names = r3_grouped.get(f7, [])
