@@ -100,7 +100,8 @@ let tag = cs1_val.tag &
           not(capIsSealed(cs1_val)) &
           cs2_val.tag &
           capIsSealed(cs2_val) &
-          capIsSubset(cs2_val, cs1_val); /* subset checks for malformed bounds, perms, reserved bits */
+          /* subset checks for malformed bounds, perms, reserved bits */
+          capIsSubset(cs2_val, cs1_val);
 
 C(cd) = { unsealCap(cs2_val) with tag = tag };
 RETIRE_SUCCESS
