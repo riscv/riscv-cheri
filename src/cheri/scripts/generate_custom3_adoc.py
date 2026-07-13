@@ -34,11 +34,15 @@ def generate_adoc():
         if isinstance(i.f7.val, int):
             r3_grouped.setdefault(i.f7.val, []).append(i)
 
+    # funct7 values used by the 1-op/2-op encodings (detailed in the
+    # per-funct7 tables below).
+    twoop_f7s = {i.f7.val for i in rvy_insts.regular_2op_insns if isinstance(i.f7.val, int)}
+
     for r in range(16):
         row_str = f"| *{format(r, '04b')}*"
         for c in range(8):
             f7 = (r << 3) | c
-            if f7 == 0x7F:
+            if f7 in twoop_f7s:
                 name = "1OP/2OP"
             else:
                 names = r3_grouped.get(f7, [])
