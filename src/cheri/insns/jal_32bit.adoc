@@ -36,7 +36,8 @@ NOTE: This listing is manually maintained rather than extracted from the Sail mo
 ----
 let off : xlenbits = sign_extend(imm);
 let newPC = PC + off;
-let (_, linkCap) = setCapAddr(PCC, nextPC); /* nextPC accounts for compressed instructions */
+/* nextPC accounts for compressed instructions */
+let (_, linkCap) = setCapAddr(PCC, nextPC);
 C(cd) = sealCap(linkCap);
 set_next_pc(newPC);
 RETIRE_SUCCESS
