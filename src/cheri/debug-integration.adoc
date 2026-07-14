@@ -15,6 +15,64 @@ This is achieved by supporting at least one of:
 . Implementing a program buffer configured as specified below.
 . Supporting full capability access for both Access Register and Access Memory abstract commands (`aarsize=7` and `aamsize=7`).
 
+==== Abstract Commands
+
+Abstract commands are optionally extended to access full capabilities.
+
+`aarsize/aamsize=7` represent full capability access.
+
+When a capability is written via an abstract command it must be derivable from the set of root capabilities available in <<drootc>>.
+If not then the destination {ctag} is set to zero.
+
+The `data<n>` register mapping for full capability accesses is as shown in <<debug_data_aarsize_7>>.
+
+.Data register mapping when `aarsize/aamsize=7`
+[#debug_data_aarsize_7]
+[width="100%",options=header,cols="1,1,1,1,1"]
+|=====
+|ISA                    | arg0/return value| arg1^1^     | arg2^2^     | {ctag}
+|{cheri_base32_ext_name}| data0,data1      | data2       | data3,data4 | data5
+|{cheri_base64_ext_name}| data0-data3      | data4,data5 | data6-data9 | data10
+|=====
+
+^1^ arg1 represents an address so never needs to exceed DXLEN.
+ Each `data<n>` register is 32-bit so a maximum of 2 are required.
+
+^2^ arg2 is not used for abstract commands, and is included for consistency with the equivalent table in the _RISC-V Debug Specification_
+
+Bit 0 of `data5` or `data10` contain the {ctag} which is either written to, or read from, the target register.
+All other bits in that `data` register are UNSPECIFIED.
+
+==== Access Register Command
+
+When a YLEN-wide register is accessible via an _Access Register_ abstract command, then:
+
+- Reads of YLEN bits or any smaller amounts of bits must be supported.
+- Writes of YLEN bits must be supported.
+- Writes of smaller amounts of bits than YLEN may optionally be supported but it is UNSPECIFIED what happens to the higher bits.
+
+NOTE: The debugger can change the low XLEN bits of a YLEN wide register by performing a read-modify-write sequence.
+
+The requirement to support YLEN-wide access mandates that enough `data<n>` registers are implemented to cover the entire YLEN bit-width (at least 2 for {cheri_base32_ext_name} or at least 4 for {cheri_base64_ext_name}).
+
+Implementations can choose to also support accessing {ctag}s as part of the access register command by supporting `aarsize=7`.
+
+NOTE: If there is only a single root capability, then the derivable check is a _capability subset_ of the written capability against the capability in <<drootc>>.
+ If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability encoding format.
+
+If `aarsize{ne}7` then {ctag}s are always read and written as zero.
+
+NOTE: For the capability subset: `cap2` is the capability being written and `cap1` is the value of <<drootc>>.
+
+NOTE: It is valid for root capabilities not to cover the entire possible address space.
+ In this case the debugger cannot claim access to more memory than is permitted by the current value of <<drootc>>.
+
+==== Access Memory Command
+
+Implementations can choose to support accessing full capabilities, including the {ctag}s, via the _Access Memory_ abstract command. Full capability access is denoted by `aamsize=7` and uses the `data<n>` register assignments specified in <<debug_data_aarsize_7>>.
+
+If `aamsize{ne}7` then {ctag}s are always read and written as zero.
+
 ==== Program Buffer
 
 If a Program Buffer is implemented, this section shows how it can be configured and used to access capabilities.
@@ -89,64 +147,6 @@ no way to discover the former property.
   debug module registers (unless read of a register is explicitly requested by
   setting `transfer` to 1 and `write` to 0).
 ====
-
-==== Abstract Commands
-
-Abstract commands are optionally extended to access full capabilities.
-
-`aarsize/aamsize=7` represent full capability access.
-
-When a capability is written via an abstract command it must be derivable from the set of root capabilities available in <<drootc>>.
-If not then the destination {ctag} is set to zero.
-
-The `data<n>` register mapping for full capability accesses is as shown in <<debug_data_aarsize_7>>.
-
-.Data register mapping when `aarsize/aamsize=7`
-[#debug_data_aarsize_7]
-[width="100%",options=header,cols="1,1,1,1,1"]
-|=====
-|ISA                    | arg0/return value| arg1^1^     | arg2^2^     | {ctag}
-|{cheri_base32_ext_name}| data0,data1      | data2       | data3,data4 | data5
-|{cheri_base64_ext_name}| data0-data3      | data4,data5 | data6-data9 | data10
-|=====
-
-^1^ arg1 represents an address so never needs to exceed DXLEN.
- Each `data<n>` register is 32-bit so a maximum of 2 are required.
-
-^2^ arg2 is not used for abstract commands, and is included for consistency with the equivalent table in the _RISC-V Debug Specification_
-
-Bit 0 of `data5` or `data10` contain the {ctag} which is either written to, or read from, the target register.
-All other bits in that `data` register are UNSPECIFIED.
-
-==== Access Register Command
-
-When a YLEN-wide register is accessible via an _Access Register_ abstract command, then:
-
-- Reads of YLEN bits or any smaller amounts of bits must be supported.
-- Writes of YLEN bits must be supported.
-- Writes of smaller amounts of bits than YLEN may optionally be supported but it is UNSPECIFIED what happens to the higher bits.
-
-NOTE: The debugger can change the low XLEN bits of a YLEN wide register by performing a read-modify-write sequence.
-
-The requirement to support YLEN-wide access mandates that enough `data<n>` registers are implemented to cover the entire YLEN bit-width (at least 2 for {cheri_base32_ext_name} or at least 4 for {cheri_base64_ext_name}).
-
-Implementations can choose to also support accessing {ctag}s as part of the access register command by supporting `aarsize=7`.
-
-NOTE: If there is only a single root capability, then the derivable check is a _capability subset_ of the written capability against the capability in <<drootc>>.
- If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability encoding format.
-
-If `aarsize{ne}7` then {ctag}s are always read and written as zero.
-
-NOTE: For the capability subset: `cap2` is the capability being written and `cap1` is the value of <<drootc>>.
-
-NOTE: It is valid for root capabilities not to cover the entire possible address space.
- In this case the debugger cannot claim access to more memory than is permitted by the current value of <<drootc>>.
-
-==== Access Memory Command
-
-Implementations can choose to support accessing full capabilities, including the {ctag}s, via the _Access Memory_ abstract command. Full capability access is denoted by `aamsize=7` and uses the `data<n>` register assignments specified in <<debug_data_aarsize_7>>.
-
-If `aamsize{ne}7` then {ctag}s are always read and written as zero.
 
 ==== Core Debug Registers
 
