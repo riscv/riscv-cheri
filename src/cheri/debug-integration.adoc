@@ -8,12 +8,15 @@ include::trigger-integration.adoc[]
 
 === Integrating {cheri_base_ext_name} with Sdext
 
-{cheri_base_ext_name} harts must provide a means for accessing capabilities in registers and in memory via the external debugger.
+{cheri_base_ext_name} harts must provide a means for accessing capabilities in registers. This is achieved by supporting at least one of these features:
 
-This is achieved by supporting at least one of:
+. Program buffer configured as specified in <<progbuf_access_ctags>>.
+. Full capability access for Access Register abstract command (`aarsize=7`) for all registers able to hold a capability.
 
-. Implementing a program buffer configured as specified below.
-. Supporting full capability access for both Access Register and Access Memory abstract commands (`aarsize=7` and `aamsize=7`).
+{cheri_base_ext_name} harts must also provide a means for accessing capabilities in memory by supporting at least one of these features:
+
+. Program buffer
+. Full capability access for Access Memory abstract command (`aamsize=7`).
 
 ==== Abstract Commands
 
