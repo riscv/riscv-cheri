@@ -24,6 +24,14 @@ Abstract commands are optionally extended to access full capabilities.
 When a capability is written via an abstract command it must be derivable from the set of root capabilities available in <<drootc>>.
 If not then the destination {ctag} is set to zero.
 
+NOTE: If there is only a single root capability, then the derivable check is a _capability subset_ of the written capability against the capability in <<drootc>>.
+ If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability encoding format.
+
+NOTE: For the capability subset: `cap2` is the capability being written and `cap1` is the value of <<drootc>>.
+
+NOTE: It is valid for root capabilities not to cover the entire possible address space.
+ In this case the debugger cannot claim access to more memory than is permitted by the current value of <<drootc>>.
+
 The `data<n>` register mapping for full capability accesses is as shown in <<debug_data_aarsize_7>>.
 
 .Data register mapping when `aarsize/aamsize=7`
@@ -57,15 +65,7 @@ The requirement to support YLEN-wide access mandates that enough `data<n>` regis
 
 Implementations can choose to also support accessing {ctag}s as part of the access register command by supporting `aarsize=7`.
 
-NOTE: If there is only a single root capability, then the derivable check is a _capability subset_ of the written capability against the capability in <<drootc>>.
- If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability encoding format.
-
 If `aarsize{ne}7` then {ctag}s are always read and written as zero.
-
-NOTE: For the capability subset: `cap2` is the capability being written and `cap1` is the value of <<drootc>>.
-
-NOTE: It is valid for root capabilities not to cover the entire possible address space.
- In this case the debugger cannot claim access to more memory than is permitted by the current value of <<drootc>>.
 
 ==== Access Memory Command
 
