@@ -63,15 +63,15 @@ NOTE: The debugger can change the low XLEN bits of a YLEN wide register by perfo
 
 The requirement to support YLEN-wide access mandates that enough `data<n>` registers are implemented to cover the entire YLEN bit-width (at least 2 for {cheri_base32_ext_name} or at least 4 for {cheri_base64_ext_name}).
 
-Implementations can choose to also support accessing {ctag}s as part of the access register command by supporting `aarsize=7`.
+Implementations can choose to also support accessing full capabilities, including the {ctag}s, as part of the Access Register command by supporting `aarsize=7`.
 
-If `aarsize{ne}7` then {ctag}s are always read and written as zero.
+If `write=1` and `aarsize{ne}7` then {ctag}s are always written as zero.
 
 ==== Access Memory Command
 
 Implementations can choose to support accessing full capabilities, including the {ctag}s, via the _Access Memory_ abstract command. Full capability access is denoted by `aamsize=7` and uses the `data<n>` register assignments specified in <<debug_data_aarsize_7>>.
 
-If `aamsize{ne}7` then {ctag}s are always read and written as zero.
+If `write=1` and `aamsize{ne}7` then {ctag}s are always written as zero.
 
 ==== Program Buffer
 
