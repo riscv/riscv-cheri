@@ -151,15 +151,12 @@ endif::[]
 When the base ISA is {cheri_base_ext_name}, the Y bit is one.
 
 `<<misa_y,misa>>.{CRE}` is a WARL field.
-If the implementation supports a writable <<misa_y,misa>>.{CRE}, the implementation must not allow setting it to zero if any register used for implicit CHERI checks is not currently configured as a root capability.
-Otherwise, the write to <<misa_y,misa>>.{CRE} is ignored.
+If any of <<pcc>>, `__x__tvec`, or `__x__epc` is not currently configured as a root capability then zero is not a legal value for <<misa_y,misa>>.{CRE}.
 
-These implicit check registers are <<pcc>>, `__x__tvec`, `__x__epc`.
-
-NOTE: The list includes <<ddc>> if <<section_cheri_hybrid_ext>> is implemented.
+NOTE: The list also includes <<ddc>> if <<section_cheri_hybrid_ext>> is implemented.
 
 NOTE: This restriction ensures M-mode software cannot drop CHERI checks by modifying <<misa_y,misa>> once they have been configured.
- A simpler conforming implementation could prevent setting <<misa_y,misa>>.{CRE} to zero if the capability metadata of any register used for implicit CHERI checks has ever been written to, rather than dynamically checking the current metadata.
+ A simpler conforming implementation could prevent setting <<misa_y,misa>>.{CRE} to zero if the capability metadata of any of these registers has ever been written to, rather than dynamically checking the current metadata.
 
 Either misa.I or misa.E is _also_ set to indicate whether 32 or 16 general purpose registers are present.
 
