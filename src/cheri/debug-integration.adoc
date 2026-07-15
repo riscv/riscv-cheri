@@ -10,12 +10,12 @@ include::trigger-integration.adoc[]
 
 {cheri_base_ext_name} harts must provide a means for accessing capabilities in registers. This is achieved by supporting at least one of these features:
 
-. Program buffer configured as specified in <<progbuf_access_ctags>>.
+. A Program Buffer configured as specified in <<progbuf_access_ctags>>.
 . Full capability access for Access Register abstract command (`aarsize=7`) for all registers able to hold a capability.
 
 {cheri_base_ext_name} harts must also provide a means for accessing capabilities in memory by supporting at least one of these features:
 
-. Program buffer
+. A Program Buffer
 . Full capability access for Access Memory abstract command (`aamsize=7`).
 
 ==== Abstract Commands
@@ -58,7 +58,7 @@ All other bits in that `data` register are UNSPECIFIED.
 
 When a YLEN-wide register is accessible via an _Access Register_ abstract command, then:
 
-- Reads of YLEN bits or any smaller amounts of bits must be supported.
+- Reads of YLEN bits and any smaller amounts of bits must be supported.
 - Writes of YLEN bits must be supported.
 - Writes of smaller amounts of bits than YLEN may optionally be supported but it is UNSPECIFIED what happens to the higher bits.
 
@@ -66,7 +66,7 @@ NOTE: The debugger can change the low XLEN bits of a YLEN wide register by perfo
 
 The requirement to support YLEN-wide access mandates that enough `data<n>` registers are implemented to cover the entire YLEN bit-width (at least 2 for {cheri_base32_ext_name} or at least 4 for {cheri_base64_ext_name}).
 
-Implementations can choose to also support accessing full capabilities, including the {ctag}s, as part of the Access Register command by supporting `aarsize=7`.
+Implementations can also choose to support accessing full capabilities, including the {ctag}s, as part of the Access Register command by supporting `aarsize=7`.
 
 If `write=1` and `aarsize{ne}7` then {ctag}s are always written as zero.
 
@@ -83,7 +83,7 @@ If `write=1` and `aamsize{ne}7` then {ctag}s are always written as zero.
 
 If a Program Buffer is implemented, this section shows how it can be configured and used to access the {ctag}s.
 
-The minimum Program Buffer configuration to support {ctag} access in integer registers is as follows:
+The minimum Program Buffer configuration to support {ctag} access in general purpose registers is as follows:
 
 * `hartinfo` must be implemented.
 * `hartinfo.nscratch` is at least 1 and the <<dscratch0_y>> register is implemented.
@@ -92,7 +92,7 @@ The minimum Program Buffer configuration to support {ctag} access in integer reg
 
 [NOTE]
 ====
-These requirements allow a debugger to read and write {ctag}s in integer registers without disturbing other registers.
+These requirements allow a debugger to read and write {ctag}s in general purpose registers without disturbing other registers.
 These requirements may be relaxed if _Access Register_ abstract commands support full capability access.
 ====
 
@@ -100,7 +100,7 @@ These requirements may be relaxed if _Access Register_ abstract commands support
 ====
 The sequences below demonstrate how a debugger can read and write a {ctag} in `{creg}1` using the program buffer if:
 
-* `MXLEN` is 64, and
+* `DXLEN` is 64, and
 * `hartinfo.dataaccess` is 0, and
 * `hartinfo.dataaddr` is 0xBF0, and
 * `hartinfo.datasize` is 1, and
@@ -147,7 +147,7 @@ no way to discover the former property.
 
 [NOTE]
 ====
-Accessing capabilities held in integer registers is a foundational operation that
+Accessing capabilities held in general purpose registers is a foundational operation that
 allows for more complex debugger accesses.
 
 If the full capability access via _Access Register_ abstract command is not
@@ -158,7 +158,7 @@ through the Program Buffer.
 Analogously, if the full capability access is not available through the _Access Memory_ abstract command, the debugger may access capabilities in memory indirectly
 by executing `ly` and `sy` instructions via the Program Buffer.
 
-Any integer registers that serve as temporaries during these operations
+Any general purpose registers that serve as temporaries during these operations
 must be saved by the debugger before use and restored afterwards.
 ====
 
@@ -248,8 +248,17 @@ It exposes the capability selected by <<drootcsel>>.
 
 <<drootc>> is DRW; writes are ignored (WARL with no writable fields).
 
-If {cheri_default_ext_name} is implemented,
-the Root Executable exposed when <<drootcsel>> is `0` is further specified as follows:
+.Debug root capability register
+include::img/drootcreg.edn[]
+
+include::insns/dret.adoc[leveloffset=+1]
+
+[#section_hybrid_debug_integration]
+=== Integrating {cheri_default_ext_name} with Sdext
+
+=== Interaction with drootcsel
+
+The Root Executable capability exposed when <<drootcsel>> is `0` is further specified as follows:
 
 * The `P-bit` is reset to {cheri_int_mode_name} ({INT_MODE_VALUE}).
 * The debugger can set the `P-bit` to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing `{MODESW_CAP}` from the program buffer.
@@ -261,13 +270,7 @@ the Root Executable exposed when <<drootcsel>> is `0` is further specified as fo
 
 The `P-bit` of this capability is _only_ updated by executing `{MODESW_CAP}` or `{MODESW_INT}` from the program buffer.
 
-.Debug root capability register
-include::img/drootcreg.edn[]
-
-include::insns/dret.adoc[leveloffset=+1]
-
-[#section_hybrid_debug_integration]
-=== Integrating {cheri_default_ext_name} with Sdext
+=== Interaction with CSRs
 
 A new debug default data capability (<<dddc>>) CSR is added.
 
