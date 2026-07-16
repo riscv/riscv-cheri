@@ -94,6 +94,10 @@ That is, all data memory accesses are implicitly authorized by <<ddc>> with only
 +
 NOTE: <<ddc>> is also used to authorize memory instructions added by {cheri_base_ext_name} (such as <<LOAD_CAP>> and <<STORE_CAP>>).
 +
+The restriction of not allowing `rs1=x0` is removed and _all_ data memory accesses are permitted to use `x0` as the base address.
++
+NOTE: Capability memory access instructions are also permitted to have `rs1=x0`.
++
 All instruction fetches are authorized by <<pcc>>.
 +
 Prefetches are also checked against the appropriate CSR (<<ddc>> for <<PREFETCH_W_CHERI>> and <<PREFETCH_R_CHERI>>, <<pcc>> for <<PREFETCH_I_CHERI>>) and execute as nops if authorization fails.
