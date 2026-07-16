@@ -8,87 +8,15 @@ include::trigger-integration.adoc[]
 
 === Integrating {cheri_base_ext_name} with Sdext
 
-{cheri_base_ext_name} harts must provide a means for accessing capabilities in registers and in memory via the external debugger.
+{cheri_base_ext_name} harts must provide a means for accessing capabilities in registers. This is achieved by supporting at least one of these features:
 
-This is achieved by supporting at least one of:
+. A Program Buffer configured as specified in <<progbuf_access_ctags>>.
+. Full capability access for Access Register abstract command (`aarsize=7`) for all registers able to hold a capability.
 
-. Implementing a program buffer configured as specified below.
-. Supporting full capability access for both Access Register and Access Memory abstract commands (`aarsize=7` and `aamsize=7`).
+{cheri_base_ext_name} harts must also provide a means for accessing capabilities in memory by supporting at least one of these features:
 
-==== Program Buffer
-
-If a Program Buffer is implemented, this section shows how it can be configured and used to access capabilities.
-
-* `hartinfo` must be implemented.
-* `hartinfo.nscratch` is at least 1 and the <<dscratch0_y>> register is implemented.
-* `hartinfo.datasize` is at least 1 and `hartinfo.dataaccess` is 0.
-* `abstractcs.progbufsize` is at least 4 if `dmstatus.impebreak` is 1, or at least 5 if `dmstatus.impebreak` is 0.
-
-[NOTE]
-====
-These requirements allow a debugger to read and write capabilities in integer registers without disturbing other registers.
-These requirements may be relaxed if abstract commands support full capability access.
-
-The sequences below demonstrate how a debugger can read and write a capability in `{creg}1` using the program buffer if:
-
-* `MXLEN` is 64, and
-* `hartinfo.dataaccess` is 0, and
-* `hartinfo.dataaddr` is 0xBF0, and
-* `hartinfo.datasize` is 1, and
-* `hartinfo.nscratch` is at least 1, and
-* `dmstatus.impebreak` is 0, and
-* `abstractcs.progbufsize` is 5.
-
-[source,subs=attributes+]
-----
-# Read the high MXLEN bits into data0-data1
-csrrw  {creg}2, dscratch0, {creg}2
-{gchi_lc}   x2, {creg}1
-csrw   0xBF0, x2
-csrrw  {creg}2, dscratch0, {creg}2
-ebreak
-
-# Read the {ctag} into data0
-csrrw  {creg}2, dscratch0, {creg}2
-{gctag_lc}  x2, {creg}1
-csrw   0xBF0, x2
-csrrw  {creg}2, dscratch0, {creg}2
-ebreak
-
-# Write the high MXLEN bits from data0-data1
-csrrw  {creg}2, dscratch0, {creg}2
-csrr   x2, 0xBF0
-{schi_lc}   {creg}1, {creg}1, x2
-csrrw  {creg}2, dscratch0, {creg}2
-ebreak
-
-# Write the {ctag} (if nonzero)
-csrrw   {creg}2, dscratch0, {creg}2
-csrr    {creg}2, drootc
-{cbld_lc}    {creg}1, {creg}2, {creg}1
-csrrw   {creg}2, dscratch0, {creg}2
-ebreak
-----
-
-The low `MXLEN` bits of a capability are read and written using normal Access
-Register abstract commands.
-
-The above instruction sequences utilize these guarantees provided by
-the _RISC-V Debug Specification_:
-
-* When `hartinfo.nscratch` is greater than 0, the <<dscratch0_y>> register
-  is guaranteed to retain its value within a single abstract command.
-
-+
-If <<dscratch0_y>> were known to be preserved between abstract commands,
-it would be possible to remove the requirements on `hartinfo.datasize`,
-`hartinfo.dataaccess`, and `abstractcs.progbufsize`, however, there is
-no way to discover the former property.
-
-* Execution of Access Register abstract commands does not alter the values of `data`
-  debug module registers (unless read of a register is explicitly requested by
-  setting `transfer` to 1 and `write` to 0).
-====
+. A Program Buffer
+. Full capability access for Access Memory abstract command (`aamsize=7`).
 
 ==== Abstract Commands
 
@@ -98,6 +26,14 @@ Abstract commands are optionally extended to access full capabilities.
 
 When a capability is written via an abstract command it must be derivable from the set of root capabilities available in <<drootc>>.
 If not then the destination {ctag} is set to zero.
+
+NOTE: If there is only a single root capability, then the derivable check is a _capability subset_ of the written capability against the capability in <<drootc>>.
+ If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability encoding format.
+
+NOTE: For the capability subset: `cap2` is the capability being written and `cap1` is the value of <<drootc>>.
+
+NOTE: It is valid for root capabilities not to cover the entire possible address space.
+ In this case the debugger cannot claim access to more memory than is permitted by the current value of <<drootc>>.
 
 The `data<n>` register mapping for full capability accesses is as shown in <<debug_data_aarsize_7>>.
 
@@ -118,11 +54,11 @@ The `data<n>` register mapping for full capability accesses is as shown in <<deb
 Bit 0 of `data5` or `data10` contain the {ctag} which is either written to, or read from, the target register.
 All other bits in that `data` register are UNSPECIFIED.
 
-==== Access Register Command
+===== Access Register Command
 
 When a YLEN-wide register is accessible via an _Access Register_ abstract command, then:
 
-- Reads of YLEN bits or any smaller amounts of bits must be supported.
+- Reads of YLEN bits and any smaller amounts of bits must be supported.
 - Writes of YLEN bits must be supported.
 - Writes of smaller amounts of bits than YLEN may optionally be supported but it is UNSPECIFIED what happens to the higher bits.
 
@@ -130,23 +66,101 @@ NOTE: The debugger can change the low XLEN bits of a YLEN wide register by perfo
 
 The requirement to support YLEN-wide access mandates that enough `data<n>` registers are implemented to cover the entire YLEN bit-width (at least 2 for {cheri_base32_ext_name} or at least 4 for {cheri_base64_ext_name}).
 
-Implementations can choose to also support accessing {ctag}s as part of the access register command by supporting `aarsize=7`.
+Implementations can also choose to support accessing full capabilities, including the {ctag}s, as part of the Access Register command by supporting `aarsize=7`.
 
-NOTE: If there is only a single root capability, then the derivable check is a _capability subset_ of the written capability against the capability in <<drootc>>.
- If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability encoding format.
+If `write=1` and `aarsize{ne}7` then {ctag}s are always written as zero.
 
-If `aarsize{ne}7` then {ctag}s are always read and written as zero.
-
-NOTE: For the capability subset: `cap2` is the capability being written and `cap1` is the value of <<drootc>>.
-
-NOTE: It is valid for root capabilities not to cover the entire possible address space.
- In this case the debugger cannot claim access to more memory than is permitted by the current value of <<drootc>>.
-
-==== Access Memory Command
+===== Access Memory Command
 
 Implementations can choose to support accessing full capabilities, including the {ctag}s, via the _Access Memory_ abstract command. Full capability access is denoted by `aamsize=7` and uses the `data<n>` register assignments specified in <<debug_data_aarsize_7>>.
 
-If `aamsize{ne}7` then {ctag}s are always read and written as zero.
+If `write=1` and `aamsize{ne}7` then {ctag}s are always written as zero.
+
+==== Program Buffer
+
+[#progbuf_access_ctags]
+===== Accessing {ctag}s via Program Buffer
+
+If a Program Buffer is implemented, this section shows how it can be configured and used to access the {ctag}s.
+
+The minimum Program Buffer configuration to support {ctag} access in general purpose registers is as follows:
+
+* `hartinfo` must be implemented.
+* `hartinfo.nscratch` is at least 1 and the <<dscratch0_y>> register is implemented.
+* `hartinfo.datasize` is at least 1 and `hartinfo.dataaccess` is 0.
+* `abstractcs.progbufsize` is at least 4 if `dmstatus.impebreak` is 1, or at least 5 if `dmstatus.impebreak` is 0.
+
+[NOTE]
+====
+These requirements allow a debugger to read and write {ctag}s in general purpose registers without disturbing other registers.
+These requirements may be relaxed if _Access Register_ abstract commands support full capability access.
+====
+
+[NOTE]
+====
+The sequences below demonstrate how a debugger can read and write a {ctag} in `{creg}1` using the program buffer if:
+
+* `DXLEN` is 64, and
+* `hartinfo.dataaccess` is 0, and
+* `hartinfo.dataaddr` is 0xBF0, and
+* `hartinfo.datasize` is 1, and
+* `hartinfo.nscratch` is at least 1, and
+* `dmstatus.impebreak` is 0, and
+* `abstractcs.progbufsize` is 5.
+
+[source,subs=attributes+]
+----
+# Read the {ctag} into data0
+csrrw  {creg}2, dscratch0, {creg}2
+{gctag_lc}  x2, {creg}1
+csrw   0xBF0, x2
+csrrw  {creg}2, dscratch0, {creg}2
+ebreak
+
+# Write the {ctag} (if nonzero)
+csrrw   {creg}2, dscratch0, {creg}2
+csrr    {creg}2, drootc
+{cbld_lc}    {creg}1, {creg}2, {creg}1
+csrrw   {creg}2, dscratch0, {creg}2
+ebreak
+----
+
+The `YLEN` bits of a capability (address and metadata) are read and written
+using normal Access Register abstract commands.
+
+The above instruction sequences utilize these guarantees provided by
+the _RISC-V Debug Specification_:
+
+* When `hartinfo.nscratch` is greater than 0, the <<dscratch0_y>> register
+  is guaranteed to retain its value within a single abstract command.
+
++
+If <<dscratch0_y>> were known to be preserved between abstract commands,
+it would be possible to remove the requirements on `hartinfo.datasize`,
+`hartinfo.dataaccess`, and `abstractcs.progbufsize`, however, there is
+no way to discover the former property.
+
+* Execution of Access Register abstract commands does not alter the values of `data`
+  debug module registers (unless read of a register is explicitly requested by
+  setting `transfer` to 1 and `write` to 0).
+====
+
+[NOTE]
+====
+Accessing capabilities held in general purpose registers is a foundational operation that
+allows for more complex debugger accesses.
+
+If the full capability access via _Access Register_ abstract command is not
+supported for a given CSR, then the debugger can read or write the capability
+indirectly via a temporary GPR and by executing `csrr` or `csrw` instructions
+through the Program Buffer.
+
+Analogously, if the full capability access is not available through the _Access Memory_ abstract command, the debugger may access capabilities in memory indirectly
+by executing `ly` and `sy` instructions via the Program Buffer.
+
+Any general purpose registers that serve as temporaries during these operations
+must be saved by the debugger before use and restored afterwards.
+====
 
 ==== Core Debug Registers
 
@@ -234,8 +248,17 @@ It exposes the capability selected by <<drootcsel>>.
 
 <<drootc>> is DRW; writes are ignored (WARL with no writable fields).
 
-If {cheri_default_ext_name} is implemented,
-the Root Executable exposed when <<drootcsel>> is `0` is further specified as follows:
+.Debug root capability register
+include::img/drootcreg.edn[]
+
+include::insns/dret.adoc[leveloffset=+1]
+
+[#section_hybrid_debug_integration]
+=== Integrating {cheri_default_ext_name} with Sdext
+
+=== Interaction with drootcsel
+
+The Root Executable capability exposed when <<drootcsel>> is `0` is further specified as follows:
 
 * The `P-bit` is reset to {cheri_int_mode_name} ({INT_MODE_VALUE}).
 * The debugger can set the `P-bit` to {cheri_cap_mode_name} ({CAP_MODE_VALUE}) by executing `{MODESW_CAP}` from the program buffer.
@@ -247,13 +270,7 @@ the Root Executable exposed when <<drootcsel>> is `0` is further specified as fo
 
 The `P-bit` of this capability is _only_ updated by executing `{MODESW_CAP}` or `{MODESW_INT}` from the program buffer.
 
-.Debug root capability register
-include::img/drootcreg.edn[]
-
-include::insns/dret.adoc[leveloffset=+1]
-
-[#section_hybrid_debug_integration]
-=== Integrating {cheri_default_ext_name} with Sdext
+=== Interaction with CSRs
 
 A new debug default data capability (<<dddc>>) CSR is added.
 
