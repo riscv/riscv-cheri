@@ -293,7 +293,7 @@ Load/store/AMO address breakpoint
 
 | .>|{cheri_excep_cause_ls_list} .<|Prior to address translation for an explicit memory access: +
 {cheri_excep_name_ld}, {cheri_excep_name_st} due to capability checks ({ctag}, sealed, permissions, bounds)
-| .>|4,6 .<|Load/store/AMO capability address misaligned +
+| .>|5,7 .<|Load/store/AMO capability address misaligned^3^ +
 
 | .>|4,6 .<|Optionally: +
 Load/store/AMO address misaligned
@@ -310,6 +310,8 @@ Load/store/AMO address misaligned
  If the instructions could not be decoded to determine the length, then the <<pcc>> bounds check is made against the minimum-sized instruction supported by the implementation which can be executed, when prioritizing against Instruction Access Faults.
 
 ^2^ {cheri_excep_name_pte_ld} is the lowest priority as determining whether to raise the exception may include checking the loaded {ctag}.
+
+^3^ Misaligned capability accesses raise access faults instead of misaligned faults since they cannot be emulated in software.
 
 NOTE: Full details of {cheri_excep_name_pc}, {cheri_excep_name_ld} and {cheri_excep_name_st} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
