@@ -324,9 +324,9 @@ xref:cap_encoding_cb[xrefstyle=short].
 `R` marks the lower boundary of the <<section_cap_representable_check,representable range>> (see <<cap_bounds_map>>).
 If `A`, `T` or `B` is less than `R`, then it lies in the 2^E+MW^ aligned region above `R`, and the corrections _c~t~_ and _c~b~_ adjust the upper bits of the decoded bounds accordingly.
 
-As shown in xref:section_cap_bounds_format[xrefstyle=short] below, the upper bits of the bound are computed by substituting B or T into the upper bits of the capability address.                          
-This substitution is only correct if the memory bound and the capability address lie within the same 2^E+MW^-aligned region.                                                                               
-When they do not (address 0x20000 in <<capformat_correction_illustration>>), the correction factors c~t~ and c~b~ adjust the computed upper bits to select the correct region. 
+As shown in xref:section_cap_bounds_format[xrefstyle=short] below, the upper bits of the bound are computed by substituting B or T into the upper bits of the capability address.
+This substitution is only correct if the memory bound and the capability address lie within the same 2^E+MW^-aligned region.
+When they do not (address 0x20000 in <<capformat_correction_illustration>>), the correction factors c~t~ and c~b~ adjust the computed upper bits to select the correct region.
 
 [#capformat_correction_illustration]
 .Example capability bounds that use the correction. The base is an s-aligned region below the address, meaning the upper bits (above the mantissa) of the base are smaller than the upper bits of the address. Therefore c~b~=-1. The address and top are in the same region, so c~t~=0.
