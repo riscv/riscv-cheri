@@ -324,6 +324,16 @@ xref:cap_encoding_cb[xrefstyle=short].
 `R` marks the lower boundary of the <<section_cap_representable_check,representable range>> (see <<cap_bounds_map>>).
 If `A`, `T` or `B` is less than `R`, then it lies in the 2^E+MW^ aligned region above `R`, and the corrections _c~t~_ and _c~b~_ adjust the upper bits of the decoded bounds accordingly.
 
+As shown in xref:section_cap_bounds_format[xrefstyle=short] below, the upper bits of the bound are computed by substituting B or T into the upper bits of the capability address.
+This substitution is only correct if the memory bound and the capability address lie within the same 2^E+MW^-aligned region.
+When they do not (address 0x20000 in <<capformat_correction_illustration>>), the correction factors c~t~ and c~b~ adjust the computed upper bits to select the correct region.
+
+[#capformat_correction_illustration]
+.Example capability bounds that use the correction. The base is an s-aligned region below the address, meaning the upper bits (above the mantissa) of the base are smaller than the upper bits of the address. Therefore c~b~=-1. The address and top are in the same region, so c~t~=0.
+image::../cheri/img/capformat-correction-illustration.png[width=80%,align=center]
+
+The calculation of `A` and `R` is as follows.
+
 [source,subs="quotes"]
 ----
 A[MW-1:0] = a[E + MW - 1:E]; // capability address field
@@ -332,6 +342,8 @@ R[MW-1:0] = B - 2^MW-2^
 
 NOTE: The comparisons in xref:cap_encoding_ct[xrefstyle=short] and
 xref:cap_encoding_cb[xrefstyle=short] are _unsigned_.
+
+The correction factors c~b~ and c~t~ are calculated as follows.
 
 .Calculation of top address correction
 [#cap_encoding_ct,options=header,cols="^1,^1,^1",width="40%",align="center"]
@@ -352,6 +364,27 @@ xref:cap_encoding_cb[xrefstyle=short] are _unsigned_.
 | true     | false    | -1
 | true     | true     | 0
 |==============================================================================
+
+xref:capformat_correction_cases[xrefstyle=short] shows examples of each of the possible cases that arise from this calculation.
+
+NOTE: Any cases not shown are unreachable.
+
+[#capformat_correction_cases]
+.Illustrative examples of the six possible cases for c~t~ and c~b~
+image::../cheri/img/capformat-correction-cases.png[width=80%,align=center]
+
+In summary, for the base bound:
+
+* If the base bound is below the alignment boundary and the capability address is above the alignment boundary, then c~b~=-1 to correct the base bound downwards.
+* If the base bound and the capability address are within the same alignment boundary, then c~b~=0, so the base bound is unchanged.
+* If the base bound is above the alignment boundary and the capability address is below the alignment boundary, then c~b~=1 to correct the base bound upwards.
+
+In summary, for the top bound:
+
+* If the top bound is below the alignment boundary and the capability address is above the alignment boundary, then c~t~=-1 to correct the top bound downwards.
+* If the top bound and the capability address are within the same alignment boundary, then c~t~=0, so the top bound is unchanged.
+* If the top bound is above the alignment boundary and the capability address is below the alignment boundary, then c~t~=1 to correct the top bound upwards.
+
 
 [#section_cap_bounds_format]
 ===== Format of the Bounds
