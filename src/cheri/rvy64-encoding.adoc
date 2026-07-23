@@ -323,6 +323,11 @@ xref:cap_encoding_cb[xrefstyle=short].
 
 `R` marks the lower boundary of the <<section_cap_representable_check,representable range>> (see <<cap_bounds_map>>).
 If `A`, `T` or `B` is less than `R`, then it lies in the 2^E+MW^ aligned region above `R`, and the corrections _c~t~_ and _c~b~_ adjust the upper bits of the decoded bounds accordingly.
+xref:capformat_correction_cases[xrefstyle=short] shows an illustration of why this is required.
+
+[#capformat_correction_illustration]
+.Example capability bounds that use the correction. The base address bound is an s-aligned region below the address, meaning the upper bits (above the mantissa) of the base are smaller than the upper bits of the address. Therefore c~b~=-1. The address and top address bound are in the same region, so c~t~=0.
+image::../cheri/img/capformat-correction-illustration.png[width=80%,align=center]
 
 [source,subs="quotes"]
 ----
@@ -352,6 +357,12 @@ xref:cap_encoding_cb[xrefstyle=short] are _unsigned_.
 | true     | false    | -1
 | true     | true     | 0
 |==============================================================================
+
+xref:capformat_correction_cases[xrefstyle=short] shows examples of each of the possible cases that arise from this calculation.
+
+[#capformat_correction_cases]
+.Illustrative examples of the six possible cases for c~t~ and c~b~
+image::../cheri/img/capformat-correction-cases.png[width=80%,align=center]
 
 [#section_cap_bounds_format]
 ===== Format of the Bounds
