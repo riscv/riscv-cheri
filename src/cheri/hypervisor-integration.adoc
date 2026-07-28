@@ -108,7 +108,8 @@ include::img/vsepccreg.edn[]
 [#vstidc,reftext="vstidc"]
 === Virtual Supervisor Thread Identifier Capability (vstidc)
 
-The <<vstidc>> register is used to identify the current software thread in VS-mode, substituting for <<stidc>>.
+The <<vstidc>> register is used to identify the current software thread in VS-mode.
+When V=1, <<vstidc>> substitutes for the usual <<stidc>>, so instructions that normally read or modify <<stidc>> actually access <<vstidc>>instead. The contents of <<vstidc>>never directly affect the behavior of the machine.
 
 .Virtual supervisor thread identifier capability register
 include::img/vstidcreg.edn[]
