@@ -304,6 +304,7 @@ that this bit is implied by `E`.
 
 To save space in the encoding metadata, the top two bits of T are not stored directly but reconstituted as follows:
 
+anchor:formula_top_bits_of_t[]
 [source]
 ----
 T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
@@ -344,6 +345,8 @@ NOTE: The comparisons in xref:cap_encoding_corrections[xrefstyle=short] are _uns
 
 The correction factors c~b~ and c~t~ are calculated as follows.
 
+NOTE: Mathematically, `B < R` requires `B[MW-1:MW-2] = 0`.
+
 .Calculation of the top and base address corrections
 [#cap_encoding_corrections,options=header,cols="^1,^1,^1,^2",width="60%",align="center"]
 |==============================================================================
@@ -358,8 +361,9 @@ The correction factors c~b~ and c~t~ are calculated as follows.
              | true  | true  | _c~t~_=0, _c~b~_=0
 |==============================================================================
 
-^1^ `B < R` requires `B[MW-1:MW-2] = 0`, which makes `R[MW-1:MW-2] = 3`.
-Since `T[MW-1:MW-2] = B[MW-1:MW-2] + LCout + LMSB` (xref:section_cap_bounds_decoding[xrefstyle=short]) is at most 2 in that case, `T < R` always holds when `B < R`, ruling out c~t~=-1,c~b~=0 and c~t~=0,c~b~=+1.
+^1^ Since `B[MW-1:MW-2] = 0` in these cases, `R[MW-1:MW-2] = 3`. +
+As a result `T[MW-1:MW-2]` is at most 2 (according to this <<formula_top_bits_of_t,formula>>). +
+Therefore `T < R` always holds when `B < R`, ruling out c~t~=-1,c~b~=0 and c~t~=0,c~b~=+1.
 
 <<capformat_correction_cases>> shows the six reachable combinations of c~t~ and c~b~ that arise from this table.
 
