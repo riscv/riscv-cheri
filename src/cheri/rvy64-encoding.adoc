@@ -319,12 +319,12 @@ guaranteed that the top is larger than the base.
 
 As described in xref:section_cap_bounds_format[xrefstyle=short] below, the base, _b_, and top, _t_, addresses are computed by substituting `B` and `T` for the upper `MW` bits of the capability address, leaving the address's own 2^E+MW^-aligned block unchanged.
 This substitution alone is only correct if `B`/`T` and the capability address lie in the same 2^E+MW^-aligned block.
-When they do not (address 0x20000 in <<capformat_correction_illustration>>), the correction factors c~t~ and c~b~ shift the substituted block up or down by one so that the computed bound falls in the block that actually contains `b`/`t`.
+When they do not (address 0x20000 in <<capformat_correction_illustration>>), the correction factors c~t~ and c~b~ shift the substituted block up or down by one so that the computed bound falls in the block that actually contains _b_ or _t_.
 
 `R` marks the lower boundary of the <<section_cap_representable_check,representable range>> (see <<cap_bounds_map>>).
-Comparing `A`, `T` and `B` against `R` tells us whether each lies in the 2^E+MW^-aligned block containing `R` (`space~L~` in <<cap_bounds_map>>) or the block above it (`space~U~`).
+Comparing `A` (the bit range of the capability address which gives the offset within the 2^E+MW^-aligned block), `B` and `T` against `R` tells us whether each lies in the 2^E+MW^-aligned block containing `R` (`space~L~` in <<cap_bounds_map>>) or the block above it (`space~U~`).
 
-As shown in xref:section_cap_bounds_format[xrefstyle=short] below, the upper bits of the bound are computed by substituting B or T into the upper bits of the capability address.
+As shown in xref:section_cap_bounds_format[xrefstyle=short] below, the upper bits of the bound are computed by substituting `B` or `T` into the upper bits of the capability address.
 This substitution is only correct if the memory bound and the capability address lie within the same 2^E+MW^-aligned region.
 When they do not (address 0x20000 in <<capformat_correction_illustration>>), the correction factors c~t~ and c~b~ adjust the computed upper bits to select the correct region.
 
@@ -414,7 +414,7 @@ include ranges which may not be present when the bounds are decoded:
 
 The compressed bounds encoding allows the address to roam over the _representable_ range, `space~R~`, while maintaining the original bounds  (see xref:section_cap_bounds_correction_factors[xrefstyle=short] above for how
 `R` and the corrections are calculated).
-The overall effect is that the  address can roam `2^E+MW^/4` bytes below the base address and at least  `2^E+MW^/4` bytes above the top address while still allowing the bounds to be
+The overall effect is that the  address can roam at least `2^E+MW^/4` bytes below the base address and at least  `2^E+MW^/4` bytes above the top address while still allowing the bounds to be
 correctly decoded.
 
 [#t_bound_msb_inversion]
