@@ -365,9 +365,28 @@ The correction factors c~b~ and c~t~ are calculated as follows.
 | true     | true     | 0
 |==============================================================================
 
-xref:capformat_correction_cases[xrefstyle=short] shows examples of each of the possible cases that arise from this calculation.
+Not all combinations c~b~ and c~t~ are possible.
+<<cap_encoding_corrections>> shows all possible cases, and xref:capformat_correction_cases[xrefstyle=short] shows examples of each of the possible cases that arise from this calculation.
 
-NOTE: Any cases not shown are unreachable.
+NOTE: Mathematically, `B < R` requires `B[MW-1:MW-2] = 0`.
+
+.Calculation of the top and base address corrections
+[#cap_encoding_corrections,options=header,cols="^1,^1,^1,^2",width="60%",align="center"]
+|==============================================================================
+| A < R      | T < R | B < R | Correction factors
+.4+.^| false | false | false | _c~t~_=0, _c~b~_=0
+             | false | true  | Impossible^1^
+             | true  | false | _c~t~_=+1, _c~b~_=0
+             | true  | true  | _c~t~_=+1, _c~b~_=+1
+.4+.^| true  | false | false | _c~t~_=-1, _c~b~_=-1
+             | false | true  | Impossible^1^
+             | true  | false | _c~t~_=0, _c~b~_=-1
+             | true  | true  | _c~t~_=0, _c~b~_=0
+|==============================================================================
+
+^1^ Since `B[MW-1:MW-2] = 0` in these cases, `R[MW-1:MW-2] = 3`. +
+As a result `T[MW-1:MW-2]` is at most 2 (according to this <<formula_top_bits_of_t,formula>>). +
+Therefore `T < R` always holds when `B < R`, ruling out c~t~=-1,c~b~=0 and c~t~=0,c~b~=+1.
 
 [#capformat_correction_cases]
 .Illustrative examples of the six possible cases for c~t~ and c~b~
