@@ -21,7 +21,10 @@ It is writeable if {cheri_priv_crg_ext} is implemented, otherwise it is read-onl
 
 {pte_cap_fc_enable} is used to control <<vsstatus_y>>.{pte_cap_fc_enable} of the guest OS in VS-mode.
 
-The {cheri_priv_crg_ext} extension is enabled when <<vsstatus_y>>.{pte_cap_fc_enable} and <<hstatus_y>>.{pte_cap_fc_enable} are _both_ set.
+The {cheri_priv_crg_ext} extension is enabled in the guest when <<vsstatus_y>>.{pte_cap_fc_enable} and <<hstatus_y>>.{pte_cap_fc_enable} are _both_ set.
+
+<<vsstatus_y>>.{pte_cap_fc_enable} is read-only-zero if <<hstatus_y>>.{pte_cap_fc_enable} is zero.
+
 
 If <<hstatus_y>>.{pte_cap_fc_enable} is changed, executing an HFENCE.VVMA instruction with _rs1_=`x0` and _rs2_=`x0` suffices to synchronize with respect to the altered interpretation of VS-stage PTEs' _pte_._{rv64y_pte4_field_name_lc}_ field for the currently active VMID.
 
