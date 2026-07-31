@@ -42,6 +42,31 @@ The 4-bit _pte_._{rv64y_pte4_field_name_lc}_  field is subdivided into four 1-bi
 |_pte_._{rv64y_pte4_field_name_lc}[3]_ | _pte_._{pte_cap_dirty_name_lc}_     | Capability dirty
 |===
 
+After changing `sstatus.{pte_cap_fc_enable}`, executing an SFENCE.VMA instruction with _rs1_=`x0` and _rs2_=`x0` suffices to synchronize address-translation caches with respect to the altered interpretation of _pte_._{rv64y_pte4_field_name_lc}_ fields.
+
+[NOTE]
+====
+Setting `sstatus.{pte_cap_fc_enable}` is only required once per OS instance.
+
+If any applications running under the OS require capability access without revocation, then the setting of `sstatus.{pte_cap_fc_enable}=0` and _pte_._{cheri_base_ext_name_lc}_=1 can be replicated with:
+
+* _pte_._{pte_cap_w_name_lc}_ = 1, and
+* _pte_._{pte_cap_dirty_name_lc}_ = 1
+
+And either:
+
+* _pte_._{pte_cap_r_name_lc}_ = 0, and
+* _pte_._{pte_cap_crg_pte_name_lc}_ = 1, and
+
+Or:
+
+* _pte_._{pte_cap_r_name_lc}_ = 1, and
+* _pte_._{pte_cap_crg_pte_name_lc}_ = `sstatus.xYRG`
+
+Therefore `sstatus.{pte_cap_fc_enable}` is not required to change dynamically and so requiring an SFENCE.VMA on a change should not cause a performance problem.
+
+====
+
 When all of the following are true, {cheri_priv_crg_ext} adds two related architectural features, {cheri_excep_name_pte_ld}s and Capability Dirty Tracking:
 
 . `sstatus.{pte_cap_fc_enable}` is set.
