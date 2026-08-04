@@ -67,10 +67,13 @@
   \coordinate (srbracex) at (\srbracex,0);
     \draw[<-] (repbl |- addry) -- (srseprx |- addry) node [pos=1,anchor=base west] {\textbf{addr}};
   \ifthenelse{\equal{#2}{label}}{
-    \draw[damber] (srseplx |- repbl) -- (srseprx |- repbl) node [pos=1,anchor=base west] {$r_{base}$};
-    \draw[damber] (srseplx |- reptr) -- (srseprx |- reptr) node [pos=1,anchor=base west] {$r_{top}$};
     \ifcapannotations
       \draw[<->,thick,damber] (srarrx |- repbl) -- (srarrx |- reptr) node [midway,left]{$s$};
+      \draw[damber] (srseplx |- repbl) -- (srseprx |- repbl) node [pos=1,anchor=base west] {$r_{base}$};
+      \draw[damber] (srseplx |- reptr) -- (srseprx |- reptr) node [pos=1,anchor=base west] {$r_{top}$};
+    \else
+      \draw[damber] (repbl) -- (srseprx |- repbl) node [pos=1,anchor=base west] {$r_{base}$};
+      \draw[damber] (repbl |- reptr) -- (srseprx |- reptr) node [pos=1,anchor=base west] {$r_{top}$};
     \fi
     \draw[damber,decoration={brace,mirror,aspect=.85},decorate] (srbracex |- repbl) -- (srbracex |- reptr) node [pos=.85,anchor=west,align=left,xshift=5pt] {representable\\space, $space_\text{R}$};
   }{}
