@@ -13,6 +13,12 @@
 \colorlet{damber}{orange!80}
 \colorlet{dgreen}{olive!40!green}
 
+% Whether to draw the space_L / space_U / s decoding annotations (the black
+% partition lines, s arrows, exponent text and space braces). Set to false for
+% a simplified figure showing only the representable and dereferenceable regions.
+\newif\ifcapannotations
+\capannotationstrue
+
 % Draw cap. Args:
 % #1: x offset in page
 % #2: label or nolabel
@@ -46,8 +52,8 @@
   % dereferencable region (space D) labels
   \coordinate (sdseplx) at (\sdseplx,0);
   \coordinate (sdseprx) at (\sdseprx,0);
-  \draw[dgreen] (sdseplx |- derbl) -- (sdseprx |- derbl) node [pos=1,anchor=base west] {$b$};
-  \draw[dgreen] (sdseplx |- dertr) -- (sdseprx |- dertr) node [pos=1,anchor=base west] {$t$};
+  \draw[dgreen] (sdseplx |- derbl) -- (sdseprx |- derbl) node [pos=1,anchor=base west] {$base$};
+  \draw[dgreen] (sdseplx |- dertr) -- (sdseprx |- dertr) node [pos=1,anchor=base west] {$top$};
   \coordinate (sdbracex) at (\sdbracex,0);
   \ifthenelse{\equal{#2}{label}}{
     \draw[dgreen,decoration={brace,mirror},decorate] (sdbracex |- derbl) -- (sdbracex |- dertr) node [midway,anchor=west,align=left,xshift=6pt] {dereferenceable\\region};
@@ -61,9 +67,14 @@
   \coordinate (srbracex) at (\srbracex,0);
     \draw[<-] (repbl |- addry) -- (srseprx |- addry) node [pos=1,anchor=base west] {\textbf{addr}};
   \ifthenelse{\equal{#2}{label}}{
-    \draw[damber] (srseplx |- repbl) -- (srseprx |- repbl) node [pos=1,anchor=base west] {$r_b$};
-    \draw[damber] (srseplx |- reptr) -- (srseprx |- reptr) node [pos=1,anchor=base west] {$r_t$};
-    \draw[<->,thick,damber] (srarrx |- repbl) -- (srarrx |- reptr) node [midway,left]{$s$};
+    \ifcapannotations
+      \draw[<->,thick,damber] (srarrx |- repbl) -- (srarrx |- reptr) node [midway,left]{$s$};
+      \draw[damber] (srseplx |- repbl) -- (srseprx |- repbl) node [pos=1,anchor=base west] {$r_{base}$};
+      \draw[damber] (srseplx |- reptr) -- (srseprx |- reptr) node [pos=1,anchor=base west] {$r_{top}$};
+    \else
+      \draw[damber] (repbl) -- (srseprx |- repbl) node [pos=1,anchor=base west] {$r_{base}$};
+      \draw[damber] (repbl |- reptr) -- (srseprx |- reptr) node [pos=1,anchor=base west] {$r_{top}$};
+    \fi
     \draw[damber,decoration={brace,mirror,aspect=.85},decorate] (srbracex |- repbl) -- (srbracex |- reptr) node [pos=.85,anchor=west,align=left,xshift=5pt] {representable\\space, $space_\text{R}$};
   }{}
 
@@ -72,12 +83,21 @@
   \ifthenelse{\equal{#2}{label}}{
     %%% NOTE THESE ASSUME #3 == 6: the only current label case
     \ifthenelse{\equal{#3}{6}}{}{\errmessage{Assumption on cap labels broken}}
-    \node[anchor=base east,gray] (exbase) at (extextx |- redbl) {\footnotesize\texttt{0x10000}};
-    \draw[dotted,gray] (exbase.base east) -- ({(\sluseplx,0)} |- redbl) ;
-    \node[anchor=base east,gray] (exsmid) at (extextx |- redc) {\footnotesize\texttt{0x20000}};
-    \draw[dotted,gray] (exsmid.base east) -- ({(\sluseplx,0)} |- redc);
-    \node[anchor=north,gray,inner sep=0pt] (exshi) at (redtr -| exsmid) {\footnotesize\texttt{0x30000}};
-    \draw[dotted,gray] (exshi.north east -| exsmid.east) -- ({(\sluseplx,0)} |- redtr);
+    \ifcapannotations
+      % boundaries of space_L / space_U, aligned with the partition lines
+      \node[anchor=base east,gray] (exbase) at (extextx |- redbl) {\footnotesize\texttt{0x10000}};
+      \draw[dotted,gray] (exbase.base east) -- ({(\sluseplx,0)} |- redbl) ;
+      \node[anchor=base east,gray] (exsmid) at (extextx |- redc) {\footnotesize\texttt{0x20000}};
+      \draw[dotted,gray] (exsmid.base east) -- ({(\sluseplx,0)} |- redc);
+      \node[anchor=north,gray,inner sep=0pt] (exshi) at (redtr -| exsmid) {\footnotesize\texttt{0x30000}};
+      \draw[dotted,gray] (exshi.north east -| exsmid.east) -- ({(\sluseplx,0)} |- redtr);
+    \else
+      % only the red backdrop when the space_L/U split is hidden
+      \node[anchor=base east,gray] (exbase) at (extextx |- redbl) {\footnotesize\texttt{0x10000}};
+      \draw[dotted,gray] (exbase.base east) -- (redbl);
+      \node[anchor=base east,gray] (exshi) at (extextx |- redtr) {\footnotesize\texttt{0x30000}};
+      \draw[dotted,gray] (exshi.base east) -- (redbl |- redtr);
+    \fi
     \node[anchor=base east,gray] (exrb) at (extextx |- repbl) {\footnotesize\texttt{0x1A000}};
     \draw[dotted,gray] (exrb.base east) -- ({(\srseplx,0)} |- repbl);
     \node[anchor=base east,gray] (exrb) at (extextx |- derbl) {\footnotesize\texttt{0x1E000}};
@@ -95,6 +115,7 @@
 % #1 Width of figure to annotate
 % #2 label or nolabel
 \newcommand{\drawframe}[2]{
+  \ifcapannotations % whole frame is decoding annotations; skip for the simple figure
   \def\sluseplx{-2};    % Space {L,U} sep left X
   \def\sluarrx{-1.5};   % Space {L,U} arrow X
   \def\sluseprx{#1};   % Space {L,U} sep right X
@@ -119,4 +140,5 @@
     \draw[decoration={brace},decorate] (spacebraceb) -- (spacebracem) node [midway,left] {$space_\text{L}$};
     \draw[decoration={brace},decorate] (spacebracem) -- (spacebracet) node [midway,left] {$space_\text{U}$};
   }{}
+  \fi
 }
