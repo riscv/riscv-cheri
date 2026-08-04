@@ -296,13 +296,13 @@ T and B are both MW bits wide, and are formed of different bit ranges:
 The design rationale for the two `EF` cases is as follows:
 
 1. `EF = 1`: The exponent is 0. When `enableL8=1`, `L~8~` encodes the MSB of the length,
-which can be used to derive `T[MW-1:MW-2]`, forming a full MW-wide T field.
+which can be used to derive `T[MW-1:MW-2]`, forming a full MW-wide `T` field.
 2. `EF = 0`: The exponent is _internal_ with E stored in the lower bits of `T` and
 `B`, with `L~8~` used for the MSB of `E` when `enableL8=1`. `E` is chosen so that the most
 significant non-zero bit of the length of the region aligns with `T[MW - 2]` such
 that this bit is implied by `E`.
 
-To save space in the encoding metadata, the top two bits of T are not stored directly but reconstituted as follows:
+To save space in the encoding metadata, the top two bits of `T` are not stored directly but reconstituted as follows:
 
 anchor:formula_top_bits_of_t[]
 [source]
@@ -491,10 +491,10 @@ to either check `top == top'` or `base == base'`.
 The top and bottom capability bounds are formed of two or three sections:
 
 * Upper bits from the address
-** This is only if the other sections do not fill the available bits (E + MW < XLEN)
-* Middle bits from T and B decoded from the metadata
+** This is only if the other sections do not fill the available bits (`E + MW < XLEN`)
+* Middle bits from `T` and `B` decoded from the metadata
 * Lower bits are set to zero
-** This is only if there is an internal exponent (EF=0)
+** This is only if there is an internal exponent (`EF=0`)
 
 .Composition of the decoded top address bound
 [#comp_addr_bounds,options=header,align="center",cols="2,4,2,2"]
