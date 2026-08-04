@@ -373,14 +373,14 @@ image::../cheri/img/capformat-correction-illustration.png[width=80%,align=center
 
 `R` marks the lower boundary of the <<section_cap_representable_check,representable range>> (shown as r~base~ in <<capformat_correction_illustration>>).
 
-Comparing `A` (the bit range of the capability address which gives the offset within the 2^E+MW^-aligned block), `B` and `T` against `R` tells us whether each lies in the 2^E+MW^-aligned block containing `R` (`space~L~` in <<cap_bounds_map>>), the block above it (`space~U~`) or the block below (not shown in <<capformat_correction_illustration>>, all possible combinations are shown in <<capformat_correction_cases>>).
+If `B`, `T` or `A` is less than `R`, it is inferred that they lie in the space above the s-alignment boundary straddled by the representable region, labeled space~U~ in xref:capformat_correction_illustration[xrefstyle=short].
 
 `A` and `R` are calculated as follows.
 
 [source,subs="quotes"]
 ----
 A[MW-1:0] = a[E + MW - 1:E]; // offset into s-aligned region from capability address field
-R[MW-1:0] = B - 2^MW-2^;        // r-base
+R[MW-1:0] = B - 2^MW-2^;        // r-base which is 1/4 of the 2^MW aligned region below B
 ----
 
 NOTE: The comparisons in xref:cap_encoding_corrections[xrefstyle=short] are _unsigned_.
@@ -403,8 +403,8 @@ NOTE: Mathematically, `B < R` requires `B[MW-1:MW-2] = 0`.
              | true  | true  | _c~t~_=0, _c~b~_=0
 |==============================================================================
 
-^1^ Since `B[MW-1:MW-2] = 0` in these cases, `R[MW-1:MW-2] = 3`. +
-As a result `T[MW-1:MW-2]` is at most 2 (according to this <<formula_top_bits_of_t,formula>>). +
+^1^ Since `B[MW-1:MW-2] = 0` in these cases, `R[MW-1:MW-2] = 3` as the value has wrapped. +
+As a result `T[MW-1:MW-2]` is at most 2 if LMSB and LCout are both 1 (according to this <<formula_top_bits_of_t,formula>>). +
 Therefore `T < R` always holds when `B < R`, ruling out _c~t~_=-1,_c~b~_=0 and _c~t~_=0,_c~b~_=+1.
 
 <<capformat_correction_cases>> shows the six reachable combinations of _c~t~_ and _c~b~_ that arise from this table.
