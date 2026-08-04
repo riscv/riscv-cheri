@@ -181,10 +181,10 @@ endif::[]
 
 This bounds encoding scheme is based upon cite:[woodruff2019cheri].
 
-The bounds encode the base and top addresses that constrain memory accesses.
+The bounds encode the _base_ and _top_ addresses that constrain memory accesses.
 The capability can be used to access any memory location A in the range base
 {le} A < top. The bounds are encoded in a compressed format, so it is not
-possible to encode any arbitrary combination of base and top addresses. An
+possible to encode any arbitrary combination of _base_ and _top_ addresses. An
 invalid capability is produced when attempting to construct a
 capability that is not _representable_ because its bounds cannot be correctly
 encoded.
@@ -195,12 +195,12 @@ The variables related to the bounds decoding are shown in <<rvy64_uni_base_name_
 [#rvy64_uni_base_name_bndsenc_param_summary,width="100%",options=header,cols="1,4"]
 |==============================================================================
 | Variable  | Description
-| T         | Value substituted into the capability's address to decode the top address.
-| TE        | Value either substituted into the exponent or the top address depending on EF.
-| B         | Value substituted into the capability's address to decode the base address.
-| BE        | Value either substituted into the exponent or the base address depending on EF.
+| T         | Value substituted into the capability's address to decode the _top_ bound.
+| TE        | Value either substituted into the exponent or the _top_ bound depending on EF.
+| B         | Value substituted into the capability's address to decode the _base_ bound.
+| BE        | Value either substituted into the exponent or the _base_ bound depending on EF.
 | E         | Exponent that determines the position at which T and B are substituted into the capability's address.
-| L~8~^1^   | Value used to form either the MSB of the exponent or the MSB of the top bound.
+| L~8~^1^   | Value used to form either the MSB of the exponent or the MSB of the _top_ bound.
 | EF        | Exponent format flag indicating the encoding for T, B and E: +
 EF=0: The exponent is calculated from TE and BE, and conditionally L8, so it is 'internal'. +
 EF=1: The exponent is zero; TE, BE and L8 form part of the address bounds.
@@ -236,8 +236,8 @@ when the {ctag} is set (see xref:section_cap_malformed[xrefstyle=short]).
 
 The metadata is encoded in a compressed format termed CHERI Concentrate cite:[woodruff2019cheri]. It
 uses a floating point representation to encode the bounds relative to the
-capability address. The following subsections describe how the base and top
-addresses are decoded from the metadata.
+capability address. The following subsections describe how the _base_ and _top_
+bounds are decoded from the metadata.
 
 The pseudocode below is normative.
 In this notation, `/` means "integer division", `[]` are the bit-select operators, `{}` is bit concatenation, `?:` is the conditional operator, and arithmetic is signed.
@@ -313,80 +313,14 @@ T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
 This derivation relies on the equality `T = B + L`, where `L` is the encoded length of the capability.
 `LMSB` is the value of `L[MW - 2]`, which is known from the values of `EF` and `E` (as well as L~8~ when `enableL8=1`).
 `LCout` is the carry out from the lower bits, which is implied by `T[MW - 3:0] < B[MW - 3:0]` since it is
-guaranteed that the top is larger than the base.
-
-[#section_cap_bounds_correction_factors]
-===== Correction Factors
-
-As described in xref:section_cap_bounds_format[xrefstyle=short] below, the `_base_` and `_top_` addresses are computed by substituting `B` and `T` for the upper `MW` bits of the capability address, leaving the address's own 2^E+MW^-aligned block unchanged.
-This substitution is only correct if `B`/`T` and the capability address lie in the same 2^E+MW^-aligned block.
-When they do not (as with the base in <<capformat_correction_illustration>>), the correction factors c~t~ and c~b~ shift the substituted block up or down by one so that the computed bound falls in the block that actually contains `_base_` or `_top_`.
-
-`R` marks the lower boundary of the <<section_cap_representable_check,representable range>> (see <<cap_bounds_map>>).
-Comparing `A` (the bit range of the capability address which gives the offset within the 2^E+MW^-aligned block), `B` and `T` against `R` tells us whether each lies in the 2^E+MW^-aligned block containing `R` (`space~L~` in <<cap_bounds_map>>) or the block above it (`space~U~`).
-
-[#capformat_correction_illustration]
-.Example capability bounds that use the correction. The base is an s-aligned region below the address, meaning the upper bits (above the mantissa) of the base are smaller than the upper bits of the address. Therefore c~b~=-1. The address and top are in the same region, so c~t~=0.
-image::../cheri/img/capformat-correction-illustration.png[width=80%,align=center]
-
-`A` and `R` are calculated as follows.
-
-[source,subs="quotes"]
-----
-A[MW-1:0] = a[E + MW - 1:E]; // capability address field
-R[MW-1:0] = B - 2^MW-2^
-----
-
-NOTE: The comparisons in xref:cap_encoding_corrections[xrefstyle=short] are _unsigned_.
-
-The correction factors c~b~ and c~t~ are calculated as follows.
-
-NOTE: Mathematically, `B < R` requires `B[MW-1:MW-2] = 0`.
-
-.Calculation of the top and base address corrections
-[#cap_encoding_corrections,options=header,cols="^1,^1,^1,^2",width="60%",align="center"]
-|==============================================================================
-| A < R      | T < R | B < R | Correction factors
-.4+.^| false | false | false | _c~t~_=0, _c~b~_=0
-             | false | true  | Impossible^1^
-             | true  | false | _c~t~_=+1, _c~b~_=0
-             | true  | true  | _c~t~_=+1, _c~b~_=+1
-.4+.^| true  | false | false | _c~t~_=-1, _c~b~_=-1
-             | false | true  | Impossible^1^
-             | true  | false | _c~t~_=0, _c~b~_=-1
-             | true  | true  | _c~t~_=0, _c~b~_=0
-|==============================================================================
-
-^1^ Since `B[MW-1:MW-2] = 0` in these cases, `R[MW-1:MW-2] = 3`. +
-As a result `T[MW-1:MW-2]` is at most 2 (according to this <<formula_top_bits_of_t,formula>>). +
-Therefore `T < R` always holds when `B < R`, ruling out c~t~=-1,c~b~=0 and c~t~=0,c~b~=+1.
-
-<<capformat_correction_cases>> shows the six reachable combinations of c~t~ and c~b~ that arise from this table.
-
-[#capformat_correction_cases]
-.The reachable combinations of c~t~ and c~b~.
-image::../cheri/img/capformat-correction-cases.png[width=80%,align=center]
-
-In summary, for the base bound:
-
-* If the base bound is below the alignment boundary and the capability address is above the alignment boundary, then c~b~=-1 to correct the base bound downwards.
-* If the base bound and the capability address are within the same alignment boundary, then c~b~=0, so the base bound is unchanged.
-* If the base bound is above the alignment boundary and the capability address is below the alignment boundary, then c~b~=1 to correct the base bound upwards.
-
-In summary, for the top bound:
-
-* If the top bound is below the alignment boundary and the capability address is above the alignment boundary, then c~t~=-1 to correct the top bound downwards.
-* If the top bound and the capability address are within the same alignment boundary, then c~t~=0, so the top bound is unchanged.
-* If the top bound is above the alignment boundary and the capability address is below the alignment boundary, then c~t~=1 to correct the top bound upwards.
-
+guaranteed that the _top_ bound is larger than the _base_ bound.
 
 [#section_cap_bounds_format]
 ===== Format of the Bounds
 
-The _base_ and _top_ addresses are derived from the address by
+The _base_ and _top_ bound addresses are derived from the capability address `a` by
 substituting `a[E + MW - 1:E]` with `B` and `T` respectively and clearing the
-lower `E` bits, then applying the corrections _c~b~_ and _c~t~_ from
-xref:section_cap_bounds_correction_factors[xrefstyle=short] above.
+lower `E` bits, then applying the <<section_cap_bounds_correction_factors>> _c~b~_ and _c~t~_ which are described below.
 
 The bounds are formed of three sections as shown in xref:top_bound_dec[xrefstyle=short] and
 xref:base_bound_dec[xrefstyle=short].
@@ -408,14 +342,82 @@ include ranges which may not be present when the bounds are decoded:
 
 * If `E = 0` the lower section does not exist.
 * If `E+MW=XLEN` then the top section is only the least significant bit of
- _c~t~_ for the top bound, and top section does not exist for the bottom bound.
+ _c~t~_ for the _top_ bound, and top section does not exist for the _base_ bound.
 * If `E+MW>XLEN` then neither top section exists, and so the bounds are calculated
  with no dependency on the address field _a_.
 
-The compressed bounds encoding allows the address to roam over the _representable_ range, `space~R~`, while maintaining the original bounds  (see xref:section_cap_bounds_correction_factors[xrefstyle=short] above for how
-`R` and the corrections are calculated).
-The overall effect is that the  address can roam at least `2^E+MW^/4` bytes below the base address and at least  `2^E+MW^/4` bytes above the top address while still allowing the bounds to be
-correctly decoded.
+The compressed bounds encoding allows the address to roam over the _representable range_, (`space~R~` in <<cap_bounds_map>> and <<capformat_correction_illustration>>), while maintaining the original bounds.
+The overall effect is that the address can roam at least `2^E+MW^/4` bytes below the _base_ bound and at least `2^E+MW^/4` bytes above the _top_ bound while still allowing the bounds to be correctly decoded.
+
+[#section_cap_bounds_correction_factors, reftext="Correction Factors"]
+===== Correction Factors
+
+Substituting `B`/`T` into the capability address, as described in xref:section_cap_bounds_format[xrefstyle=short] above, only decodes to the correct _base_ or _top_ bound if `B`/`T` and the capability address both lie in the _same_ _s_=2^E+MW^-aligned block.
+In this case the relevant _correction factor_ is zero (_c~b~_ for the _base_ and _c~t~_ for the _top_).
+
+If `B`/`T` and the capability address lie in _different_ _s_-aligned blocks then _correction factors_ are applied to move the computed bounds between the _s_-aligned blocks.
+
+In the example shown in <<capformat_correction_illustration>>, the _top_ bound and the capability address lie in the same _s_-aligned block, but the _base_ bound doesn't, it is in the block below.
+Therefore _c~t~_ is zero, but _c~b~_ is set to -1 to move the _base_ bound down into the _s_-aligned block below (i.e. from space~U~ to space~L~).
+
+Therefore adding the _correction factor_ moves the computed bound into the correct _s_-aligned block.
+Each _correction factor_ can have values of -1, 0 or +1, so that it is possible to move computed bound up or down by one _s_-aligned block.
+
+[#capformat_correction_illustration]
+.Example capability bounds that use the correction. The _base_ is an s-aligned block below the address, meaning the upper bits (above the mantissa) of the _base_ are smaller than the upper bits of the address. Therefore _c~b~_=-1. The address and _top_ are in the same region, so _c~t~_=0.
+image::../cheri/img/capformat-correction-illustration.png[width=80%,align=center]
+
+====== Correction Factor Calculations
+
+`R` marks the lower boundary of the <<section_cap_representable_check,representable range>> (shown as r~base~ in <<capformat_correction_illustration>>).
+
+Comparing `A` (the bit range of the capability address which gives the offset within the 2^E+MW^-aligned block), `B` and `T` against `R` tells us whether each lies in the 2^E+MW^-aligned block containing `R` (`space~L~` in <<cap_bounds_map>>), the block above it (`space~U~`) or the block below (not shown in <<capformat_correction_illustration>>, all possible combinations are shown in <<capformat_correction_cases>>).
+
+`A` and `R` are calculated as follows.
+
+[source,subs="quotes"]
+----
+A[MW-1:0] = a[E + MW - 1:E]; // offset into s-aligned region from capability address field
+R[MW-1:0] = B - 2^MW-2^;        // r-base
+----
+
+NOTE: The comparisons in xref:cap_encoding_corrections[xrefstyle=short] are _unsigned_.
+
+The correction factors _c~b~_ and _c~t~_ are calculated as follows.
+
+NOTE: Mathematically, `B < R` requires `B[MW-1:MW-2] = 0`.
+
+.Calculation of the _top_ and _base_ bound corrections
+[#cap_encoding_corrections,options=header,cols="^1,^1,^1,^2",width="60%",align="center"]
+|==============================================================================
+| A < R      | T < R | B < R | Correction factors
+.4+.^| false | false | false | _c~t~_=0, _c~b~_=0
+             | false | true  | Impossible^1^
+             | true  | false | _c~t~_=+1, _c~b~_=0
+             | true  | true  | _c~t~_=+1, _c~b~_=+1
+.4+.^| true  | false | false | _c~t~_=-1, _c~b~_=-1
+             | false | true  | Impossible^1^
+             | true  | false | _c~t~_=0, _c~b~_=-1
+             | true  | true  | _c~t~_=0, _c~b~_=0
+|==============================================================================
+
+^1^ Since `B[MW-1:MW-2] = 0` in these cases, `R[MW-1:MW-2] = 3`. +
+As a result `T[MW-1:MW-2]` is at most 2 (according to this <<formula_top_bits_of_t,formula>>). +
+Therefore `T < R` always holds when `B < R`, ruling out _c~t~_=-1,_c~b~_=0 and _c~t~_=0,_c~b~_=+1.
+
+<<capformat_correction_cases>> shows the six reachable combinations of _c~t~_ and _c~b~_ that arise from this table.
+
+[#capformat_correction_cases]
+.The reachable combinations of _c~t~_ and _c~b~_.
+image::../cheri/img/capformat-correction-cases.png[width=80%,align=center]
+
+====== Correction Factor Summary
+
+In summary, for either bound:
+
+* If the bound is below the _s_-aligned boundary and the capability address is above the _s_-aligned boundary, then set the correction factor to -1 to correct the bound downwards.
+* If the bound and the capability address are within the same _s_-aligned boundary, then set the correction factor to 0 so the bound is unchanged.
+* If the bound is above the _s_-aligned boundary and the capability address is below the _s_-aligned boundary, then set the correction factor to +1 to correct the bound upwards.
 
 [#t_bound_msb_inversion]
 ===== Top bound MSB correction
@@ -435,7 +437,7 @@ if ( (E < (CAP_MAX_E - 1)) && (top[XLEN: XLEN - 1] - {0b0, base[XLEN - 1]}) >= 0
 ----
 NOTE: The comparison is _unsigned_.
 
-That is, invert the most significant bit of _top_ if the decoded top and base are one address space (2^XLEN^ bytes) or more apart, and E is too small to allow this.
+That is, invert the most significant bit of _top_ if the decoded _top_ and _base_ are one address space (2^XLEN^ bytes) or more apart, and E is too small to allow this.
 
 NOTE: A capability has infinite bounds if `E=CAP_MAX_E` and it is not
 malformed (see xref:section_cap_malformed[xrefstyle=short]); this check is
@@ -461,7 +463,7 @@ NOTE: The above includes a special case for encodings where `enableL8=1`.
 
 Capabilities with malformed bounds:
 
-. Return both base and top bounds as zero, which affects instructions like <<GCBASE>>.
+. Return both _base_ and _top_ bounds as zero, which affects instructions like <<GCBASE>>.
 . Cause certain manipulation instructions like <<CADDI>> to always set the {ctag} of the result to zero.
 
 [#section_cap_representable_check, reftext="Representable Range"]
@@ -488,7 +490,7 @@ The converse is also true, if `base != base'` then `top != top'`.
 Therefore, for representable range checking, it is acceptable
 to either check `top == top'` or `base == base'`.
 
-The top and bottom capability bounds are formed of two or three sections:
+The _top_ and _base_ capability bounds are formed of two or three sections:
 
 * Upper bits from the address
 ** This is only if the other sections do not fill the available bits (`E + MW < XLEN`)
@@ -496,7 +498,7 @@ The top and bottom capability bounds are formed of two or three sections:
 * Lower bits are set to zero
 ** This is only if there is an internal exponent (`EF=0`)
 
-.Composition of the decoded top address bound
+.Composition of the decoded _top_ bound
 [#comp_addr_bounds,options=header,align="center",cols="2,4,2,2"]
 |==============================================================================
 | Configuration   | Upper Section (if E + MW < XLEN) | Middle Section | Lower Section
@@ -517,12 +519,12 @@ destination capabilities.  Therefore, the Middle and Lower sections
 of the bounds calculation are also unchanged for source and
 destination capabilities.
 
-When E > CAP_MAX_E - 2, the calculation of the top bound is entirely derived
+When E > CAP_MAX_E - 2, the calculation of the _top_ bound is entirely derived
 from `T` and `E`, which will be identical for both the source and destination
 capabilities, thus guaranteeing that `top == top'`.  Likewise, with such values of E, the
-base bound is entirely derived from `B` and `E` and therefore `base == base'`.
+_base_ bound is entirely derived from `B` and `E` and therefore `base == base'`.
 
-The calculation of the MSB of the top bound may be inverted as specified
+The calculation of the MSB of the _top_ bound may be inverted as specified
 in xref:t_bound_msb_inversion[xrefstyle=short].
 Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follows:
 
@@ -530,7 +532,7 @@ Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follo
 [#t_bound_msb_inversion_truth_table]
 [options=header,align=center,width="100%"]
 |==============================================================================
-| input_t[XLEN:XLEN-1]  | base[XLEN-1]  | output_t[XLEN:XLEN-1]
+| input_top[XLEN:XLEN-1]  | base[XLEN-1]  | output_top[XLEN:XLEN-1]
 |      00                 |      0      | 00
 |      01                 |      0      | 01
 |      10                 |      0      | 00
@@ -542,9 +544,9 @@ Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follo
 |==============================================================================
 
 Inspection of xref:t_bound_msb_inversion_truth_table[xrefstyle=short] shows
-that `output_t[XLEN]` does not depend on `input_t[XLEN]` as:
+that `output_top[XLEN]` does not depend on `input_top[XLEN]` as:
 
-* `output_t[XLEN] = {input_t[XLEN-1], base[XLEN-1]} == 0b01`.
+* `output_top[XLEN] = {input_top[XLEN-1], base[XLEN-1]} == 0b01`.
 
 This leads to the conclusions:
 
