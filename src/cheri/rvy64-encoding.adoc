@@ -353,9 +353,11 @@ The overall effect is that the address can roam at least `2^E+MW^/4` bytes below
 ===== Correction Factors
 
 Substituting `B`/`T` into the capability address, as described in xref:section_cap_bounds_format[xrefstyle=short] above, only decodes to the correct _base_ or _top_ bound if `B`/`T` and the capability address both lie in the _same_ _s_=2^E+MW^-aligned block.
-In this case the relevant _correction factor_ is zero (_c~b~_ for the _base_ and _c~t~_ for the _top_).
+In this case no correction is required.
 
 If `B`/`T` and the capability address lie in _different_ _s_-aligned blocks then _correction factors_ are applied to move the computed bounds between the _s_-aligned blocks.
+
+The _correction factors_ are _c~b~_ for the _base_ bound and _c~t~_ for the _top_ bound.
 
 In the example shown in <<capformat_correction_illustration>>, the _top_ bound and the capability address lie in the same _s_-aligned block, but the _base_ bound doesn't, it is in the block below.
 Therefore _c~t~_ is zero, but _c~b~_ is set to -1 to move the _base_ bound down into the _s_-aligned block below (i.e. from space~U~ to space~L~).
