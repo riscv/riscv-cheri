@@ -16,6 +16,44 @@ NOTE: The {cheri_base_ext_name} field is not currently defined in G-stage PTEs a
 
 VSXL and VSBE follow the same restrictions as <<mstatus_y>>.SXL and <<mstatus_y>>.SBE respectively.
 
+The {pte_cap_fc_enable} bit is added.
+It is writeable if {cheri_priv_crg_ext} is implemented, otherwise it is read-only zero.
+
+{pte_cap_fc_enable} is used to control <<vsstatus_y>>.{pte_cap_fc_enable} of the guest OS in VS-mode.
+
+<<vsstatus_y>>.{pte_cap_fc_enable} is set to read-only-zero when <<hstatus_y>>.{pte_cap_fc_enable} is zero.
+
+NOTE: The {cheri_priv_crg_ext} extension can only be enabled in the guest when <<hstatus_y>>.{pte_cap_fc_enable} is set, which gives the guest the ability to program <<vsstatus_y>>.{pte_cap_fc_enable}.
+
+If <<hstatus_y>>.{pte_cap_fc_enable} is changed, executing an HFENCE.VVMA instruction with _rs1_=`x0` and _rs2_=`x0` suffices to synchronize with respect to the altered interpretation of VS-stage PTEs' _pte_._{rv64y_pte4_field_name_lc}_ field for the currently active VMID.
+
+[[hstatusreg]]
+.Hypervisor status register (`hstatus`) when HSXLEN=64.
+[wavedrom,, svg,subs=attributes+]
+....
+{reg: [
+  {bits:  5, name: 'WPRI'},
+  {bits:  1, name: 'VSBE'},
+  {bits:  1, name: 'GVA'},
+  {bits:  1, name: 'SPV'},
+  {bits:  1, name: 'SPVP'},
+  {bits:  1, name: 'HU'},
+  {bits:  2, name: 'WPRI'},
+  {bits:  6, name: 'VGEIN'},
+  {bits:  2, name: 'WPRI'},
+  {bits:  1, name: 'VTVM'},
+  {bits:  1, name: 'VTW'},
+  {bits:  1, name: 'VTSR'},
+  {bits:  9, name: 'WPRI'},
+  {bits:  2, name: 'VSXL'},
+  {bits: 14, name: 'WPRI'},
+  {bits:  2, name: 'HUPMM'},
+  {bits:  9, name: 'WPRI'},
+  {bits:  1, name: '{pte_cap_fc_enable}'},
+  {bits:  4, name: 'WPRI'},
+], config:{lanes: 4, hspace:1024}}
+....
+
 [#henvcfg_y,reftext="henvcfg ({cheri_base_ext_name})"]
 === Hypervisor Environment Configuration Register (henvcfg)
 
