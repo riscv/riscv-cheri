@@ -16,10 +16,10 @@ include::wavedrom/scbndsrd_32bit.adoc[]
 
 Description::
 Copy the capability from register `{cs1}` to register `{cd}`.
-Set the base address of its bounds to the value of `{cs1}.address`.
+Set the capability base address to the value of `{cs1}.address`.
 +
 Round _down_ the requested length, in `rs2[XLEN-1:0]`, by the smallest amount necessary
-to guarantee that it is precisely representable given this base address.
+to guarantee that it is precisely representable given this base bound address.
 +
 Set `{cd}.tag=0` if `{cs1}.tag=0`, `{cs1}` is sealed or if `{cd}` 's bounds exceed `{cs1}` 's bounds.
 +
@@ -40,7 +40,7 @@ otherwise this threshold serves to guarantee a minimum length return from {SCBND
 =====
 {SCBNDSRD} finds the largest length `l` that is both
 less than or equal to the requested `rs2[XLEN-1:0]` and
-precisely representable given a particular base address, `b`.
+precisely representable given a particular base bound address, `b`.
 A length `l` is precisely representable given base `b` if a <<SCBNDS>> instruction...
 
 - whose `rs2` register holds `l` and
@@ -53,9 +53,9 @@ A length `l` is precisely representable given base `b` if a <<SCBNDS>> instructi
 
 produces a result in `{cd}` whose {ctag} is set to one.
 This value may be efficiently found, for most capability encoding schemes,
-by counting trailing zeros in the desired base address and
+by counting trailing zeros in the desired base bound address and
 computing the length that is a maximal mantissa shifted left by that count
-(that is, using the number of trailing zeros in the base address as the value's exponent).
+(that is, using the number of trailing zeros in the base bound address as the value's exponent).
 =====
 
 Operation::

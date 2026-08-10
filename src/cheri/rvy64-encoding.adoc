@@ -39,10 +39,10 @@ The bit ranges in <<cap_encoding_xlen64_field_table>> are relative to the XLEN-b
 | GL         | 43        | <<zylevels1_gl_flag, Global (GL) flag>> (<<section_zylevels1>> only).
 | CT         | 27        | <<CT-field, Capability Type field>>.
 | EF         | 26        | Exponent format for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
-| T[11:3]    | 25:17     | Top address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
-| TE         | 16:14     | Top address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
-| B[13:3]    | 13:3      | Base address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
-| BE         | 2:0       | Base address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| T[11:3]    | 25:17     | Top bound address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| TE         | 16:14     | Top bound address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| B[13:3]    | 13:3      | Base bound address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| BE         | 2:0       | Base bound address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 3+| All other fields are _reserved_
 |==============================================================================
 
@@ -195,12 +195,12 @@ The variables related to the bounds decoding are shown in <<rvy64_uni_base_name_
 [#rvy64_uni_base_name_bndsenc_param_summary,width="100%",options=header,cols="1,4"]
 |==============================================================================
 | Variable  | Description
-| T         | Value substituted into the capability's address to decode the _top_ bound.
-| TE        | Value either substituted into the exponent or the _top_ bound depending on EF.
-| B         | Value substituted into the capability's address to decode the _base_ bound.
-| BE        | Value either substituted into the exponent or the _base_ bound depending on EF.
+| T         | Value substituted into the capability's address to decode the _top_ bound address.
+| TE        | Value either substituted into the exponent or the _top_ bound address depending on EF.
+| B         | Value substituted into the capability's address to decode the _base_ bound address.
+| BE        | Value either substituted into the exponent or the _base_ bound address depending on EF.
 | E         | Exponent that determines the position at which T and B are substituted into the capability's address.
-| L~8~^1^   | Value used to form either the MSB of the exponent or the MSB of the _top_ bound.
+| L~8~^1^   | Value used to form either the MSB of the exponent or the MSB of the _top_ bound address.
 | EF        | Exponent format flag indicating the encoding for T, B and E: +
 EF=0: The exponent is calculated from TE and BE, and conditionally L8, so it is 'internal'. +
 EF=1: The exponent is zero; TE, BE and L8 form part of the address bounds.
@@ -249,14 +249,14 @@ NOTE: *CHERI v9 Note:* The IE bit from CHERI v9 is renamed EF and its value is
 inverted to ensure that the <<null-cap>> capability is encoded as zero without the
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
-with T and B to form the top and base addresses respectively. +
+with T and B to form the top and base bound addresses respectively. +
 When EF=0, the exponent `E=CAP_MAX_E - ( enableL8 ? { L~8~, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
-and base addresses respectively. E is computed by subtracting from the maximum
+and base bound addresses respectively. E is computed by subtracting from the maximum
 possible exponent CAP_MAX_E which can be efficiently implemented in hardware
 assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise
 shift right by E. In contrast, CHERI v9 implementations computed the top and
-base addresses by assuming that T and B are at bit 0 and performing a logical
+base bound addresses by assuming that T and B are at bit 0 and performing a logical
 bitwise shift left by E.
 endif::[]
 
@@ -313,7 +313,7 @@ T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
 This derivation relies on the equality `T = B + L`, where `L` is the encoded length of the capability.
 `LMSB` is the value of `L[MW - 2]`, which is known from the values of `EF` and `E` (as well as L~8~ when `enableL8=1`).
 `LCout` is the carry out from the lower bits, which is implied by `T[MW - 3:0] < B[MW - 3:0]` since it is
-guaranteed that the _top_ bound is larger than the _base_ bound.
+guaranteed that the _top_ bound address is larger than the _base_ bound address.
 
 [#section_cap_bounds_format]
 ===== Format of the Bounds
@@ -327,13 +327,13 @@ xref:base_bound_dec[xrefstyle=short].
 
 NOTE: XLEN and MW are constant parameters, but E is decoded from the capability metadata, and so the bit positions of the boundaries between the sections vary.
 
-NOTE: The _top_ bound has an additional bit so that the bounds can include the topmost byte of memory.
+NOTE: The _top_ bound address has an additional bit so that the bounds can include the topmost byte of memory.
 
-.Decoding of the XLEN+1 wide _top_ bound
+.Decoding of the XLEN+1 wide _top_ bound address
 [#top_bound_dec]
 include::img/top-bound-dec.edn[]
 
-.Decoding of the XLEN wide _base_ bound
+.Decoding of the XLEN wide _base_ bound address
 [#base_bound_dec]
 include::img/base-bound-dec.edn[]
 
@@ -342,31 +342,31 @@ include ranges which may not be present when the bounds are decoded:
 
 * If `E = 0` the lower section does not exist.
 * If `E+MW=XLEN` then the top section is only the least significant bit of
- _c~t~_ for the _top_ bound, and top section does not exist for the _base_ bound.
+ _c~t~_ for the _top_ bound address, and the top section does not exist for the _base_ bound address.
 * If `E+MW>XLEN` then neither top section exists, and so the bounds are calculated
  with no dependency on the address field _a_.
 
 The compressed bounds encoding allows the address to roam over the _representable range_, (`space~R~` in <<cap_bounds_map>> and <<capformat_correction_illustration>>), while maintaining the original bounds.
-The overall effect is that the address can roam at least `2^E+MW^/4` bytes below the _base_ bound and at least `2^E+MW^/4` bytes above the _top_ bound while still allowing the bounds to be correctly decoded.
+The overall effect is that the address can roam at least `2^E+MW^/4` bytes below the _base_ bound address and at least `2^E+MW^/4` bytes above the _top_ bound address while still allowing the bounds to be correctly decoded.
 
 [#section_cap_bounds_correction_factors, reftext="Correction Factors"]
 ===== Correction Factors
 
-Substituting `B`/`T` into the capability address, as described in xref:section_cap_bounds_format[xrefstyle=short] above, only decodes to the correct _base_ or _top_ bound if `B`/`T` and the capability address both lie in the _same_ _s_=2^E+MW^-aligned block.
+Substituting `B`/`T` into the capability address, as described in xref:section_cap_bounds_format[xrefstyle=short] above, only decodes to the correct _base_ or _top_ bound address if `B`/`T` and the capability address both lie in the _same_ _s_=2^E+MW^-aligned block.
 In this case no correction is required.
 
 If `B`/`T` and the capability address lie in _different_ _s_-aligned blocks then _correction factors_ are applied to move the computed bounds between the _s_-aligned blocks.
 
-The _correction factors_ are _c~b~_ for the _base_ bound and _c~t~_ for the _top_ bound.
+The _correction factors_ are _c~b~_ for the _base_ bound address and _c~t~_ for the _top_ bound address.
 
-In the example shown in <<capformat_correction_illustration>>, the _top_ bound and the capability address lie in the same _s_-aligned block, but the _base_ bound doesn't, it is in the block below.
-Therefore _c~t~_ is zero, but _c~b~_ is set to -1 to move the _base_ bound down into the _s_-aligned block below (i.e. from space~U~ to space~L~).
+In the example shown in <<capformat_correction_illustration>>, the _top_ bound address and the capability address lie in the same _s_-aligned block, but the _base_ bound address doesn't, it is in the block below.
+Therefore _c~t~_ is zero, but _c~b~_ is set to -1 to move the _base_ bound address down into the _s_-aligned block below (i.e. from space~U~ to space~L~).
 
 Therefore adding the _correction factor_ moves the computed bound into the correct _s_-aligned block.
 Each _correction factor_ can have values of -1, 0 or +1, so that it is possible to move computed bound up or down by one _s_-aligned block.
 
 [#capformat_correction_illustration]
-.Example capability bounds that use the correction. The _base_ is an s-aligned block below the address, meaning the upper bits (above the mantissa) of the _base_ are smaller than the upper bits of the address. Therefore _c~b~_=-1. The address and _top_ are in the same region, so _c~t~_=0.
+.Example capability bounds that use the correction. The _base_ bound address is an s-aligned block below the address, meaning the upper bits (above the mantissa) of the _base_ bound address are smaller than the upper bits of the address. Therefore _c~b~_=-1. The address and _top_ are in the same region, so _c~t~_=0.
 image::../cheri/img/capformat-correction-illustration.png[width=80%,align=center]
 
 ====== Correction Factor Calculations
@@ -389,7 +389,7 @@ The correction factors _c~b~_ and _c~t~_ are calculated as follows.
 
 NOTE: Mathematically, `B < R` requires `B[MW-1:MW-2] = 0`.
 
-.Calculation of the _top_ and _base_ bound corrections
+.Calculation of the _top_ and _base_ bound address corrections
 [#cap_encoding_corrections,options=header,cols="^1,^1,^1,^2",width="60%",align="center"]
 |==============================================================================
 | A < R      | T < R | B < R | Correction factors
@@ -422,7 +422,7 @@ In summary, for either bound:
 * If the bound is above the _s_-aligned boundary and the capability address is below the _s_-aligned boundary, then set the correction factor to +1 to correct the bound upwards.
 
 [#t_bound_msb_inversion]
-===== Top bound MSB correction
+===== Top bound address MSB correction
 
 A capability has _infinite_ bounds if its bounds cover the entire address space
 such that _base_=0 and _top_{ge}2^XLEN^,
@@ -465,7 +465,7 @@ NOTE: The above includes a special case for encodings where `enableL8=1`.
 
 Capabilities with malformed bounds:
 
-. Return both _base_ and _top_ bounds as zero, which affects instructions like <<GCBASE>>.
+. Return both _base_ and _top_ bound addresses as zero, which affects instructions like <<GCBASE>>.
 . Cause certain manipulation instructions like <<CADDI>> to always set the {ctag} of the result to zero.
 
 [#section_cap_representable_check, reftext="Representable Range"]
@@ -500,7 +500,7 @@ The _top_ and _base_ capability bounds are formed of two or three sections:
 * Lower bits are set to zero
 ** This is only if there is an internal exponent (`EF=0`)
 
-.Composition of the decoded _top_ bound
+.Composition of the decoded _top_ bound address
 [#comp_addr_bounds,options=header,align="center",cols="2,4,2,2"]
 |==============================================================================
 | Configuration   | Upper Section (if E + MW < XLEN) | Middle Section | Lower Section
@@ -521,16 +521,16 @@ destination capabilities.  Therefore, the Middle and Lower sections
 of the bounds calculation are also unchanged for source and
 destination capabilities.
 
-When E > CAP_MAX_E - 2, the calculation of the _top_ bound is entirely derived
+When E > CAP_MAX_E - 2, the calculation of the _top_ bound address is entirely derived
 from `T` and `E`, which will be identical for both the source and destination
 capabilities, thus guaranteeing that `top == top'`.  Likewise, with such values of E, the
-_base_ bound is entirely derived from `B` and `E` and therefore `base == base'`.
+_base_ bound address is entirely derived from `B` and `E` and therefore `base == base'`.
 
-The calculation of the MSB of the _top_ bound may be inverted as specified
+The calculation of the MSB of the _top_ bound address may be inverted as specified
 in xref:t_bound_msb_inversion[xrefstyle=short].
 Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follows:
 
-.Top bound MSB inversion truth table
+.Top bound address MSB inversion truth table
 [#t_bound_msb_inversion_truth_table]
 [options=header,align=center,width="100%"]
 |==============================================================================
@@ -606,10 +606,10 @@ The exponent value causes its bounds to cover the entire address space, but no p
 | <<AP-field,AP>>          | zeros  | Grants no permissions
 | CT       | zero   | Unsealed
 | EF       | zero   | Internal exponent format
-| L~8~^1^  | zero   | Top address reconstruction bit
-| T        | zeros  | Top address bits
+| L~8~^1^  | zero   | Top bound address reconstruction bit
+| T        | zeros  | Top bound address bits
 | T~E~     | zeros  | Exponent bits
-| B        | zeros  | Base address bits
+| B        | zeros  | Base bound address bits
 | B~E~     | zeros  | Exponent bits
 | Address  | zeros  | Capability address
 | Reserved | zeros  | All reserved fields
@@ -636,10 +636,10 @@ This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capabil
 | <<AP-field,AP>>     | AP_MAX | Grants all permissions
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
-| L~8~^1^       | zero  | Top address reconstruction bit
-| T             | zeros | Top address bits
+| L~8~^1^       | zero  | Top bound address reconstruction bit
+| T             | zeros | Top bound address bits
 | T~E~          | zeros | Exponent bits
-| B             | zeros | Base address bits
+| B             | zeros | Base bound address bits
 | B~E~          | zeros | Exponent bits
 | Address       | any^2^ | Capability address
 | Reserved      | zeros | All reserved fields

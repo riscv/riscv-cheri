@@ -208,7 +208,7 @@ All capabilities with smaller bounds are derived from these.
 
 The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions.
 
-They all copy `{cs1}` to the output `{cd}`, set the _base_ bound of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
+They all copy `{cs1}` to the output `{cd}`, set the _base_ bound address of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
 
 * <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
 ** The {ctag} is set to zero if the bounds cannot be encoded exactly.
@@ -243,7 +243,7 @@ The maximum range of address values that the pointer can take without changing t
 NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability encoding with separate 64-bit values for the base and top memory bounds, and another for metadata fields.
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
-Since the upper bits of the address are used to calculate the top and base bounds, deriving a new capability with a different address could change the resulting bounds.
+Since the upper bits of the address are used to calculate the top and base bound addresses, deriving a new capability with a different address could change the resulting bounds.
 All instructions that derive a capability with a new address must check that the new address does not change the bounds.
 If the bounds _do_ change then the {ctag} of the derived capability is set to zero, so that the capability becomes invalid.
 
@@ -943,8 +943,8 @@ Some instructions use the concept of `cap2` being a _capability subset_ of `cap1
 The definition is:
 +
 . All permissions granted by the <<AP-field>> and the <<SDP-field>> of `cap2` are also granted by those of `cap1`, and
-. `cap2` 's top bound is less than or equal to `cap1` 's top bound, and
-. `cap2` 's base bound is greater than or equal to `cap1` 's base bound, and
+. `cap2` 's top bound address is less than or equal to `cap1` 's top bound address, and
+. `cap2` 's base bound address is greater than or equal to `cap1` 's base bound address, and
 . `cap1` and `cap2` pass all <<section_cap_integrity,integrity>> checks
 
 NOTE: A capability whose {ctag} is set is assumed to satisfy the <<section_cap_integrity,integrity>> checks, so this rule can only affect the result for an operand whose {ctag} is zero.
