@@ -10,9 +10,12 @@ Mnemonic::
 `{C_MV_CAP} {cd}, {cs2}`
 
 Expansion::
-`{CMV} {cd}, {cs2}`
+`{CMV} {cd}, {cs1}`
 
-NOTE: `c.mv` is remapped to copy YLEN-bit registers for {cheri_base_ext_name}. The mnemonic is changed to avoid ambiguity about whether the copy is XLEN or YLEN bits.
+NOTE: `{cs2}` in the 16-bit encoding is mapped to `{cs1}` in the expansion due to the different encoding formats.
+ This follows the same pattern as `C.MV` expanding to `MV` (`ADDI rd, rs1, 0`).
+
+NOTE: `C.MV` is remapped to copy YLEN-bit registers for {cheri_base_ext_name}. The mnemonic is changed to avoid ambiguity about whether the copy is XLEN or YLEN bits.
 
 Encoding::
 include::wavedrom/c_mv.adoc[]
