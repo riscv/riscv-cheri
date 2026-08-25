@@ -1302,8 +1302,17 @@ endif::[]
 
 For {cheri_base_ext_name} _all_ arithmetic HINT instructions require _rd_=`x0`.
 
-NOTE: For non-{cheri_base_ext_name} bases, C.SRLI, C.SRAI and C.SLLI also have code points which are HINTs if _shamt_=0. +
-32-bit arithmetic HINT instructions are unaffected by this rule as all have _rd_=`x0`.
+[NOTE]
+====
+For non-{cheri_base_ext_name} bases, C.SRLI, C.SRAI and C.SLLI all have code points which are HINTs if _shamt_=0.
+
+As a result, for {cheri_base_ext_name} bases:
+
+ * No code points of C.SRLI and C.SRAI are HINTs.
+ * The code points of C.SLLI are only HINTs if _rd_=`x0`.
+====
+
+NOTE: 32-bit arithmetic HINT instructions are unaffected by this rule as all have _rd_=`x0`.
 
 [#rvy_zalrsc_insn_table, reftext="{rvy_zalrsc_ext_name}"]
 == {rvy_zalrsc_ext_name}
