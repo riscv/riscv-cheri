@@ -197,3 +197,51 @@ Checking the stored {ctag} is less of a burden to the implementation than checki
 NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
 
 NOTE: The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
+
+[[sv32algorithm_rvy]]
+=== Virtual Address Translation Process
+
+NOTE: This section is copied and modified from the standard translation process.
+ Step 7 is added to support processing of the RVY field and step 10 is modified to include capability dirty tracking (_pte_._{pte_cap_dirty_name_lc}_). +
+ The intention is to merge these into the main text in the privileged manual, not to maintain a standalone copy like this.
+
+A virtual address _va_ is translated into a physical address _pa_ as follows:
+
+. Let _a_ be ``satp``.__ppn__×PAGESIZE, and let __i__=LEVELS-1. (For Sv32, PAGESIZE=2^12^ and LEVELS=2.) The `satp` register must be
+_active_, i.e., the effective privilege mode must be S-mode or U-mode.
+
+. Let _pte_ be the value of the PTE at address __a__+__va__.__vpn__[__i__]×PTESIZE. (For Sv32, PTESIZE=4.)  If accessing _pte_ violates a PMA or PMP check, raise an access-fault exception corresponding to the original access type.
+
+. If _pte_._v_=0, or if _pte_._r_=0 and _pte_._w_=1, or if any bits or encodings that are reserved for future standard use are set within _pte_, stop and raise a page-fault exception corresponding to the original access type.
+
+. Otherwise, the PTE is valid. If __pte__.__r__=1 or __pte__.__x__=1, go to step 5. Otherwise, this PTE is a pointer to the next level of the page table. Let __i=i__-1. If __i__<0, stop and raise a page-fault exception corresponding to the original access type. Otherwise, let
+__a__=__pte__.__ppn__×PAGESIZE and go to step 2.
+
+. A leaf PTE has been reached. If _i>0_ and _pte_._ppn_[__i__-1:0] ≠ 0, this is a misaligned superpage; stop and raise a page-fault exception corresponding to the original access type.
+
+. Determine if the requested memory access is allowed by the _pte_._u_ bit, given the current privilege mode and the value of the SUM and MXR fields of the *mstatus* register. If not, stop and raise a page-fault exception corresponding to the original access type.
+
+. For {cheri_base64_ext_name} only: determine if the requested capability store is allowed by the _pte_._{rv64y_pte4_field_name_lc}_ field. If not, stop and raise a {cheri_excep_name_pte_st} exception.
+
+. Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits, given the Shadow Stack Memory Protection rules. If not, stop and raise an access-fault exception.
+
+. Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits. If not, stop and raise a page-fault exception corresponding to the original access type.
+
+. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, or if the original memory access is a capability store with the to-be-stored {ctag} set and _pte_._{pte_cap_dirty_name_lc}_=0^1^:
+
+* If the Svade extension is implemented, stop and raise a page-fault exception corresponding to the original access type.
+* If a store to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE would violate a PMA or PMP check,
+raise an access-fault exception corresponding to the original access
+type.
+* Perform the following steps atomically:
+** Compare _pte_ to the value of the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
+** If the values match, set _pte_._a_ to 1 and, if the
+original memory access is a store, also set _pte_._d_ to 1, and if the original memory access is a capability store with the to-be-stored {ctag} set, also set _pte_._{pte_cap_dirty_name_lc}_ to 1. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
+** If the comparison fails, return to step 2.
+. The translation is successful. The translated physical address is
+given as follows:
+* _pa.pgoff_ = _va.pgoff_.
+* If _i_>0, then this is a superpage translation and __pa.ppn__[__i__-1:0] = __va.vpn__[__i__-1:0].
+* _pa.ppn_[LEVELS-1:__i__] = _pte_._ppn_[LEVELS-1:__i__].
+
+^1^ If {cheri_priv_crg_ext} is enabled ({cheri_base64_ext_name} only), then this condition causes capability dirty tracking.
