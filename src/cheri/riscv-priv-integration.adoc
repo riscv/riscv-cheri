@@ -30,6 +30,9 @@ include::img/mtveccreg.edn[]
 
 The fields in the metadata are WARL as many fields can be implemented as constants.
 
+<<mtvec_y>> need not be capable of holding all possible invalid metadata values.
+Prior to writing <<mtvec_y>>, implementations may convert invalid metadata values into some other invalid metadata value that <<mtvec_y>> is capable of holding.
+
 NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setting the reserved fields to zero, otherwise the capability is unusable.
  Another example is to partially or fully restrict the bounds to constant values.
 
@@ -90,6 +93,14 @@ include::img/mepccreg.edn[]
 .  `mepc.address[0]=0`, and
 .  `mepc.address[1]=0` when IALIGN is fixed to 32
 .  `mepc.address[1]` reads as zero when IALIGN is programmable and is set to 32
+
+The fields in the metadata are WARL as many fields can be implemented as constants.
+
+<<mepc_y>> need not be capable of holding all possible invalid metadata values.
+Prior to writing <<mepc_y>>, implementations may convert invalid metadata values into some other invalid metadata value that <<mepc_y>> is capable of holding.
+
+NOTE: <<JALR_CHERI>> may jump to a target <<pcc>> value with invalid metadata, and the target raises the exception.
+ The WARL behavior means that the full invalid metadata does not have to be maintained before being reported.
 
 As listed above for <<mtvec_y>>, this means that `mepc.address` can represent multiple different values.
 Therefore, software must ensure that all possible values are <<section_cap_representable_check, represented exactly>> on writing, otherwise the hardware sets the written {ctag} to zero.
