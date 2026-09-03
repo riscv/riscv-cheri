@@ -822,11 +822,10 @@ All CSRs that can hold addresses are widened to YLEN bits.
 [[xlen_csrs, XLEN-bit CSRs]]XLEN-bit CSRs::
 These do not contain pointers (e.g., _fcsr_ from the "F" extension).
 
-[[extended_csrs, extended CSRs]]Extended CSRs::
-These are XLEN-bit CSRs widened to YLEN bits, which are able to contain pointers
-// No unprivileged pointer-type CSRs in v1.0, so let's use mtvec here.
+[[widened_csrs, widened csrs]]Widened csrs::
+These are XLEN-bit CSRs widened to YLEN bits,
 ifdef::cheri_ratification_v1_only[]
-(e.g., _xtvec_ and _xepc_ from the privileged specification).
+e.g., _xtvec_ and _xepc_ from the privileged specification.
 endif::[]
 ifndef::cheri_ratification_v1_only[]
 (e.g., _jvt_ from the "Zcmt" extension).
@@ -834,14 +833,13 @@ ifndef::cheri_ratification_v1_only[]
 NOTE: Zcmt is not yet available for {cheri_base_ext_name}.
 endif::[]
 +
-When a WARL CSR is extended it is possible that writing a capability to it will be corrupted, as some address bits may be modified on writing, which in turn may effect the bounds decoding.
+When a WARL CSR is widened it is possible that writing a capability to it will be corrupted, as some address bits may be modified on writing.
+Altering the written address may effect the bounds decoding.
 For this reason the WARL behavior is extended to include the full capability.
-Any capability which cannot be written unmodified is considered to be _invalid_ and must be invalidated before writing.
+If the final written capability value cannot be written unmodified to the CSR due to WARL behavior then the capability value is considered to be _invalid_ and so must be written with its {ctag} set to zero.
 +
-Extended CSRs with WARL address fields need not be capable of holding all possible invalid capability values.
+WARL capability CSRs need not be capable of holding all possible invalid capability values.
 Prior to writing these CSRs, implementations may convert invalid capability values into some other invalid capability value that these CSRs _are_ capable of holding.
-+
-NOTE: The simplest representable invalid value is for the {ctag} to be set to zero if the capability cannot be written unmodified.
 +
 NOTE: Examples of WARL behavior for metadata are implementations requiring all fields to be in a valid (non-reserved) state, and also to fix specific permissions to certain values.
 
