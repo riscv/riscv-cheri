@@ -20,7 +20,7 @@ from which it can derive a capability to the address in this register.
 [#mtvec_y,reftext="mtvec ({cheri_base_ext_name})"]
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
-The `mtvec` register is widened to a capability.
+The WARL `mtvec` register is widened to a capability.
 Its reset value is nominally a <<root-rx-cap>> capability.
 
 NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of a <<root-rx-cap>> capability after reset.
@@ -28,10 +28,7 @@ NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a s
 .Machine-mode trap-vector base-capability register
 include::img/mtveccreg.edn[]
 
-The fields in the metadata are WARL as many fields can be implemented as constants.
-
-NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setting the reserved fields to zero, otherwise the capability is unusable.
- Another example is to partially or fully restrict the bounds to constant values.
+NOTE: Implementations may use the WARL behavior to restrict the metadata to values valid for code pointers.
 
 NOTE: Care must be taken however that suitable root capabilities are available to software after reset if this CSR does not represent one.
 
@@ -79,7 +76,7 @@ include::img/mscratchcreg.edn[]
 [#mepc_y,reftext="mepc ({cheri_base_ext_name})"]
 ==== Machine Exception Program Counter Capability (mepc)
 
-The `mepc` register is widened to a capability.
+The WARL `mepc` register is widened to a capability.
 Its reset value is nominally a <<root-rx-cap>> capability.
 
 .Machine exception program counter capability register
@@ -90,6 +87,11 @@ include::img/mepccreg.edn[]
 .  `mepc.address[0]=0`, and
 .  `mepc.address[1]=0` when IALIGN is fixed to 32
 .  `mepc.address[1]` reads as zero when IALIGN is programmable and is set to 32
+
+NOTE: Implementations may use the WARL behavior to restrict the metadata to values valid for code pointers.
+
+NOTE: <<JALR_CHERI>> may jump to a target <<pcc>> value with invalid metadata, and the target raises the exception.
+ The WARL behavior means that the full invalid metadata does not have to be maintained before being reported.
 
 As listed above for <<mtvec_y>>, this means that `mepc.address` can represent multiple different values.
 Therefore, software must ensure that all possible values are <<section_cap_representable_check, represented exactly>> on writing, otherwise the hardware sets the written {ctag} to zero.
@@ -501,7 +503,7 @@ include::{generated_dir}/csr_exevectors_m_table_body.adoc[]
 [#stvec_y,reftext="stvec ({cheri_base_ext_name})"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
 
-The `stvec` register is widened to a capability.
+The WARL `stvec` register is widened to a capability.
 
 {ROOT_RX_RESET_SCSR}
 
@@ -569,7 +571,7 @@ include::img/sscratchcreg.edn[]
 [#sepc_y,reftext="sepc ({cheri_base_ext_name})"]
 ==== Supervisor Exception Program Counter Capability (sepc)
 
-The `sepc` register is widened to a capability.
+The WARL `sepc` register is widened to a capability.
 
 {ROOT_RX_RESET_SCSR}
 
