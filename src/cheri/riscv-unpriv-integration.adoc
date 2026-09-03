@@ -267,12 +267,8 @@ A capability's <<section_cap_representable_check>> is also circular, so address 
 However, the decoded top bound address of a capability is XLEN + 1 bits wide and does *not* wrap.
 For example, a hypothetical capability with base 2^XLEN^ - 1 and top 2^XLEN^ + 1 is not a subset of the infinite capability and authorizes access to the last byte of the address space only, and does not authorize access to the byte at address 0.
 
-Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
-a CHERI core to generate a valid capability with architectural top > 2^XLEN^.
-
-If such a capability exists then it must have been caused by a logic or memory fault.
-Unlike malformed bounds, the top overflowing is not treated as a special case in the
-architecture: normal bounds check rules should be followed.
+A capability with architectural top > 2^XLEN^ is impossible for a CHERI core to generate and is only possible due to a logic or memory fault (similar to malformed bounds; see xref:section_cap_malformed[xrefstyle=short]).
+Unlike malformed bounds, the top overflowing is not treated as a special case in the architecture: normal bounds check rules should be followed.
 
 
 [#sec_cap_type, reftext="CT-field"]
