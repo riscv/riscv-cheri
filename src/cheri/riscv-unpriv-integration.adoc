@@ -469,12 +469,17 @@ NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is simila
 endif::[]
 
 [#asr_perm,reftext="ASR-permission"]
-Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to all privileged CSRs and some unprivileged CSRs, and the execution of some privileged instructions.
-<<asr_perm>> checks always use the permission in the <<pcc>>.
+Access System Registers Permission (ASR)::
+Authorize the execution of privileged instructions and access to CSRs.
+This permission only has an effect when the capability is installed in the <<pcc>>.
+<<asr_perm>> acts as an additional constraint and does not bypass normal privilege mode checks: having <<asr_perm>> in the <<pcc>> does not grant an unprivileged mode access to privileged CSRs.
+Lacking <<asr_perm>> in the <<pcc>> prevents access to privileged CSRs and restricted instructions even if the current privilege mode would otherwise permit it.
++
+Only the unprivileged CSRs listed below require <<asr_perm>>; other unprivileged CSRs remain accessible as usual.
 
 In the unprivileged {cheri_base_ext_name} ISA, the following are affected by <<asr_perm>>:
 
-* **Thread ID CSRs:** The <<utidc>> CSR requires <<asr_perm>> for writing but not for reading.
+* **Thread ID CSRs:** Writing to <<utidc>> requires <<asr_perm>> in the <<pcc>>, but reading does not require <<asr_perm>>.
 * **Instructions:** <<CBO_INVAL_CHERI>> requires <<asr_perm>> in the <<pcc>>.
 
 In the privileged {cheri_base_ext_name} ISA, the following are affected by <<asr_perm>>:
