@@ -187,7 +187,7 @@ In a typical load/store unit, the expansion of the bounds from `{cs1}` and bound
 
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore, small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
-One bounds encoding format based upon cite:[woodruff2019cheri] is defined in <<section_cap_bounds>>.
+The standard bounds encoding format for {rv64y_uni_base_name} is based upon the CHERI Concentrate scheme cite:[woodruff2019cheri] and defined in <<section_cap_bounds>>.
 
 NOTE: Future CHERI bases may use encoding formats with different bounds encoding schemes (see <<sec_cap_encoding_formats>>).
 
@@ -224,7 +224,7 @@ The number of shared bits depends on the exponent, see xref:section_cap_bounds[x
 
 Software sometimes uses out-of-bounds pointers, for example, to represent a one-past-the-end pointer to an array in C (`arr + size`).
 To support this pattern, CHERI must allow these out-of-bounds pointers to be held in capabilities while still protecting the bounds and integrity.
-Because the CHERI Concentrate cite:[woodruff2019cheri] encoding scheme for memory bounds shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
+Because the standard bounds encoding scheme shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
 This range is known as the *representable range*.
 The relationship between the bounds and the representable range is illustrated in <<cap_bounds_map>>.
 
