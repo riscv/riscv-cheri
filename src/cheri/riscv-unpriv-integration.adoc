@@ -114,7 +114,7 @@ endif::[]
 The {ctag} is a single additional bit associated with YLEN-bit memory locations and YLEN-bit registers.
 It is stored separately (i.e., is _out-of-band_ or _hidden_), and is _hardware-managed_.
 It indicates whether a YLEN-bit register or YLEN-aligned memory location contains a valid capability.
-If the {ctag} is set, the capability is valid and may authorize operations, subject to type, permission, <<sec_cap_bounds_overview,bounds>>, and integrity checks.
+If the {ctag} is set to one, the capability is valid and may authorize operations, subject to type, permission, <<sec_cap_bounds_overview,bounds>>, and integrity checks.
 
 All registers or memory locations able to hold a valid capability are YLEN bits wide and have an associated {ctag}.
 
@@ -122,12 +122,12 @@ Not all memory in a real system will support {ctag}s.
 The Execution Environment Interface (EEI) will define what regions of the address space support them.
 
 The {ctag} cannot be directly set by software; it is _not_ a conventionally accessible bit of state.
-If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
+If the {ctag} is set to one then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
 If the rules are followed then the {ctag} will propagate through the instructions that modify, load, or store the capability value.
 
-Therefore, whenever an instruction writes a capability with the {ctag} set to a register or to memory:
+Therefore, whenever an instruction writes a capability with the {ctag} set to one to a register or to memory:
 
-* At least one {ctag} must have been set in the input operands.
+* At least one {ctag} must have been set to one in the input operands.
 ** This is the _provenance_ check.
 * The requested operation must have been legal and not increase bounds or permissions.
 ** This is the _monotonicity_ check.
@@ -261,7 +261,7 @@ Therefore, the ISA specification uses the phrase *represented exactly* for this 
 A hart supporting {cheri_base_ext_name} has a single byte-addressable address
 space of 2^XLEN^ bytes for all memory accesses. Each memory region capable of
 holding a capability also stores a {ctag} for each naturally aligned YLEN bits
-(e.g., 16 bytes in RV64), so that capabilities with their {ctag} set can only be
+(e.g., 16 bytes in RV64), so that capabilities with their {ctag} set to one can only be
 stored in naturally aligned addresses. {ctag_cap}s must be atomically bound to the
 data they protect.
 
@@ -460,7 +460,7 @@ If <<c_perm>> is missing then the {ctag}s for capability loads and stores are re
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
 +
-The permission stripping behavior _only_ applies to loaded capabilities with their {ctag} set and that are not sealed after all other checks.
+The permission stripping behavior _only_ applies to loaded capabilities with their {ctag} set to one and that are not sealed after all other checks.
 This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure without making a copy.
@@ -632,7 +632,7 @@ CHERI defines the following integrity check rules:
 
 NOTE: An example of a reserved field value is an illegal set of permissions such as <<asr_perm>> without <<x_perm>>.
 
-If any of the above rules do not hold for a capability with the {ctag} set, it indicates either:
+If any of the above rules do not hold for a capability with the {ctag} set to one, it indicates either:
 
 * State corruption due to memory or logic faults, or
 * The presence of incompatible or faulty CHERI IP within the system.
@@ -640,7 +640,7 @@ If any of the above rules do not hold for a capability with the {ctag} set, it i
 NOTE: These checks are much less rigorous than parity or ECC protection, and are only
 used to detect simple problems with the capability metadata.
 
-Instructions that are defined to accept arbitrary input bit patterns, and can write an output with the {ctag} set, _must_ perform an integrity check on the input capability if its {ctag} is set to zero.
+Instructions that are defined to accept arbitrary input bit patterns, and can write an output with the {ctag} set to one, _must_ perform an integrity check on the input capability if its {ctag} is set to zero.
 
 NOTE: In the {cheri_base_ext_name} ISA this only affects <<CBLD>>.
 
@@ -953,7 +953,7 @@ The definition is:
 . `cap2` 's base bound address is greater than or equal to `cap1` 's base bound address, and
 . `cap1` and `cap2` pass all <<section_cap_integrity,integrity>> checks
 
-NOTE: A capability whose {ctag} is set is assumed to satisfy the <<section_cap_integrity,integrity>> checks, so this rule can only affect the result for an operand whose {ctag} is zero.
+NOTE: A capability whose {ctag} is set to one is assumed to satisfy the <<section_cap_integrity,integrity>> checks, so this rule can only affect the result for an operand whose {ctag} is zero.
 Among the instructions that use the subset relation, this is only material for the `{cs2}` operand of <<CBLD>> (which can set a {ctag} on an arbitrary bit pattern) and for <<SCSS>> (which can compare operands whose {ctag}s are zero).
 
 .Summary of {cheri_base_ext_name} instructions that create a modified capability
