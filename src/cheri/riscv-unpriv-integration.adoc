@@ -851,20 +851,20 @@ These are added by {cheri_base_ext_name} and contain pointers (e.g., <<utidc>>).
 When accessing CSRs these rules are followed:
 
 . Accesses to <<xlen_csrs>> are as specified by Zicsr
-. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using CSRRW will:
+. Accesses to <<ylen_csrs>> and <<widened_csrs>>, using CSRRW will:
 .. Read YLEN bits
 .. Write YLEN bits, and will write the {ctag} to zero if the written value fails any of the checks in xref:section_cap_integrity[xrefstyle=full]
-. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using instructions other than CSRRW will:
+. Accesses to <<ylen_csrs>> and <<widened_csrs>>, using instructions other than CSRRW will:
 .. Read YLEN bits
 .. For CSRRS/CSRRC, compute the XLEN-bit address-field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN source operand.
 .. For immediate forms, compute the XLEN-bit address-field value using the standard Zicsr operation with the zero-extended `uimm` operand.
 .. Write the computed XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value
 
-NOTE: Any <<ylen_csrs, YLEN-bit>> or <<extended_csrs, extended CSR>> may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
+NOTE: Any <<ylen_csrs, YLEN-bit>> or <<widened_csrs, extended CSR>> may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
 
 The assembler pseudoinstruction to read a capability CSR `csrr {cd}, csr`, is encoded as `csrrs {cd}, csr, {creg}0`.
 
-.<<ylen_csrs, YLEN-bit CSR>> and <<extended_csrs, Extended CSR>> access summary for {cheri_base_ext_name}
+.<<ylen_csrs, YLEN-bit CSR>> and <<widened_csrs, Extended CSR>> access summary for {cheri_base_ext_name}
 [#clen_access_summary_base,%autowidth,options=header,align="center"]
 |=======================
 |Instruction          | Read Width  | Write Width
