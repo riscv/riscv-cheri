@@ -5,18 +5,16 @@
 (def row-header-fn nil)
 (def left-margin 100)
 (def right-margin 100)
-(def boxes-per-row 34)
-(draw-column-headers {:height 20 :font-size 18 :labels (reverse ["0" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "" "MXLEN-1" "" ""])})
+(def boxes-per-row 68)
+(draw-column-headers {:height 20 :font-size 18 :labels (concat (repeat 5 "") ["YLEN-1"] (repeat 28 "") ["MXLEN" "" "" "MXLEN-1"] (repeat 29 "") ["0"])})
 
-(draw-box "CT" {:span 1})
-(draw-box ""    {:span 1 :borders {}})
-
+(draw-box "CTag" {:span 2})
+(draw-box "" {:span 2 :borders {}})
 (draw-box "mepc (Metadata, WARL)" {:span 32})
+(draw-box "mepc (Address, WARL)" {:span 32})
 
+(draw-box "1 bit" {:span 2 :borders {}})
 (draw-box "" {:span 2 :borders {}})
-
-(draw-box "mepc (Address, WARL)"  {:span 32})
-
-(draw-box "" {:span 2 :borders {}})
-(draw-box "MXLEN" {:span 32 :borders {}})
+(draw-box "MXLEN bits" {:span 32 :borders {}})
+(draw-box "MXLEN bits" {:span 32 :borders {}})
 ----
