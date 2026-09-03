@@ -274,6 +274,8 @@ For example, a hypothetical capability with base 2^XLEN^ - 1 and top 2^XLEN^ + 1
 A capability with architectural top > 2^XLEN^ is impossible for a CHERI core to generate and is only possible due to a logic or memory fault (similar to malformed bounds; see xref:section_cap_malformed[xrefstyle=short]).
 Unlike malformed bounds, the top overflowing is not treated as a special case in the architecture: normal bounds check rules should be followed.
 
+NOTE: Requiring hardware to explicitly detect top > 2^XLEN^ values and raise a dedicated exception would add hardware complexity in critical paths for no practical benefit, as such values cannot be produced by valid capability operations.
+
 
 [#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
