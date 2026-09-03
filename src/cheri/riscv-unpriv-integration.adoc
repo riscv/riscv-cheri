@@ -134,10 +134,10 @@ Therefore, whenever an instruction writes a capability with the {ctag} set to on
 * The instruction may have checked that none of the input capabilities were corrupted.
 ** This is the _integrity_ check. Not all instructions check all input operands for _integrity_.
 
-Capability load/store require the _provenance_ check:
+For capability loads and stores, provenance is preserved across memory:
 
-* Any store that wrote the capability to memory was correctly authorized.
-* Any load that read the capability from memory was correctly authorized.
+* Storing a capability to memory preserves the {ctag} in memory only if the store is performed using a valid capability that authorizes storing capabilities to that memory location.
+* Loading a capability from memory preserves the {ctag} in the destination register only if the load is performed using a valid capability that authorizes loading capabilities from that memory location.
 
 When an operation fails a check, either due to software error or malicious intent, the operation raises an exception or sets the resulting {ctag} to zero, as defined by each instruction.
 
