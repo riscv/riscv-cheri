@@ -179,8 +179,6 @@ value of 0 represents CAP_MAX_E, and CAP_MAX_E represents 0 from the previous
 specification.
 endif::[]
 
-This bounds encoding scheme is based upon cite:[woodruff2019cheri].
-
 The bounds encode the _base_ and _top_ addresses that constrain memory accesses.
 The capability can be used to access any memory location A in the range base
 {le} A < top. The bounds are encoded in a compressed format, so it is not
@@ -234,10 +232,8 @@ when the {ctag} is set to one (see xref:section_cap_malformed[xrefstyle=short]).
 [#section_cap_bounds_decoding]
 ===== Calculation of Variables
 
-The metadata is encoded in a compressed format termed CHERI Concentrate cite:[woodruff2019cheri]. It
-uses a floating-point representation to encode the bounds relative to the
-capability address. The following subsections describe how the _base_ and _top_
-bounds are decoded from the metadata.
+The metadata uses a floating-point representation to encode the compressed bounds relative to the capability address.
+The following subsections describe how the _base_ and _top_ bounds are decoded from the metadata.
 
 The pseudocode below is normative.
 In this notation, `/` means "integer division", `[]` are the bit-select operators, `{}` is bit concatenation, `?:` is the conditional operator, and arithmetic is signed.
