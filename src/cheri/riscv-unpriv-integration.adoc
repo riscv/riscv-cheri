@@ -49,8 +49,7 @@ capabilities are always derived via valid manipulations of other capabilities
 that exceed those of their source capabilities (_monotonicity_).
 Tampering or modifying capabilities
 in an attempt to elevate their rights will yield an invalid capability.
-Attempting to dereference via an invalid capability
-will result in raising an exception.
+Attempting to dereference via an invalid capability will raise an exception.
 
 ^1^ Not all possible corrupted states are detected, see xref:section_cap_integrity[xrefstyle=full].
 
@@ -111,7 +110,7 @@ endif::[]
 ==== {ctag_title}
 
 The {ctag} is a single additional bit associated with YLEN-bit memory locations and YLEN-bit registers.
-It is stored separately (i.e., is _out-of-band_ or _hidden_), and is _hardware managed_.
+It is stored separately (i.e., is _out-of-band_ or _hidden_), and is _hardware-managed_.
 It indicates whether a YLEN-bit register or YLEN-aligned memory location contains a valid capability.
 If the {ctag} is set, the capability is valid and may authorize operations, subject to type, permission, <<sec_cap_bounds_overview,bounds>>, and integrity checks.
 
@@ -123,7 +122,7 @@ The Execution Environment Interface (EEI) will define what regions of the addres
 
 The {ctag} cannot be directly set by software; it is _not_ a conventionally accessible bit of state.
 If the {ctag} is set then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
-If the rules are followed then the {ctag} will propagate through the instructions that modify, load or store the capability.
+If the rules are followed then the {ctag} will propagate through the instructions that modify, load, or store the capability.
 
 Therefore, whenever an instruction writes a capability with the {ctag} set to a register or to memory:
 
@@ -333,7 +332,7 @@ They can establish a form of control-flow integrity between mutually distrusting
 Because they are immutable, the jump target cannot be modified, ensuring that control flow can only enter at the specific address encoded in the capability and not elsewhere in a function.
 
 A sealed entry point capability may be passed as the `{cs1}` argument to <<JALR_CHERI>>, and is _unsealed_ on dereference.
-If `{cd}` is not `{creg}0`, the link capability written to `{cd}` is also written as a <<sentry_cap>>.
+If `{cd}` is not `{creg}0`, the link capability written to `{cd}` is written as a <<sentry_cap>>.
 
 ifndef::cheri_ratification_v1_only[]
 Sentry types may be restricted to _forward-edge_ only and _backward-edge_ only transitions to further improve control-flow integrity.
