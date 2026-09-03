@@ -332,15 +332,15 @@ endif::[]
 Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
 Because they are immutable, the jump target cannot be modified, ensuring that control flow can only enter at the specific address encoded in the capability and not elsewhere in a function.
 
-A sealed entry point capability may be passed as the `{cs1}` argument to <<JALR_CHERI>>, and is _unsealed_ on dereference.
+A sealed entry point capability may be passed as the `{cs1}` argument to <<JALR_CHERI>>; an unsealed version of this capability value is written to the <<pcc>>.
 If `{cd}` is not `{creg}0`, the link capability written to `{cd}` is written as a <<sentry_cap>>.
 
 ifndef::cheri_ratification_v1_only[]
 Sentry types may be restricted to _forward-edge_ only and _backward-edge_ only transitions to further improve control-flow integrity.
 
-* When <<JALR_CHERI>> is used as a function call only _forward-edge_ sentries in `{cs1}` are _unsealed_ on dereference.
-  If `{cd}` is not `{creg}0`, the returned `{cd}` value is always _sealed_ as a _backward-edge_ sentry type.
-* When <<JALR_CHERI>> is used as a function return only _backward-edge_ sentries in `{cs1}` are _unsealed_ on dereference.
+* When <<JALR_CHERI>> is used as a function call, an unsealed version of `{cs1}` is written to the <<pcc>> only if `{cs1}` is a forward-edge sentry.
+  If `{cd}` is not `{creg}0`, the link capability written to `{cd}` is sealed as a backward-edge sentry type.
+* When <<JALR_CHERI>> is used as a function return, an unsealed version of `{cs1}` is written to the <<pcc>> only if `{cs1}` is a backward-edge sentry.
 endif::[]
 
 NOTE: In addition to using sealed capabilities for sealed entry points, sealed capabilities can also be useful to software as secure software tokens.
