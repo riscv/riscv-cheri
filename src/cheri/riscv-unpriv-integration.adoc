@@ -208,7 +208,7 @@ All capabilities with smaller bounds are derived from these.
 
 The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions.
 
-They all copy `{cs1}` to the output `{cd}`, set the _base_ bound address of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
+These bounds-reducing instructions all copy `{cs1}` to the output `{cd}`, set the _base_ bound address of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
 
 * <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
 ** The {ctag} is set to zero if the bounds cannot be encoded exactly.
@@ -329,7 +329,7 @@ ifdef::cheri_ratification_v1_only[]
 NOTE: Such function pointers are sometimes known as "sentries", a contraction of "sealed entries".
 endif::[]
 
-They can establish a form of control-flow integrity between mutually distrusting code.
+Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
 Because they are immutable, the jump target cannot be modified, ensuring that control flow can only enter at the specific address encoded in the capability and not elsewhere in a function.
 
 A sealed entry point capability may be passed as the `{cs1}` argument to <<JALR_CHERI>>, and is _unsealed_ on dereference.
@@ -396,7 +396,7 @@ an additional bit to the <<sec_cap_type>> field.
 
 Capability encoding formats will explicitly state whether these are relevant to them.
 
-They are not used by <<rv64y_cap_description>>, but are by the CHERIoT formats.
+Permission-dependent types are not used by <<rv64y_cap_description>>, but are by the CHERIoT formats.
 ====
 endif::[]
 
@@ -524,8 +524,8 @@ Capability encoding formats may impose additional constraints to reduce the numb
 [#SDP-field, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
-They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.).
-They can be cleared by <<CLRPERM>> but are not interpreted by the CPU otherwise.
+Software-defined permissions can be inspected by the operating system or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.).
+These permissions can be cleared by <<CLRPERM>> but are not interpreted by the CPU otherwise.
 
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set on valid capabilities.
 
@@ -1041,7 +1041,7 @@ include::insns/cram_32bit.adoc[]
 === Instructions to Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LOAD_CAP>> and <<STORE_CAP>>.
-They atomically access YLEN bits of data and the associated {ctag}.
+These capability load and store instructions atomically access YLEN bits of data and the associated {ctag}.
 
 All capability memory accesses check for <<c_perm>> in the authorizing capability in `{cs1}`.
 
@@ -1060,7 +1060,7 @@ If <<c_perm>> is not granted then:
 //<<w_perm>> and <<c_perm>> and the stored capability has the {ctag} set.
 
 All capability data memory access instructions require naturally aligned addresses, and will take an access fault exception if this requirement is not met.
-They cannot be emulated.
+Misaligned capability accesses cannot be emulated.
 
 NOTE: An access fault is raised instead of a misaligned exception because these instructions cannot be emulated since there is one hidden {ctag} per naturally aligned YLEN-bit memory region.
 
@@ -1103,7 +1103,7 @@ include::insns/store_32bit_cap.adoc[]
 `ADD` and `ADDI` are not affected by the rule above.
 Even though they _are_ used for handling addresses, they also have other uses.
 New encodings are used for capability addition: <<CADD>> and <<CADDI>>.
-They must be used for all capability address incrementing.
+These capability add instructions must be used for all capability address incrementing.
 
 [NOTE]
 ====
