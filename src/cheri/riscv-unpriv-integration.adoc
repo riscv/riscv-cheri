@@ -53,12 +53,9 @@ Attempting to dereference via an invalid capability will raise an exception.
 
 ^1^ Not all possible corrupted states are detected, see xref:section_cap_integrity[xrefstyle=full].
 
-CHERI capabilities may be held in registers or memory, and are loaded,
-stored, and dereferenced using CHERI-aware instructions that expect capability
-operands rather than integer addresses. On system initialization, initial capabilities
-are made available to software by the execution environment via general purpose
-registers. All other capabilities will be derived from these initial valid
-capabilities through valid capability transformations.
+CHERI capabilities may be held in registers or memory, and are loaded, stored, and dereferenced using CHERI-aware instructions that expect capability operands rather than integer addresses.
+Upon initialization, the execution environment provides initial capabilities to software via general-purpose registers.
+All other capabilities will be derived from these initial valid capabilities through valid capability transformations.
 
 Developers can use CHERI to build fine-grained spatial and temporal memory
 protection into their system software and applications and significantly
@@ -203,7 +200,7 @@ NOTE: The _length_ and _top_ are (XLEN+1)-bit values, so <<GCLEN>> and <<GCTOP>>
 
 ==== Deriving New Bounds
 
-On system initialization, one or more <<root-cap>> capabilities are available.
+Upon initialization, the execution environment defines how the <<root-cap>> capabilities are made available to the execution context.
 All capabilities with smaller bounds are derived from these.
 
 The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions.
@@ -544,14 +541,14 @@ NOTE: Software is completely free to define the usage of these bits.
 
 [#root-cap,reftext="Root"]
 Root Capabilities::
-_Root_ capabilities are those provided by the system on initialization.
+_Root_ capabilities are those provided by the execution environment upon initialization.
 In some capability encoding formats there is a single _Infinite_ capability value,
 which grants all permissions and has bounds covering the whole 2^XLEN^ address space;
 in such systems, _root_ capabilities are often _Infinite_.
 +
 Other capability encoding formats may have a set of _root_ capabilities distinguishing between data and executable capabilities as shown below.
 +
-At system initialization the set of all _root_ capabilities must be made available to software.
+Upon initialization, the execution environment defines how root capabilities are made available to software.
 +
 NOTE: Implementations are not required to provide access to the entire address space to a single hart, the _root_ capabilities may be restricted to only cover a subset of the entire address space, or to remove certain permissions.
 
@@ -714,7 +711,7 @@ A failing check raises a CHERI exception.
 * All bytes of the instruction must be in bounds.
 * All <<section_cap_integrity,integrity>> checks must have passed.
 
-On system initialization the `pc` bounds and permissions must be set such that the program can run successfully (e.g., by setting it to a <<root-rx-cap>> capability to ensure _all_ instructions are in bounds).
+Upon initialization, the execution environment must set `<<pcc>>` bounds and permissions such that the program can run successfully (e.g., by setting `<<pcc>>` to a <<root-rx-cap>> capability to ensure _all_ instructions are in bounds).
 
 NOTE: Future ISA extensions should respect these rules so that the checked bits do not need to be stored in all copies of the <<pcc>> in the implementation.
 
