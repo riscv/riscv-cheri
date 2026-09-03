@@ -243,13 +243,15 @@ The maximum range of address values that the pointer can take without changing t
 NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability encoding with separate 64-bit values for the base and top memory bounds, and another for metadata fields.
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
-Since the upper bits of the address are used to calculate the top and base bound addresses, deriving a new capability with a different address could change the resulting bounds.
-All instructions that derive a capability with a new address must check that the new address does not change the bounds.
-If the bounds _do_ change then the {ctag} of the derived capability is set to zero, so that the capability becomes invalid.
+Any address that is within the capability's bounds is always representable and preserves the {ctag}.
+In addition, the bounds encoding allows the address to be moved out of bounds within the <<section_cap_representable_check,representable range>> without changing the decoded bounds.
+Because the upper bits of the address are used to calculate the top and base bound addresses, deriving an address that falls outside this representable range would change the resulting bounds.
+All instructions that derive a capability with a new address check that the new address does not change the bounds.
+If an address calculation moves the address outside the representable range such that the bounds would change, the {ctag} of the derived capability is set to zero, so that the capability becomes invalid.
 
 Software can derive a capability with a new address using instructions such as <<SCADDR>>, <<CADD>> and <<CADDI>>.
 
-NOTE: <<SCADDR>> writes back a derived capability with a new address field and, if the {ctag} was previously set, sets the {ctag} of the derived capability to one if the resulting capability still has the same bounds.
+NOTE: <<SCADDR>> writes back a derived capability with a new address field and, if the {ctag} was previously set to one, sets the {ctag} of the derived capability to one if the resulting capability still has the same bounds.
 
 NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check, and may never allow the address to be out of bounds.
 Therefore, the ISA specification uses the phrase *represented exactly* for this check.
