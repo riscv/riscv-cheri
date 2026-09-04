@@ -27,7 +27,7 @@ Encoding::
 Description ({cheri_base32_ext_name})::
 Redirect instruction fetch via the jump table defined by the indexing via `jvt.address+ index*XLEN/8`, checking every byte of the jump table access against <<jvt_y>> bounds (not against <<pcc>>) and requiring <<x_perm>>. Link to `cra`.
 +
-The target <<pcc>> is calculated by replacing the current <<pcc>> address with the value read from the jump table, and is updated using the semantics of the <<SCADDR>> instruction.
+The target <<pcc>> is calculated by copying the current <<pcc>> and setting its address to the value read from the jump table, using the semantics of the <<SCADDR>> instruction.
 +
 If the <<jvt_y>> check fails, then set the {ctag} of the target <<pcc>> to zero.
 
