@@ -676,6 +676,8 @@ include::{generated_dir}/csr_exevectors_s_table_body.adoc[]
 [#section_priv_cheri_vmem]
 == "{cheri_priv_vmem_ext}" Extension, Version 1.0
 
+{cheri_sv39_ext}, {cheri_sv48_ext} and {cheri_sv57_ext} imply Sv39, Sv48 and Sv57 respectively on {cheri_base_ext_name} architectures.
+
 CHERI checks are made on the effective address according to the current translation scheme.
 I.e., on the virtual address if translation is enabled or the physical address if translation is disabled.
 
@@ -707,8 +709,8 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 
 [NOTE]
 ====
-As {cheri_base32_ext_name} has no field allocated in the PTE, capability loads and stores operate as normal.
-Therefore, the {cheri_base_ext_name} field is reserved in the RV64 PTE formats only (e.g., <<sv39pte>>) for use by {cheri_base64_ext_name} extensions.
+As RV32 has no field available to be allocated in the PTE, capability loads and stores operate as normal, i.e there is no {cheri_base_ext_name} version of Sv32. +
+Therefore, the {cheri_base_ext_name} field is allocated in the RV64 PTE formats only (e.g., <<sv39pte>>) for use by {cheri_base64_ext_name} extensions. +
 The principle is that extensions, such as <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> may redefine the usage of the {cheri_base_ext_name} field by adding an enable bit into `Xstatus`.
 ====
 
