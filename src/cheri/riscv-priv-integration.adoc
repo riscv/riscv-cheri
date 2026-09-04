@@ -676,6 +676,8 @@ include::{generated_dir}/csr_exevectors_s_table_body.adoc[]
 [#section_priv_cheri_vmem]
 == "{cheri_priv_vmem_ext}" Extension, Version 1.0
 
+{cheri_sv39_ext}, {cheri_sv48_ext} and {cheri_sv57_ext} imply Sv39, Sv48 and Sv57 respectively on {cheri_base_ext_name} architectures.
+
 CHERI checks are made on the effective address according to the current translation scheme.
 I.e., on the virtual address if translation is enabled or the physical address if translation is disabled.
 
@@ -707,8 +709,8 @@ Such sharing through virtual memory is on the page granularity, so preventing ca
 
 [NOTE]
 ====
-As {cheri_base32_ext_name} has no field allocated in the PTE, capability loads and stores operate as normal.
-Therefore, the {cheri_base_ext_name} field is reserved in the RV64 PTE formats only (e.g., <<sv39pte>>) for use by {cheri_base64_ext_name} extensions.
+As RV32 has no field available to be allocated in the PTE, capability loads and stores operate as normal, i.e there is no {cheri_base_ext_name} version of Sv32. +
+Therefore, the {cheri_base_ext_name} field is allocated in the RV64 PTE formats only (e.g., <<sv39pte>>) for use by {cheri_base64_ext_name} extensions. +
 The principle is that extensions, such as <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>> may redefine the usage of the {cheri_base_ext_name} field by adding an enable bit into `Xstatus`.
 ====
 
@@ -948,15 +950,19 @@ endif::[]
 
 When using a system with {cheri_default_ext_name}, it may be desirable to configure privilege levels below Machine-mode such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
 
-{cheri_default_ext_name} includes the ability to disable CHERI by making the {CRE} bit of <<menvcfg_y>> and <<senvcfg_y>> writable.
+{cheri_default_mext_name} is implied by {cheri_default_ext_name} and includes the ability to disable CHERI by making the {CRE} bit of <<menvcfg_y>> writable.
 
-{cheri_default_ext_name} adds <<ddc>> to the registers which must be configured as root capabilities for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
+{cheri_default_sext_name} is implied by {cheri_default_ext_name} if the implementation supports supervisor mode and includes the ability to disable CHERI by making the {CRE} bit of <<senvcfg_y>> writable.
+
+{cheri_default_mext_name} adds <<ddc>> to the registers which must be configured as root capabilities for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
 
 The effective CHERI-enable for the current privilege is:
 
 * Machine-mode:    always enabled
-* Supervisor-mode: `<<menvcfg_y,menvcfg>>.{CRE}`
+* Supervisor-mode^1^: `<<menvcfg_y,menvcfg>>.{CRE}`
 * User-mode:       `<<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}`
+
+^1^ This is also the condition for user-mode for implemenations which don't support supervisor mode.
 
 The reset values are:
 
