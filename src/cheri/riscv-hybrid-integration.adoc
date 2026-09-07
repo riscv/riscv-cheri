@@ -105,7 +105,7 @@ Prefetches are also checked against the appropriate CSR (<<ddc>> for <<PREFETCH_
 +
 NOTE: Authorization of prefetches is useful to mitigate against side channels, e.g., preventing userspace from fetching kernel memory into a cache.
 +
-Reads to extended CSRs are XLEN-wide, and writes use the semantics of the <<SCADDR>> instruction (see <<rvy_zicsr_mod_insn_table>>).
+Reads of widened CSRs are XLEN-wide, and writes use the semantics of the <<SCADDR>> instruction (see <<rvy_zicsr_mod_insn_table>>).
 
 The _<<cheri_execution_mode>>_ is key in providing backwards compatibility with the base RV32[IE]/RV64[IE] ISAs.
 
@@ -235,7 +235,7 @@ include::{generated_dir}/{rvy_zicsr_mod_file_name}.adoc[]
 
 {cheri_default_ext_name} makes {cheri_int_mode_name} available.
 
-In addition to the rules in <<rvy_csr_classes>>, when executing in {cheri_int_mode_name}, <<extended_csrs>> are always accessed as XLEN-wide for backwards compatibility.
+In addition to the rules in <<rvy_csr_classes>>, when executing in {cheri_int_mode_name}, <<widened_csrs>> are always accessed as XLEN-wide for backwards compatibility.
 The final written value is determined using the semantics of the <<SCADDR>> instruction.
 <<ylen_csrs>> (including <<ddc>>) continue to be accessed as YLEN-wide.
 
