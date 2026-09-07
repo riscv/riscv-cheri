@@ -219,7 +219,7 @@ These bounds-reducing instructions all copy `{cs1}` to the output `{cd}`, set th
 ** If the requested bounds cannot be encoded exactly, the result uses the smallest representable bounds that contain the requested range and remain within the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
-The bounds are encoded relative to the address field, sharing some upper bits of the address.
+The bounds are encoded relative to the address field by sharing some upper bits of the address.
 The number of shared bits depends on the exponent, see xref:section_cap_bounds[xrefstyle=short].
 
 [#section_rep_check_concept]
@@ -227,29 +227,31 @@ The number of shared bits depends on the exponent, see xref:section_cap_bounds[x
 
 Software sometimes uses out-of-bounds pointers, for example, to represent a one-past-the-end pointer to an array in C (`arr + size`).
 To support this pattern, CHERI must allow these out-of-bounds pointers to be held in capabilities while still protecting the bounds and integrity.
-Because the standard bounds encoding scheme shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
+Because the CHERI encoding scheme for memory bounds shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
 This range is known as the *representable range*.
 
 Any address that is within the capability's bounds is always representable and preserves the {ctag}.
-The relationship between the bounds and the representable range is illustrated in <<cap_bounds_map>>.
+
+The relationship between the bounds and the representable range is illustrated in <<cap_bounds_map>> where the outer range exists only if the capability encoding format sets <<rep_range,REP_RANGE>> to `rc1`.
 
 NOTE: The C standard permits forming a one-past-the-end pointer (but no more than one), as long as it is not dereferenced.
   Real-world software has been observed to temporarily create pointers that point multiple bytes past the end or even before the start.
-  To maximize software compatibility, the bounds representation was designed to allow for out-of-bounds pointers.
+  To maximize software compatibility, the bounds representation when <<rep_range,REP_RANGE>> is `rc1` is designed to allow for out-of-bounds pointers.
 
 [#cap_bounds_map]
-.Memory address bounds and representable range encoded within a capability
+.Memory address bounds and representable range encoded within a capability for `REP_RANGE=rc1`
 image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
 NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability encoding with separate 64-bit values for the base and top memory bounds, and another for metadata fields.
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
-Since the upper bits of the address are used to calculate the top and base bound addresses, deriving a new capability with an address outside the representable range could change the resulting bounds.
+Deriving a new capability with an address outside the representable range changes the resulting bounds.
 All instructions that derive a capability with a new address (such as <<SCADDR>>, <<CADD>>, and <<CADDI>>) must check that the new address does not change the bounds.
 If the bounds _do_ change then the {ctag} of the derived capability is set to zero, so that the capability becomes invalid.
 
-NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check, and may never allow the address to be out of bounds.
-Therefore, the ISA specification uses the phrase *represented exactly* for this check.
+NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>>, which has <<rep_range,REP_RANGE>> set to `rc1`, (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check.
+Such implementations may never allow the address to be out of bounds and will so set <<rep_range,REP_RANGE>> to `rc0` to represent this.
+To accommodate this the ISA specification uses the phrase *represented exactly* for the check that the bounds have not been altered by deriving a new capability with an updated address field.
 
 ==== Memory space
 
@@ -610,6 +612,7 @@ Two parameters use non-numeric values:
 AP_ENC::
  Whether permissions in the <<AP-field>> are encoded using a _full_ (`full`) representation allowing all valid combinations of permissions, or a _partial_ (`part`) representation which does not represent all possible combinations and so uses fewer encoding bits.
 REP_RANGE::
+anchor:rep_range[]
  Whether the capability encoding format guarantees representability of out-of-bounds capability values: `rc1`, where the encoding uses one additional bit and a _centered_ out-of-bounds region, or `r0`, where no bits are used for out-of-bounds capabilities and there is no guaranteed <<section_cap_representable_check,representable range>> for out-of-bounds addresses.
 
 NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability encoding ensures sufficient future extensibility and therefore few custom formats are expected to exist.
