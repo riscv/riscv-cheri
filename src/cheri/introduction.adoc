@@ -82,22 +82,29 @@ Load/stores require capability operands and check permissions and bounds
 |<<{rvy_zicboz_mod_file_name}, Zicboz>> | Cache-block zero operations require capability operands and check permissions and bounds.
 |<<{rvy_zicsr_mod_file_name}, Zicsr>>  | Access to privileged and select unprivileged CSRs is constrained by <<asr_perm>>.
 |=============================================================================================================================================================
-CHERI defines new state and behavior for the privileged modes:
 
-* <<section_priv_cheri,{cheri_priv_m_ext}>>
-* <<section_priv_cheri,{cheri_priv_s_ext}>>
+{cheri_base_ext_name} defines new state and behavior for the privileged architecture:
 
-.Privileged stable extensions and specifications
-[#priv-extension-status]
+.Privileged architecture differences under {cheri_base_ext_name}
+[#priv-spec-differences]
 [options=header,align=center,width="90%"]
 |=============================================================================================================================================================
-| Extension or Specification                                | Description
-|<<section_cheri_disable,{cheri_priv_m_reg_enable_ext}>>    | Privileged support for {cheri_default_ext_name}
+| Privilege Mode or Feature | Differences
+|<<section_priv_cheri, Machine-Level Architecture>> | Widens trap handling and vector CSRs (`mtvec`, `mepc`, etc.) to capabilities and adds capability exception causes
+|<<section_priv_s_cheri, Supervisor-Level Architecture>> | Widens supervisor trap and vector CSRs (`stvec`, `sepc`, etc.) to capabilities and adds capability exception causes
+|<<section_cheri_disable, Privileged support for {cheri_default_ext_name}>> | When {cheri_default_ext_name} is implemented, adds `{CRE}` enable bits to `menvcfg`/`senvcfg` and makes `misa.Y` writable
 ifdef::support_varxlen[]
 |<<section_cheri_dyn_xlen,{cheri_priv_m_dyn_xlen_ext}>>     | Dynamic XLEN support
 endif::support_varxlen[]
-|<<section_priv_cheri_vmem,{cheri_priv_vmem_ext}>>          | Virtual Memory
-|<<section_cheri_priv_crg_ext,    {cheri_priv_crg_ext}>>    | MMU-based capability data flow control and measurement
+|<<section_priv_cheri_vmem, Page-Based Virtual Memory>> | Sv39, Sv48, and Sv57 PTE formats reserve bits to allow/deny capability stores
+|=============================================================================================================================================================
+
+.Privileged extensions for {cheri_base_ext_name}
+[#priv-extension-status]
+[options=header,align=center,width="90%"]
+|=============================================================================================================================================================
+| Extension | Description
+|<<section_cheri_priv_crg_ext, {cheri_priv_crg_ext}>> | MMU-based capability data flow control and measurement
 |=============================================================================================================================================================
 
 ifndef::cheri_ratification_v1_only[]
