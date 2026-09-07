@@ -219,15 +219,20 @@ These bounds-reducing instructions all copy `{cs1}` to the output `{cd}`, set th
 ** If the requested bounds cannot be encoded exactly, the result uses the smallest representable bounds that contain the requested range and remain within the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
-The bounds are encoded relative to the address field by sharing some upper bits of the address.
-The number of shared bits depends on the exponent, see xref:section_cap_bounds[xrefstyle=short].
+The bounds are encoded using:
+
+* A range of upper bits of the address field, defined by the exponent.
+* Fields in the metadata.
+
+The exact method for encoding the bounds varies by capability encoding format.
+See xref:section_cap_bounds[xrefstyle=short] for the method used for {rv64y_uni_base_name}.
 
 [#section_rep_check_concept]
 ==== Representability and Updating the Address
 
 Software sometimes uses out-of-bounds pointers, for example, to represent a one-past-the-end pointer to an array in C (`arr + size`).
 To support this pattern, CHERI must allow these out-of-bounds pointers to be held in capabilities while still protecting the bounds and integrity.
-Because the CHERI encoding scheme for memory bounds shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
+Because the CHERI encoding scheme for memory bounds uses a range of the upper bits of the address to calculate the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
 This range is known as the *representable range*.
 
 Any address that is within the capability's bounds is always representable and preserves the {ctag}.
@@ -251,7 +256,7 @@ If the bounds _do_ change then the {ctag} of the derived capability is set to ze
 
 NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>>, which has <<rep_range,REP_RANGE>> set to `rc1`, (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check.
 Such implementations may never allow the address to be out of bounds and will so set <<rep_range,REP_RANGE>> to `rc0` to represent this.
-To accommodate this the ISA specification uses the phrase *represented exactly* for the check that the bounds have not been altered by deriving a new capability with an updated address field.
+To accommodate this the ISA specification uses the phrase *represented exactly* for checking that the bounds have not been altered by deriving a new capability with an updated address field.
 
 ==== Memory space
 
