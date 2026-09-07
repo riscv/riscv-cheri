@@ -79,19 +79,19 @@ NOTE: It may make sense to subdivide this into two extensions as _Capability Dir
 
 _pte_._{pte_cap_r_name_lc}_ and _pte_._{pte_cap_crg_pte_name_lc}_ control whether capability loads or AMOs write the loaded {ctag} to `{cd}`.
 
-When _pte_._{pte_cap_r_name_lc}_ is clear, _pte_._{pte_cap_crg_pte_name_lc}_ selects the behavior of capability loads:
-if _pte_._{pte_cap_crg_pte_name_lc}_ is clear, the loaded {ctag} is written to `{cd}` as zero; if _pte_._{pte_cap_crg_pte_name_lc}_ is set, the load operates as normal.
+When _pte_._{pte_cap_r_name_lc}_ is set to zero, _pte_._{pte_cap_crg_pte_name_lc}_ selects the behavior of capability loads:
+if _pte_._{pte_cap_crg_pte_name_lc}_ is set to zero, the loaded {ctag} is written to `{cd}` as zero; if _pte_._{pte_cap_crg_pte_name_lc}_ is set to one, the load operates as normal.
 
-When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value that is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
+When _pte_._{pte_cap_r_name_lc}_ is set to one, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value that is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
 
 The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the rules above, all of the following are true:
 
 . A capability load or AMO is executed.
-. _pte_._{pte_cap_r_name_lc}_ is set.
+. _pte_._{pte_cap_r_name_lc}_ is set to one.
 . if _pte_._u=1_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.U{pte_cap_crg_pte_name}`.
 . if _pte_._u=0_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.S{pte_cap_crg_pte_name}`.
-. The loaded {ctag} is set, unless the implementation traps conservatively^1^.
-. Any other platform specific rules have not forced the loaded {ctag} to be clear.
+. The loaded {ctag} is set to one, unless the implementation traps conservatively^1^.
+. Any other platform specific rules have not forced the loaded {ctag} to be set to zero.
 
 ^1^ Implementations that trap conservatively may raise the fault regardless of the value of the loaded {ctag}, as shown in <<pte_rvy_load_summary>>.
 
@@ -101,7 +101,7 @@ The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the r
 Checking the value of the {ctag} requires taking data dependent exceptions on loaded capabilities for loads or AMOs.
 Ideally all implementations would trap precisely (taking the {ctag} into account in all cases) rather than conservatively (trapping more often, potentially on every loaded capability).
 However, the loaded {ctag} may not be available in all implementations when determining whether to raise the exception, and therefore flexibility is permitted.
-As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set, potentially resulting in spurious traps from pages that have _pte_._{pte_cap_r_name_lc}=1_, and so are likely to store valid capabilities.
+As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set to one, potentially resulting in spurious traps from pages that have _pte_._{pte_cap_r_name_lc}=1_, and so are likely to store valid capabilities.
 
 Implementations that already take synchronous traps on loaded data, such as ECC faults, are recommended to check the loaded {ctag} when determining whether to raise the fault.
 
@@ -132,19 +132,19 @@ NOTE: In the case of AMOs that could trigger both a {cheri_excep_name_pte_st}, d
 [#sec_cap_dirty_tracking,reftext="Capability Dirty Tracking"]
 === Capability Dirty Tracking
 
-When _pte_._{pte_cap_w_name_lc}_ is clear, capability stores or AMOs where the to-be-stored {ctag} is set will raise a {cheri_excep_name_pte_st}.
+When _pte_._{pte_cap_w_name_lc}_ is set to zero, capability stores or AMOs where the to-be-stored {ctag} is set to one will raise a {cheri_excep_name_pte_st}.
 
-When _pte_._{pte_cap_w_name_lc}_ is set, capability stores to the virtual page are permitted.
-In addition, the _pte_._{pte_cap_dirty_name_lc}_ bit indicates that a capability was stored to the virtual page since the last time the _pte_._{pte_cap_dirty_name_lc}_ bit was cleared.
+When _pte_._{pte_cap_w_name_lc}_ is set to one, capability stores to the virtual page are permitted.
+In addition, the _pte_._{pte_cap_dirty_name_lc}_ bit indicates that a capability was stored to the virtual page since the last time the _pte_._{pte_cap_dirty_name_lc}_ bit was cleared to zero.
 
 NOTE: This is equivalent to the behavior of the _pte_._d_ bit except that _pte_._{pte_cap_dirty_name_lc}_ only tracks stores of valid capabilities instead of _all_ stores.
 
 Capability dirty tracking behavior is enabled when, in addition to the rules above, all of the following are true:
 
 . A capability store or AMO instruction is executed.
-. The to-be-stored {ctag} is set.
-. _pte_._{pte_cap_w_name_lc}_ is set.
-. _pte_._{pte_cap_dirty_name_lc}_ is clear.
+. The to-be-stored {ctag} is set to one.
+. _pte_._{pte_cap_w_name_lc}_ is set to one.
+. _pte_._{pte_cap_dirty_name_lc}_ is set to zero.
 
 Two schemes for capability dirty tracking are permitted, and the scheme in use is determined by whether the _Svade_ or _Svadu_ extensions are enabled.
 
@@ -169,9 +169,9 @@ hardware _pte_._{pte_cap_dirty_name_lc}_ update (_Svadu_)
 ^1^ The to-be-stored {ctag}.
 
 The capability dirty tracking is resolved during memory translation, but there are cases where it is not known if there will be a {ctag} stored to memory or not at this point.
-Capability dirty tracking _must_ be triggered when _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_dirty_name_lc}_=0 and the to-be-stored {ctag} is set, and _may_ be triggered in the following case where it is not known if there will be a stored {ctag} during translation:
+Capability dirty tracking _must_ be triggered when _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_dirty_name_lc}_=0 and the to-be-stored {ctag} is set to one, and _may_ be triggered in the following case where it is not known if there will be a stored {ctag} during translation:
 
-* SC{LD_ST_DOT_CAP} triggers capability dirty tracking if the {ctag} is set in {cs2}, even if the store fails.
+* SC{LD_ST_DOT_CAP} triggers capability dirty tracking if the {ctag} is set to one in {cs2}, even if the store fails.
   This matches the semantics of SC.* with regard to _pte_._d_.
 
 [NOTE]
@@ -185,7 +185,7 @@ In this case, the _pte_._{pte_cap_dirty_name_lc}_ bit would still be set.
 Future AMOs fall into this category:
 
 * For future AMOCAS{LD_ST_DOT_CAP}, it is not known whether the store will happen until the load has executed, and the compare has been done.
-  Therefore, AMOCAS{LD_ST_DOT_CAP} is likely to trigger capability dirty tracking if the {ctag} is set in {cs2}.
+  Therefore, AMOCAS{LD_ST_DOT_CAP} is likely to trigger capability dirty tracking if the {ctag} is set to one in {cs2}.
 * For future AMOADD{LD_ST_DOT_CAP}, the stored {ctag} depends upon the loaded {ctag} which is not known during translation and on the execution of the {CADD}.
  Therefore, AMOADD{LD_ST_DOT_CAP}, is likely to always trigger capability dirty tracking.
 

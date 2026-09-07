@@ -182,7 +182,7 @@ The following <<CLRPERM>> permission rule is added:
 The effective {cheri_mode_name} cannot be determined just by reading the <<p_bit>> from the <<pcc>> since it also depends on the execution environment.
 The following code sequence demonstrates how a program can observe the current, effective {cheri_mode_name}.
 It will write, to `x1`, the value `1` for {cheri_cap_mode_name} (where <<AUIPC_CHERI>> derives a valid capability from the <<pcc>>)
-or `0` for {cheri_int_mode_name} (where `auipc` reverts to its standard behavior and writes an integer result with a clear {ctag}):
+or `0` for {cheri_int_mode_name} (where `auipc` reverts to its standard behavior and writes an integer result with its {ctag} set to zero):
 
 [source,subs=attributes+]
 ----
