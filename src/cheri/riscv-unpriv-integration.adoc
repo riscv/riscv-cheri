@@ -271,13 +271,13 @@ A capability's <<section_cap_representable_check>> is also circular, so address 
 However, the decoded top bound address of a capability is XLEN + 1 bits wide and does *not* wrap.
 For example, a hypothetical capability with base 2^XLEN^ - 1 and top 2^XLEN^ + 1 is not a subset of the infinite capability and authorizes access to the last byte of the address space only, and does not authorize access to the byte at address 0.
 
-Like malformed bounds (see xref:section_cap_malformed[xrefstyle=short]), it is impossible for
-a CHERI core to generate a valid capability with architectural top > 2^XLEN^.
+It is impossible for a CHERI core to generate a valid capability with architectural top > 2^XLEN^.
 
-If such a capability exists then it must have been caused by a logic or memory fault.
-Unlike malformed bounds, the top overflowing is not treated as a special case in the
-architecture: normal bounds check rules should be followed.
-
+[NOTE]
+====
+If a valid capability exists with architectural top > 2^XLEN^ then it must have been caused by a logic or memory fault.
+See xref:section_cap_integrity[xrefstyle=short] for handling.
+====
 
 [#sec_cap_type, reftext="CT-field"]
 ==== Capability Type (CT)
@@ -623,7 +623,9 @@ NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability en
 
 CHERI defines the following integrity check rules:
 
-. The bounds are not <<section_cap_malformed,malformed>>.
+. The bounds are not malformed.
+.. This is a capability encoding format specific check.
+ See xref:section_cap_malformed[xrefstyle=short] for {rv64y_uni_base_name}.
 . The capability metadata does not have any bits, or fields, set to a reserved value.
 
 NOTE: An example of a reserved field value is an illegal set of permissions such as <<asr_perm>> without <<x_perm>>.
@@ -652,6 +654,25 @@ Implementations may choose to enforce optional integrity checks for a number of 
 . Instruction level verification is simpler as the behavior is precisely specified for all 2^(YLEN+1)^ input values.
 . To give more resilience in systems which mix CHERI IPs from different sources due to possible incompatibilities.
 . If the hart implements additional reliability features, it may wish to detect and report capabilities which lack integrity.
+
+====
+
+==== Top Overflow
+
+A special case of <<section_cap_malformed,malformed>> bounds is if the top bound overflows.
+
+This is not detected for {rv64y_uni_base_name} as a lack of integrity due to the high logic cost of detecting all cases.
+Normal bounds check rules should be followed.
+
+[NOTE]
+====
+
+The integrity checks are designed to be simple to implement.
+
+Detecting if the top overflows requires actually calculating the top value and then checking for the overflow condition, which is expensive.
+If the top does overflow it will not give access to any out of range memory bytes and so detection is left to the normal bounds checking logic.
+
+Capability Encoding formats specify the exact set of malformed bounds checks required for integrity checks.
 
 ====
 
