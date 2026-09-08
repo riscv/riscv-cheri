@@ -308,15 +308,27 @@ Given a capability with `CT=0`,
 deriving a capability with `CT{ne}0` is termed
 ifdef::cheri_ratification_v1_only[_sealing_. +]
 ifndef::cheri_ratification_v1_only[_sealing_ (or _sealing with type ``x``_ when a particular output ``CT=x`` is meant). +]
-This is achieved using <<SENTRY>>, which doesn't require authorization and seals the output as a <<sentry_cap>>.
+This is achieved using YSEALx instructions. +
++
+* The <<SENTRY>> instruction copies `{cs1}` to `{cd}` and seals it as a <<sentry_cap>>. +
+
+ifdef::cheri_ratification_v1_only[NOTE: Future extensions will add more YSEALx instructions such as seal by permission or type.]
 
 Unsealing::
 Given a capability with `CT{ne}0`,
 deriving a capability with `CT=0` is termed
 ifdef::cheri_ratification_v1_only[_unsealing_. +]
 ifndef::cheri_ratification_v1_only[_unsealing_ (or _unsealing from type ``x``_ when a particular input ``CT=x`` is meant). +]
-ifdef::cheri_ratification_v1_only[This is achieved using <<YSUNSEAL>>, which authorizes the unsealing of `{cs2}` into `{cd}` with a Superset capability in `{cs1}` (hence the _S_ suffix).]
-ifndef::cheri_ratification_v1_only[This is achieved using <<YSUNSEAL>> (or <<YUNSEAL>> if <<section_zyseal>> is implemented).]
+ifdef::cheri_ratification_v1_only[]
+This is achieved using YUNSEALx instructions. +
++
+* The <<YSUNSEAL>> instruction authorizes the unsealing of `{cs2}` into `{cd}` with a superset capability in `{cs1}` (the S suffix represents Superset).
+endif::[]
+ifndef::cheri_ratification_v1_only[]
++
+* This is achieved using <<YSUNSEAL>> (or <<YUNSEAL>> if <<section_zyseal>> is implemented).
+endif::[]
+ifdef::cheri_ratification_v1_only[NOTE: Future extensions will add more YUNSEALx instructions such as unseal by permission or type.]
 
 [#sentry_cap,reftext="{sentry_cap_uc}"]
 {sentry_cap_uc}::
