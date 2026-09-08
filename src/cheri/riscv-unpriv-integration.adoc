@@ -256,7 +256,7 @@ If the bounds _do_ change then the {ctag} of the derived capability is set to ze
 
 NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>>, (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check.
 Such implementations may only allow the minimum one-past-the-end as required by the C standard.
-To accommodate this the ISA specification uses the phrase *represented exactly* for checking that the bounds have not been altered by deriving a new capability with an updated address field.
+To accommodate this the capability encoding formats support the option of REP_RANGE being `rc0` and the ISA specification uses the phrase *represented exactly* for checking that the bounds have not been altered by deriving a new capability with an updated address field.
 
 ==== Memory space
 
@@ -609,7 +609,15 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 | AP_ENC      | full<suffix>/ part<suffix>| full1             | Encoding scheme for the <<AP-field>>
 4+| *Other parameters*
 | AUIPC_SHIFT | integer values up to 12 | 12                | Shift distance of the immediate in AUIPC
+| REP_RANGE   | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
 |==============================================================================
+
+Two parameters use non-numeric values:
+
+AP_ENC::
+ Whether permissions in the <<AP-field>> are encoded using a _full_ (`full`) representation allowing all valid combinations of permissions, or a _partial_ (`part`) representation which does not represent all possible combinations and so uses fewer encoding bits.
+REP_RANGE::
+ Whether the capability encoding format guarantees representability of out-of-bounds capability values: `rc1`, where the encoding uses one additional bit and a _centered_ out-of-bounds region, or `r0`, where no bits are used for out-of-bounds capabilities and there is no or minimal guaranteed <<section_cap_representable_check,representable range>> for out-of-bounds addresses.
 
 Two parameters use non-numeric values:
 
