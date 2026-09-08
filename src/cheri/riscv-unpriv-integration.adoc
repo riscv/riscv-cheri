@@ -657,9 +657,9 @@ Implementations may choose to enforce optional integrity checks for a number of 
 
 ====
 
-==== Top Overflow
+==== Top Bound Overflow
 
-A special case of <<section_cap_malformed,malformed>> bounds is if the top bound overflows.
+A special case of <<section_cap_malformed,malformed>> bounds is if the top bound overflows, i.e., decodes to a value greater 2^XLEN^.
 
 This is not detected for {rv64y_uni_base_name} as a lack of integrity due to the high logic cost of detecting all cases.
 Normal bounds check rules should be followed.
@@ -672,7 +672,7 @@ The integrity checks are designed to be simple to implement.
 Detecting if the top overflows requires actually calculating the top value and then checking for the overflow condition, which is expensive.
 If the top does overflow it will not give access to any out of range memory bytes and so detection is left to the normal bounds checking logic.
 
-Capability Encoding formats specify the exact set of malformed bounds checks required for integrity checks.
+Capability encoding formats specify the exact set of malformed bounds checks required for integrity checks.
 
 ====
 
