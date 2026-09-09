@@ -604,7 +604,12 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 | AP_ENC      | full<suffix>/ part<suffix>| full1             | Encoding scheme for the <<AP-field>>
 4+| *Other parameters*
 | AUIPC_SHIFT | integer values up to 12 | 12                | Shift distance of the immediate in AUIPC
+ifdef::cheri_ratification_v1_only[]
 | REP_RANGE   | rc1                  | rc1                  | Whether out of bounds addresses are representable
+endif::[]
+ifndef::cheri_ratification_v1_only[]
+| REP_RANGE   | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
+endif::[]
 |==============================================================================
 
 Two parameters use non-numeric values:
@@ -612,9 +617,14 @@ Two parameters use non-numeric values:
 AP_ENC::
  Whether permissions in the <<AP-field>> are encoded using a _full_ (`full`) representation allowing all valid combinations of permissions, or a _partial_ (`part`) representation which does not represent all possible combinations and so uses fewer encoding bits.
 REP_RANGE::
- Whether the capability encoding format guarantees representability of out-of-bounds capability values: `rc1`, where the encoding uses one additional mantissa bit and a _centered_ out-of-bounds region, to give a guaranteed <<section_cap_representable_check,representable range>> for out-of-bounds addresses.
-
+ifdef::cheri_ratification_v1_only[]
+ Whether the capability encoding format guarantees representability of out-of-bounds capability values: `rc1`, where the encoding uses one additional bit and a _centered_ out-of-bounds region.
++
 NOTE: Future settings of REP_RANGE could be used by capability encoding formats where no mantissa bits are used for out-of-bounds capabilities and there is limited <<section_cap_representable_check,representable range>> for out-of-bounds addresses.
+endif::[]
+ifndef::cheri_ratification_v1_only[]
+ Whether the capability encoding format guarantees representability of out-of-bounds capability values: `rc1`, where the encoding uses one additional bit and a _centered_ out-of-bounds region, or `r0`, where no bits are used for out-of-bounds capabilities and there is no guaranteed <<section_cap_representable_check,representable range>> for out-of-bounds addresses.
+endif::[]
 
 NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability encoding ensures sufficient future extensibility and therefore few custom formats are expected to exist.
  {cheri_base32_ext_name}, however, has insufficient bits available to enable features for all target domains, so multiple {cheri_base32_ext_name}-extending capability encoding formats will exist.
