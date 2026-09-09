@@ -228,7 +228,7 @@ See xref:section_cap_bounds[xrefstyle=short] for the method used for {rv64y_uni_
 
 Software sometimes uses out-of-bounds pointers, for example, to represent a one-past-the-end pointer to an array in C (`arr + size`).
 To support this pattern, CHERI must allow these out-of-bounds pointers to be held in capabilities while still protecting the bounds and integrity.
-Because the standard bounds encoding scheme shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
+Because the standard bounds encoding scheme uses for the computation of the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
 This range is known as the *representable range*.
 
 Any address that is within the capability's bounds is always representable and preserves the {ctag}.
@@ -246,7 +246,7 @@ NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability 
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
 Since the upper bits of the address are used to calculate the top and base bound addresses, deriving a new capability with a different address could change the resulting bounds.
-All instructions that derive a capability with a new address (such as <<SCADDR>>, <<CADD>>, and <<CADDI>>) must check that the new address does not change the bounds.
+All instructions that derive a capability with a new address (such as <<SCADDR>>, <<CADD>>, and <<CADDI>>) must check that the new address does not change the decoding of the bounds.
 If an address calculation moves the address outside the representable range, the hardware detects that the bounds can no longer be represented correctly, and sets the {ctag} to zero so that the derived capability becomes invalid.
 
 NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check.
