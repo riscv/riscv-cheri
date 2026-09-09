@@ -764,7 +764,7 @@ Each thread (as scheduled by the kernel) can have its own context stored in priv
 <<utidc>> allows compartment-switching code to determine the currently running thread without a call into the operating system.
 This is read-only without <<asr_perm>> to prevent a malicious compartment from tricking the switching mechanism into accessing data corresponding to the wrong thread.
 While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general-purpose register and can be changed arbitrarily by untrusted code.
-Extending <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
+Widening <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
 =====
 
 ifdef::cheri_xycfg_csr[]
@@ -825,7 +825,7 @@ All CSRs that can hold addresses are widened to YLEN bits.
 [[xlen_csrs, XLEN-bit CSRs]]XLEN-bit CSRs::
 These do not contain pointers (e.g., _fcsr_ from the "F" extension).
 
-[[extended_csrs, extended CSRs]]Extended CSRs::
+[[widened_csrs, widened csrs]]Widened csrs::
 These are XLEN-bit CSRs widened to YLEN bits, which are able to contain pointers
 // No unprivileged pointer-type CSRs in v1.0, so let's use mtvec here.
 ifdef::cheri_ratification_v1_only[]
@@ -843,20 +843,20 @@ These are added by {cheri_base_ext_name} and contain pointers (e.g., <<utidc>>).
 When accessing CSRs these rules are followed:
 
 . Accesses to <<xlen_csrs>> are as specified by Zicsr
-. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using CSRRW will:
+. Accesses to <<ylen_csrs>> and <<widened_csrs>>, using CSRRW will:
 .. Read YLEN bits
 .. Write YLEN bits, and will write the {ctag} to zero if the written value fails any of the checks in xref:section_cap_integrity[xrefstyle=full]
-. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using instructions other than CSRRW will:
+. Accesses to <<ylen_csrs>> and <<widened_csrs>>, using instructions other than CSRRW will:
 .. Read YLEN bits
 .. For CSRRS/CSRRC, compute the XLEN-bit address-field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN source operand.
 .. For immediate forms, compute the XLEN-bit address-field value using the standard Zicsr operation with the zero-extended `uimm` operand.
 .. Write the computed XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value
 
-NOTE: Any <<ylen_csrs, YLEN-bit>> or <<extended_csrs, extended CSR>> may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
+NOTE: Any <<ylen_csrs, YLEN-bit>> or <<widened_csrs, extended CSR>> may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
 
 The assembler pseudoinstruction to read a capability CSR `csrr {cd}, csr`, is encoded as `csrrs {cd}, csr, {creg}0`.
 
-.<<ylen_csrs, YLEN-bit CSR>> and <<extended_csrs, Extended CSR>> access summary for {cheri_base_ext_name}
+.<<ylen_csrs, YLEN-bit CSR>> and <<widened_csrs, Extended CSR>> access summary for {cheri_base_ext_name}
 [#clen_access_summary_base,%autowidth,options=header,align="center"]
 |=======================
 |Instruction          | Read Width  | Write Width
@@ -883,7 +883,7 @@ Instruction fetches and data memory accesses raise an exception if the access is
 * All store instructions require <<w_perm>> and are authorized by the capability in `{cs1}`
 * All instruction fetches require <<x_perm>> in <<pcc>>
 
-Instruction fetches are authorized by the program counter capability (<<pcc>>) which extends the *pc*.
+Instruction fetches are authorized by the program counter capability (<<pcc>>) which widens the *pc*.
 
 NOTE: This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
 
