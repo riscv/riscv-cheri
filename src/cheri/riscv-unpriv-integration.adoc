@@ -219,16 +219,19 @@ These bounds-reducing instructions all copy `{cs1}` to the output `{cd}`, set th
 ** If the requested bounds cannot be encoded exactly, the result uses the smallest representable bounds that contain the requested range and remain within the initial bounds.
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
-The bounds are encoded relative to the address field, sharing some upper bits of the address.
-The number of shared bits depends on the exponent, see xref:section_cap_bounds[xrefstyle=short].
+The bounds are encoded relative to the address field, using some upper bits of the address combined with bits from the capability metadata.
+The exact method for encoding the bounds varies by capability encoding format.
+See xref:section_cap_bounds[xrefstyle=short] for the method used for {rv64y_uni_base_name}.
 
 [#section_rep_check_concept]
 ==== Representability and Updating the Address
 
 Software sometimes uses out-of-bounds pointers, for example, to represent a one-past-the-end pointer to an array in C (`arr + size`).
 To support this pattern, CHERI must allow these out-of-bounds pointers to be held in capabilities while still protecting the bounds and integrity.
-Because the standard bounds encoding scheme shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
+Because the standard bounds encoding scheme uses upper bits of the address for the computation of the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
 This range is known as the *representable range*.
+
+Any address that is within the capability's bounds is always representable and preserves the {ctag}.
 The relationship between the bounds and the representable range is illustrated in <<cap_bounds_map>>.
 
 NOTE: The C standard permits forming a one-past-the-end pointer (but no more than one), as long as it is not dereferenced.
@@ -239,20 +242,15 @@ NOTE: The C standard permits forming a one-past-the-end pointer (but no more tha
 .Memory address bounds and representable range encoded within a capability
 image::../cheri/img/cap-bounds-map.png[width=80%,align=center]
 
-The maximum range of address values that the pointer can take without changing the calculation of the bounds is defined by the <<section_cap_representable_check,representable range>>.
-
 NOTE: The historic, uncompressed 64-bit CHERI-MIPS CPU had a 256-bit capability encoding with separate 64-bit values for the base and top memory bounds, and another for metadata fields.
  This scheme could represent all out-of-bounds pointers with a very high hardware cost.
 
 Since the upper bits of the address are used to calculate the top and base bound addresses, deriving a new capability with a different address could change the resulting bounds.
-All instructions that derive a capability with a new address must check that the new address does not change the bounds.
-If the bounds _do_ change then the {ctag} of the derived capability is set to zero, so that the capability becomes invalid.
+All instructions that derive a capability with a new address (such as <<SCADDR>>, <<CADD>>, and <<CADDI>>) must check that the new address does not change the decoding of the bounds.
+If an address calculation moves the address outside the representable range, the hardware detects that the bounds can no longer be represented correctly, and sets the {ctag} to zero so that the derived capability becomes invalid.
 
-Software can derive a capability with a new address using instructions such as <<SCADDR>>, <<CADD>> and <<CADDI>>.
-
-NOTE: <<SCADDR>> writes back a derived capability with a new address field and, if the {ctag} was previously set, sets the {ctag} of the derived capability to one if the resulting capability still has the same bounds.
-
-NOTE: {cheri_base_ext_name} implementations that use a different encoding scheme to <<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check, and may never allow the address to be out of bounds.
+NOTE: {cheri_base_ext_name} implementations that use a different capability-encoding scheme to <<rv64y_cap_description>> (e.g., for accelerators or specific micro-controllers) may specify an alternative to the representable range check.
+Such implementations must still support one-past-the-end pointers as required by the C standard, but are not required to support a representable range larger than that.
 Therefore, the ISA specification uses the phrase *represented exactly* for this check.
 
 ==== Memory space
@@ -621,7 +619,7 @@ Two parameters use non-numeric values:
 AP_ENC::
  Whether permissions in the <<AP-field>> are encoded using a _full_ (`full`) representation allowing all valid combinations of permissions, or a _partial_ (`part`) representation which does not represent all possible combinations and so uses fewer encoding bits.
 REP_RANGE::
- Whether the capability encoding format guarantees representability of out-of-bounds capability values: `rc1`, where the encoding uses one additional bit and a _centered_ out-of-bounds region, or `r0`, where no bits are used for out-of-bounds capabilities and there is no guaranteed <<section_cap_representable_check,representable range>> for out-of-bounds addresses.
+ Whether the capability encoding format guarantees representability of out-of-bounds capability values: `rc1`, where the encoding uses one additional bit and a _centered_ out-of-bounds region or `r0`, where no bits are used for out-of-bounds capabilities and there is no guaranteed <<section_rep_check_concept,representable range>> for out-of-bounds addresses.
 
 NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability encoding ensures sufficient future extensibility and therefore few custom formats are expected to exist.
  {cheri_base32_ext_name}, however, has insufficient bits available to enable features for all target domains, so multiple {cheri_base32_ext_name}-extending capability encoding formats will exist.
@@ -854,8 +852,8 @@ When accessing CSRs these rules are followed:
 .. Write YLEN bits, and will write the {ctag} to zero if the written value fails any of the checks in xref:section_cap_integrity[xrefstyle=full]
 . Accesses to <<ylen_csrs>> and <<widened_csrs>>, using instructions other than CSRRW will:
 .. Read YLEN bits
-.. For CSRRS/CSRRC, compute the XLEN-bit address-field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN source operand.
-.. For immediate forms, compute the XLEN-bit address-field value using the standard Zicsr operation with the zero-extended `uimm` operand.
+.. For CSRRS/CSRRC, compute the XLEN-bit address field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN source operand.
+.. For immediate forms, compute the XLEN-bit address field value using the standard Zicsr operation with the zero-extended `uimm` operand.
 .. Write the computed XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value
 
 NOTE: Any <<ylen_csrs, YLEN-bit>> or <<widened_csrs, extended CSR>> may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
