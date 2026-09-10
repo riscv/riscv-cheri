@@ -724,9 +724,6 @@ include::img/pccreg.edn[]
 
 {cheri_base_ext_name} adds the <<ylen_csrs, YLEN-bit CSR>> shown in
 xref:csrnames-added-y[xrefstyle=short].
-ifdef::cheri_xycfg_csr[]
-It also adds the <<xlen_csrs, XLEN-bit CSR>> shown in xref:csrnames-added-x[xrefstyle=short]
-endif::[]
 
 [[csrnames-added-y]]
 .Capability CSRs added in {cheri_base_ext_name}
@@ -735,18 +732,6 @@ endif::[]
 |YLEN CSR|Permissions|Description
 |<<utidc>>|RW, <<asr_perm>> required for writes, not reads|User Thread ID Capability
 |===
-
-ifdef::cheri_xycfg_csr[]
-
-[[csrnames-added-x]]
-.Integer CSRs added in {cheri_base_ext_name}
-[%autowidth,float="center",align="center",cols="<,<,<",options="header"]
-|===
-|XLEN CSR|Permissions|Description
-|<<uycfg>>|RO; see section for details|Capability encoding version
-|===
-
-endif::[]
 
 [#utidc,reftext="utidc"]
 ===== User Thread Identifier Capability (utidc)
@@ -767,54 +752,6 @@ This is read-only without <<asr_perm>> to prevent a malicious compartment from t
 While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general-purpose register and can be changed arbitrarily by untrusted code.
 Widening <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
 =====
-
-ifdef::cheri_xycfg_csr[]
-
-[#uycfg,reftext="uycfg"]
-===== CHERI Capability Encoding (uycfg)
-
-The <<uycfg>> register is a read-only XLEN CSR used to identify which CHERI capability encoding is used by the platform.
-The capability encoding both determines the in-memory representation of a CHERI capability
-and entails a set of extensions present atop {cheri_base_ext_name}.
-
-NOTE:  Alternative capability encoding specifications,
-with, for example, new features and/or different bounds granularity,
-are possible and would not change how CHERI integrates with the RISC-V ISA,
-provided that said encodings still provide the primitives
-detailed in <<sec_capability_registers>>.
-
-NOTE: This CSR is read-only, but future extensions may provide a mechanism to modify the capability encoding currently in use.
-
-.CHERI capability encoding CSR (`uycfg`) format
-[#ycfg_csr_structure]
-include::img/ycfgreg.edn[]
-
-The following values for `uycfg` are defined:
-
-[%autowidth,options=header,cols="^,^,<"]
-|===
-|Base         |Features|Encoding
-| 0x0         | -      | Reserved (unspecified capability encoding)
-.2+|0x1       | 0x0    | <<rv64y_cap_description>> capabilities, without <<section_zylevels1>> features
-              | 0x1   <| <<rv64y_cap_description>> capabilities, with <<section_zylevels1>> features
-|0x2          | 0x0    | Reserved for CHERIoT's (RV32-only) encoding
-|===
-
-NOTE: Future extensions that change capability encoding must define new values.
-
-Extensions that define encodings derived from <<rv64y_cap_description>>
-and are generally compatible with this encoding (e.g., they only assign meaning to previously reserved bits) must preserve the Base Encoding field (the bottom 8 bits) as `0x01`.
-
-[NOTE]
-=====
-We suggest that only low-level, system software query this value directly.
-Operating systems and/or runtime environments should provide a mechanism for software
-to determine if the platform's capability encoding is backwards-compatible with a given, presumed encoding.
-Among other things, such a facility should be used as part of the platform executable loader
-to reject executables that expect unknown or known-incompatible CHERI features or capability encodings.
-=====
-
-endif::[]
 
 [#rvy_csr_classes]
 ==== CSR Classes

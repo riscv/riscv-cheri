@@ -126,23 +126,6 @@ The <<mtidc>> register is used to identify the current software thread in machin
 .Machine thread identifier capability register
 include::img/mtidcreg.edn[]
 
-ifdef::cheri_xycfg_csr[]
-
-[#mycfg,reftext="mycfg"]
-==== Machine CHERI Capability Encoding (mycfg)
-The <<mycfg>> register is used to identify which CHERI capability encoding is used by the platform.
-The capability encoding both determines the in-memory representation of a CHERI capability
-and entails a set of extensions present atop {cheri_base_ext_name}.
-The CSR exists in the _writable_ namespace and all bits are defined to be WARL,
-but, absent any future extensions, it is expected that each implementation has exactly one legal value.
-For the meaning of the individual fields, refer to the <<uycfg>> register in the unprivileged specification.
-
-.Machine CHERI capability encoding CSR (`mycfg`) format
-[#mycfg_csr_structure]
-include::img/ycfgreg.edn[]
-
-endif::[]
-
 === Machine-Level CSRs modified by {cheri_base_ext_name}
 
 [#misa_y, reftext="misa ({cheri_base_ext_name})"]
@@ -591,23 +574,6 @@ The <<stidc>> register is used to identify the current software thread in superv
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
 
-ifdef::cheri_xycfg_csr[]
-
-[#sycfg,reftext="sycfg"]
-==== Supervisor CHERI Capability Encoding (sycfg)
-The <<sycfg>> register is used to identify which CHERI capability encoding is used by the platform.
-The capability encoding both determines the in-memory representation of a CHERI capability
-and entails a set of extensions present atop {cheri_base_ext_name}.
-The CSR exists in the _writable_ namespace and all bits are defined to be WARL,
-but, absent any future extensions, it is expected that each implementation has exactly one legal value.
-For the meaning of the individual fields, refer to the <<uycfg>> register in the unprivileged specification.
-
-.Supervisor CHERI capability encoding CSR (`sycfg`) format
-[#sycfg_csr_structure]
-include::img/ycfgreg.edn[]
-
-endif::[]
-
 === Supervisor-Level CSRs modified by {cheri_base_ext_name}
 
 [#senvcfg_y,reftext="senvcfg ({cheri_base_ext_name})"]
@@ -832,14 +798,6 @@ DDC::
 [#utidc, reftext="utidc"]
 utidc::
  See the unprivileged manual for the definition of the utidc CSR.
-
-ifdef::cheri_xycfg_csr[]
-
-[#uycfg, reftext="uycfg"]
-uycfg::
-See the unprivileged manual for the definition of the uycfg CSR.
-
-endif::[]
 
 [#root-cap, reftext="Root"]
 Root Capability::
