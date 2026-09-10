@@ -890,7 +890,129 @@ NOTE: This allows code fetch to be bounded, preventing a wide range of attacks t
 
 E.g., `lw t0, 16({abi_creg}sp)` loads a word from memory, getting the address, bounds, and permissions from the `{abi_creg}sp` (capability stack pointer) register.
 
-=== Added Instructions
+<<<
+
+[#section_existing_riscv_insns]
+=== Changes to Existing RISC-V Base ISA Instructions
+
+{cheri_base_ext_name} extends existing instructions that are used for handling addresses so that they manipulate a whole capability.
+
+* Whenever an input operand is used as an address (e.g., the load/store base address), all capability bits are fed into the instruction instead of just XLEN bits.
+* Any instruction that writes back an address (e.g., <<AUIPC_CHERI>> or <<CSRRW_CHERI>>) to the destination register writes a full capability register instead of just XLEN bits.
+  For all other results the high bits of the register and the {ctag} are set to zero.
+* Whenever a capability with a new address is returned, the result is _always_ created using the semantics of the <<SCADDR>> instruction.
+
+`ADD` and `ADDI` are not affected by the rule above.
+Even though they _are_ used for handling addresses, they also have other uses.
+New encodings are used for capability addition: <<CADD>> and <<CADDI>>.
+These capability add instructions must be used for all capability address incrementing.
+
+[NOTE]
+====
+
+Integer add (`ADD`) and capability add (<<CADD>>) have separate encodings.
+Using a single encoding for both is undesirable:
+
+ . Integer ADD is most commonly used for purposes other than address calculations.
+ . For high performance implementations which can issue multiple ADDs, it means that the integer ADD units do not need the upper halves of the operands, and do not need the capability check logic on the result.
+ . The compiler and/or programmer would have to execute another metadata clearing instruction after each ADD to ensure that compartments do not leak capabilities.
+
+====
+
+The rules above apply to the <<rv32,base ISA>> instructions listed in the following subsections, but also apply to instructions added by other extensions.
+Any change to instruction semantics for {cheri_base_ext_name} is called out in the chapter defining the extension.
+
+[#section_cheri_int_load_store_insns]
+==== Changes to Load/Stores
+
+All load and store instructions behave as described in <<ldst>> with one fundamental difference:
+
+* Any memory instruction that has `rs1` as a base address register reads the full capability register instead.
+  The base address is unchanged, i.e., using the value from `rs1`.
+  The metadata and {ctag} are used to <<sec_cap_checks,authorize the access>>.
+
+* For a load instruction, the lower XLEN bits of the result written to the destination register are the same as in the RV32[IE]/RV64[IE] specification.
+
+All load and store instructions authorized by `{cs1}` raise exceptions if any of these checks fail:
+
+* `{cs1}` must not be `{creg}0`^1^
+* The {ctag} (`{cs1}.tag`) must be set to one.
+* `{cs1}` must be unsealed.
+ifdef::invalid_address_viol[]
+* The virtual address in `{cs1}` must not be invalid if virtual memory is enabled.
+endif::[]
+* For loads, <<r_perm>> must be granted in `{cs1}`.
+* For stores, <<w_perm>> must be granted in `{cs1}`.
+* All <<section_cap_integrity,integrity>> checks on `{cs1}` must pass.
+
+^1^ All load/store encodings are _reserved_ if `{cs1}={creg}0` (since dereferencing <<null-cap>> always faults).
+
+All load instructions, except for <<LOAD_CAP>>, always set the {ctag} and the metadata of the result register to zero.
+
+All store instructions, except for <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
+Therefore, misaligned stores may clear up to two associated {ctag}s.
+
+The changed interpretation of the base register also applies to all loads, stores, and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
+
+IMPORTANT: Under {cheri_base_ext_name} _all_ loads and stores are authorized by `{cs1}`.
+
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_ldst_summary>>, and also apply to instructions added by other extensions, e.g.,:
+
+* Floating-point loads and stores.
+* <<section_cheri_vector_integration,Vector load and stores>>.
+* Atomic memory accesses, see <<rvy_zaamo_insn_table>> and <<rvy_zalrsc_insn_table>>.
+
+.Changed RISC-V base ISA load/store instructions summary in {cheri_base_ext_name}
+[#tab_cap_base_ldst_summary,%autowidth,options=header,align="center",cols="2,4"]
+|=======================
+|Mnemonic                   |Description
+|<<section_cheri_int_load_store_insns,LD, LW[U], LH[U], LB[U]>>|Integer loads (authorized by the capability in `{cs1}`)
+|<<section_cheri_int_load_store_insns,SD, SW, SH, SB>>|Integer stores (authorized by the capability in `{cs1}`)
+|=======================
+
+==== Changes to PC
+
+* Whenever the address field of the <<pcc>> is modified, it is _always_ updated using the semantics of the <<SCADDR>> instruction.
+  This includes adding an offset to the <<pcc>> from direct jumps and branches for both the target address and the link register.
+  In this case, e.g., `new_{pcc} = {SCADDR}(old_{pcc}, offset)`
+* <<JALR_CHERI>> copies `{cs1}` into the <<pcc>>, and increments the address field with the offset.
+  In this case, e.g., `new_{pcc} = {SCADDR}(Unseal({cs1}), offset)`
+
+NOTE: Using {SCADDR} to update the <<pcc>> address can cause the target <<pcc>> {ctag} to be set to zero, that raises a _{cheri_excep_name_pc}_ on the target instruction.
+
+NOTE: A future extension may raise an exception on branch and jump instructions if fetching a minimum-sized instruction at the target <<pcc>> will raise a _{cheri_excep_name_pc}_.
+
+These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_summary>>, and also apply to instructions added by other extensions.
+
+.Changed RISC-V base ISA PC relative instructions summary in {cheri_base_ext_name}
+[#tab_cap_base_summary,%autowidth,options=header,align="center",cols="2,4"]
+|=======================
+|Mnemonic                   |Description
+|<<AUIPC_CHERI>>            | {AUIPC_CHERI_DESC}
+|<<JAL_CHERI>>              | {JAL_CHERI_DESC}
+|<<JALR_CHERI>>             | {JALR_CHERI_DESC}
+|<<BEQ_CHERI, BEQ ({cheri_base_ext_name})>> | {BEQ_CHERI_DESC}
+|<<BNE_CHERI, BNE ({cheri_base_ext_name})>> | {BNE_CHERI_DESC}
+|=======================
+
+include::insns/auipc_32bit.adoc[]
+include::insns/jal_32bit.adoc[]
+include::insns/jalr_32bit.adoc[]
+
+==== BEQ, BNE ({cheri_base_ext_name})
+anchor:BEQ_CHERI[BEQ ({cheri_base_ext_name})]
+anchor:BNE_CHERI[BNE ({cheri_base_ext_name})]
+
+For `beq` and `bne` only, if `rs1≤rs2` then the encoding is _reserved_.
+This includes all encodings with `rs1=rs2`.
+
+NOTE: The reserved encodings are redundant and may be used by future extensions, suggestions include branching on {ctag} values only, or YLEN-bit compares.
+
+NOTE: For `beq rs1, rs2, offset` and `bne rs1, rs2, offset`, assemblers must emit the operand order whose register-number ordering is not reserved.
+For example, `beq x1, x2, offset` is emitted as `beq x2, x1, offset`.
+For the reserved `rs1=rs2` case, `j`/`jal` can be used instead of an always-taken `beq rs1, rs1, offset`, and a never-taken `bne rs1, rs1, offset` is equivalent to a `nop`.
+
+=== {cheri_base_ext_name} Added Instructions
 {cheri_base_ext_name} adds new instructions to operate on capabilities, and redefines part of the RVI/RVE custom encoding space for this purpose.
 For harts implementing {cheri_base_ext_name}, these opcode spaces are not available for vendor custom instructions except where this specification explicitly returns subspaces to custom use.
 
@@ -1057,22 +1179,10 @@ If <<c_perm>> is not granted then:
 * <<LOAD_CAP>> reads YLEN bits from memory, but does not return the associated {ctag}, instead zero is returned.
 * <<STORE_CAP>> writes YLEN bits to memory, and writes zero to the associated {ctag}.
 
-//NOTE: Future extensions to {cheri_base_ext_name} may add mechanisms that cause
-//stores of capabilities to raise exceptions when the authorizing capability does not grant both
-//<<w_perm>> and <<c_perm>> and the stored capability has the {ctag} set.
-
 All capability data memory access instructions require naturally aligned addresses, and will take an access fault exception if this requirement is not met.
 Misaligned capability accesses cannot be emulated.
 
 NOTE: An access fault is raised instead of a misaligned exception because these instructions cannot be emulated since there is one hidden {ctag} per naturally aligned YLEN-bit memory region.
-
-All memory accesses, of any type, require permission from the authorizing capability in `{cs1}`.
-
-* All loads require <<r_perm>>, otherwise they raise an exception.
-* All stores require <<w_perm>>, otherwise they raise an exception.
-
-//NOTE: Misaligned capability memory accesses cannot be emulated.
-//  To transfer YLEN misaligned bits without a {ctag}, use integer loads and stores.
 
 Under some circumstances <<LOAD_CAP>> will _modify_ the data loaded from memory before writing it back to the destination register.
 See <<LOAD_CAP>> for details.
