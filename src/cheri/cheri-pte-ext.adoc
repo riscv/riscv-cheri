@@ -2,7 +2,7 @@
 [#section_cheri_priv_crg_ext]
 == "{cheri_priv_crg_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
 
-This extension specifies use of the {rv64y_pte4_field_name} field in the Sv39, Sv48 and Sv57 PTE formats (e.g., see <<sv39pte>>).
+This extension specifies use of the {rv64y_pte4_field_name} field in the Sv39, Sv48, and Sv57 PTE formats (e.g., see <<sv39pte>>).
 
 ifdef::cheri_standalone_spec[]
 
@@ -70,7 +70,7 @@ Therefore `sstatus.{pte_cap_fc_enable}` is not required to change dynamically an
 When all of the following are true, {cheri_priv_crg_ext} adds two related architectural features, {cheri_excep_name_pte_ld}s and Capability Dirty Tracking:
 
 . `sstatus.{pte_cap_fc_enable}` is set.
-. The authorizing capability has <<c_perm>>.
+. The authorizing capability grants <<c_perm>>.
 . The PMA is set to _CHERI {ctag_title}_.
 
 NOTE: It may make sense to subdivide this into two extensions as _Capability Dirty Tracking_ is more generally useful than _{cheri_excep_name_pte_ld}s_.
@@ -196,7 +196,7 @@ Checking the stored {ctag} is less of a burden to the implementation than checki
 
 NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
 
-NOTE: The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
+NOTE: The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1, and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
 
 [[sv32algorithm_rvy]]
 === Virtual Address Translation Process

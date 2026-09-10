@@ -149,7 +149,8 @@ include::img/vsepccreg.edn[]
 === Virtual Supervisor Thread Identifier Capability (vstidc)
 
 The <<vstidc>> register is used to identify the current software thread in VS-mode.
-When V=1, <<vstidc>> substitutes for the usual <<stidc>>, so instructions that normally read or modify <<stidc>> actually access <<vstidc>>instead. The contents of <<vstidc>>never directly affect the behavior of the machine.
+When V=1, <<vstidc>> substitutes for the usual <<stidc>>, so instructions that normally read or modify <<stidc>> actually access <<vstidc>> instead.
+The contents of <<vstidc>> never directly affect the behavior of the machine.
 
 .Virtual supervisor thread identifier capability register
 include::img/vstidcreg.edn[]
@@ -196,7 +197,7 @@ The TIDC bit controls access to the <<stidc>> (really <<vstidc>>) CSR.
 === Hypervisor Load and Store Instructions For Capability Data
 
 Hypervisor virtual-machine load (<<HLV_CAP>>) and store (<<HSV_CAP>>) are added.
-They are analogous to HLV.W and HSV.W but access capability data.
+These instructions are analogous to HLV.W and HSV.W, but access capability data.
 
 include::insns/hypv-virt-load-cap.adoc[]
 include::insns/hypv-virt-store-cap.adoc[]

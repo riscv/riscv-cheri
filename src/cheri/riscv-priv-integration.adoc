@@ -158,7 +158,7 @@ NOTE: The list also includes <<ddc>> if <<section_cheri_hybrid_ext>> is implemen
 NOTE: This restriction ensures M-mode software cannot drop CHERI checks by modifying <<misa_y,misa>> once they have been configured.
  A simpler conforming implementation could prevent setting <<misa_y,misa>>.{CRE} to zero if the capability metadata of any of these registers has ever been written to, rather than dynamically checking the current metadata.
 
-Either misa.I or misa.E is _also_ set to indicate whether 32 or 16 general purpose registers are present.
+Either misa.I or misa.E is _also_ set to indicate whether 32 or 16 general-purpose registers are present.
 
 NOTE: Implementations which allow misa.C to be writable need to legalize `__x__epc`
  on _reading_ if the misa.C value has changed since the value was written as this
@@ -373,7 +373,7 @@ NOTE: In the table below `auth_cap` is `{cs1}`, unless {cheri_default_ext_name} 
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of the current instruction is out of <<pcc>> bounds^1^
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> fails any <<section_cap_integrity,integrity>> checks.
 4+| *CSR/Xret additional exception check*
-| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | 2 | Illegal instruction | <<pcc>> does not grant <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>> or <<CBO_INVAL_CHERI>>
+| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | 2 | Illegal instruction | <<pcc>> does not grant <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>>, or <<CBO_INVAL_CHERI>>
 4+| *Load additional exception checks*
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` {ctag} is zero
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
@@ -408,7 +408,7 @@ NOTE: CHERI adds architectural guarantees that can prove to be micro-architectur
  +
  Programmers should be able to rely on instructions that fail CHERI permission checks not to update microarchitectural state, e.g., not updating cache state for a load which fails a bound check.
  +
- When implementing an {cheri_base_ext_name} hart, micro-architects need to carefully consider the interaction of raising exceptions late in the pipeline, speculation windows and the resulting side-channel attacks.
+ When implementing an {cheri_base_ext_name} hart, micro-architects need to carefully consider the interaction of raising exceptions late in the pipeline, speculation windows, and the resulting side-channel attacks.
 
 [#section_pma]
 === Physical Memory Attributes (PMA)
@@ -735,7 +735,7 @@ If _pte_._{pte_cap_rw_name_lc}_=1 then:
 * All capability loads and capability stores operate as normal.
 
 NOTE: The reserved bits _pte_._{rv64y_pte4_field_name_lc}[2:0]_ follow the standard reserved behavior for PTE bits.
-They are allocated by <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>, which redefines the entire _pte_._{rv64y_pte4_field_name_lc}_ field when enabled.
+These bits are allocated by <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>, which redefines the entire _pte_._{rv64y_pte4_field_name_lc}_ field when enabled.
 
 See <<sv32algorithm_rvy>> for the effect on the Virtual Address Translation Process.
 

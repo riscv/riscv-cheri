@@ -3,7 +3,7 @@
 
 This chapter introduces a new set of base ISAs called {cheri_base_ext_name} that extend the RV32[IE]/RV64[IE] base ISAs with CHERI.
 
-The {cheri_base_ext_name} base ISA can be composed with other standard options to bases such as Zfinx.
+The {cheri_base_ext_name} base ISA will also be compatible with other standard bases, such as a Zfinx base.
 
 === CHERI Overview
 
@@ -19,11 +19,13 @@ The _capability encoding format_ gives full details of how CHERI capabilities ar
 For example, in {rv64y_uni_base_name}:
 
 . `XLEN=64`
-. `L` denotes a parameterized base.
+. `L` denotes a long base name.
+. When `I` or `E` is omitted, the default is 32 integer registers (`I`); `E` specifies 16 integer registers (e.g., `RV64LEYA`).
 . `Y` denotes a CHERI base.
-. `A` denotes the capability encoding format.
+. `A` denotes the capability encoding format; the capability encoding format after `Y` is mandatory.
 
 NOTE: This naming scheme is based on the RISC-V https://lists.riscv.org/g/tech-unprivileged/topic/longer_base_name_proposal/116854896["longer base name" proposal], which allows base ISA names longer than two characters.
+Making the capability encoding format after `Y` mandatory simplifies future long base naming.
 
 NOTE: Future RV64 CHERI capability encoding formats could be named RV64LYB, RV64LYC, and so on, or they may have more descriptive names after the RV64LY prefix.
 
@@ -49,17 +51,13 @@ capabilities are always derived via valid manipulations of other capabilities
 that exceed those of their source capabilities (_monotonicity_).
 Tampering or modifying capabilities
 in an attempt to elevate their rights will yield an invalid capability.
-Attempting to dereference via an invalid capability
-will result in raising an exception.
+Attempting to dereference via an invalid capability will raise an exception.
 
 ^1^ Not all possible corrupted states are detected, see xref:section_cap_integrity[xrefstyle=full].
 
-CHERI capabilities may be held in registers or memory, and are loaded,
-stored, and dereferenced using CHERI-aware instructions that expect capability
-operands rather than integer addresses. On system initialization, initial capabilities
-are made available to software by the execution environment via general purpose
-registers. All other capabilities will be derived from these initial valid
-capabilities through valid capability transformations.
+CHERI capabilities may be held in registers or memory, and are loaded, stored, and dereferenced using CHERI-aware instructions that expect capability operands rather than integer addresses.
+Upon initialization, the execution environment provides initial capabilities to software via general-purpose registers.
+All other capabilities will be derived from these initial valid capabilities through valid capability transformations.
 
 Developers can use CHERI to build fine-grained spatial and temporal memory
 protection into their system software and applications and significantly
@@ -113,19 +111,18 @@ endif::[]
 ==== {ctag_title}
 
 The {ctag} is a single additional bit associated with YLEN-bit memory locations and YLEN-bit registers.
-It is stored separately (i.e., is _out-of-band_ or _hidden_), and is _hardware managed_.
-It indicates whether a YLEN-bit register or YLEN-aligned memory location contains a valid capability.
+It is stored separately (i.e., is _out-of-band_ or _hidden_), and is _hardware-managed_.
+It indicates whether a YLEN-bit register or naturally aligned YLEN-bit memory location contains a valid capability.
 If the {ctag} is set to one, the capability is valid and may authorize operations, subject to type, permission, <<sec_cap_bounds_overview,bounds>>, and integrity checks.
 
 All registers or memory locations able to hold a valid capability are YLEN bits wide and have an associated {ctag}.
-These are referred to as being _YLEN-bit_ in this specification.
 
 Not all memory in a real system will support {ctag}s.
 The Execution Environment Interface (EEI) will define what regions of the address space support them.
 
 The {ctag} cannot be directly set by software; it is _not_ a conventionally accessible bit of state.
 If the {ctag} is set to one then it shows that the capability has been derived correctly according to the principles listed above (_provenance_, _integrity_, _monotonicity_).
-If the rules are followed then the {ctag} will propagate through the instructions that modify, load or store the capability.
+If the rules are followed then the {ctag} will propagate through the instructions that derive, load, or store the capability value.
 
 Therefore, whenever an instruction writes a capability with the {ctag} set to one to a register or to memory:
 
@@ -136,31 +133,33 @@ Therefore, whenever an instruction writes a capability with the {ctag} set to on
 * The instruction may have checked that none of the input capabilities were corrupted.
 ** This is the _integrity_ check. Not all instructions check all input operands for _integrity_.
 
-Capability load/store require the _provenance_ check:
+For capability loads and stores, provenance is preserved across memory:
 
-* Any store that wrote the capability to memory was correctly authorized.
-* Any load that read the capability from memory was correctly authorized.
+* Storing a capability to memory preserves the {ctag} only if the store is performed using a valid capability that authorizes storing capabilities to that memory location by checking that every stored byte is within capability bounds, and that suitable permissions are granted to write to memory.
+* Loading a capability from memory preserves the {ctag} in the destination register only if the load is performed using a valid capability that authorizes loading capabilities from that memory location by checking that every byte is within capability bounds, and that suitable permissions are granted to read from memory.
 
-When an operation fails a check, either due to software error or malicious intent, the operation raises an exception or sets the resulting {ctag} to zero, as defined by each instruction.
+When a memory access fails a check, either due to software error or malicious intent, the operation raises an exception.
+For other instructions a failed check will typically set the resulting {ctag} to zero, the exact behavior is defined by each instruction.
 
-For a capability to be valid, the {ctag} must be set, otherwise a capability is invalid.
+For a capability to be valid, the {ctag} must be set to one, otherwise a capability is invalid.
 
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
 All capabilities derived from invalid capabilities are themselves invalid, i.e., their {ctag}s are zero.
 
-NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be set to 0.
+NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be set to zero.
 When the {ctag} associated with the memory location is zero, the location contains non-capability data.
 
 ==== {ctag_cap}s in registers
 
 Every YLEN-bit register has a one-bit {ctag}, indicating whether the capability in the register is valid to be dereferenced.
-This {ctag} is set to 0 whenever an invalid capability operation is performed.
-Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
+This {ctag} is set to zero whenever an invalid capability operation is performed.
+
+NOTE: Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
 
 ==== {ctag_cap}s in memory
 
-{ctag_cap}s are tracked through the memory subsystem: every aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
-The implementation must set the {ctag} to zero if any byte in the YLEN/8 aligned memory region is ever written using an operation other than a store of a capability operand.
+{ctag_cap}s are tracked through the memory subsystem: every naturally aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
+The implementation must set the {ctag} to zero if any byte in the naturally aligned YLEN-bit memory region is ever written using an operation other than a store of a capability operand.
 For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, including `{cs2}` 's {ctag} being set to one, but <<ldst,SW>> will always set the stored {ctag} to zero.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
@@ -191,7 +190,7 @@ In a typical load/store unit, the expansion of the bounds from `{cs1}` and bound
 
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore, small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
-One bounds encoding format based upon cite:[woodruff2019cheri] is defined in <<section_cap_bounds>>.
+The standard bounds encoding format for {rv64y_uni_base_name} is based upon the compressed bounds encoding scheme cite:[woodruff2019cheri] and is defined in <<section_cap_bounds>>.
 
 NOTE: Future CHERI bases may use encoding formats with different bounds encoding schemes (see <<sec_cap_encoding_formats>>).
 
@@ -205,12 +204,12 @@ NOTE: The _length_ and _top_ are (XLEN+1)-bit values, so <<GCLEN>> and <<GCTOP>>
 
 ==== Deriving New Bounds
 
-On system initialization, one or more <<root-cap>> capabilities are available.
+Upon initialization, the execution environment defines how the <<root-cap>> capabilities are made available to the execution context.
 All capabilities with smaller bounds are derived from these.
 
 The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions.
 
-They all copy `{cs1}` to the output `{cd}`, set the _base_ bound address of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
+These bounds-reducing instructions all copy `{cs1}` to the output `{cd}`, set the _base_ bound address of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
 
 * <<SCBNDS>> sets the _base_ to `{cs1}.address`, and the _length_ to `rs2`.
 ** The {ctag} is set to zero if the bounds cannot be encoded exactly.
@@ -228,7 +227,7 @@ The number of shared bits depends on the exponent, see xref:section_cap_bounds[x
 
 Software sometimes uses out-of-bounds pointers, for example, to represent a one-past-the-end pointer to an array in C (`arr + size`).
 To support this pattern, CHERI must allow these out-of-bounds pointers to be held in capabilities while still protecting the bounds and integrity.
-Because the CHERI Concentrate cite:[woodruff2019cheri] encoding scheme for memory bounds shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
+Because the standard bounds encoding scheme shares the upper bits of the address with the bounds, only a limited range of out-of-bounds pointers can be represented for any given set of bounds.
 This range is known as the *representable range*.
 The relationship between the bounds and the representable range is illustrated in <<cap_bounds_map>>.
 
@@ -300,7 +299,7 @@ ifndef::cheri_ratification_v1_only[All CHERI systems must support unsealed capab
 [#sealed_cap,reftext="sealed capability"]
 Sealed capabilities::
 Capabilities with `CT{ne}0` are sealed against modification and cannot be dereferenced to access memory.
-Instructions that operate on capabilities will produce a result with the {ctag} set to zero if the source capability is sealed and the operation would alter its address, bounds, or permissions.
+Instructions that operate on capabilities will produce a result with the {ctag} set to zero if the source capability is sealed and the operation would result in altered address, bounds, or permissions.
 ifndef::cheri_ratification_v1_only[Extensions that extend the capability metadata must describe their interaction(s) with sealed capabilities.]
 
 Sealing::
@@ -331,18 +330,18 @@ ifdef::cheri_ratification_v1_only[]
 NOTE: Such function pointers are sometimes known as "sentries", a contraction of "sealed entries".
 endif::[]
 
-They can establish a form of control-flow integrity between mutually distrusting code.
+Sentry capabilities can establish a form of control-flow integrity between mutually distrusting code.
 Because they are immutable, the jump target cannot be modified, ensuring that control flow can only enter at the specific address encoded in the capability and not elsewhere in a function.
 
-A sealed entry point capability may be passed as the `{cs1}` argument to <<JALR_CHERI>>, and is _unsealed_ on dereference.
-If `{cd}` is not `{creg}0`, the link capability written to `{cd}` is also written as a <<sentry_cap>>.
+A sealed entry point capability may be passed as the `{cs1}` argument to <<JALR_CHERI>>; an unsealed version of this capability value is written to the <<pcc>>.
+If `{cd}` is not `{creg}0`, the link capability written to `{cd}` is written as a <<sentry_cap>>.
 
 ifndef::cheri_ratification_v1_only[]
 Sentry types may be restricted to _forward-edge_ only and _backward-edge_ only transitions to further improve control-flow integrity.
 
-* When <<JALR_CHERI>> is used as a function call only _forward-edge_ sentries in `{cs1}` are _unsealed_ on dereference.
-  If `{cd}` is not `{creg}0`, the returned `{cd}` value is always _sealed_ as a _backward-edge_ sentry type.
-* When <<JALR_CHERI>> is used as a function return only _backward-edge_ sentries in `{cs1}` are _unsealed_ on dereference.
+* When <<JALR_CHERI>> is used as a function call, an unsealed version of `{cs1}` is written to the <<pcc>> only if `{cs1}` is a forward-edge sentry.
+  If `{cd}` is not `{creg}0`, the link capability written to `{cd}` is sealed as a backward-edge sentry type.
+* When <<JALR_CHERI>> is used as a function return, an unsealed version of `{cs1}` is written to the <<pcc>> only if `{cs1}` is a backward-edge sentry.
 endif::[]
 
 NOTE: In addition to using sealed capabilities for sealed entry points, sealed capabilities can also be useful to software as secure software tokens.
@@ -371,9 +370,10 @@ ifdef::cheri_ratification_v1_only[]
 endif::[]
 ifndef::cheri_ratification_v1_only[]
 | Unrestricted <<sentry_cap>>   | 1                 | Immutable _unrestricted sentry_ type for both _forward-edge_ and _backward-edge_ transitions.
-| Forward-edge  <<sentry_cap>>  | Extension defined | Immutable _sentry_ type for _forward-edge_ transitions.
-| Backward-edge <<sentry_cap>>  | Extension defined | Immutable _sentry_ type for _backward-edge_ transitions.
+| Forward-edge  <<sentry_cap>>  | Extension-defined | Immutable _sentry_ type for _forward-edge_ transitions.
+| Backward-edge <<sentry_cap>>  | Extension-defined | Immutable _sentry_ type for _backward-edge_ transitions.
 endif::[]
+| All other values              | Reserved          | Reserved for future standard extensions or capability encoding formats.
 |===
 
 ifndef::cheri_ratification_v1_only[]
@@ -398,7 +398,7 @@ an additional bit to the <<sec_cap_type>> field.
 
 Capability encoding formats will explicitly state whether these are relevant to them.
 
-They are not used by <<rv64y_cap_description>>, but are by the CHERIoT formats.
+Permission-dependent types are not used by <<rv64y_cap_description>>, but are by the CHERIoT formats.
 ====
 endif::[]
 
@@ -408,7 +408,7 @@ endif::[]
 Future extensions and capability encoding formats may declare new <<CT-field>> values, examples of which are:
 
 * Sealed types which cannot be used as a <<sentry_cap>>
-* <<sentry_cap>> types which can be only used for function calls or for function returns for improved CFI.
+* <<sentry_cap>> types which can be used only for function calls or only for function returns for improved CFI: specific <<CT-field>> values are required for each, in contrast with the current <<sentry_cap>> which can be used for both.
 
 ====
 
@@ -418,14 +418,10 @@ Future extensions and capability encoding formats may declare new <<CT-field>> v
 This metadata field encodes architecturally defined permissions of the capability.
 Permissions grant access subject to the <<cap_valid_tag>> being set to one, the capability being unsealed, and bounds checks passing.
 
-NOTE: Any memory operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP and PMAs, even if the capability grants sufficient permissions.
+NOTE: Any memory operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP, and PMAs, even if the capability grants sufficient permissions.
 
 The permissions defined in {cheri_base_ext_name} are listed in <<ap_field_summary>>.
 All capability encoding formats must support at least this set of permissions.
-Extensions building on top of {cheri_base_ext_name} may define additional permissions.
-
-NOTE: An example of such an extension is <<section_zylevels1>>.
-
 Permissions can be cleared when deriving a new capability value (using <<CLRPERM>>) but they can never be added.
 
 .AP-field summary
@@ -439,6 +435,10 @@ Permissions can be cleared when deriving a new capability value (using <<CLRPERM
 | <<lm_perm>>  | Data memory permission         | Used to restrict the permissions of loaded capabilities.
 | <<asr_perm>> | Privileged state permission    | Authorize privileged instructions and CSR accesses.
 |==============================================================================
+
+Extensions building on top of {cheri_base_ext_name} may define additional permissions.
+
+NOTE: An example of such an extension is <<section_zylevels1>>.
 
 [#r_perm,reftext="R-permission"]
 Read Permission \(R):: Allow reading data from memory.
@@ -472,12 +472,17 @@ NOTE: *CHERI v9 Note:* This permission does not exist in CHERI v9, but is simila
 endif::[]
 
 [#asr_perm,reftext="ASR-permission"]
-Access System Registers Permission (ASR, primarily used to authorize CSR accesses):: Allow read and write access to all privileged CSRs and some unprivileged CSRs, and the execution of some privileged instructions.
-<<asr_perm>> checks always use the permission in the <<pcc>>.
+Access System Registers Permission (ASR)::
+Authorize the execution of privileged instructions and access to CSRs.
+This permission only has an effect when the capability is installed in the <<pcc>>.
+<<asr_perm>> acts as an additional constraint and does not bypass normal privilege mode checks: having <<asr_perm>> in the <<pcc>> does not grant an unprivileged mode access to privileged CSRs.
+Lacking <<asr_perm>> in the <<pcc>> prevents access to privileged CSRs and restricted instructions even if the current privilege mode would otherwise permit it.
++
+Only the unprivileged CSRs listed below require <<asr_perm>>; other unprivileged CSRs remain accessible as usual.
 
 In the unprivileged {cheri_base_ext_name} ISA, the following are affected by <<asr_perm>>:
 
-* **Thread ID CSRs:** The <<utidc>> CSR requires <<asr_perm>> for writing but not for reading.
+* **Thread ID CSRs:** Writing to <<utidc>> requires <<asr_perm>> in the <<pcc>>, but reading does not require <<asr_perm>>.
 * **Instructions:** <<CBO_INVAL_CHERI>> requires <<asr_perm>> in the <<pcc>>.
 
 In the privileged {cheri_base_ext_name} ISA, the following are affected by <<asr_perm>>:
@@ -526,8 +531,8 @@ Capability encoding formats may impose additional constraints to reduce the numb
 [#SDP-field, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP)
 The metadata also contains an encoding-dependent number of software-defined permission (SDP) bits.
-They can be inspected by the kernel or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.).
-They can be cleared by <<CLRPERM>> but are not interpreted by the CPU otherwise.
+Software-defined permissions can be inspected by the operating system or application programs to enforce restrictions on API calls (e.g., permit/deny system calls, memory allocation, etc.).
+These permissions can be cleared by <<CLRPERM>> but are not interpreted by the CPU otherwise.
 
 While these bits are not used by the hardware as architectural permissions, modification follows the same rules: SDP bits can only be cleared and never set on valid capabilities.
 
@@ -540,14 +545,14 @@ NOTE: Software is completely free to define the usage of these bits.
 
 [#root-cap,reftext="Root"]
 Root Capabilities::
-_Root_ capabilities are those provided by the system on initialization.
+_Root_ capabilities are those provided by the execution environment upon initialization.
 In some capability encoding formats there is a single _Infinite_ capability value,
 which grants all permissions and has bounds covering the whole 2^XLEN^ address space;
 in such systems, _root_ capabilities are often _Infinite_.
 +
 Other capability encoding formats may have a set of _root_ capabilities distinguishing between data and executable capabilities as shown below.
 +
-At system initialization the set of all _root_ capabilities must be made available to software.
+Upon initialization, the execution environment defines how root capabilities are made available to software.
 +
 NOTE: Implementations are not required to provide access to the entire address space to a single hart, the _root_ capabilities may be restricted to only cover a subset of the entire address space, or to remove certain permissions.
 
@@ -566,7 +571,7 @@ Extensions introducing new permissions may require these to be provided by root 
 [#null-cap,reftext="NULL"]
 NULL Capability::
 A capability with all-zero metadata, its {ctag} set to zero, and an address of zero is referred to as the _NULL_ capability.
-This capability grants no permissions and any dereference results in raising an exception.
+This capability grants no permissions and any dereference raises an exception.
 
 [#sec_cap_encoding_formats, reftext="capability encoding format"]
 === Capability encoding formats
@@ -643,7 +648,7 @@ Instructions that are defined to accept arbitrary input bit patterns, and can wr
 NOTE: In the {cheri_base_ext_name} ISA this only affects <<CBLD>>.
 
 All other integrity checks are optional as a valid capability can always be assumed to satisfy these integrity rules, because it could only have been produced by a valid derivation.
-Consequently, an integrity check should only change the result of an operation when it is performed on an invalid input capability (i.e. whose {ctag} is zero).
+Consequently, in the absence of logic faults or incompatible IPs, an integrity check can only change the result of an operation when it is performed on an invalid input capability (i.e. whose {ctag} is zero).
 
 Therefore, unless stated otherwise, all integrity checks in this specification are _optional_.
 
@@ -683,9 +688,9 @@ As stated above, unless noted otherwise, state which can hold addresses is exten
 NOTE: The privileged `mconfigptr` CSR is the only documented exception to the rule.
 
 
-NOTE: A reminder that _all_ YLEN state also has a hardware managed {ctag}.
+NOTE: A reminder that _all_ YLEN state also has a hardware-managed {ctag}.
 
-==== General Purpose Registers
+==== General-Purpose Registers
 
 The <<gprs,XLEN-wide integer registers>> (e.g., `x1`, `x2`) are all widened to YLEN bits, each gaining an associated {ctag}, as shown in <<base_cap_registers>>.
 
@@ -717,7 +722,7 @@ The zero register (`x0`) is extended with zero metadata and its {ctag} set to ze
 ==== The Program Counter Capability (`{pcc}`)
 
 The `pc` is widened to a capability.
-Widening the `pc` allows the range of branches, jumps and linear execution for currently executing code to be restricted.
+Widening the `pc` allows the range of branches, jumps, and linear execution for currently executing code to be restricted.
 The <<pcc>> address field is the `pc` in the base RISC-V ISA so that the
 hardware automatically updates it as instructions are executed.
 
@@ -731,7 +736,7 @@ A failing check raises a CHERI exception.
 * All bytes of the instruction must be in bounds.
 * All <<section_cap_integrity,integrity>> checks must have passed.
 
-On system initialization the `pc` bounds and permissions must be set such that the program can run successfully (e.g., by setting it to a <<root-rx-cap>> capability to ensure _all_ instructions are in bounds).
+Upon initialization, the execution environment must set `<<pcc>>` bounds and permissions such that the program can run successfully (e.g., by setting `<<pcc>>` to a <<root-rx-cap>> capability to ensure _all_ instructions are in bounds).
 
 NOTE: Future ISA extensions should respect these rules so that the checked bits do not need to be stored in all copies of the <<pcc>> in the implementation.
 
@@ -783,8 +788,8 @@ include::img/utidcreg.edn[]
 Each thread (as scheduled by the kernel) can have its own context stored in privileged data structures managed by the compartmentalization TCB, for example a stack of user-level compartment entries and exits.
 <<utidc>> allows compartment-switching code to determine the currently running thread without a call into the operating system.
 This is read-only without <<asr_perm>> to prevent a malicious compartment from tricking the switching mechanism into accessing data corresponding to the wrong thread.
-While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general purpose register and can be changed arbitrarily by untrusted code.
-Extending <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
+While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general-purpose register and can be changed arbitrarily by untrusted code.
+Widening <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
 =====
 
 ifdef::cheri_xycfg_csr[]
@@ -845,7 +850,7 @@ All CSRs that can hold addresses are widened to YLEN bits.
 [[xlen_csrs, XLEN-bit CSRs]]XLEN-bit CSRs::
 These do not contain pointers (e.g., _fcsr_ from the "F" extension).
 
-[[extended_csrs, extended CSRs]]Extended CSRs::
+[[widened_csrs, Existing CSRs widened to YLEN bits]]Existing CSRs widened to YLEN bits::
 These are XLEN-bit CSRs widened to YLEN bits, which are able to contain pointers
 // No unprivileged pointer-type CSRs in v1.0, so let's use mtvec here.
 ifdef::cheri_ratification_v1_only[]
@@ -863,20 +868,20 @@ These are added by {cheri_base_ext_name} and contain pointers (e.g., <<utidc>>).
 When accessing CSRs these rules are followed:
 
 . Accesses to <<xlen_csrs>> are as specified by Zicsr
-. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using CSRRW will:
+. Accesses to <<ylen_csrs>> and <<widened_csrs>>, using CSRRW will:
 .. Read YLEN bits
 .. Write YLEN bits, and will write the {ctag} to zero if the written value fails any of the checks in xref:section_cap_integrity[xrefstyle=full]
-. Accesses to <<ylen_csrs>> and <<extended_csrs>>, using instructions other than CSRRW will:
+. Accesses to <<ylen_csrs>> and <<widened_csrs>>, using instructions other than CSRRW will:
 .. Read YLEN bits
 .. For CSRRS/CSRRC, compute the XLEN-bit address-field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN source operand.
 .. For immediate forms, compute the XLEN-bit address-field value using the standard Zicsr operation with the zero-extended `uimm` operand.
 .. Write the computed XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value
 
-NOTE: Any <<ylen_csrs, YLEN-bit>> or <<extended_csrs, extended CSR>> may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
+NOTE: Any <<ylen_csrs, YLEN-bit>> or <<widened_csrs, extended CSR>> may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
 
 The assembler pseudoinstruction to read a capability CSR `csrr {cd}, csr`, is encoded as `csrrs {cd}, csr, {creg}0`.
 
-.<<ylen_csrs, YLEN-bit CSR>> and <<extended_csrs, Extended CSR>> access summary for {cheri_base_ext_name}
+.<<ylen_csrs, YLEN-bit CSR>> and <<widened_csrs, Extended CSR>> access summary for {cheri_base_ext_name}
 [#clen_access_summary_base,%autowidth,options=header,align="center"]
 |=======================
 |Instruction          | Read Width  | Write Width
@@ -903,7 +908,7 @@ Instruction fetches and data memory accesses raise an exception if the access is
 * All store instructions require <<w_perm>> and are authorized by the capability in `{cs1}`
 * All instruction fetches require <<x_perm>> in <<pcc>>
 
-Instruction fetches are authorized by the program counter capability (<<pcc>>) which extends the *pc*.
+Instruction fetches are authorized by the program counter capability (<<pcc>>) which widens the *pc*.
 
 NOTE: This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
 
@@ -1064,7 +1069,7 @@ include::insns/cram_32bit.adoc[]
 === Instructions to Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LOAD_CAP>> and <<STORE_CAP>>.
-They atomically access YLEN bits of data and the associated {ctag}.
+These capability load and store instructions atomically access YLEN bits of data and the associated {ctag}.
 
 All capability memory accesses check for <<c_perm>> in the authorizing capability in `{cs1}`.
 
@@ -1082,11 +1087,10 @@ If <<c_perm>> is not granted then:
 //stores of capabilities to raise exceptions when the authorizing capability does not grant both
 //<<w_perm>> and <<c_perm>> and the stored capability has the {ctag} set.
 
-All capability data memory access instructions require YLEN-aligned addresses, and will
-take an access fault exception if this requirement is not met.
-They cannot be emulated.
+All capability data memory access instructions require naturally aligned addresses, and will take an access fault exception if this requirement is not met.
+Misaligned capability accesses cannot be emulated.
 
-NOTE: An access fault is raised instead of a misaligned exception since these instructions cannot be emulated since there is one hidden {ctag} per YLEN-aligned memory region.
+NOTE: An access fault is raised instead of a misaligned exception because these instructions cannot be emulated since there is one hidden {ctag} per naturally aligned YLEN-bit memory region.
 
 All memory accesses, of any type, require permission from the authorizing capability in `{cs1}`.
 
@@ -1127,7 +1131,7 @@ include::insns/store_32bit_cap.adoc[]
 `ADD` and `ADDI` are not affected by the rule above.
 Even though they _are_ used for handling addresses, they also have other uses.
 New encodings are used for capability addition: <<CADD>> and <<CADDI>>.
-They must be used for all capability address incrementing.
+These capability add instructions must be used for all capability address incrementing.
 
 [NOTE]
 ====
@@ -1174,7 +1178,7 @@ All load instructions, except for <<LOAD_CAP>>, always set the {ctag} and the me
 All store instructions, except for <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
 Therefore, misaligned stores may clear up to two associated {ctag}s.
 
-The changed interpretation of the base register also applies to all loads, stores and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
+The changed interpretation of the base register also applies to all loads, stores, and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
 
 IMPORTANT: Under {cheri_base_ext_name} _all_ loads and stores are authorized by `{cs1}`.
 
