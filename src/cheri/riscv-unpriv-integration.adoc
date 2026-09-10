@@ -513,6 +513,8 @@ For the base set of permissions just defined, the rules in <<base_clrperm_rule_s
 
 NOTE: These rules enforce sensible permission combinations.
 
+NOTE: The rules are referenced by name and extended by {cheri_base32_ext_name} capability-encoding formats which cannot represent all combinations of permissions.
+
 Extensions that define new permission bits may also introduce new dependency constraints.
 Currently defined examples are:
 
@@ -583,7 +585,7 @@ Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds t
 
 NOTE: These observable differences in behavior are similar to floating-point numbers where the supported operations and their semantics are the same for all formats, but the exact result depends on the representation (e.g., 16/32/64-bit IEEE-754 or other floating-point formats).
 
-It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid capability encoding formats.
+It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid capability-encoding formats of the same address width.
 However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, each capability encoding format comes with a set of standard parameters.
 
 Each new base ISA also declares a capability encoding format.
@@ -769,7 +771,7 @@ Each thread (as scheduled by the kernel) can have its own context stored in priv
 <<utidc>> allows compartment-switching code to determine the currently running thread without a call into the operating system.
 This is read-only without <<asr_perm>> to prevent a malicious compartment from tricking the switching mechanism into accessing data corresponding to the wrong thread.
 While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general-purpose register and can be changed arbitrarily by untrusted code.
-Widening <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
+Widening <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset-sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
 =====
 
 ifdef::cheri_xycfg_csr[]
