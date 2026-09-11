@@ -823,16 +823,21 @@ In <<clen_access_summary_base>>, when there is no read or write width shown, the
 
 Every memory access must be authorized by a valid capability.
 
-Instruction fetches and data memory accesses raise an exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<AP-field,permissions>>:
+Instruction fetches and data memory accesses raise a CHERI exception if any of the following checks fail on the authorizing capability:
 
-* All load instructions require <<r_perm>> and are authorized by the capability in `{cs1}`
-* All store instructions require <<w_perm>> and are authorized by the capability in `{cs1}`
-* All AMO instructions require <<r_perm>> and <<w_perm>>, and are authorized by the capability in `{cs1}`
-* All instruction fetches require <<x_perm>> in <<pcc>>
-
-Instruction fetches are authorized by the program counter (<<pcc>>) which {cheri_base_ext_name} widens to a capability.
-
-NOTE: This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
+* The {ctag} must be set to one.
+** All memory access instruction encodings with `{cs1}={creg}0` are _reserved_ (since dereferencing <<null-cap>> in `{creg}0` always faults due to its {ctag} being zero).
+* The authorizing capability must not be sealed.
+* All <<section_cap_integrity,integrity>> checks on the authorizing capability must pass.
+* The access must not be out of <<sec_cap_bounds_overview,bounds>>.
+ifdef::invalid_address_viol[]
+* The virtual address in the authorizing capability must not be invalid if virtual memory is enabled.
+endif::[]
+* The authorizing capability must grant the required <<AP-field,permissions>>:
+** All instruction fetches require <<x_perm>> in <<pcc>>.
+** All load instructions require <<r_perm>> and are authorized by the capability in `{cs1}`.
+** All store instructions require <<w_perm>> and are authorized by the capability in `{cs1}`.
+** All AMO instructions require both <<r_perm>> and <<w_perm>>, and are authorized by the capability in `{cs1}`.
 
 E.g., `lw t0, 16({abi_creg}sp)` loads a word from memory, getting the address, bounds, and permissions from the `{abi_creg}sp` (capability stack pointer) register.
 
@@ -997,7 +1002,7 @@ include::insns/cram_32bit.adoc[leveloffset=+1]
 New loads and stores are introduced to handle capability data, <<LOAD_CAP>> and <<STORE_CAP>>.
 These capability load and store instructions atomically access YLEN bits of data and the associated {ctag}.
 
-In addition to the common load and store authorization checks (see <<sec_cap_checks>>), capability memory accesses check for <<c_perm>> in the authorizing capability in `{cs1}`.
+In addition to the common authorization checks for memory access instructions (see <<sec_cap_checks>>), capability memory accesses check for <<c_perm>> in the authorizing capability in `{cs1}`.
 
 If <<c_perm>> is granted then:
 
@@ -1075,28 +1080,10 @@ All load and store instructions behave as described in <<ldst>> with one fundame
 
 * For a load instruction, the lower XLEN bits of the result written to the destination register are the same as in the RV32[IE]/RV64[IE] specification.
 
-All load and store instructions authorized by `{cs1}` raise exceptions if any of these checks fail:
-
-* `{cs1}` must not be `{creg}0`^1^
-* The {ctag} (`{cs1}.tag`) must be set to one.
-* `{cs1}` must be unsealed.
-ifdef::invalid_address_viol[]
-* The virtual address in `{cs1}` must not be invalid if virtual memory is enabled.
-endif::[]
-* For loads, <<r_perm>> must be granted in `{cs1}`.
-* For stores, <<w_perm>> must be granted in `{cs1}`.
-* All <<section_cap_integrity,integrity>> checks on `{cs1}` must pass.
-
-^1^ All load/store encodings are _reserved_ if `{cs1}={creg}0` (since dereferencing <<null-cap>> always faults).
-
 All load instructions, except for <<LOAD_CAP>>, always set the {ctag} and the metadata of the result register to zero.
 
 All store instructions, except for <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
 Therefore, misaligned stores may clear up to two associated {ctag}s.
-
-The changed interpretation of the base register also applies to all loads, stores, and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
-
-IMPORTANT: Under {cheri_base_ext_name} _all_ loads and stores are authorized by `{cs1}`.
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_ldst_summary>>, and also apply to instructions added by other extensions, e.g.,:
 
