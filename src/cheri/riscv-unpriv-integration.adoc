@@ -867,9 +867,7 @@ Standard {cheri_base_ext_name} instructions use the former three, leaving a sing
 In the future parts of *{cheri_base_ext_name}-A/B/C* may be allocated for custom use.
 ====
 
-:leveloffset: +1
-
-=== Instructions to Update The Capability Pointer
+==== Instructions to Update The Capability Pointer
 
 Creating a new capability with a different address (i.e., updating the pointer) requires specific instructions instead of integer ADD/ADDI.
 These instructions all include a check that the resulting address can be <<section_cap_representable_check,represented exactly>> within the new capability.
@@ -883,12 +881,12 @@ These instructions all include a check that the resulting address can be <<secti
 |<<SCADDR>>   | {SCADDR_DESC}
 |=======================
 
-include::insns/cadd_32bit.adoc[]
-include::insns/scaddr_32bit.adoc[]
+include::insns/cadd_32bit.adoc[leveloffset=+1]
+include::insns/scaddr_32bit.adoc[leveloffset=+1]
 
 <<<
 
-=== Instructions to Manipulate Capabilities
+==== Instructions to Manipulate Capabilities
 
 For security, capabilities can only be modified in restricted ways.
 Special instructions are provided to copy capabilities or derive a new capability using manipulations such as _shrinking_ the bounds (<<SCBNDS>>), _reducing_ the permissions (<<CLRPERM>>) or _authorizing_ a capability with another one which has a superset (or identical) bounds and permissions (<<CBLD>>).
@@ -923,18 +921,18 @@ Among the instructions that use the subset relation, this is only material for t
 
 ^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
 
-include::insns/acperm_32bit.adoc[]
-include::insns/cmv_32bit.adoc[]
-include::insns/schi_32bit.adoc[]
-include::insns/scbnds_32bit.adoc[]
-include::insns/scbndsr_32bit.adoc[]
-include::insns/ysunseal_32bit.adoc[]
-include::insns/cbld_32bit.adoc[]
-include::insns/sentry_32bit.adoc[]
+include::insns/acperm_32bit.adoc[leveloffset=+1]
+include::insns/cmv_32bit.adoc[leveloffset=+1]
+include::insns/schi_32bit.adoc[leveloffset=+1]
+include::insns/scbnds_32bit.adoc[leveloffset=+1]
+include::insns/scbndsr_32bit.adoc[leveloffset=+1]
+include::insns/ysunseal_32bit.adoc[leveloffset=+1]
+include::insns/cbld_32bit.adoc[leveloffset=+1]
+include::insns/sentry_32bit.adoc[leveloffset=+1]
 
 <<<
 
-=== Instructions to Decode Capability Bounds
+==== Instructions to Decode Capability Bounds
 
 The _bounds_ describing the range of addresses the capability gives access to are stored in a compressed format.
 These instructions query the bounds and related information.
@@ -948,13 +946,13 @@ These instructions query the bounds and related information.
 |<<GCTOP>>  | {GCTOP_DESC}
 |=======================
 
-include::insns/gcbase_32bit.adoc[]
-include::insns/gclen_32bit.adoc[]
-include::insns/gctop_32bit.adoc[]
+include::insns/gcbase_32bit.adoc[leveloffset=+1]
+include::insns/gclen_32bit.adoc[leveloffset=+1]
+include::insns/gctop_32bit.adoc[leveloffset=+1]
 
 <<<
 
-=== Instructions to Extract Capability Fields
+==== Instructions to Extract Capability Fields
 
 These instructions either directly read bit fields from the metadata or {ctag}, or only apply simple transformations on the metadata.
 
@@ -969,14 +967,14 @@ These instructions either directly read bit fields from the metadata or {ctag}, 
 |=======================
 
 
-include::insns/gctag_32bit.adoc[]
-include::insns/gcperm_32bit.adoc[]
-include::insns/gctype_32bit.adoc[]
-include::insns/gchi_32bit.adoc[]
+include::insns/gctag_32bit.adoc[leveloffset=+1]
+include::insns/gcperm_32bit.adoc[leveloffset=+1]
+include::insns/gctype_32bit.adoc[leveloffset=+1]
+include::insns/gchi_32bit.adoc[leveloffset=+1]
 
 <<<
 
-=== Miscellaneous Instructions to Handle Capability Data
+==== Miscellaneous Instructions to Handle Capability Data
 
 .Miscellaneous capability instruction summary in {cheri_base_ext_name}
 [#tab_cap_misc_summary,%autowidth,options=header,align="center",cols="1,4"]
@@ -987,14 +985,14 @@ include::insns/gchi_32bit.adoc[]
 |<<CRAM>>   | {CRAM_DESC}
 |=======================
 
-include::insns/sceq_32bit.adoc[]
-include::insns/scss_32bit.adoc[]
-include::insns/cram_32bit.adoc[]
+include::insns/sceq_32bit.adoc[leveloffset=+1]
+include::insns/scss_32bit.adoc[leveloffset=+1]
+include::insns/cram_32bit.adoc[leveloffset=+1]
 
 <<<
 
 [#sec_cap_load_store]
-=== Instructions to Load and Store Capability Data
+==== Instructions to Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LOAD_CAP>> and <<STORE_CAP>>.
 These capability load and store instructions atomically access YLEN bits of data and the associated {ctag}.
@@ -1031,12 +1029,10 @@ See <<LOAD_CAP>> for details.
 |<<STORE_CAP>>     |Store capability
 |=======================
 
-include::insns/load_32bit_cap.adoc[]
-include::insns/store_32bit_cap.adoc[]
+include::insns/load_32bit_cap.adoc[leveloffset=+1]
+include::insns/store_32bit_cap.adoc[leveloffset=+1]
 
 <<<
-
-:leveloffset: -1
 
 [#section_existing_riscv_insns]
 === Changes to Existing RISC-V Base ISA Instructions
@@ -1412,12 +1408,10 @@ include::{generated_dir}/{rvy_bndsrdw_insn_file_name}.adoc[]
 
 endif::[]
 
-:leveloffset: +1
-
 ifndef::cheri_ratification_v1_only[]
 
 [[rv32y]]
-== {cheri_base32_ext_name} Base Capability Instruction Set, Version 1.0
+=== {cheri_base32_ext_name} Base Capability Instruction Set, Version 1.0
 
 <<rvy>> introduced the CHERI base ISA and the {rv64y_uni_base_name} encoding format, as the only defined {cheri_base64_ext_name} format.
 
@@ -1441,8 +1435,6 @@ The currently defined RV32 capability-encoding formats are:
 NOTE: Further domain specialized capability-encoding formats are expected in the future.
 
 
-include::rvy32-encoding.adoc[]
+include::rvy32-encoding.adoc[leveloffset=+1]
 
 endif::[]
-
-:leveloffset: -1
