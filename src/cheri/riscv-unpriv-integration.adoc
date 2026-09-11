@@ -300,17 +300,29 @@ ifndef::cheri_ratification_v1_only[Extensions that extend the capability metadat
 Sealing::
 Given a capability with `CT=0`,
 deriving a capability with `CT{ne}0` is termed
-ifdef::cheri_ratification_v1_only[_sealing_.]
-ifndef::cheri_ratification_v1_only[_sealing_ (or _sealing with type ``x``_ when a particular output ``CT=x`` is meant).]
-This is achieved using <<SENTRY>>.
+ifdef::cheri_ratification_v1_only[_sealing_. +]
+ifndef::cheri_ratification_v1_only[_sealing_ (or _sealing with type ``x``_ when a particular output ``CT=x`` is meant). +]
+This is achieved using YSEALx instructions. +
++
+* The <<SENTRY>> instruction copies `{cs1}` to `{cd}` and seals it as a <<sentry_cap>>. +
+
+ifdef::cheri_ratification_v1_only[NOTE: Future extensions will add more YSEAL``x`` instructions such as seal by type.]
 
 Unsealing::
 Given a capability with `CT{ne}0`,
 deriving a capability with `CT=0` is termed
-ifdef::cheri_ratification_v1_only[_unsealing_.]
-ifndef::cheri_ratification_v1_only[_unsealing_ (or _unsealing from type ``x``_ when a particular input ``CT=x`` is meant).]
-ifdef::cheri_ratification_v1_only[This is achieved using <<YSUNSEAL>>.]
-ifndef::cheri_ratification_v1_only[This is achieved using <<YSUNSEAL>> (or <<YUNSEAL>> if <<section_zyseal>> is implemented).]
+ifdef::cheri_ratification_v1_only[_unsealing_. +]
+ifndef::cheri_ratification_v1_only[_unsealing_ (or _unsealing from type ``x``_ when a particular input ``CT=x`` is meant). +]
+ifdef::cheri_ratification_v1_only[]
+This is achieved using YUNSEALx instructions. +
++
+* The <<YSUNSEAL>> instruction authorizes the unsealing of `{cs2}` into `{cd}` with a superset capability in `{cs1}` (the S suffix represents superset).
+endif::[]
+ifndef::cheri_ratification_v1_only[]
++
+* This is achieved using <<YSUNSEAL>> (or <<YUNSEAL>> if <<section_zyseal>> is implemented).
+endif::[]
+ifdef::cheri_ratification_v1_only[NOTE: Future extensions will add more YUNSEAL``x`` instructions such as unseal by type.]
 
 [#sentry_cap,reftext="{sentry_cap_uc}"]
 {sentry_cap_uc}::
