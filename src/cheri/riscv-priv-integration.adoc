@@ -8,13 +8,15 @@ This chapter describes integration of {cheri_base_ext_name} with the RISC-V priv
 {cheri_base_ext_name} widens some M-mode CSRs so that they can hold capabilities.
 Additionally, {cheri_base_ext_name} allocates some previously reserved bits in existing CSRs.
 
+anchor:mconfigptr[]
+
 [NOTE]
 =====
 `mconfigptr` is not widened, despite representing an address,
-as it is solely for use by _low-level system software_
+as it holds a read-only address solely for use by _low-level system software_
 and is not interpreted by hardware.
 Such software can be expected to hold suitable <<root-cap>> capabilities
-from which it can derive a capability to the address in this register.
+from which it can derive a capability to access the data structures at the target address.
 =====
 
 [#mtvec_y,reftext="mtvec ({cheri_base_ext_name})"]
@@ -130,23 +132,6 @@ The <<mtidc>> register is used to identify the current software thread in machin
 .Machine thread identifier capability register
 include::img/mtidcreg.edn[]
 
-ifdef::cheri_xycfg_csr[]
-
-[#mycfg,reftext="mycfg"]
-==== Machine CHERI Capability Encoding (mycfg)
-The <<mycfg>> register is used to identify which CHERI capability encoding is used by the platform.
-The capability encoding both determines the in-memory representation of a CHERI capability
-and entails a set of extensions present atop {cheri_base_ext_name}.
-The CSR exists in the _writable_ namespace and all bits are defined to be WARL,
-but, absent any future extensions, it is expected that each implementation has exactly one legal value.
-For the meaning of the individual fields, refer to the <<uycfg>> register in the unprivileged specification.
-
-.Machine CHERI capability encoding CSR (`mycfg`) format
-[#mycfg_csr_structure]
-include::img/ycfgreg.edn[]
-
-endif::[]
-
 === Machine-Level CSRs modified by {cheri_base_ext_name}
 
 [#misa_y, reftext="misa ({cheri_base_ext_name})"]
@@ -162,7 +147,7 @@ NOTE: The list also includes <<ddc>> if <<section_cheri_hybrid_ext>> is implemen
 NOTE: This restriction ensures M-mode software cannot drop CHERI checks by modifying <<misa_y,misa>> once they have been configured.
  A simpler conforming implementation could prevent setting <<misa_y,misa>>.{CRE} to zero if the capability metadata of any of these registers has ever been written to, rather than dynamically checking the current metadata.
 
-Either misa.I or misa.E is _also_ set to indicate whether 32 or 16 general purpose registers are present.
+Either misa.I or misa.E is _also_ set to indicate whether 32 or 16 general-purpose registers are present.
 
 NOTE: Implementations which allow misa.C to be writable need to legalize `__x__epc`
  on _reading_ if the misa.C value has changed since the value was written as this
@@ -377,7 +362,7 @@ NOTE: In the table below `auth_cap` is `{cs1}`, unless {cheri_default_ext_name} 
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | Any byte of the current instruction is out of <<pcc>> bounds^1^
 | All                                            | {cheri_excep_cause_pc}     | {cheri_excep_name_pc} | <<pcc>> fails any <<section_cap_integrity,integrity>> checks.
 4+| *CSR/Xret additional exception check*
-| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | 2 | Illegal instruction | <<pcc>> does not grant <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>> or <<CBO_INVAL_CHERI>>
+| CSR*, <<MRET_CHERI>>, <<SRET_CHERI>>, <<CBO_INVAL_CHERI>> | 2 | Illegal instruction | <<pcc>> does not grant <<asr_perm>> when required for CSR access or execution of <<MRET_CHERI>>, <<SRET_CHERI>>, or <<CBO_INVAL_CHERI>>
 4+| *Load additional exception checks*
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` {ctag} is zero
 | All loads                                      | {cheri_excep_cause_ld}     | {cheri_excep_name_ld} | `auth_cap` is sealed
@@ -412,7 +397,7 @@ NOTE: CHERI adds architectural guarantees that can prove to be micro-architectur
  +
  Programmers should be able to rely on instructions that fail CHERI permission checks not to update microarchitectural state, e.g., not updating cache state for a load which fails a bound check.
  +
- When implementing an {cheri_base_ext_name} hart, micro-architects need to carefully consider the interaction of raising exceptions late in the pipeline, speculation windows and the resulting side-channel attacks.
+ When implementing an {cheri_base_ext_name} hart, micro-architects need to carefully consider the interaction of raising exceptions late in the pipeline, speculation windows, and the resulting side-channel attacks.
 
 [#section_pma]
 === Physical Memory Attributes (PMA)
@@ -595,23 +580,6 @@ The <<stidc>> register is used to identify the current software thread in superv
 .Supervisor thread identifier capability register
 include::img/stidcreg.edn[]
 
-ifdef::cheri_xycfg_csr[]
-
-[#sycfg,reftext="sycfg"]
-==== Supervisor CHERI Capability Encoding (sycfg)
-The <<sycfg>> register is used to identify which CHERI capability encoding is used by the platform.
-The capability encoding both determines the in-memory representation of a CHERI capability
-and entails a set of extensions present atop {cheri_base_ext_name}.
-The CSR exists in the _writable_ namespace and all bits are defined to be WARL,
-but, absent any future extensions, it is expected that each implementation has exactly one legal value.
-For the meaning of the individual fields, refer to the <<uycfg>> register in the unprivileged specification.
-
-.Supervisor CHERI capability encoding CSR (`sycfg`) format
-[#sycfg_csr_structure]
-include::img/ycfgreg.edn[]
-
-endif::[]
-
 === Supervisor-Level CSRs modified by {cheri_base_ext_name}
 
 [#senvcfg_y,reftext="senvcfg ({cheri_base_ext_name})"]
@@ -739,7 +707,7 @@ If _pte_._{pte_cap_rw_name_lc}_=1 then:
 * All capability loads and capability stores operate as normal.
 
 NOTE: The reserved bits _pte_._{rv64y_pte4_field_name_lc}[2:0]_ follow the standard reserved behavior for PTE bits.
-They are allocated by <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>, which redefines the entire _pte_._{rv64y_pte4_field_name_lc}_ field when enabled.
+These bits are allocated by <<section_cheri_priv_crg_ext,{cheri_priv_crg_ext}>>, which redefines the entire _pte_._{rv64y_pte4_field_name_lc}_ field when enabled.
 
 See <<sv32algorithm_rvy>> for the effect on the Virtual Address Translation Process.
 
@@ -837,14 +805,6 @@ DDC::
 utidc::
  See the unprivileged manual for the definition of the utidc CSR.
 
-ifdef::cheri_xycfg_csr[]
-
-[#uycfg, reftext="uycfg"]
-uycfg::
-See the unprivileged manual for the definition of the uycfg CSR.
-
-endif::[]
-
 [#root-cap, reftext="Root"]
 Root Capability::
  See the unprivileged manual for the definition of Root capabilities.
@@ -929,9 +889,9 @@ Changes to Existing RISC-V Base ISA Instructions::
 Integrity of Capabilities::
   See the unprivileged manual for how to check the Integrity of Capabilities.
 
-[#section_cap_encoding, reftext="Capability Encoding"]
-Capability Encoding::
-  See the unprivileged manual for details of the capability encoding.
+[#section_cap_encoding, reftext="Capability-encoding format"]
+Capability-Encoding Format::
+  See the unprivileged manual for details of the capability-encoding format.
 
 [#rvy_insn_table, reftext="{cheri_base_ext_name}"]
 Instructions added by {cheri_base_ext_name}::
