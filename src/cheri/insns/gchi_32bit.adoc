@@ -1,39 +1,4 @@
 
-<<<
-[#GCHI_BASE,reftext="{GCHI_BASE}"]
-==== {GCHI_BASE}
-
-Synopsis::
-{GCHI_BASE_DESC}
-
-Mnemonic::
-`{gchi_base} rd, rs1, shamt`
-
-Encoding::
-include::wavedrom/srliy.adoc[]
-
-Description::
-Logical right shift of Y register `rs1` to `rd`, zero-filling the upper bits of the result.
-Set `rd.tag=0`.
-+
-The only valid shift amount is `XLEN` (as required by <<GCHI>>).
-Encodings with any other shift amount are _reserved_.
-
-NOTE: A future extension may add an arbitrary shift distance.
-
-Operation::
-// SRLIY is not in the Sail model yet.
-// The only architecturally valid shamt is XLEN, i.e. this is equivalent to YHIR.
-
-NOTE: This listing is manually maintained rather than extracted from the Sail model.
-[source,SAIL,subs="verbatim,quotes"]
-----
-X(rd) = truncate(capToBits(C(rs1)) >> shamt, xlen);
-RETIRE_SUCCESS
-----
-
-<<<
-
 [#GCHI,reftext="{GCHI}"]
 ==== {GCHI}
 
@@ -51,8 +16,6 @@ Mnemonic::
 
 Encoding::
 include::wavedrom/gchi.adoc[]
-
-NOTE: `{gchi} rd, {cs1}` is a pseudo instruction for a `XLEN`-wide right shift (<<GCHI_BASE>>).
 
 Description::
 Copy the metadata (bits [YLEN-1:XLEN]) of capability `{cs1}` into `rd`.
