@@ -828,14 +828,17 @@ NOTE: This allows code fetch to be bounded, preventing a wide range of attacks t
 
 E.g., `lw t0, 16({abi_creg}sp)` loads a word from memory, getting the address, bounds, and permissions from the `{abi_creg}sp` (capability stack pointer) register.
 
-=== Added Instructions
-{cheri_base_ext_name} adds new instructions to operate on capabilities, and redefines part of the RVI/RVE custom encoding space for this purpose.
-For harts implementing {cheri_base_ext_name}, these opcode spaces are not available for vendor custom instructions except where this specification explicitly returns subspaces to custom use.
+=== {cheri_base_ext_name} Instruction Encodings
 
-. The RVI _custom-3_ space is renamed to *{cheri_base_ext_name}-A* and is used for standard {cheri_base_ext_name} encodings.
-. The RVI _custom-2_ space is renamed to *{cheri_base_ext_name}-B* and is used for standard {cheri_base_ext_name} encodings.
-. The RVI _custom-1_ space is renamed to *{cheri_base_ext_name}-C* and is used for standard {cheri_base_ext_name} encodings.
-. The RVI _custom-0_ space is still available for custom encodings.
+{cheri_base_ext_name} includes all instructions defined by the RV32[IE]/RV64[IE] base ISAs and defines new instructions to operate on capabilities.
+
+As shown in <<rvyopcodemap>>, three major opcodes are allocated for standard {cheri_base_ext_name} instructions:
+
+* *{cheri_base_ext_name}-A* (`inst[6:2]=11110`).
+* *{cheri_base_ext_name}-B* (`inst[6:2]=10110`).
+* *{cheri_base_ext_name}-C* (`inst[6:2]=01010`).
+
+The `_custom_` major opcode (`inst[6:2]=00010`) is available for custom instructions.
 
 [[rvyopcodemap]]
 .RISC-V base opcode map for {cheri_base_ext_name}, inst[1:0]=11
@@ -843,15 +846,18 @@ For harts implementing {cheri_base_ext_name}, these opcode spaces are not availa
 |===
 |inst[4:2] .2+|000 .2+|001   .2+|010     .2+|011   .2+|100 .2+|101     .2+|110          .2+|111 (>32b)
 |inst[6:5]
-|00           |LOAD   |LOAD-FP  |_custom-0_ |MISC-MEM |OP-IMM |AUIPC      |OP-IMM-32       |_reserved_
+|00           |LOAD   |LOAD-FP  |_custom_   |MISC-MEM |OP-IMM |AUIPC      |OP-IMM-32       |_reserved_
 |01           |STORE  |STORE-FP |*{cheri_base_ext_name}-C*    |AMO      |OP     |LUI        |OP-32           |_reserved_
 |10           |MADD   |MSUB     |NMSUB      |NMADD    |OP-FP  |OP-V       |*{cheri_base_ext_name}-B*         |_reserved_
 |11           |BRANCH |JALR     |_reserved_ |JAL      |SYSTEM |OP-VE      |*{cheri_base_ext_name}-A*         |_reserved_
 |===
 
-NOTE: Standard {cheri_base_ext_name} encodings will _never_ be placed in _custom-0_.
-
-NOTE: Parts of *{cheri_base_ext_name}-A/B/C* may be returned to custom space in the future.
+[NOTE]
+====
+In the RV32[IE]/RV64[IE] base opcode map, these four major opcodes correspond to _custom-3_, _custom-2_, _custom-1_, and _custom-0_, respectively.
+Standard {cheri_base_ext_name} instructions use the former three, leaving a single `_custom_` opcode space for vendor extensions.
+In the future parts of *{cheri_base_ext_name}-A/B/C* may be allocated for custom use.
+====
 
 :leveloffset: +1
 
