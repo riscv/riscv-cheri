@@ -31,7 +31,7 @@ NOTE: Future RV64 CHERI capability-encoding formats could be named RV64LYB, RV64
 
 Also see xref:sec_cap_encoding_formats[xrefstyle=full].
 
-=== CHERI protection model
+=== CHERI Protection Model
 
 The CHERI model is motivated by the _principle of least privilege_, which
 argues that greater security can be obtained by minimizing the privileges
@@ -149,14 +149,14 @@ All capabilities derived from invalid capabilities are themselves invalid, i.e.,
 NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be set to zero.
 When the {ctag} associated with the memory location is zero, the location contains non-capability data.
 
-==== {ctag_cap}s in registers
+==== {ctag_cap}s in Registers
 
 Every YLEN-bit register has a one-bit {ctag}, indicating whether the capability in the register is valid to be dereferenced.
 This {ctag} is set to zero whenever an invalid capability operation is performed.
 
 NOTE: Examples of such invalid operations include writing only the integer portion (the address field) of the register or attempting to increase bounds or permissions.
 
-==== {ctag_cap}s in memory
+==== {ctag_cap}s in Memory
 
 {ctag_cap}s are tracked through the memory subsystem: every naturally aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
 The implementation must set the {ctag} to zero if any byte in the naturally aligned YLEN-bit memory region is ever written using an operation other than a store of a capability operand.
@@ -253,7 +253,8 @@ NOTE: {cheri_base_ext_name} implementations that use a different capability-enco
 Such implementations must still support one-past-the-end pointers as required by the C standard, but are not required to support a representable range larger than that.
 Therefore, the ISA specification uses the phrase *represented exactly* for this check.
 
-==== Memory space
+[#cap_memory_space]
+==== Memory Space
 
 A hart supporting {cheri_base_ext_name} has a single byte-addressable address
 space of 2^XLEN^ bytes for all memory accesses. Each memory region capable of
@@ -570,7 +571,7 @@ A capability with all-zero metadata, its {ctag} set to zero, and an address of z
 This capability grants no permissions and any dereference raises an exception.
 
 [#sec_cap_encoding_formats, reftext="capability-encoding format"]
-=== Capability-encoding Formats
+=== Capability-Encoding Formats
 CHERI implementations make trade-offs in their "capability-encoding formats", such as the _precision_ of bounds and the _expressible set_ of combinations of permissions, that impact certain behaviors of the ISA.
 The definition of all CHERI base ISAs includes sufficient details of a capability-encoding format to precisely define the execution behavior of all base ISA instructions.
 
@@ -643,7 +644,7 @@ NOTE: These checks are much less rigorous than parity or ECC protection, and are
 used to detect simple problems with the capability metadata.
 
 NOTE: While a capability whose decoded bounds exceed 2^XLEN^ also represents a loss of integrity resulting from a fault or incompatible IP, detecting this condition requires full bounds decoding and is not included in the capability integrity checks due to implementation cost.
-As described in <<Memory space>>, hardware instead relies on fail-closed bounds checking and <<CBLD>> subset enforcement.
+As described in xref:cap_memory_space[xrefstyle=short], hardware instead relies on fail-closed bounds checking and <<CBLD>> subset enforcement.
 Detecting such conditions is deferred to future reliability extensions.
 
 Instructions that are defined to accept arbitrary input bit patterns, and can write an output with the {ctag} set to one, _must_ perform an integrity check on the input capability if its {ctag} is set to zero.
@@ -818,7 +819,7 @@ The assembler pseudoinstruction to read a capability CSR `csrr {cd}, csr`, is en
 In <<clen_access_summary_base>>, when there is no read or write width shown, the CSR access is _not_ made and there are no side-effects following standard Zicsr rules.
 
 [#sec_cap_checks]
-=== Capability checks
+=== Capability Checks
 
 Every memory access must be authorized by a valid capability.
 
@@ -866,9 +867,7 @@ Standard {cheri_base_ext_name} instructions use the former three, leaving a sing
 In the future parts of *{cheri_base_ext_name}-A/B/C* may be allocated for custom use.
 ====
 
-:leveloffset: +1
-
-=== Instructions to Update The Capability Pointer
+==== Instructions to Update The Capability Pointer
 
 Creating a new capability with a different address (i.e., updating the pointer) requires specific instructions instead of integer ADD/ADDI.
 These instructions all include a check that the resulting address can be <<section_cap_representable_check,represented exactly>> within the new capability.
@@ -882,12 +881,12 @@ These instructions all include a check that the resulting address can be <<secti
 |<<SCADDR>>   | {SCADDR_DESC}
 |=======================
 
-include::insns/cadd_32bit.adoc[]
-include::insns/scaddr_32bit.adoc[]
+include::insns/cadd_32bit.adoc[leveloffset=+1]
+include::insns/scaddr_32bit.adoc[leveloffset=+1]
 
 <<<
 
-=== Instructions to Manipulate Capabilities
+==== Instructions to Manipulate Capabilities
 
 For security, capabilities can only be modified in restricted ways.
 Special instructions are provided to copy capabilities or derive a new capability using manipulations such as _shrinking_ the bounds (<<SCBNDS>>), _reducing_ the permissions (<<CLRPERM>>) or _authorizing_ a capability with another one which has a superset (or identical) bounds and permissions (<<CBLD>>).
@@ -922,18 +921,18 @@ Among the instructions that use the subset relation, this is only material for t
 
 ^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
 
-include::insns/acperm_32bit.adoc[]
-include::insns/cmv_32bit.adoc[]
-include::insns/schi_32bit.adoc[]
-include::insns/scbnds_32bit.adoc[]
-include::insns/scbndsr_32bit.adoc[]
-include::insns/ysunseal_32bit.adoc[]
-include::insns/cbld_32bit.adoc[]
-include::insns/sentry_32bit.adoc[]
+include::insns/acperm_32bit.adoc[leveloffset=+1]
+include::insns/cmv_32bit.adoc[leveloffset=+1]
+include::insns/schi_32bit.adoc[leveloffset=+1]
+include::insns/scbnds_32bit.adoc[leveloffset=+1]
+include::insns/scbndsr_32bit.adoc[leveloffset=+1]
+include::insns/ysunseal_32bit.adoc[leveloffset=+1]
+include::insns/cbld_32bit.adoc[leveloffset=+1]
+include::insns/sentry_32bit.adoc[leveloffset=+1]
 
 <<<
 
-=== Instructions to Decode Capability Bounds
+==== Instructions to Decode Capability Bounds
 
 The _bounds_ describing the range of addresses the capability gives access to are stored in a compressed format.
 These instructions query the bounds and related information.
@@ -947,13 +946,13 @@ These instructions query the bounds and related information.
 |<<GCTOP>>  | {GCTOP_DESC}
 |=======================
 
-include::insns/gcbase_32bit.adoc[]
-include::insns/gclen_32bit.adoc[]
-include::insns/gctop_32bit.adoc[]
+include::insns/gcbase_32bit.adoc[leveloffset=+1]
+include::insns/gclen_32bit.adoc[leveloffset=+1]
+include::insns/gctop_32bit.adoc[leveloffset=+1]
 
 <<<
 
-=== Instructions to Extract Capability Fields
+==== Instructions to Extract Capability Fields
 
 These instructions either directly read bit fields from the metadata or {ctag}, or only apply simple transformations on the metadata.
 
@@ -968,14 +967,14 @@ These instructions either directly read bit fields from the metadata or {ctag}, 
 |=======================
 
 
-include::insns/gctag_32bit.adoc[]
-include::insns/gcperm_32bit.adoc[]
-include::insns/gctype_32bit.adoc[]
-include::insns/gchi_32bit.adoc[]
+include::insns/gctag_32bit.adoc[leveloffset=+1]
+include::insns/gcperm_32bit.adoc[leveloffset=+1]
+include::insns/gctype_32bit.adoc[leveloffset=+1]
+include::insns/gchi_32bit.adoc[leveloffset=+1]
 
 <<<
 
-=== Miscellaneous Instructions to Handle Capability Data
+==== Miscellaneous Instructions to Handle Capability Data
 
 .Miscellaneous capability instruction summary in {cheri_base_ext_name}
 [#tab_cap_misc_summary,%autowidth,options=header,align="center",cols="1,4"]
@@ -986,14 +985,14 @@ include::insns/gchi_32bit.adoc[]
 |<<CRAM>>   | {CRAM_DESC}
 |=======================
 
-include::insns/sceq_32bit.adoc[]
-include::insns/scss_32bit.adoc[]
-include::insns/cram_32bit.adoc[]
+include::insns/sceq_32bit.adoc[leveloffset=+1]
+include::insns/scss_32bit.adoc[leveloffset=+1]
+include::insns/cram_32bit.adoc[leveloffset=+1]
 
 <<<
 
 [#sec_cap_load_store]
-=== Instructions to Load and Store Capability Data
+==== Instructions to Load and Store Capability Data
 
 New loads and stores are introduced to handle capability data, <<LOAD_CAP>> and <<STORE_CAP>>.
 These capability load and store instructions atomically access YLEN bits of data and the associated {ctag}.
@@ -1030,12 +1029,10 @@ See <<LOAD_CAP>> for details.
 |<<STORE_CAP>>     |Store capability
 |=======================
 
-include::insns/load_32bit_cap.adoc[]
-include::insns/store_32bit_cap.adoc[]
+include::insns/load_32bit_cap.adoc[leveloffset=+1]
+include::insns/store_32bit_cap.adoc[leveloffset=+1]
 
 <<<
-
-:leveloffset: -1
 
 [#section_existing_riscv_insns]
 === Changes to Existing RISC-V Base ISA Instructions
@@ -1068,7 +1065,7 @@ The rules above apply to the <<rv32,base ISA>> instructions listed in the follow
 Any change to instruction semantics for {cheri_base_ext_name} is called out in the chapter defining the extension.
 
 [#section_cheri_int_load_store_insns]
-==== Changes to load/stores
+==== Changes to Load/Stores
 
 All load and store instructions behave as described in <<ldst>> with one fundamental difference:
 
@@ -1157,10 +1154,10 @@ NOTE: For `beq rs1, rs2, offset` and `bne rs1, rs2, offset`, assemblers must emi
 For example, `beq x1, x2, offset` is emitted as `beq x2, x1, offset`.
 For the reserved `rs1=rs2` case, `j`/`jal` can be used instead of an always-taken `beq rs1, rs1, offset`, and a never-taken `bne rs1, rs1, offset` is equivalent to a `nop`.
 
-=== {cheri_base_ext_name} ISA summary
+=== {cheri_base_ext_name} ISA Summary
 
 [#rvy_insn_table, reftext="{cheri_base_ext_name}"]
-==== {cheri_base_ext_name} added instructions
+==== {cheri_base_ext_name} Added Instructions
 
 .{cheri_base_ext_name} added instructions
 [#{rvy_file_name}]
@@ -1184,7 +1181,7 @@ include::rvy64-encoding.adoc[]
 ifdef::cheri_standalone_spec[]
 
 [#rvy_zca_insn_table, reftext="{rvy_zca_ext_name}"]
-== Zca ({cheri_base_ext_name} added and modified instructions)
+== Zca ({cheri_base_ext_name} Added and Modified Instructions)
 
 ifndef::cheri_ratification_v1_only[]
 Zcf (RV32) and Zcd (RV64) are incompatible with the {cheri_base_ext_name} base ISA, as their encodings are reused for the capability loads and stores below.
@@ -1204,13 +1201,13 @@ include::{generated_dir}/{rvy_zca_file_name}.adoc[]
 
 ifndef::cheri_ratification_v1_only[]
 //this has all been integrated into the relevant chapter
-=== RV32 / {cheri_base32_ext_name} RVC load/store mapping summary
+=== RV32 / {cheri_base32_ext_name} RVC Load/Store Mapping Summary
 
 include::rv32c_mapping_table.adoc[]
 endif::[]
 
 <<<
-=== RV64 / {cheri_base64_ext_name} RVC load/store mapping summary
+=== RV64 / {cheri_base64_ext_name} RVC Load/Store Mapping Summary
 
 include::rv64c_mapping_table.adoc[]
 
@@ -1432,12 +1429,10 @@ include::{generated_dir}/{rvy_bndsrdw_insn_file_name}.adoc[]
 
 endif::[]
 
-:leveloffset: +1
-
 ifndef::cheri_ratification_v1_only[]
 
 [[rv32y]]
-== {cheri_base32_ext_name} Base Capability Instruction Set, Version 1.0
+=== {cheri_base32_ext_name} Base Capability Instruction Set, Version 1.0
 
 <<rvy>> introduced the CHERI base ISA and the {rv64y_uni_base_name} encoding format, as the only defined {cheri_base64_ext_name} format.
 
@@ -1461,8 +1456,6 @@ The currently defined RV32 capability-encoding formats are:
 NOTE: Further domain specialized capability-encoding formats are expected in the future.
 
 
-include::rvy32-encoding.adoc[]
+include::rvy32-encoding.adoc[leveloffset=+1]
 
 endif::[]
-
-:leveloffset: -1
