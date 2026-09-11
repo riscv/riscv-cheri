@@ -119,10 +119,10 @@ ifdef::cheri_v9_annotations[]
 NOTE: The current specification only defines up to two levels, equivalent to _local_ and _global_ capabilities from CHERI v9, Morello, and CHERIoT.
 endif::[]
 
-=== Encoding material (TODO)
+=== Encoding Material (TODO)
 
 [#section_ext_cheri_multiple_levels]
-=== Extending {cheri_1levels_ext_name} to more than two levels
+=== Extending {cheri_1levels_ext_name} to More Than Two Levels
 When `<<cheri_lvlbits>> > 1`, the behavior of <<CLRPERM>> can no longer use masking to adjust the <<zylevelsN_cl_field>> or <<zylevelsN_sl_perm>>, but instead must perform an integer minimum operation on those `<<cheri_lvlbits>>`-wide fields.
 The <<zylevelsN_cl_field,CL>> field of the resulting capability is set to `min(rs2[CL], {cs1}[CL])`  (equivalent to `rs2[CL] & {cs1}[CL]` for `<<cheri_lvlbits>>=1`).
 Similarly, <<zylevelsN_sl_perm>> is set to `min(rs2[SL], {cs1}[SL])` (equivalent to `rs2[SL] & {cs1}[SL]` for `<<cheri_lvlbits>>=1`).
