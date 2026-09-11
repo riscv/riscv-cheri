@@ -998,7 +998,7 @@ include::insns/cram_32bit.adoc[]
 New loads and stores are introduced to handle capability data, <<LOAD_CAP>> and <<STORE_CAP>>.
 These capability load and store instructions atomically access YLEN bits of data and the associated {ctag}.
 
-All capability memory accesses check for <<c_perm>> in the authorizing capability in `{cs1}`.
+In addition to the common load and store authorization checks (see <<sec_cap_checks>>), capability memory accesses check for <<c_perm>> in the authorizing capability in `{cs1}`.
 
 If <<c_perm>> is granted then:
 
@@ -1018,14 +1018,6 @@ All capability data memory access instructions require naturally aligned address
 Misaligned capability accesses cannot be emulated.
 
 NOTE: An access fault is raised instead of a misaligned exception because these instructions cannot be emulated since there is one hidden {ctag} per naturally aligned YLEN-bit memory region.
-
-All memory accesses, of any type, require permission from the authorizing capability in `{cs1}`.
-
-* All loads require <<r_perm>>, otherwise they raise an exception.
-* All stores require <<w_perm>>, otherwise they raise an exception.
-
-//NOTE: Misaligned capability memory accesses cannot be emulated.
-//  To transfer YLEN misaligned bits without a {ctag}, use integer loads and stores.
 
 Under some circumstances <<LOAD_CAP>> will _modify_ the data loaded from memory before writing it back to the destination register.
 See <<LOAD_CAP>> for details.
