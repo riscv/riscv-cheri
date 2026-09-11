@@ -771,17 +771,21 @@ All CSRs that can hold addresses are widened to YLEN bits.
 [[xlen_csrs, XLEN-bit CSRs]]XLEN-bit CSRs::
 These do not contain pointers (e.g., _fcsr_ from the "F" extension).
 
-[[widened_csrs, Existing CSRs widened to YLEN bits]]Existing CSRs widened to YLEN bits::
-These are XLEN-bit CSRs widened to YLEN bits, which are able to contain pointers
-// No unprivileged pointer-type CSRs in v1.0, so let's use mtvec here.
+[[widened_csrs, widened csrs]]Widened csrs::
+These are XLEN-bit CSRs widened to YLEN bits,
 ifdef::cheri_ratification_v1_only[]
-(e.g., _mtvec_ from the privileged specification).
+e.g., _xtvec_ and _xepc_ from the privileged specification.
 endif::[]
 ifndef::cheri_ratification_v1_only[]
 (e.g., _jvt_ from the "Zcmt" extension).
 +
 NOTE: Zcmt is not yet available for {cheri_base_ext_name}.
 endif::[]
++
+When a WARL CSR is widened the metadata and {ctag} also become WARL.
+If the final written capability value cannot be written unmodified to the CSR due to WARL behavior then the capability value is considered to be _invalid_ and so must be written with its {ctag} set to zero.
++
+NOTE: Examples of WARL behavior for metadata are implementations requiring all fields to be in a valid (non-reserved) state, and also to fix specific permissions to certain values.
 
 [[ylen_csrs, YLEN-bit CSRs]]YLEN-bit CSRs::
 These are added by {cheri_base_ext_name} and contain pointers (e.g., <<utidc>>).
