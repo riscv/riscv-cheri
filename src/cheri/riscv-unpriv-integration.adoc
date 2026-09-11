@@ -511,6 +511,8 @@ For the base set of permissions just defined, the rules in <<base_clrperm_rule_s
 
 NOTE: These rules enforce sensible permission combinations.
 
+NOTE: The rules are referenced by name and extended by {cheri_base32_ext_name} capability-encoding formats which cannot represent all combinations of permissions.
+
 Extensions that define new permission bits may also introduce new dependency constraints.
 Currently defined examples are:
 
@@ -581,10 +583,10 @@ Systems with XLEN=64 can allocate more bits towards the mantissa of the bounds t
 
 NOTE: These observable differences in behavior are similar to floating-point numbers where the supported operations and their semantics are the same for all formats, but the exact result depends on the representation (e.g., 16/32/64-bit IEEE-754 or other floating-point formats).
 
-It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid capability encoding formats.
+It is possible to generate code for {cheri_base_ext_name} that is compatible with all valid capability-encoding formats of the same address width.
 However, to allow compilers and/or software library authors to make assumptions about encoding-dependent properties such as bounds precisions, each capability-encoding format comes with a set of standard parameters.
 
-Each capability-encoding format also declares a new base ISA.
+Each new CHERI base ISA defines a capability-encoding format.
 
 The documentation for each capability-encoding format specifies at least the parameters in <<cap_encoding_param_default_summary>> below where the default is not used.
 
@@ -599,12 +601,17 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 | EW          | integer values       | {cap_rv64_exp_width} | Exponent width for the bounds encoding
 | CAP_MAX_E   | integer values       | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8    | 0/1                  | 0                    | Whether the encoding format includes the L~8~ bit
+| REP_RANGE   | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
 4+| *Parameters used for permissions encoding in the <<AP-field>>*
 | AP_MAX      | integer values       | all ones             | Value of the <<AP-field>> giving maximum permissions
 | AP_ENC      | full<suffix>/ part<suffix>| full1             | Encoding scheme for the <<AP-field>>
-4+| *Other parameters*
+|==============================================================================
+
+.{cheri_base_ext_name} base ISA parameters
+[#rvy_base_isa_param_default_summary,width="100%",options=header,cols="1,1,1,4"]
+|==============================================================================
+| Parameter   | Legal values | Default Value        | Comment
 | AUIPC_SHIFT | integer values up to 12 | 12                | Shift distance of the immediate in AUIPC
-| REP_RANGE   | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
 |==============================================================================
 
 Two parameters use non-numeric values:
@@ -662,8 +669,7 @@ Implementations may choose to enforce optional integrity checks for a number of 
 
 As stated above, unless noted otherwise, state which can hold addresses is extended from XLEN to YLEN bits.
 
-NOTE: The privileged `mconfigptr` CSR is the only documented exception to the rule.
-
+NOTE: The privileged `mconfigptr` CSR is the only documented exception to the rule; see <<mconfigptr>> for details.
 
 NOTE: A reminder that _all_ YLEN state also has a hardware-managed {ctag}.
 
@@ -751,7 +757,7 @@ Each thread (as scheduled by the kernel) can have its own context stored in priv
 <<utidc>> allows compartment-switching code to determine the currently running thread without a call into the operating system.
 This is read-only without <<asr_perm>> to prevent a malicious compartment from tricking the switching mechanism into accessing data corresponding to the wrong thread.
 While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general-purpose register and can be changed arbitrarily by untrusted code.
-Widening <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
+Widening <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset-sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
 =====
 
 [#rvy_csr_classes]
@@ -820,9 +826,10 @@ Instruction fetches and data memory accesses raise an exception if the access is
 
 * All load instructions require <<r_perm>> and are authorized by the capability in `{cs1}`
 * All store instructions require <<w_perm>> and are authorized by the capability in `{cs1}`
+* All AMO instructions require <<r_perm>> and <<w_perm>>, and are authorized by the capability in `{cs1}`
 * All instruction fetches require <<x_perm>> in <<pcc>>
 
-Instruction fetches are authorized by the program counter capability (<<pcc>>) which widens the *pc*.
+Instruction fetches are authorized by the program counter (<<pcc>>) which {cheri_base_ext_name} widens to a capability.
 
 NOTE: This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
 
