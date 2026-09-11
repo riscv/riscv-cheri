@@ -32,7 +32,7 @@ we have not yet found a compelling reason to formally specify this composition.
 
 The {cheri_base_ext_name} base privileged ISA tends to define
 M-mode CSRs' reset values either as <<root-rx-cap>> capabilities or
-as otherwise unspecified values with clear {ctag}s.
+as otherwise unspecified values with their {ctag}s set to zero.
 To make available {cheriot_unpriv_ext_name}'s multiple
 //<<sec_zycheriot_unpriv_permission_roots,root>>
 root capability values,
@@ -40,13 +40,13 @@ we redefine two CSRs' reset values:
 
 <<mtidc>>::
 The <<mtidc>> register's reset value is changed to be
-{cheriot_unpriv_ext_name}'s <<root-rw-cap>> capability value (with set {ctag}),
-rather than the unspecified value with zero {ctag} of {cheri_base_ext_name}.
+{cheriot_unpriv_ext_name}'s <<root-rw-cap>> capability value (with its {ctag} set to one),
+rather than the unspecified value with its {ctag} set to zero of {cheri_base_ext_name}.
 
 <<mscratch_y>>::
 The <<mscratch_y>> register's reset value is changed to be
-{cheriot_unpriv_ext_name}'s _sealing_ capability value (with set {ctag}),
-rather than the unspecified value with zero {ctag} of {cheri_base_ext_name}.
+{cheriot_unpriv_ext_name}'s _sealing_ capability value (with its {ctag} set to one),
+rather than the unspecified value with its {ctag} set to zero of {cheri_base_ext_name}.
 
 === Additional CSR Legalization Requirements
 

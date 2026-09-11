@@ -1,30 +1,30 @@
 [#rv32y_cap_description, reftext="{rv32y_uni_base_name}"]
 == The {rv32y_uni_base_name} Capability Base for RV32
 
-This section describes an in-memory format and properties of a capability encoding intended for RV32.
+This section describes an in-memory format and properties of a capability-encoding format intended for RV32.
 This format is based upon the <<rv64y_cap_description,{rv64y_uni_base_name}>> format with the following changes:
 
 * The width, or presence, of fields in the encoding are changed as defined in <<rvy32_uni_base_name_param_summary>>.
 * The architectural permissions (AP) field is compressed to save encoding space, and so rules are defined for removing permissions.
 
 [#section_cap_encoding32]
-=== Capability Encoding
+=== Capability-Encoding Format
 
 The encoding format of the {rv32y_uni_base_name} capability is shown in xref:cap_encoding_xlen32[xrefstyle=short].
 
-.Capability encoding for {rv32y_uni_base_name}
+.Capability-encoding format for {rv32y_uni_base_name}
 [#cap_encoding_xlen32]
 include::img/cap-encoding-xlen32.edn[]
 
-==== Capability Encoding Summary
+==== Capability-Encoding Format Summary
 
 The bit ranges in <<cap_encoding_xlen32_field_table>> are relative to the XLEN-bit metadata, i.e., the upper half of the in-memory representation.
 
-.{rv32y_uni_base_name} capability encoding format metadata fields
+.{rv32y_uni_base_name} capability-encoding format metadata fields
 [#cap_encoding_xlen32_field_table,width="100%",options=header,cols="1,1,4"]
 |==============================================================================
 | Field      | Bit range | Comment
-| SDP        | 31:30     | <<SDP-field, Software Defined Permissions>>.
+| SDP        | 31:30     | <<SDP-field, Software-Defined Permissions>>.
 | AP         | 29:25     | <<AP-field-encoding32, Architectural Permissions>> (includes fields for <<section_cheri_hybrid_ext>> and <<section_zylevels1>>).
 | GL         | 24        | <<zylevels1_gl_flag, Global (GL) flag>> (<<section_zylevels1>> only).
 | CT         | 20        | <<CT-field, Capability Type field>>.
@@ -47,9 +47,8 @@ NOTE: T[9:8], T[1:0] and B[1:0] are not specified by the metadata fields and are
 | EW          | {cap_rv32_exp_width}| Exponent width
 | CAP_MAX_E   | {cap_rv32_exp_max}  | Maximum exponent value
 | enableL8    | 1                   | Whether the encoding format includes the L~8~ bit
-| AP_MAX      | 0x8                 | Value of the <<AP-field>> giving maximum permissions
-| AP_ENC      | part1_rv32ya_1      | Encoding scheme for the <<AP-field>> - not all combinations are representable
-| AUIPC_SHIFT | 12                  | Shift distance of the immediate in AUIPC
+| AP_MAX      | 0x8^1^              | Value of the <<AP-field>> giving maximum permissions
+| AP_ENC      | part_rv32lya        | Encoding scheme for the <<AP-field>> - not all combinations are representable
 | REP_RANGE   | rc1                 | At least 1/4 of the capability length
 |==============================================================================
 
@@ -84,7 +83,7 @@ NOTE: Extensions which allocate new permissions need to specify modifications to
 
 <<<
 [AP-encoding-rv32y]
-===== AP encoding and rules
+===== AP Encoding and Rules
 
 All gaps in <<cap_perms_encoding_nolevels32>> are _reserved_ for future extensions.
 
@@ -207,7 +206,7 @@ The following rules are run once _in order_:
 . `RV32-base-6,7`
 
 [#default-cap-AP-hybrid-zylevels1]
-==== AP encoding and rules summary with {cheri_levels1_ext_name} for {rv32y_uni_base_name}
+==== AP Encoding and Rules Summary with {cheri_levels1_ext_name} for {rv32y_uni_base_name}
 
 This section is non-normative - it summarizes the overall encoded permissions table and <<CLRPERM>> rules when both <<section_cheri_hybrid_ext>> and <<section_zylevels1>> are implemented.
 

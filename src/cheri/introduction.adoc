@@ -1,9 +1,5 @@
 == Introduction
 
-ifdef::cheri_standalone_spec[]
-WARNING: This chapter is only included in the standalone CHERI spec and not part of the integrated document.
-endif::[]
-
 === CHERI Concepts and Terminology
 
 Current CPU architectures (including RISC-V) allow memory access solely by
@@ -46,16 +42,16 @@ This section lists new extensions available to {cheri_base_ext_name}, and also e
 Almost all existing RISC-V extensions can be added to an implementation, but in most
 cases they will have some behavioral differences and/or new instructions operating on capabilities.
 
-==== Stable Extensions and Specifications
+==== Extensions and Specifications
 
-.Unprivileged stable {cheri_base_ext_name} base ISAs and extensions
+.Unprivileged {cheri_base_ext_name} base ISAs and extensions
 [#unpriv-extension-status]
 [options=header,align=center,width="90%"]
 |=============================================================================================================================================================
 | Extension or Specification                                | Description
-|<<rvy,RV64Y>>                                              | CHERI Base ISA and capability encoding format for RV64
+|<<rvy,RV64Y>>                                              | CHERI Base ISA and capability-encoding format for RV64
 ifndef::cheri_ratification_v1_only[]
-|<<rv32y,RV32Y>>                                            | Base ISA additions and capability encoding formats for RV32
+|<<rv32y,RV32Y>>                                            | Base ISA additions and capability-encoding formats for RV32
 endif::[]
 ifndef::cheri_ratification_v1_only[]
 |<<rvy_bndsrdw_insn_ext>>                                   | Extension for setting bounds round down to representable length
@@ -67,30 +63,21 @@ endif::[]
 |<<rvy_zaamo_insn_table, {rvy_zaamo_ext_name}>>             | New 32-bit encodings added to Zaamo
 |=============================================================================================================================================================
 
-.Unprivileged stable extensions where {cheri_base_ext_name} modifies the behavior
+.Standard base ISAs and extensions with differences under {cheri_base_ext_name}
 [#unpriv-mod-extension-status]
 [options=header,align=center,width="90%"]
 |=============================================================================================================================================================
-| Extension or Specification                                | Description
-|<<{rvy_i_mod_file_name},     {rvy_i_mod_ext_name}>>        | RVI instructions modified by {cheri_base_ext_name}
-|<<{rvy_zca_mod_file_name},   {rvy_zca_mod_ext_name}>>      | C instructions modified by {cheri_base_ext_name}
-|<<section_cheri_vector_integration, V ({cheri_base_ext_name} modified behavior)>> | V instructions modified by {cheri_base_ext_name}
-|<<{rvy_zicbom_mod_file_name},{rvy_zicbom_mod_ext_name}>>   | Zicbom instructions modified by {cheri_base_ext_name}
-|<<{rvy_zicbop_mod_file_name},{rvy_zicbop_mod_ext_name}>>   | Zicbop instructions modified by {cheri_base_ext_name}
-|<<{rvy_zicboz_mod_file_name},{rvy_zicboz_mod_ext_name}>>   | Zicboz instructions modified by {cheri_base_ext_name}
-|<<{rvy_zicsr_mod_file_name}, {rvy_zicsr_mod_ext_name}>>    | Zicsr instructions modified by {cheri_base_ext_name}
+| Base ISA or Extension | Differences
+|<<{rvy_i_mod_file_name},     I>>      | Control flow instructions and load/stores use capability values as address operands.
+Load/stores require capability operands and check permissions and bounds
+|<<{rvy_zca_mod_file_name},   Zca>>    | Compressed control-flow, load/store, and stack-pointer adjustment instructions operate on capabilities.
+Load/stores require capability operands and check permissions and bounds
+|<<section_cheri_vector_integration, V>> | Vector memory access instructions require capability operands and check permissions and bounds.
+|<<{rvy_zicbom_mod_file_name}, Zicbom>> | Cache-block management operations require capability operands and check permissions and bounds.
+|<<{rvy_zicbop_mod_file_name}, Zicbop>> | Cache-block prefetch operations require capability operands and check permissions and bounds.
+|<<{rvy_zicboz_mod_file_name}, Zicboz>> | Cache-block zero operations require capability operands and check permissions and bounds.
+|<<{rvy_zicsr_mod_file_name}, Zicsr>>  | Access to privileged and select unprivileged CSRs is constrained by <<asr_perm>>.
 |=============================================================================================================================================================
-
-ifdef::include_zabhlrsc[]
-.Unprivileged stable extension used by CHERI software
-[#zabhlrsc_unpriv-extension-status]
-[options=header,align=center,width="90%"]
-|=============================================================================================================================================================
-| Extension or Specification                                | Description
-|<<abhlrsc_ext,     {lr_sc_bh_ext_name}>>                   | Byte and halfword LR/SC functionality
-|=============================================================================================================================================================
-endif::[]
-
 CHERI defines new state and behavior for the privileged modes:
 
 * <<section_priv_cheri,{cheri_priv_m_ext}>>
