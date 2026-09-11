@@ -24,17 +24,23 @@ Encoding::
 include::wavedrom/csrw-instr.adoc[]
 
 Description::
-CSRRW has extended functionality for accessing <<ylen_csrs>> and <<widened_csrs>>.
+CSRRW has extended functionality for accessing <<ylen_csrs>>.
 +
 Access to <<xlen_csrs>> is as defined in Zicsr.
 +
 CSRRW accesses to <<ylen_csrs>> read YLEN bits into `{cd}` and write YLEN bits of `{cs1}` into the CSR.
 +
-CSRRW accesses to <<widened_csrs>> read YLEN bits into `{cd}` and write YLEN bits of `{cs1}` into the CSR.
-However, if {cheri_default_ext_name} is supported and the current mode is {cheri_int_mode_name}, accesses to <<widened_csrs>> are XLEN-wide.
-The final write data for <<widened_csrs>> is determined using the semantics of the <<SCADDR>> instruction.
+When writing YLEN bits of `{cs1}`, if any <<section_cap_integrity,integrity>> checks fail then set the {ctag} to zero before writing to the CSR.
 +
-In all cases, when writing YLEN bits of `{cs1}`, if any <<section_cap_integrity,integrity>> checks fail then set the {ctag} to zero before writing to the CSR.
+NOTE: Any <<ylen_csrs, YLEN-bit>> CSRs may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
+ifdef::cheri_standalone_spec[]
+These rules are shown in <<extended_CSR_writing_u>>, <<extended_CSR_writing_s>>, and <<extended_CSR_writing_m>>.
+endif::[]
+ifndef::cheri_standalone_spec[]
+These rules are shown in <<extended_CSR_writing_u>>, and there are further references in the _Privileged Specification_.
+endif::[]
++
+If {cheri_default_ext_name} is implemented, and the current mode is {cheri_int_mode_name}, writes to natively XLEN-bit CSRs are XLEN bits and the final write data is determined using the semantics of the <<SCADDR>> instruction.
 
 Permissions::
 Accessing CSRs may require <<asr_perm>>.
