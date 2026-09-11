@@ -1,20 +1,20 @@
 [#rv64y_cap_description, reftext="{rv64y_uni_base_name}"]
 == The {rv64y_uni_base_name} Capability Base for {cheri_base64_ext_name}
 
-This section describes the in-memory format and properties of the capability encoding intended for {cheri_base64_ext_name}.
+This section describes the in-memory representation and properties of the capability-encoding format intended for {cheri_base64_ext_name}.
 
 NOTE: The format is closely modeled upon features from CHERI v9 cite:[cheri-v9-spec], and the bounds encoding scheme is based upon CHERI Concentrate cite:[woodruff2019cheri].
 
 [#section_cap_encoding64]
-=== Capability Encoding
+=== Capability-Encoding Format
 
-.Capability encoding for {rv64y_uni_base_name}
+.Capability-encoding format for {rv64y_uni_base_name}
 [#cap_encoding_xlen64]
 include::img/cap-encoding-xlen64.edn[]
 
 NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
 
-The encoding diagram above of the capability encoding format includes some fields which depend upon the presence of extensions:
+The encoding diagram above of the capability-encoding format includes some fields which depend upon the presence of extensions:
 
 <<section_cheri_hybrid_ext>>::
 When <<section_cheri_hybrid_ext>> is implemented
@@ -29,11 +29,11 @@ When <<section_zylevels1>> is implemented:
 
 The bit ranges in <<cap_encoding_xlen64_field_table>> are relative to the XLEN-bit metadata, i.e., the upper half of the in-memory representation.
 
-.{rv64y_uni_base_name} capability encoding format metadata fields
+.{rv64y_uni_base_name} capability-encoding format metadata fields
 [#cap_encoding_xlen64_field_table,width="100%",options=header,cols="1,1,4"]
 |==============================================================================
 | Field      | Bit range | Comment
-| SDP        | 63:60     | <<SDP-field64, Software Defined Permissions>>.
+| SDP        | 63:60     | <<SDP-field64, Software-Defined Permissions>>.
 | AP         | 52:45     | <<AP-field, Architectural Permissions>>, see <<cap_perms_encoding64>>.
 | P          | 44        | <<p_bit, Pointer Mode>> (<<section_cheri_hybrid_ext>> only).
 | GL         | 43        | <<zylevels1_gl_flag, Global (GL) flag>> (<<section_zylevels1>> only).
@@ -48,9 +48,9 @@ The bit ranges in <<cap_encoding_xlen64_field_table>> are relative to the XLEN-b
 
 NOTE: T[13:12], T[2:0] and B[2:0] are not specified by the metadata fields and are calculated as shown in <<section_cap_bounds_decoding>>.
 
-==== Capability Encoding Parameter Summary
+==== Capability-Encoding Format Parameter Summary
 
-.{rv64y_uni_base_name} capability encoding format parameters
+.{rv64y_uni_base_name} capability-encoding format parameters
 [#rvy64_uni_base_name_param_summary,width="100%",options=header,cols="1,1,4"]
 |==============================================================================
 | Parameter   | Default Value        | Comment
@@ -59,10 +59,11 @@ NOTE: T[13:12], T[2:0] and B[2:0] are not specified by the metadata fields and a
 | CAP_MAX_E   | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8    | 0                    | Whether the encoding format includes the `L~8~` bit
 | AP_MAX      | All ones             | Value of the <<AP-field>> giving maximum permissions
-| AP_ENC      | full1_rv64ya_1       | Encoding scheme for the <<AP-field>> - all combinations are representable
-| AUIPC_SHIFT | 12                   | Shift distance of the immediate in AUIPC
+| AP_ENC      | full1                | Encoding scheme for the <<AP-field>> - all combinations are representable
 | REP_RANGE   | rc1                  | Whether out of bounds addresses are representable
 |==============================================================================
+
+NOTE: All values in <<rvy64_uni_base_name_param_summary>> match the default values specified in <<cap_encoding_param_default_summary>>.
 
 .{rv64y_uni_base_name} extension summary
 [#rvy64_uni_base_name_ext_summary,width="100%",options=header,]
@@ -103,13 +104,13 @@ NOTE: Future extensions which define new permissions must augment <<cap_perms_en
 
 There are 9 bits in total allocated to the <<AP-field>> and the <<p_bit>>.
 
-* The total valid combinations of C, W, R, LM, LG and SL are 18.
-* The total valid combinations of X, ASR and P are 5.
+* The total valid combinations of C, W, R, LM, LG, and SL are 18.
+* The total valid combinations of X, ASR, and P are 5.
 * The two groups are fully orthogonal.
 
 Therefore there are 90 valid combinations encoded in 9-bits.
 
-Future extensions or capability encoding formats may leverage these reserved patterns to implement a more compact joint <<AP-field>> and <<p_bit>> encoding that is fully _compatible for all software_ to increase the number of reserved bits.
+Future extensions or capability-encoding formats may leverage these reserved patterns to implement a more compact joint <<AP-field>> and <<p_bit>> encoding that is fully _compatible for all software_ to increase the number of reserved bits.
 
 // The existing encoding is not dense but is beneficial for the timing of reading capability data from data caches, as an implicit <<CLRPERM>> is required to filter loaded permissions.
 // The current encoding removes the need to unpack and repack permissions, which a more compact encoding is likely to need.
@@ -179,8 +180,6 @@ value of 0 represents CAP_MAX_E, and CAP_MAX_E represents 0 from the previous
 specification.
 endif::[]
 
-This bounds encoding scheme is based upon cite:[woodruff2019cheri].
-
 The bounds encode the _base_ and _top_ addresses that constrain memory accesses.
 The capability can be used to access any memory location A in the range base
 {le} A < top. The bounds are encoded in a compressed format, so it is not
@@ -201,18 +200,18 @@ The variables related to the bounds decoding are shown in <<rvy64_uni_base_name_
 | BE        | Value either substituted into the exponent or the _base_ bound address depending on EF.
 | E         | Exponent that determines the position at which T and B are substituted into the capability's address.
 | L~8~^1^   | Value used to form either the MSB of the exponent or the MSB of the _top_ bound address.
-| EF        | Exponent format flag indicating the encoding for T, B and E: +
+| EF        | Exponent format flag indicating the encoding for T, B, and E: +
 EF=0: The exponent is calculated from TE and BE, and conditionally L8, so it is 'internal'. +
-EF=1: The exponent is zero; TE, BE and L8 form part of the address bounds.
+EF=1: The exponent is zero; TE, BE, and L8 form part of the address bounds.
 |==============================================================================
 
 ^1^ Only valid if `enableL8=1`.
 
 The variables in <<rvy64_uni_base_name_bndsenc_param_summary>> are either taken directly from the capability metadata (see <<cap_encoding_xlen64_field_table>>) or, in the case of the upper and lower bits of `T` and `B`, are calculated from it.
-They are used as shown in the <<bounds_variable_usage,pseudo-code>> below.
+These variables are used as shown in the <<bounds_variable_usage,pseudo-code>> below.
 
 The bit widths of `T` and `B` are defined in terms of the mantissa width (`MW`) which
-is set depending on capability encoding as shown in
+is set depending on capability-encoding format as shown in
 xref:rvy64_uni_base_name_param_summary[xrefstyle=short].
 
 The exponent `E` indicates the position of `T` and `B` within the capability's
@@ -229,15 +228,13 @@ The values of `EW` and `CAP_MAX_E` are shown in
 xref:rvy64_uni_base_name_param_summary[xrefstyle=short].
 
 NOTE: The address and bounds must be representable in valid capabilities i.e.,
-when the {ctag} is set (see xref:section_cap_malformed[xrefstyle=short]).
+when the {ctag} is set to one (see xref:section_cap_malformed[xrefstyle=short]).
 
 [#section_cap_bounds_decoding]
 ===== Calculation of Variables
 
-The metadata is encoded in a compressed format termed CHERI Concentrate cite:[woodruff2019cheri]. It
-uses a floating point representation to encode the bounds relative to the
-capability address. The following subsections describe how the _base_ and _top_
-bounds are decoded from the metadata.
+The metadata uses a floating-point representation to encode the compressed bounds relative to the capability address.
+The following subsections describe how the _base_ and _top_ bounds are decoded from the metadata.
 
 The pseudocode below is normative.
 In this notation, `/` means "integer division", `[]` are the bit-select operators, `{}` is bit concatenation, `?:` is the conditional operator, and arithmetic is signed.
@@ -266,7 +263,7 @@ In the pseudo-code below:
 
 * `EF`, `T`, `TE`, `B` and `BE` are all encoded in the capability metadata, see <<cap_encoding_xlen64_field_table>>
 ** `L8` is also a capability metadata field but only encoded if `enableL8=1`.
-* `EW`, `MW`, `CAP_MAX_E` and `enableL8` are all capability encoding format parameters, see <<rvy64_uni_base_name_param_summary>>.
+* `EW`, `MW`, `CAP_MAX_E` and `enableL8` are all capability-encoding format parameters, see <<rvy64_uni_base_name_param_summary>>.
 * `LCout` and `LMSB` are intermediate values used to reconstitute the top two bits of `T`, see below.
 
 [source]
@@ -346,7 +343,7 @@ include ranges which may not be present when the bounds are decoded:
 * If `E+MW>XLEN` then neither top section exists, and so the bounds are calculated
  with no dependency on the address field _a_.
 
-The compressed bounds encoding allows the address to roam over the _representable range_, (`space~R~` in <<cap_bounds_map>> and <<capformat_correction_illustration>>), while maintaining the original bounds.
+The compressed bounds encoding allows the address to roam over the _representable range_, (`range~R~` in <<cap_bounds_map>> and <<capformat_correction_illustration>>), while maintaining the original bounds.
 The overall effect is that the address can roam at least `2^E+MW^/4` bytes below the _base_ bound address and at least `2^E+MW^/4` bytes above the _top_ bound address while still allowing the bounds to be correctly decoded.
 
 [#section_cap_bounds_correction_factors, reftext="Correction Factors"]
@@ -450,7 +447,7 @@ equivalent to _base_=0 and _top_{ge}2^XLEN^.
 
 A capability is _malformed_ if its bounds cannot be correctly decoded.
 The following check indicates whether a capability is malformed.
-If `enableL8=1` the `L~8~` bit is available in the capability encoding format for extra precision when `EF=1`.
+If `enableL8=1` the `L~8~` bit is available in the capability-encoding format for extra precision when `EF=1`.
 
 [source]
 ----
@@ -615,7 +612,7 @@ The exponent value causes its bounds to cover the entire address space, but no p
 | Reserved | zeros  | All reserved fields
 |==============================================================================
 
-^1^ Only present if `enableL8=1` as defined by the capability encoding format.
+^1^ Only present if `enableL8=1` as defined by the capability-encoding format.
 
 Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed absent in NULL capabilities.
 
@@ -645,7 +642,7 @@ This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capabil
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-^1^ Only present if `enableL8=1` as defined by the capability encoding format.
+^1^ Only present if `enableL8=1` as defined by the capability-encoding format.
 
 ^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
  If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
