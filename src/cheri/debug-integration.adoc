@@ -28,7 +28,7 @@ When a capability is written via an abstract command it must be derivable from t
 If not then the destination {ctag} is set to zero.
 
 NOTE: If there is only a single root capability, then the derivable check is a _capability subset_ of the written capability against the capability in <<drootc>>.
- If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability encoding format.
+ If there are multiple root capabilities then checks against multiple root capabilities may be required, as defined by the capability-encoding format.
 
 NOTE: For the capability subset: `cap2` is the capability being written and `cap1` is the value of <<drootc>>.
 
@@ -83,7 +83,7 @@ If `write=1` and `aamsize{ne}7` then {ctag}s are always written as zero.
 
 If a Program Buffer is implemented, this section shows how it can be configured and used to access the {ctag}s.
 
-The minimum Program Buffer configuration to support {ctag} access in general purpose registers is as follows:
+The minimum Program Buffer configuration to support {ctag} access in general-purpose registers is as follows:
 
 * `hartinfo` must be implemented.
 * `hartinfo.nscratch` is at least 1 and the <<dscratch0_y>> register is implemented.
@@ -92,7 +92,7 @@ The minimum Program Buffer configuration to support {ctag} access in general pur
 
 [NOTE]
 ====
-These requirements allow a debugger to read and write {ctag}s in general purpose registers without disturbing other registers.
+These requirements allow a debugger to read and write {ctag}s in general-purpose registers without disturbing other registers.
 These requirements may be relaxed if _Access Register_ abstract commands support full capability access.
 ====
 
@@ -147,7 +147,7 @@ no way to discover the former property.
 
 [NOTE]
 ====
-Accessing capabilities held in general purpose registers is a foundational operation that
+Accessing capabilities held in general-purpose registers is a foundational operation that
 allows for more complex debugger accesses.
 
 If the full capability access via _Access Register_ abstract command is not
@@ -158,7 +158,7 @@ through the Program Buffer.
 Analogously, if the full capability access is not available through the _Access Memory_ abstract command, the debugger may access capabilities in memory indirectly
 by executing `ly` and `sy` instructions via the Program Buffer.
 
-Any general purpose registers that serve as temporaries during these operations
+Any general-purpose registers that serve as temporaries during these operations
 must be saved by the debugger before use and restored afterwards.
 ====
 
@@ -188,14 +188,12 @@ to this specification. The `pc` metadata has no architectural effect in debug
 mode. Therefore, `ASR-permission` is implicitly granted for access to all CSRs for
 instruction execution.
 
-On debug mode entry, <<dpc_y>> is updated with the
-capability in the `pc`, whose address field equals to the address of the next
-instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
+On debug mode entry, <<dpc_y>> is updated with the capability in the `pc`, whose address field equals to the address of the next instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
 
-When leaving debug mode, the value in <<dpc_y>> is unsealed if it is a {sentry_cap_uc} and is written to PC.
+When leaving debug mode, the value in <<dpc_y>> is unsealed if it is a {sentry_cap_uc} and is written to the `pc`.
 
-NOTE: A debugger may write <<dpc_y>> to change where the hart resumes and its mode, permissions, sealing or bounds.
- The value saved from the `pc` on debug mode entry cannot be sealed.
+NOTE: A debugger may write <<dpc_y>> to change where the hart resumes and its mode, permissions, sealing, or bounds.
+The value saved from the `pc` on debug mode entry cannot be sealed.
 
 The legalization of <<dpc_y>> follows the same rules described for `mepc`.
 
@@ -232,7 +230,7 @@ The reset value is `0`, which must cause <<drootc>> to expose a
 Root Executable capability.
 
 Other capability values may be defined for exposure through <<drootc>>
-by the capability encoding,
+by the capability-encoding format,
 and may be selected by having the debugger write to this register.
 Writes are WARL, so the debugger may confirm that its selection has been applied.
 

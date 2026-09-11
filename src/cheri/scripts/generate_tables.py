@@ -736,12 +736,6 @@ if __name__ == "__main__":
         # extensions = list(sorted(set(row[1] for row in rows)))
         tables = [
             InsnTable(
-                extension="Zabhlrsc",
-                filename=output_file(args, "Zabhlrsc_insns_table_body.adoc"),
-                header=header,
-                other_cols=["Function"],
-            ),
-            InsnTable(
                 extension="{cheri_base_ext_name}",
                 filename=output_file(args, "RVY_insns_table_body.adoc"),
                 header=header,

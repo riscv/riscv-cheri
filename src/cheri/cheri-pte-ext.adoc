@@ -2,7 +2,7 @@
 [#section_cheri_priv_crg_ext]
 == "{cheri_priv_crg_ext}" Extension, Version 1.0 for {cheri_base64_ext_name}
 
-This extension specifies use of the {rv64y_pte4_field_name} field in the Sv39, Sv48 and Sv57 PTE formats (e.g., see <<sv39pte>>).
+This extension specifies use of the {rv64y_pte4_field_name} field in the Sv39, Sv48, and Sv57 PTE formats (e.g., see <<sv39pte>>).
 
 ifdef::cheri_standalone_spec[]
 
@@ -70,7 +70,7 @@ Therefore `sstatus.{pte_cap_fc_enable}` is not required to change dynamically an
 When all of the following are true, {cheri_priv_crg_ext} adds two related architectural features, {cheri_excep_name_pte_ld}s and Capability Dirty Tracking:
 
 . `sstatus.{pte_cap_fc_enable}` is set.
-. The authorizing capability has <<c_perm>>.
+. The authorizing capability grants <<c_perm>>.
 . The PMA is set to _CHERI {ctag_title}_.
 
 NOTE: It may make sense to subdivide this into two extensions as _Capability Dirty Tracking_ is more generally useful than _{cheri_excep_name_pte_ld}s_.
@@ -79,19 +79,19 @@ NOTE: It may make sense to subdivide this into two extensions as _Capability Dir
 
 _pte_._{pte_cap_r_name_lc}_ and _pte_._{pte_cap_crg_pte_name_lc}_ control whether capability loads or AMOs write the loaded {ctag} to `{cd}`.
 
-When _pte_._{pte_cap_r_name_lc}_ is clear, _pte_._{pte_cap_crg_pte_name_lc}_ selects the behavior of capability loads:
-if _pte_._{pte_cap_crg_pte_name_lc}_ is clear, the loaded {ctag} is written to `{cd}` as zero; if _pte_._{pte_cap_crg_pte_name_lc}_ is set, the load operates as normal.
+When _pte_._{pte_cap_r_name_lc}_ is set to zero, _pte_._{pte_cap_crg_pte_name_lc}_ selects the behavior of capability loads:
+if _pte_._{pte_cap_crg_pte_name_lc}_ is set to zero, the loaded {ctag} is written to `{cd}` as zero; if _pte_._{pte_cap_crg_pte_name_lc}_ is set to one, the load operates as normal.
 
-When _pte_._{pte_cap_r_name_lc}_ is set, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value that is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
+When _pte_._{pte_cap_r_name_lc}_ is set to one, _pte_._{pte_cap_crg_pte_name_lc}_ can be used to trap on capability loads or AMOs when it does not match the Capability Read Generation value that is represented by the value of `sstatus.U{pte_cap_crg_pte_name}` for userspace pages (_pte_._u=1_) or `sstatus.S{pte_cap_crg_pte_name}` for kernel pages (_pte_._u=0_).
 
 The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the rules above, all of the following are true:
 
 . A capability load or AMO is executed.
-. _pte_._{pte_cap_r_name_lc}_ is set.
+. _pte_._{pte_cap_r_name_lc}_ is set to one.
 . if _pte_._u=1_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.U{pte_cap_crg_pte_name}`.
 . if _pte_._u=0_, _pte_._{pte_cap_crg_pte_name_lc}_ does not equal `sstatus.S{pte_cap_crg_pte_name}`.
-. The loaded {ctag} is set, unless the implementation traps conservatively^1^.
-. Any other platform specific rules have not forced the loaded {ctag} to be clear.
+. The loaded {ctag} is set to one, unless the implementation traps conservatively^1^.
+. Any other platform specific rules have not forced the loaded {ctag} to be set to zero.
 
 ^1^ Implementations that trap conservatively may raise the fault regardless of the value of the loaded {ctag}, as shown in <<pte_rvy_load_summary>>.
 
@@ -101,7 +101,7 @@ The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the r
 Checking the value of the {ctag} requires taking data dependent exceptions on loaded capabilities for loads or AMOs.
 Ideally all implementations would trap precisely (taking the {ctag} into account in all cases) rather than conservatively (trapping more often, potentially on every loaded capability).
 However, the loaded {ctag} may not be available in all implementations when determining whether to raise the exception, and therefore flexibility is permitted.
-As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set, potentially resulting in spurious traps from pages that have _pte_._{pte_cap_r_name_lc}=1_, and so are likely to store valid capabilities.
+As a result, the software is required to be tolerant of raising the trap when the {ctag} is not set to one, potentially resulting in spurious traps from pages that have _pte_._{pte_cap_r_name_lc}=1_, and so are likely to store valid capabilities.
 
 Implementations that already take synchronous traps on loaded data, such as ECC faults, are recommended to check the loaded {ctag} when determining whether to raise the fault.
 
@@ -132,19 +132,19 @@ NOTE: In the case of AMOs that could trigger both a {cheri_excep_name_pte_st}, d
 [#sec_cap_dirty_tracking,reftext="Capability Dirty Tracking"]
 === Capability Dirty Tracking
 
-When _pte_._{pte_cap_w_name_lc}_ is clear, capability stores or AMOs where the to-be-stored {ctag} is set will raise a {cheri_excep_name_pte_st}.
+When _pte_._{pte_cap_w_name_lc}_ is set to zero, capability stores or AMOs where the to-be-stored {ctag} is set to one will raise a {cheri_excep_name_pte_st}.
 
-When _pte_._{pte_cap_w_name_lc}_ is set, capability stores to the virtual page are permitted.
-In addition, the _pte_._{pte_cap_dirty_name_lc}_ bit indicates that a capability was stored to the virtual page since the last time the _pte_._{pte_cap_dirty_name_lc}_ bit was cleared.
+When _pte_._{pte_cap_w_name_lc}_ is set to one, capability stores to the virtual page are permitted.
+In addition, the _pte_._{pte_cap_dirty_name_lc}_ bit indicates that a capability was stored to the virtual page since the last time the _pte_._{pte_cap_dirty_name_lc}_ bit was cleared to zero.
 
 NOTE: This is equivalent to the behavior of the _pte_._d_ bit except that _pte_._{pte_cap_dirty_name_lc}_ only tracks stores of valid capabilities instead of _all_ stores.
 
 Capability dirty tracking behavior is enabled when, in addition to the rules above, all of the following are true:
 
 . A capability store or AMO instruction is executed.
-. The to-be-stored {ctag} is set.
-. _pte_._{pte_cap_w_name_lc}_ is set.
-. _pte_._{pte_cap_dirty_name_lc}_ is clear.
+. The to-be-stored {ctag} is set to one.
+. _pte_._{pte_cap_w_name_lc}_ is set to one.
+. _pte_._{pte_cap_dirty_name_lc}_ is set to zero.
 
 Two schemes for capability dirty tracking are permitted, and the scheme in use is determined by whether the _Svade_ or _Svadu_ extensions are enabled.
 
@@ -169,9 +169,9 @@ hardware _pte_._{pte_cap_dirty_name_lc}_ update (_Svadu_)
 ^1^ The to-be-stored {ctag}.
 
 The capability dirty tracking is resolved during memory translation, but there are cases where it is not known if there will be a {ctag} stored to memory or not at this point.
-Capability dirty tracking _must_ be triggered when _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_dirty_name_lc}_=0 and the to-be-stored {ctag} is set, and _may_ be triggered in the following case where it is not known if there will be a stored {ctag} during translation:
+Capability dirty tracking _must_ be triggered when _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_dirty_name_lc}_=0 and the to-be-stored {ctag} is set to one, and _may_ be triggered in the following case where it is not known if there will be a stored {ctag} during translation:
 
-* SC{LD_ST_DOT_CAP} triggers capability dirty tracking if the {ctag} is set in {cs2}, even if the store fails.
+* SC{LD_ST_DOT_CAP} triggers capability dirty tracking if the {ctag} is set to one in {cs2}, even if the store fails.
   This matches the semantics of SC.* with regard to _pte_._d_.
 
 [NOTE]
@@ -185,7 +185,7 @@ In this case, the _pte_._{pte_cap_dirty_name_lc}_ bit would still be set.
 Future AMOs fall into this category:
 
 * For future AMOCAS{LD_ST_DOT_CAP}, it is not known whether the store will happen until the load has executed, and the compare has been done.
-  Therefore, AMOCAS{LD_ST_DOT_CAP} is likely to trigger capability dirty tracking if the {ctag} is set in {cs2}.
+  Therefore, AMOCAS{LD_ST_DOT_CAP} is likely to trigger capability dirty tracking if the {ctag} is set to one in {cs2}.
 * For future AMOADD{LD_ST_DOT_CAP}, the stored {ctag} depends upon the loaded {ctag} which is not known during translation and on the execution of the {CADD}.
  Therefore, AMOADD{LD_ST_DOT_CAP}, is likely to always trigger capability dirty tracking.
 
@@ -196,4 +196,53 @@ Checking the stored {ctag} is less of a burden to the implementation than checki
 
 NOTE: Capability dirty tracking may be used to implement the store-barrier primitive from cite:[cornucopia-reloaded].
 
-NOTE: The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1 and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
+NOTE: The minimum level of PTE support is to set _pte_._{pte_cap_r_name_lc}_=1, _pte_._{pte_cap_dirty_name_lc}_=1, _pte_._{pte_cap_w_name_lc}_=1, and _pte_._{pte_cap_crg_pte_name_lc}_=0 in all PTEs intended for storing capabilities (e.g., private anonymous mappings) and set `sstatus.U{pte_cap_crg_pte_name}`=0 and `sstatus.S{pte_cap_crg_pte_name}`=0 on all harts, which will enable capabilities to be loaded and stored successfully.
+
+[[sv32algorithm_rvy]]
+=== Virtual Address Translation Process
+
+NOTE: This section is copied and modified from the standard translation process.
+ Step 7 is added to support processing of the RVY field and step 10 is modified to include capability dirty tracking (_pte_._{pte_cap_dirty_name_lc}_). +
+ The intention is to merge these into the main text in the privileged manual, not to maintain a standalone copy like this.
+ The added text is in *bold* to make it easy to identify.
+
+A virtual address _va_ is translated into a physical address _pa_ as follows:
+
+. Let _a_ be ``satp``.__ppn__×PAGESIZE, and let __i__=LEVELS-1. (For Sv32, PAGESIZE=2^12^ and LEVELS=2.) The `satp` register must be
+_active_, i.e., the effective privilege mode must be S-mode or U-mode.
+
+. Let _pte_ be the value of the PTE at address __a__+__va__.__vpn__[__i__]×PTESIZE. (For Sv32, PTESIZE=4.)  If accessing _pte_ violates a PMA or PMP check, raise an access-fault exception corresponding to the original access type.
+
+. If _pte_._v_=0, or if _pte_._r_=0 and _pte_._w_=1, or if any bits or encodings that are reserved for future standard use are set within _pte_, stop and raise a page-fault exception corresponding to the original access type.
+
+. Otherwise, the PTE is valid. If __pte__.__r__=1 or __pte__.__x__=1, go to step 5. Otherwise, this PTE is a pointer to the next level of the page table. Let __i=i__-1. If __i__<0, stop and raise a page-fault exception corresponding to the original access type. Otherwise, let
+__a__=__pte__.__ppn__×PAGESIZE and go to step 2.
+
+. A leaf PTE has been reached. If _i>0_ and _pte_._ppn_[__i__-1:0] ≠ 0, this is a misaligned superpage; stop and raise a page-fault exception corresponding to the original access type.
+
+. Determine if the requested memory access is allowed by the _pte_._u_ bit, given the current privilege mode and the value of the SUM and MXR fields of the *mstatus* register. If not, stop and raise a page-fault exception corresponding to the original access type.
+
+. *For {cheri_base64_ext_name} only: determine if the requested capability store is allowed by the _pte_._{rv64y_pte4_field_name_lc}_ field. If not, stop and raise a {cheri_excep_name_pte_st} exception.*
+
+. Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits, given the Shadow Stack Memory Protection rules. If not, stop and raise an access-fault exception.
+
+. Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits. If not, stop and raise a page-fault exception corresponding to the original access type.
+
+. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, *or if the original memory access is a capability store with the to-be-stored {ctag} set and _pte_._{pte_cap_dirty_name_lc}_=0^1^*:
+
+* If the Svade extension is implemented, stop and raise a page-fault exception corresponding to the original access type.
+* If a store to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE would violate a PMA or PMP check,
+raise an access-fault exception corresponding to the original access
+type.
+* Perform the following steps atomically:
+** Compare _pte_ to the value of the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
+** If the values match, set _pte_._a_ to 1 and, if the
+original memory access is a store, also set _pte_._d_ to 1, *and if the original memory access is a capability store with the to-be-stored {ctag} set, also set _pte_._{pte_cap_dirty_name_lc}_ to 1*. Then store _pte_ to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE.
+** If the comparison fails, return to step 2.
+. The translation is successful. The translated physical address is
+given as follows:
+* _pa.pgoff_ = _va.pgoff_.
+* If _i_>0, then this is a superpage translation and __pa.ppn__[__i__-1:0] = __va.vpn__[__i__-1:0].
+* _pa.ppn_[LEVELS-1:__i__] = _pte_._ppn_[LEVELS-1:__i__].
+
+*^1^ If {cheri_priv_crg_ext} is enabled ({cheri_base64_ext_name} only), then this condition causes capability dirty tracking.*
