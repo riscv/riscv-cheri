@@ -835,7 +835,11 @@ When accessing CSRs these rules are followed:
 . Accesses to <<xlen_csrs>> are as specified by Zicsr
 . Accesses to <<ylen_csrs>> using CSRRW will:
 .. Read YLEN bits
+<<<<<<< HEAD
 .. Write YLEN bits, and will invalidate the written capability if it fails any <<section_cap_integrity, integrity>> checks or cannot be written unmodified due to WARL fields.
+=======
+.. Write YLEN bits, and will invalidate the written capability if it fails any <<section_cap_integrity, integrity>> checks.
+>>>>>>> df8795af (BASELINE: SQUASHED PR 1248)
 . Accesses to <<ylen_csrs>> using instructions other than CSRRW will:
 .. Read YLEN bits
 .. For CSRRS/CSRRC, compute the XLEN-bit address field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN source operand.
