@@ -123,8 +123,6 @@ def generate_adoc():
                     base_f7 = top_val << shift
                     for offset in range(1 << shift):
                         f7 = base_f7 + offset
-                        if "shamt=XLEN" in i.name and f7 != 0:
-                            continue
                         matching_f7s.append(f7)
 
             for f7 in matching_f7s:
