@@ -631,9 +631,10 @@ NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability-en
 CHERI defines the following integrity check rules:
 
 . The bounds are not malformed (a capability encoding format-specific check; see xref:section_cap_malformed[xrefstyle=short] for {rv64y_uni_base_name}).
-. The capability metadata does not have any bits, or fields, set to a reserved value.
+. The capability metadata does not have any bits, or fields, set to a value reserved by the implemented extensions.
 
 NOTE: An example of a reserved field value is an illegal set of permissions such as <<asr_perm>> without <<x_perm>>.
+Future extensions may allocate values that are reserved in {cheri_base_ext_name}; capabilities using those values will fail integrity checks on harts that do not implement that extension.
 
 If any of the above rules do not hold for a capability with the {ctag} set to one, it indicates either:
 
