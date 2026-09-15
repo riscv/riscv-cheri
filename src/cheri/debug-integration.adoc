@@ -56,15 +56,15 @@ All other bits in that `data` register are UNSPECIFIED.
 
 ===== Access Register Command
 
-When a YLEN-wide register is accessible via an _Access Register_ abstract command, then:
+When a YLEN-bit register is accessible via an _Access Register_ abstract command, then:
 
 - Reads of YLEN bits and any smaller amounts of bits must be supported.
 - Writes of YLEN bits must be supported.
 - Writes of smaller amounts of bits than YLEN may optionally be supported but it is UNSPECIFIED what happens to the higher bits.
 
-NOTE: The debugger can change the low XLEN bits of a YLEN-wide register by performing a read-modify-write sequence.
+NOTE: The debugger can change the low XLEN bits of a YLEN-bit register by performing a read-modify-write sequence.
 
-The requirement to support YLEN-wide access mandates that enough `data<n>` registers are implemented to cover the entire YLEN bit-width (at least 2 for {cheri_base32_ext_name} or at least 4 for {cheri_base64_ext_name}).
+The requirement to support YLEN-bit access mandates that enough `data<n>` registers are implemented to cover the entire YLEN-bit-width (at least 2 for {cheri_base32_ext_name} or at least 4 for {cheri_base64_ext_name}).
 
 Implementations can also choose to support accessing full capabilities, including the {ctag}s, as part of the Access Register command by supporting `aarsize=7`.
 
@@ -331,7 +331,7 @@ include::{generated_dir}/csr_alias_action_d_table_body.adoc[]
 
 Code pointers and data pointers in <<CSR_exevectors_d>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to invalid address conversion on writing.
 
-.YLEN-wide Debug-Mode CSRs storing code pointers or data pointers
+.YLEN-bit Debug-Mode CSRs storing code pointers or data pointers
 [#CSR_exevectors_d]
 [width="100%",options=header,cols="1,1,1,1,1"]
 |==============================================================================
