@@ -162,6 +162,8 @@ NOTE: Examples of such invalid operations include writing only the integer porti
 The implementation must set the {ctag} to zero if any byte in the naturally aligned YLEN-bit memory region is ever written using an operation other than a store of a capability operand.
 For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, including `{cs2}` 's {ctag} being set to one, but <<ldst,SW>> will always set the stored {ctag} to zero.
 
+A failed SC will leave the {ctag} in memory unmodified.
+
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
 
 [#sec_cap_bounds_overview]
