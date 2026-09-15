@@ -931,7 +931,7 @@ The following occurs when executing code in a privilege mode that has CHERI disa
 
 * Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces
 ** Therefore, {cheri_base_ext_name} instructions are no longer available.
-* No natively YLEN CSRs are available.
+* No CSRs added by {cheri_base_ext_name} are available.
 * Only XLEN CSR access is permitted.
 ** This is identical to {cheri_int_mode_name} access.
 
@@ -954,8 +954,8 @@ xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart 
 |==============================================================================
 |                                      | {CRE}^1^=0        | {CRE}=1, P-bit={int_mode_value} | {CRE}=1, P-bit={cap_mode_value}
 | Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
-| Natively YLEN CSRs available         | ✘                 | ✔                     | ✔
-| Extended YLEN CSR access width       | XLEN              | XLEN                  | YLEN
+| {cheri_base_ext_name} CSRs available | ✘                 | ✔                     | ✔
+| Widened CSR access width             | XLEN              | XLEN                  | YLEN
 | 16-bit {cheri_base_ext_name} instructions available  | ✘                 | ✘                     | ✔
 | Wider {cheri_base_ext_name} instructions available   | ✘                 | ✔                     | ✔
 | _custom-1/2/3_ available for custom use| ✔                 | ✘                     | ✘
