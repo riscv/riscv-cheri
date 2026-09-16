@@ -141,10 +141,13 @@ For capability loads and stores, provenance is preserved across memory:
 When a memory access fails a check, either due to software error or malicious intent, the operation raises an exception.
 For other instructions a failed check will typically set the resulting {ctag} to zero, the exact behavior is defined by each instruction.
 
-For a capability to be valid, the {ctag} must be set to one, otherwise a capability is invalid.
+* Valid capabilities have the {ctag} set to one.
+** The term _validating a capability_ means deriving a new capability with the {ctag} set to one.
+* Invalid capabilities have the {ctag} set to zero.
+** The term _invalidating a capability_ means deriving a new capability with the {ctag} set to zero.
 
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
-All capabilities derived from invalid capabilities are themselves invalid, i.e., their {ctag}s are zero.
+All capabilities derived from invalid capabilities are themselves invalid.
 
 NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be set to zero.
 When the {ctag} associated with the memory location is zero, the location contains non-capability data.
@@ -160,7 +163,7 @@ NOTE: Examples of such invalid operations include writing only the integer porti
 
 {ctag_cap}s are tracked through the memory subsystem: every naturally aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
 The implementation must set the {ctag} to zero if any byte in the naturally aligned YLEN-bit memory region is ever written using an operation other than a store of a capability operand.
-For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, including `{cs2}` 's {ctag} being set to one, but <<ldst,SW>> will always set the stored {ctag} to zero.
+For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, including `{cs2}` being a valid capability, but <<ldst,SW>> will always set the stored {ctag} to zero.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
 
@@ -294,7 +297,7 @@ ifndef::cheri_ratification_v1_only[All CHERI systems must support unsealed capab
 [#sealed_cap,reftext="sealed capability"]
 Sealed capabilities::
 Capabilities with `CT{ne}0` are sealed against modification and cannot be dereferenced to access memory.
-Instructions that operate on capabilities will produce a result with the {ctag} set to zero if the source capability is sealed and the operation would result in altered address, bounds, or permissions.
+Instructions that operate on capabilities will produce an invalid capability if the source capability is sealed and the operation would result in altered address, bounds, or permissions.
 ifndef::cheri_ratification_v1_only[Extensions that extend the capability metadata must describe their interaction(s) with sealed capabilities.]
 
 Sealing::
@@ -411,7 +414,7 @@ Future extensions and capability-encoding formats may declare new <<CT-field>> v
 ==== Architectural Permissions (AP)
 
 This metadata field encodes architecturally defined permissions of the capability.
-Permissions grant access subject to the <<cap_valid_tag>> being set to one, the capability being unsealed, and bounds checks passing.
+Permissions grant access subject to the capability being valid, the capability being unsealed, and bounds checks passing.
 
 NOTE: Any memory operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP, and PMAs, even if the capability grants sufficient permissions.
 
@@ -456,7 +459,7 @@ If <<c_perm>> is missing then the {ctag}s for capability loads and stores are re
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
 +
-The permission stripping behavior _only_ applies to loaded capabilities with their {ctag} set to one and that are not sealed after all other checks.
+The permission stripping behavior _only_ applies to valid loaded capabilities and that are not sealed after all other checks.
 This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure without making a copy.
@@ -567,7 +570,7 @@ Extensions introducing new permissions may require these to be provided by root 
 
 [#null-cap,reftext="NULL"]
 NULL Capability::
-A capability with all-zero metadata, its {ctag} set to zero, and an address of zero is referred to as the _NULL_ capability.
+An invalid capability with all-zero metadata and an address of zero is referred to as the _NULL_ capability.
 This capability grants no permissions and any dereference raises an exception.
 
 [#sec_cap_encoding_formats, reftext="capability-encoding format"]
@@ -636,7 +639,7 @@ CHERI defines the following integrity check rules:
 NOTE: An example of a reserved field value is an illegal set of permissions such as <<asr_perm>> without <<x_perm>>.
 Future extensions may allocate values that are reserved in {cheri_base_ext_name}; capabilities using those values will fail integrity checks on harts that do not implement that extension.
 
-If any of the above rules do not hold for a capability with the {ctag} set to one, it indicates either:
+If any of the above rules do not hold for a valid capability, it indicates either:
 
 * State corruption due to memory or logic faults, or
 * The presence of incompatible or faulty CHERI IP within the system.
@@ -712,7 +715,7 @@ The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA.
 A failing check raises a CHERI exception.
 
-* The {ctag} must be set to one.
+* The capability must be valid.
 * The capability must not be sealed.
 * The capability must grant <<x_perm>>.
 * All bytes of the instruction must be in bounds.
@@ -899,7 +902,7 @@ The definition is:
 . `cap2` 's base bound address is greater than or equal to `cap1` 's base bound address, and
 . `cap1` and `cap2` pass all <<section_cap_integrity,integrity>> checks
 
-NOTE: A capability whose {ctag} is set to one is assumed to satisfy the <<section_cap_integrity,integrity>> checks, so this rule can only affect the result for an operand whose {ctag} is set to zero.
+NOTE: A valid capability is assumed to satisfy the <<section_cap_integrity,integrity>> checks, so this rule can only affect the result for an operand whose {ctag} is set to zero.
 Among the instructions that use the subset relation, this is only material for the `{cs2}` operand of <<CBLD>> (which can set a {ctag} on an arbitrary bit pattern) and for <<SCSS>> (which can compare operands whose {ctag}s are set to zero).
 
 .Summary of {cheri_base_ext_name} instructions that create a modified capability
@@ -1076,7 +1079,7 @@ All load and store instructions behave as described in <<ldst>> with one fundame
 All load and store instructions authorized by `{cs1}` raise exceptions if any of these checks fail:
 
 * `{cs1}` must not be `{creg}0`^1^
-* The {ctag} (`{cs1}.tag`) must be set to one.
+* `{cs1}` must be valid.
 * `{cs1}` must be unsealed.
 ifdef::invalid_address_viol[]
 * The virtual address in `{cs1}` must not be invalid if virtual memory is enabled.
