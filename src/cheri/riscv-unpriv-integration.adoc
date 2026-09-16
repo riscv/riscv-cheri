@@ -668,7 +668,7 @@ Valid capabilities are guaranteed to satisfy all integrity rules unless hardware
 Integrity checks are therefore _optional_ by default: checking a valid capability never alters execution on a correctly functioning system.
 Only instructions that can take an arbitrary bit pattern which represents an invalid capability as an input and validate it _must_ perform an integrity check on the invalid capability.
 
-NOTE: In the {cheri_base_ext_name} ISA, this mandatory check only applies to <<CBLD>>.
+NOTE: In the {cheri_base_ext_name} ISA, this mandatory check only applies to the `{cs2}` input to <<CBLD>>.
 
 [NOTE]
 ====
@@ -679,6 +679,16 @@ Implementations may choose to enforce optional integrity checks for a number of 
 . If the hart implements additional reliability features, it may wish to detect and report capabilities which lack integrity.
 
 ====
+
+.Capability states
+[#table_cap_states,%autowidth,options=header,align="center",cols="2,1,4"]
+|=======================
+|State              |{ctag_table} | Description
+|Valid capability   | 1  | All integrity checks have passed.
+|Top overflow       | 1  | All integrity checks have passed, but a logic fault has caused an undetected top overflow.
+|Integrity fail     | 1  | Any fields are in a reserved state, or bounds are <<section_cap_malformed,malformed>>.
+|Invalid capability | 0  | The YLEN-bit payload is not considered to be a capability unless authorized by <<CBLD>>.
+|=======================
 
 === Extended State
 
