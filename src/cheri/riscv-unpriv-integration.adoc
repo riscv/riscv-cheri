@@ -788,9 +788,6 @@ When a WARL CSR is widened the metadata and {ctag} also become WARL.
 If the final written capability value cannot be written unmodified to the CSR due to WARL behavior then the capability value is considered to be _invalid_ and so must be written with its {ctag} set to zero.
 +
 NOTE: Examples of WARL behavior for metadata are implementations requiring all fields to be in a valid (non-reserved) state, and also to fix specific permissions to certain values.
-+
-WARNING: As _xepc_ CSRs are WARL, implementations should take care not to fix too many fields so that debug becomes difficult.
- For example, if the <<x_perm>> field is hardwired to one, then it may be hard to diagnose a fault caused by jumping to a <<pcc>> without <<x_perm>>, as the bit will read as one.
 
 [[ylen_csrs, YLEN-bit CSRs]]YLEN-bit CSRs::
 These are added by {cheri_base_ext_name} and contain pointers (e.g., <<utidc>>).
