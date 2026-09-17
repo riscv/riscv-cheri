@@ -23,7 +23,7 @@ from which it can derive a capability to access the data structures at the targe
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
 The `mtvec` register is widened to a capability.
-Its reset value is nominally a <<root-rx-cap>> capability.
+The suggested reset value is a <<root-rx-cap>> capability.
 
 NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of a <<root-rx-cap>> capability after reset.
 
@@ -80,7 +80,7 @@ include::img/mscratchcreg.edn[]
 ==== Machine Exception Program Counter Capability (mepc)
 
 The `mepc` register is widened to a capability.
-Its reset value is nominally a <<root-rx-cap>> capability.
+The suggested reset value is a <<root-rx-cap>> capability.
 
 .Machine exception program counter capability register
 include::img/mepccreg.edn[]
@@ -713,9 +713,9 @@ memory addresses must match for the address to be valid.
 
 The CSRs shown in xref:CSR_exevectors_m[xrefstyle=short] and xref:CSR_exevectors_s[xrefstyle=short], as well as the <<pcc>>, need not hold all possible invalid addresses.
 
-However, the bounds encoding of capabilities depends on the address value if the bounds are not infinite.
+However, the bounds encoding of capabilities depends on the address value if the bounds are not <<infinite_bounds,infinite>>.
 
-Therefore, if the bounds are not infinite, implementations must not convert an invalid address to a different invalid address, except as permitted by the rules in the following subsections.
+Therefore, if the bounds are not <<infinite_bounds,infinite>>, implementations must not convert an invalid address to a different invalid address, except as permitted by the rules in the following subsections.
 
 If the bounds could not be decoded due to the address being invalid, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
 
@@ -730,14 +730,14 @@ A CSR may be updated to hold a capability with an invalid address, due to:
 
 To ensure that the bounds of a valid capability cannot be corrupted:
 
-* If the new address is invalid and the capability bounds are not infinite then set the {ctag} to zero before writing to the CSR.
+* If the new address is invalid and the capability bounds are not <<infinite_bounds,infinite>> then set the {ctag} to zero before writing to the CSR.
 
 NOTE: When the new address is invalid and happens to match an invalid address which the CSR
 can hold, then it is implementation-defined whether to set the {ctag} to zero.
 
 ==== Branches and Jumps
 
-If the effective target address of the jump or branch is invalid, and the authorizing capability's bounds are not infinite, then set the {ctag} of the target <<pcc>> to zero.
+If the effective target address of the jump or branch is invalid, and the authorizing capability's bounds are not <<infinite_bounds,infinite>>, then set the {ctag} of the target <<pcc>> to zero.
 
 NOTE: A {cheri_excep_name_pc} exception will be raised at the target.
 
@@ -750,7 +750,7 @@ compatible with RISC-V harts provided that <<pcc>> and <<ddc>> are set to
 
 ==== Memory Accesses
 
-If the effective address of the memory access is invalid, and the authorizing capability's bounds are not infinite, then raise a {cheri_excep_name_ld} or {cheri_excep_name_st} exception because the bounds cannot be reliably decoded.
+If the effective address of the memory access is invalid, and the authorizing capability's bounds are not <<infinite_bounds,infinite>>, then raise a {cheri_excep_name_ld} or {cheri_excep_name_st} exception because the bounds cannot be reliably decoded.
 
 ifndef::cheri_standalone_spec[]
 
@@ -895,6 +895,11 @@ Instructions added by {cheri_base_ext_name}::
 Instructions added by {cheri_default_ext_name}::
   See the unprivileged manual for instructions added by {cheri_default_ext_name}.
 
+anchor:infinite_bounds[]
+
+Infinite bounds::
+Capabilities which allow access to every byte in memory have _infinite bounds_.
+
 endif::[]
 
 [#section_cheri_disable]
@@ -918,13 +923,13 @@ The effective CHERI-enable for the current privilege is:
 * Supervisor-mode: `<<menvcfg_y,menvcfg>>.{CRE}`
 * User-mode:       `<<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}`
 
-The reset values are:
+To allow standard RVI/RVE code to run at privilege levels below Machine-mode the registers are initialized as follows:
 
 * `<<menvcfg_y,menvcfg>>.{CRE}=0`
 * `<<senvcfg_y,senvcfg>>.{CRE}=0`
 * <<pcc>>.<<p_bit>>={INT_MODE_VALUE} (for {cheri_int_mode_name}).
-* <<ddc>> is nominally a <<root-rw-cap>> capability.
-* <<pcc>>, `__x__tvec`, `__x__epc` are nominally <<root-rx-cap>> capabilities.
+* <<ddc>> is at most the <<root-rw-cap>> capability.
+* <<pcc>>, `__x__tvec`, `__x__epc` are at most <<root-rx-cap>> capabilities.
 
 The following occurs when executing code in a privilege mode that has CHERI disabled:
 

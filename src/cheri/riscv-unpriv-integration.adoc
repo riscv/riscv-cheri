@@ -192,7 +192,7 @@ A compressed format is used to encode the bounds with a scheme similar to floati
 Therefore, small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 The standard bounds encoding format for {rv64y_uni_base_name} is based upon the compressed bounds encoding scheme cite:[woodruff2019cheri] and is defined in <<section_cap_bounds>>.
 
-NOTE: Future CHERI bases may use encoding formats with different bounds encoding schemes (see <<sec_cap_encoding_formats>>).
+NOTE: Future CHERI bases may use capability-encoding formats with different bounds encoding schemes (see <<sec_cap_encoding_formats>>).
 
 Software can query the bounds of a capability held in a general-purpose register using the following instructions:
 
@@ -201,6 +201,11 @@ Software can query the bounds of a capability held in a general-purpose register
 * The _top_ is returned by the <<GCTOP>> instruction.
 
 NOTE: The _length_ and _top_ are (XLEN+1)-bit values, so <<GCLEN>> and <<GCTOP>> saturate their result to the maximum XLEN-bit value (2^XLEN^-1) when it overflows an XLEN-bit register.
+
+anchor:infinite_bounds[]
+
+Infinite bounds::
+Capabilities which allow access to every byte in memory have _infinite bounds_.
 
 ==== Deriving New Bounds
 
@@ -545,32 +550,30 @@ NOTE: Software is completely free to define the usage of these bits.
 [#root-cap,reftext="Root"]
 ===== Root Capabilities
 
-_Root_ capabilities are the capability encodings for the maximum set of bounds, covering the whole 2^XLEN^ address space, and that grant all encodable permissions.
-
-Some capability-encoding formats like {rv64y_uni_base_name} provide the encoding for a single <<section_infinite_cap_encoding,Infinite>> capability which provides all the characteristics of root capabilities.
-
-Other capability-encoding formats may have a _set_ of root capabilities distinguishing between at least data and executable capabilities.
-
-NOTE: Future extensions may add additional root capabilties for purposes such as sealing and unsealing.
-To accommodate this <<root-rx-cap>> and <<root-rw-cap>> are defined below.
+_Root_ capabilities are the set of capability encodings for the maximum set of bounds, covering the whole 2^XLEN^ address space, and that grant all encodable permissions.
 
 [#root-rx-cap,reftext="Root Executable"]
 Root Executable Capability::
-An unsealed capability that has bounds covering all addresses
-and grants at least all of <<x_perm>>, <<r_perm>>, <<c_perm>>, <<lm_perm>>, and <<asr_perm>>.
-Extensions introducing new permissions may require these to be provided by root executable capabilities.
+An unsealed capability that has <<infinite_bounds,infinite bounds>> and grants at least all of <<x_perm>>, <<r_perm>>, <<c_perm>>, <<lm_perm>>, and <<asr_perm>>.
 
 [#root-rw-cap,reftext="Root Data"]
 Root Data Capability::
-An unsealed capability that has bounds covering all addresses
-and grants at least all of <<r_perm>>, <<w_perm>>, <<c_perm>>, and <<lm_perm>>.
-Extensions introducing new permissions may require these to be provided by root data capabilities.
+An unsealed capability that has <<infinite_bounds,infinite bounds>> and grants at least all of <<r_perm>>, <<w_perm>>, <<c_perm>>, and <<lm_perm>>.
 
-Upon initialization, the execution environment defines how capabilities are made available to software.
+NOTE: Extensions introducing new permissions may require these to be provided by <<root-rx-cap>> and/or <<root-rw-cap>> capabilities.
 
-NOTE: Implementations are not required to provide access to the entire space to a single hart.
-The provisioned capabilities may be restricted to subset of the entire address space, or even to remove certain permissions.
-Provisioned capabilities may be the maximum that the hart can ever have access to, or may allow access to capabilities in memory with greater bounds or permissions.
+Upon initialization, the execution environment defines how the initial set of capabilities are made available to software.
+
+The definitions of <<root-rx-cap>> and <<root-rw-cap>> are the maximum possible encodable values.
+
+Implementations are not required to provide access to the entire address space to a single hart or even to provide all permissions.
+As such, where a root capability value is specified, harts may specify implementation defined values instead which reduce the bounds or permissions as required.
+
+NOTE: The hart specific root capabilities may be the maximum that the hart can ever have access to, or may allow access to capabilities in memory with greater bounds or permissions.
+
+NOTE: Some capability-encoding formats like {rv64y_uni_base_name} provide an <<section_infinite_cap_encoding,Infinite>> capability which provides all the characteristics of the full set of root capabilities in a single encoding.
+
+NOTE: Future extensions may add additional root capabilities for purposes such as sealing and unsealing.
 
 [#null-cap,reftext="NULL"]
 ===== NULL Capability
