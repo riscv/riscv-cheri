@@ -648,14 +648,11 @@ NOTE: While a capability whose decoded bounds exceed 2^XLEN^ also represents a l
 As described in xref:cap_memory_space[xrefstyle=short], hardware instead relies on fail-closed bounds checking and <<CBLD>> subset enforcement.
 Detecting such conditions is deferred to future reliability extensions.
 
-Instructions that are defined to accept arbitrary input bit patterns, and can write an output with the {ctag} set to one, _must_ perform an integrity check on the input capability if its {ctag} is set to zero.
+Valid capabilities are guaranteed to satisfy all integrity rules unless hardware faults or incompatible IP are present, as valid capability derivation preserves integrity.
+Integrity checks are therefore _optional_ by default: performing an integrity check on a valid capability never alters execution on a correctly functioning system.
+However, instructions that can produce a valid capability from an invalid input capability _must_ perform an integrity check on that input, since an invalid capability can hold arbitrary bit patterns.
 
-NOTE: In the {cheri_base_ext_name} ISA this only affects <<CBLD>>.
-
-All other integrity checks are optional as a valid capability can always be assumed to satisfy these integrity rules, because it could only have been produced by a valid derivation.
-Consequently, in the absence of logic faults or incompatible IPs, an integrity check can only change the result of an operation when it is performed on an invalid input capability (i.e. whose {ctag} is zero).
-
-Therefore, unless stated otherwise, all integrity checks in this specification are _optional_.
+NOTE: In the {cheri_base_ext_name} ISA, this mandatory integrity check only applies to <<CBLD>>.
 
 [NOTE]
 ====
