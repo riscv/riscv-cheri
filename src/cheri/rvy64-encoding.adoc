@@ -420,7 +420,7 @@ In summary, for either bound:
 [#t_bound_msb_inversion]
 ===== Top Bound Address MSB Correction
 
-A capability has _infinite_ bounds if its bounds cover the entire address space
+A capability has <<infinite_bounds,infinite bounds>> if its bounds cover the entire address space
 such that _base_=0 and _top_{ge}2^XLEN^,
 i.e., _top_ is an XLEN + 1 bit value. However, _base_ is an
 XLEN-bit value and this width mismatch introduces additional complications
@@ -437,7 +437,7 @@ NOTE: The comparison is _unsigned_.
 
 That is, invert the most significant bit of _top_ if the decoded _top_ and _base_ are one address space (2^XLEN^ bytes) or more apart, and E is too small to allow this.
 
-NOTE: A capability has infinite bounds if `E=CAP_MAX_E` and it is not
+NOTE: A capability has <<infinite_bounds,infinite bounds>> if `E=CAP_MAX_E` and it is not
 malformed (see xref:section_cap_malformed[xrefstyle=short]); this check is
 equivalent to _base_=0 and _top_{ge}2^XLEN^.
 
@@ -564,7 +564,7 @@ therefore constant.  Therefore, the representable range check always passes in t
 As a result:
 
 * If E > CAP_MAX_E - 3, then the representability check always passes, _even
-though the bounds are only infinite if E = CAP_MAX_E_
+though the bounds are only <<infinite_bounds,infinite>> if E = CAP_MAX_E_
 
 This gives a range of `s=2^E+MW^`, as shown in
 xref:cap_bounds_map[xrefstyle=short].
@@ -618,9 +618,7 @@ Permissions added by extensions (such as those of <<section_zylevels1>>) are pre
 [#section_infinite_cap_encoding]
 ==== Infinite Capability Encoding
 
-This encoding is for an _Infinite_ capability value, which
-grants all permissions while its bounds also nominally cover the whole address space.
-This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capability.
+This encoding is for an _Infinite Capability_ value, which grants all permissions, has <<infinite_bounds,infinite bounds>> and is both a <<root-rx-cap>> and a <<root-rw-cap>> capability.
 
 .Field values of the Infinite capability
 [#infinite-cap-encoding,reftext="Infinite"]
@@ -644,6 +642,6 @@ This infinite capability is both a <<root-rx-cap>> and a <<root-rw-cap>> capabil
 ^1^ Only present if `enableL8=1` as defined by the capability-encoding format.
 
 ^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to zero.
- If the address field is non-zero then it is still referred to as an infinite capability, and it still has the authority to authorize all memory accesses.
+ If the address field is non-zero then it is still referred to as the _Infinite Capability_, and it still has the authority to authorize all memory accesses.
 
-Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in Infinite capabilities, which may involve redefining the AP_MAX value.
+NOTE: Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in the _Infinite Capability_, which may involve redefining the AP_MAX value.

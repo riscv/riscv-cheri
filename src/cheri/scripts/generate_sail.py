@@ -9,7 +9,7 @@ def generate_sail():
     assembly_lines = []
 
     for insn in instructions:
-        if insn.name in ("YHIR", "YHIW"):
+        if insn.name == "YHIW":
             continue
         cells = sorted(insn.cells, key=lambda c: c.start)
 
