@@ -95,7 +95,7 @@ As listed above for <<mtvec_y>>, this means that `mepc.address` can represent mu
 Therefore, software must ensure that all possible values are <<section_cap_representable_check, represented exactly>> on writing, otherwise the hardware sets the written {ctag} to zero.
 
 Sealed capabilities may be written to <<mepc_y>>.
-Set the {ctag} to zero on writing if:
+Invalidate the capability on writing if:
 
 .  `mepc.address[0]=1`, or
 .  `mepc.address[1]=1` when IALIGN=32
@@ -411,8 +411,8 @@ There are three levels of support:
 | _CHERI {ctag_title} Store Fault_ | Load zero {ctag} | Store/AMO Access Fault on {ctag}^1^ | No support for {ctag}s, trap on storing one
 |=========================================================================================
 
-^1^ The access fault is triggered on all capability stores or atomics such as <<STORE_CAP>> or <<AMOSWAP_CAP>> when <<c_perm>> and <<w_perm>> are granted and the to-be-stored {ctag} is set to one.
- For <<STORE_COND_CAP>>, the access fault is raised if the to-be-stored {ctag} is set to one in `{cs2}`, independent of the reservation outcome.
+^1^ The access fault is triggered on all capability stores or atomics such as <<STORE_CAP>> or <<AMOSWAP_CAP>> when <<c_perm>> and <<w_perm>> are granted and the to-be-stored capability is valid.
+ For <<STORE_COND_CAP>>, the access fault is raised if the to-be-stored capability in `{cs2}` is valid, independent of the reservation outcome.
  This matches the semantics of SC.* with regard to _pte_._d_ (see also xref:sec_cap_dirty_tracking[xrefstyle=short]).
 
 Only memory regions that have the _CHERI {ctag_title}_ PMA require storage for {ctag}s.
@@ -694,7 +694,7 @@ The definition of the {cheri_base_ext_name} field is as follows:
 If _pte_._{pte_cap_rw_name_lc}_=0 then:
 
 * All capability loads set the loaded {ctag} to zero
-* All capability stores with the to-be-stored {ctag} set to one raise a {cheri_excep_name_pte_st}.
+* All capability stores of valid capabilities raise a {cheri_excep_name_pte_st}.
 
 If _pte_._{pte_cap_rw_name_lc}_=1 then:
 
@@ -730,10 +730,10 @@ A CSR may be updated to hold a capability with an invalid address, due to:
 
 To ensure that the bounds of a valid capability cannot be corrupted:
 
-* If the new address is invalid and the capability bounds are not <<infinite_bounds,infinite>> then set the {ctag} to zero before writing to the CSR.
+* If the new address is invalid and the capability bounds are not <<infinite_bounds,infinite>> then invalidate the capability before writing to the CSR.
 
 NOTE: When the new address is invalid and happens to match an invalid address which the CSR
-can hold, then it is implementation-defined whether to set the {ctag} to zero.
+can hold, then it is implementation-defined whether to invalidate the capability.
 
 ==== Branches and Jumps
 
