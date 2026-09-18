@@ -24,7 +24,7 @@ from which it can derive a capability to access the data structures at the targe
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
 The WARL `mtvec` register is widened to a capability.
-Its reset value is nominally a <<root-rx-cap>> capability.
+The suggested reset value is a <<root-rx-cap>> capability.
 
 NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of a <<root-rx-cap>> capability after reset.
 
@@ -32,6 +32,9 @@ NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a s
 include::img/mtveccreg.edn[]
 
 NOTE: Implementations may use the WARL behavior to restrict the metadata to only values valid for code pointers.
+
+NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setting the reserved fields to zero, otherwise the capability is unusable.
+ Another example is to partially or fully restrict the bounds to constant values.
 
 When a trap is taken into M-mode, the capability in <<mtvec_y>> is installed in the <<pcc>>, with the address determined by the standard `mtvec` behavior.
 
@@ -78,7 +81,7 @@ include::img/mscratchcreg.edn[]
 ==== Machine Exception Program Counter Capability (mepc)
 
 The WARL `mepc` register is widened to a capability.
-Its reset value is nominally a <<root-rx-cap>> capability.
+The suggested reset value is a <<root-rx-cap>> capability.
 
 .Machine exception program counter capability register
 include::img/mepccreg.edn[]
