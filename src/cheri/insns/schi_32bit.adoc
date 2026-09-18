@@ -1,48 +1,25 @@
 <<<
 
-[#SCHI_BASE,reftext="{SCHI_BASE}"]
-==== {SCHI_BASE}
-
-Synopsis::
-{SCHI_BASE_DESC}
-
-Mnemonic::
-`{schi_base} rd, rs1, rs2`
-
-Encoding::
-include::wavedrom/schi.adoc[]
-
-Description::
-The {SCHI_BASE} instruction copies `rs1[XLEN-1:0]` into `rd[XLEN-1:0]`, copies `rs2[XLEN-1:0]` into `rd[YLEN-1:XLEN]`, and sets `rd.tag=0`.
-
-Operation::
-+
-sail::execute[clause="SCHI(_, _, _)",part=body,unindent]
-
-<<<
-
 [#SCHI,reftext="{SCHI}"]
 ==== {SCHI}
 
 include::new_encoding_note.adoc[]
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* this instruction was called CSETHIGH.
+NOTE: *CHERI v9 Note:* this instruction replaces CSETHIGH.
 endif::[]
 
 Synopsis::
 {SCHI_DESC}
 
 Mnemonic::
-`{schi} {cd}, {cs1}, rs2`
+`{schi} {cd}, rs1, rs2`
 
 Encoding::
-{SCHI} is a pseudoinstruction for <<{SCHI_BASE}>>
+include::wavedrom/schi.adoc[]
 
 Description::
-Construct a YLEN-bit value in `{cd}` by setting the address from `rs1` and the metadata from `rs2`. Set `{cd}.tag` to 0.
-+
-include::no_tag_affect.adoc[]
+The {SCHI} instruction copies `rs1[XLEN-1:0]` into `{cd}[XLEN-1:0]`, copies `rs2[XLEN-1:0]` into `{cd}[YLEN-1:XLEN]`, and sets `{cd}.tag=0`.
 
 Operation::
 +
