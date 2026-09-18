@@ -6,37 +6,65 @@ endif::[]
 
 IMPORTANT: {not_v1_ratification_package_experimental}
 
-Whenever pointer masking is enabled, all bounds decoding, <<section_cap_representable_check,representable range checks>> and bounds checks are affected.
+Pointer masking is enabled when PMM{ne}0 and applies to data memory access but not instruction memory access.
 
-NOTE: The suggestion in this section is based on the pointer masking approach from Morello but with changes
-to sign extension and to address the dynamic nature of bit masking.
+NOTE:  The "ignore" transformation has a dependency on the current virtual memory translation scheme, i.e. `satp.MODE`.
 
-When bounds are <<section_cap_bounds,encoded or decoded>>, a masked but _not_ sign-extended address is used.
-Changing how many bits are masked can therefore change the interpretation of the bounds of a capability,
-both for the purpose of implicit accesses via bounds checks and any instructions that report the bounds of a capability.
-Apart from treating the PMLEN high address bits as zero, there are no other changes to bounds decoding,
-which is still based on XLEN, not the new effectively addressable space.
-That is, the maximum length of a capability does not change, and
-it is not invalid to have a capability that covers a longer range than could actually be addressed with pointer masking enabled (such as one covering the entire XLEN address space).
-For the <<section_cap_representable_check,representable range check>>, both the original and new addresses
-are masked.
-Bounds setting instructions also mask the address in the same way.
+=== <<pcc>> checks
 
-NOTE: Because dynamically changing the number of masked bits changes the interpretation of a capability,
-software must take the same care when sharing capabilities between address spaces with differing pointer masking
-as it generally must when sharing capabilities between address spaces with different page mappings.
+<<pcc>> bounds checks are unaffected, as pointer masking does not affect the PC.
 
-Any address that is checked against a capability
-is also first subject to the same masking as bounds decode (masking without extension).
-After any CHERI operations, the final access address is still subject to as much sign extension as the pointer masking extensions mandate.
+Therefore no ignore transformation is applied before the checks on writing to __xtvec__.
 
-In summary, for data accesses only:
+=== Capability Address Increment or Replacement Instructions
 
-* When setting bounds ({SCBNDS}/{SCBNDSI}/{SCBNDSR}), bits [XLEN-1:XLEN-PMLEN] of the address are set to zero and therefore the resulting capability will have a base with the PMLEN high address bits set to zero.
-* When decoding bounds, the address used for decoding has bits [XLEN-1:XLEN-PMLEN] set to zero.
-* When checking the <<section_cap_representable_check,representable range>> for {CADDI}/{CADD}/{SCADDR}, the old address and new addresses both have bits [XLEN-1:XLEN-PMLEN] set to zero *before* the check.
+Instructions which derive a new capability by incrementing or replacing the capability address all determine the output address without taking pointer masking into account.
 
-Also note that:
+The associated representability check, however, does use the ignore transformation.
 
-* <<pcc>> bounds decoding isn't affected by pointer masking.
-* Any <<section_cap_representable_check,representable range check>> triggered by a write to a CSR (e.g., <<mtvec_y>>) is not affected by pointer masking.
+The rule from xref:section_rep_check_concept[xrefstyle=short] states that:
+
+_All instructions that derive a capability with a new address (such as <<SCADDR>>, <<CADD>>, and <<CADDI>>) must check that the new address does not change the decoding of the bounds._
+
+This rule is extended to support pointer masking by applying the ignore transformation to both the original and new addresses, and checking that the transformed new address does not change the decoding of the bounds.
+If the bounds decoding does change then the output capability is invalidated.
+
+=== Interaction With Bounds Setting Instructions
+
+Bounds setting instructions only calculate new values for the capability metadata and {ctag}, the address field is copied directly from input to output.
+
+The ignore transformation is applied to the address before calculating the new bounds.
+
+This affects <<SCBNDS>>, <<SCBNDSI>>, and <<SCBNDSR>>.
+
+If {rvy_bndsrdw_insn_ext_name} is implemented, <<SCBNDSRD>> follows the same rule.
+
+=== Interaction With Memory Access Instructions
+
+The ignore transformation is applied before capability bounds calculations, so that the bounds for memory accesses are calculated relative to the transformed address.
+
+This affects all loads, stores and AMOs.
+
+=== Interaction With Bounds Reading Instructions
+
+The ignore transformation is applied before capability bounds reading instructions, so that all returned values are based upon the transformed address.
+
+This affects <<GCBASE>>, <<GCLEN>>, and <<GCTOP>>.
+
+=== Interaction With Capability Subsets
+
+The definition of <<cap_subset>> is extended to apply the transformation to both `cap1` and `cap2` before the bounds calculation.
+
+This affects <<CBLD>>, <<SCSS>> and <<YSUNSEAL>>.
+
+WARNING: Because dynamically changing the number of masked bits changes the interpretation of a capability,
+software must take the same care when sharing capabilities between address spaces with differing pointer masking settings as it generally must when sharing capabilities between address spaces with different page mappings.
+
+WARNING: Because <<pcc>> bounds aren't masked but data memory access bounds are, if the PMLEN upper bits of a capability address are modified by the ignore transformation then the capability will only be usable for data memory access, as the address will be invalid for instruction fetch.
+
+WARNING: A capability with its address in the illegal VA space while PMM=0 will have its address and bounds move into the valid VA space if PMM is subsequently set to a nonzero value.
+Such a capability is only possible if capabilities are available which have at least some of the gap between valid VA spaces in their representable ranges.
+It is recommended that software should not create such capabilities.
+
+WARNING: Disabling translation affects the ignore transformation and so would relocate capabilities from the upper VA space where the upper bits are all one to the lower VA space where the upper bits are all zero.
+Disabling translation also treats all addresses as physical which changes the interpretation, so this problem is not specific to pointer masking.
