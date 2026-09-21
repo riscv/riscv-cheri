@@ -653,46 +653,45 @@ Future extensions may allocate values that are reserved in {cheri_base_ext_name}
 
 If any of the above rules do not hold for a valid capability, it indicates either:
 
-* State corruption due to memory or logic faults, or
+* State corruption due to memory errors or logic glitches, or
 * The presence of incompatible or faulty CHERI IP within the system.
 
 NOTE: These checks are much less rigorous than parity or ECC protection, and are only
 used to detect simple problems with the capability metadata.
 
-NOTE: While a capability whose decoded bounds exceed 2^XLEN^ also represents a loss of integrity resulting from a fault or incompatible IP, detecting this condition requires full bounds decoding and is not included in the capability integrity checks due to implementation cost.
+NOTE: While a capability whose decoded bounds exceed 2^XLEN^ also represents a loss of integrity resulting from state corruption or incompatible IP, detecting this condition requires full bounds decoding and is not included in the capability integrity checks due to implementation cost.
 As described in xref:cap_memory_space[xrefstyle=short], hardware instead relies on fail-closed bounds checking and <<CBLD>> subset enforcement.
 Detecting such conditions is deferred to future reliability extensions.
 
-Valid capabilities are guaranteed to satisfy all integrity rules unless hardware faults or incompatible IP are present, as valid capability derivation preserves integrity.
-Integrity checks are therefore _optional_ by default: checking a valid capability never alters execution on a correctly functioning system.
-Only instructions that can take an arbitrary bit pattern which represents an invalid capability as an input and validate it _must_ perform an integrity check on the invalid capability.
+Valid capabilities are guaranteed to satisfy all integrity rules unless state corruption or incompatible IP is present, as valid capability derivation preserves integrity.
+Integrity checks are therefore _optional_ by default: performing an integrity check on a valid capability never alters execution on a correctly functioning system.
+However, instructions that can produce a valid capability from an invalid input capability _must_ perform an integrity check on that input, since an invalid capability can hold arbitrary bit patterns.
 
-NOTE: In the {cheri_base_ext_name} ISA, this mandatory check only applies to the `{cs2}` input to <<CBLD>>.
+NOTE: In the {cheri_base_ext_name} ISA, this mandatory integrity check only applies to the `{cs2}` input to <<CBLD>>.
 
 [NOTE]
 ====
 Implementations may choose to enforce optional integrity checks for a number of reasons:
 
-. Instruction level verification is simpler as the behavior is precisely specified for all 2^(YLEN+1)^ input values.
+. Instruction-level verification is simpler as deterministic behavior is specified for all 2^(YLEN+1)^ input values (similar to how the D extension defines deterministic behavior for improperly NaN-boxed register values).
 . To give more resilience in systems which mix CHERI IPs from different sources due to possible incompatibilities.
 . If the hart implements additional reliability features, it may wish to detect and report capabilities which lack integrity.
 
 ====
 
-.Architecturally Valid Capability States
-[#table_valid_cap_states,%autowidth,options=header,align="center",cols="2,1,4"]
-|=======================
-|State              |{ctag_table} | Description
-|Valid capability   | 1  | All integrity checks have passed.
-|Invalid capability | 0  | The YLEN-bit payload is not considered to be a capability unless authorized by <<CBLD>>.
-|=======================
+The {ctag} is the only architectural state that distinguishes a capability from data, so every YLEN-bit value is either a _valid_ or an _invalid_ capability.
+xref:table_cap_states[xrefstyle=short] also names the corrupted states a valid capability can be in after a memory error, physical glitch, or interaction with incompatible IP.
 
-.Architecturally Invalid Capability States
-[#table_invalid_cap_states,%autowidth,options=header,align="center",cols="2,1,4"]
+.Summary of capability states
+[#table_cap_states,width="100%",options=header,cols="3,^1,^1,5"]
 |=======================
-|State              |{ctag_table} | Description
-|Top overflow       | 1  | All integrity checks have passed, but a logic fault has caused an undetected top overflow.
-|Integrity fail     | 1  | At least one metadata field is in a reserved state, or the bounds are <<section_cap_malformed,malformed>>, or both.
+|State |{ctag_table} |Legal? |Description
+|Valid capability |1 |Yes |Passes all <<section_cap_integrity,integrity checks>> and has `top ≤ 2^XLEN^`.
+|Invalid capability |0 |Yes |Holds an arbitrary YLEN-bit payload and cannot authorize operations unless used as the `{cs2}` input to <<CBLD>>.
+|Corrupted valid capability +
+(integrity failure) |1 |No |Metadata has a reserved value or <<section_cap_malformed,malformed>> bounds, which is detected by optional integrity checks.
+|Corrupted valid capability +
+(`top > 2^XLEN^`) |1 |No |Not detected by integrity checks, as decoded `top > 2^XLEN^` is safely handled by existing bounds-checking logic.
 |=======================
 
 === Extended State
