@@ -679,14 +679,20 @@ Implementations may choose to enforce optional integrity checks for a number of 
 
 ====
 
-.Capability states
-[#table_cap_states,%autowidth,options=header,align="center",cols="2,1,4"]
+.Architecturally Valid Capability States
+[#table_valid_cap_states,%autowidth,options=header,align="center",cols="2,1,4"]
 |=======================
 |State              |{ctag_table} | Description
 |Valid capability   | 1  | All integrity checks have passed.
+|Invalid capability | 0  | The YLEN-bit payload is not considered to be a capability unless authorized by <<CBLD>>.
+|=======================
+
+.Architecturally Invalid Capability States
+[#table_invalid_cap_states,%autowidth,options=header,align="center",cols="2,1,4"]
+|=======================
+|State              |{ctag_table} | Description
 |Top overflow       | 1  | All integrity checks have passed, but a logic fault has caused an undetected top overflow.
 |Integrity fail     | 1  | Any fields are in a reserved state, or bounds are <<section_cap_malformed,malformed>>.
-|Invalid capability | 0  | The YLEN-bit payload is not considered to be a capability unless authorized by <<CBLD>>.
 |=======================
 
 === Extended State
