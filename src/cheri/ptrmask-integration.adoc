@@ -57,14 +57,14 @@ The definition of <<cap_subset>> is extended to apply the transformation to both
 
 This affects <<CBLD>>, <<SCSS>> and <<YSUNSEAL>>.
 
-WARNING: Because dynamically changing the number of masked bits changes the interpretation of a capability,
-software must take the same care when sharing capabilities between address spaces with differing pointer masking settings as it generally must when sharing capabilities between address spaces with different page mappings.
+WARNING: Because dynamically changing the number of masked bits changes the interpretation of a capability, software must take the same care when sharing capabilities between address spaces with differing pointer masking settings as it generally must when sharing capabilities between address spaces with different page mappings.
 
 WARNING: Because <<pcc>> bounds aren't masked but data memory access bounds are, if the PMLEN upper bits of a capability address are modified by the ignore transformation then the capability will only be usable for data memory access, as the address will be invalid for instruction fetch.
 
-WARNING: A capability with its address in the illegal VA space while PMM=0 will have its address and bounds move into the valid VA space if PMM is subsequently set to a nonzero value.
+WARNING: A capability with its address in the illegal VA space while PMM=0 may have its address and bounds move into the valid VA space if PMM is subsequently set to a nonzero value.
 Such a capability is only possible if capabilities are available which have at least some of the gap between valid VA spaces in their representable ranges.
 It is recommended that software should not create such capabilities.
+If PMLEN is less than the number upper address bits which represent the VA gap then enabling pointer masking can either cause bounds to move between invalid address ranges within the VA gap or from the VA gap into the valid space.
 
 WARNING: Disabling translation affects the ignore transformation and so would relocate capabilities from the upper VA space where the upper bits are all one to the lower VA space where the upper bits are all zero.
 Disabling translation also treats all addresses as physical which changes the interpretation, so this problem is not specific to pointer masking.
