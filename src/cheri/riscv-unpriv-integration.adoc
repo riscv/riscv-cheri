@@ -646,7 +646,7 @@ NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability-en
 CHERI defines the following integrity check rules:
 
 . The bounds are not malformed (a capability encoding format-specific check; see xref:section_cap_malformed[xrefstyle=short] for {rv64y_uni_base_name}).
-. The capability metadata does not have any bits, or fields, set to a value reserved by the implemented extensions.
+. The capability metadata does not have any bits or fields set to a value reserved by the implemented extensions.
 
 NOTE: An example of a reserved field value is an illegal set of permissions such as <<asr_perm>> without <<x_perm>>.
 Future extensions may allocate values that are reserved in {cheri_base_ext_name}; capabilities using those values will fail integrity checks on harts that do not implement that extension.
@@ -654,10 +654,9 @@ Future extensions may allocate values that are reserved in {cheri_base_ext_name}
 If any of the above rules do not hold for a valid capability, it indicates either:
 
 * State corruption due to memory errors or logic glitches, or
-* The presence of incompatible or faulty CHERI IP within the system.
+* The presence of incompatible or defective CHERI IP within the system.
 
-NOTE: These checks are much less rigorous than parity or ECC protection, and are only
-used to detect simple problems with the capability metadata.
+NOTE: These checks are much less rigorous than parity or ECC protection, and are only used to detect simple problems with the capability metadata.
 
 NOTE: While a capability whose decoded bounds exceed 2^XLEN^ also represents a loss of integrity resulting from state corruption or incompatible IP, detecting this condition requires full bounds decoding and is not included in the capability integrity checks due to implementation cost.
 As described in xref:cap_memory_space[xrefstyle=short], hardware instead relies on fail-closed bounds checking and <<CBLD>> subset enforcement.
@@ -676,14 +675,12 @@ Implementations may choose to enforce optional integrity checks for a number of 
 . Instruction-level verification is simpler as deterministic behavior is specified for all 2^(YLEN+1)^ input values (similar to how the D extension defines deterministic behavior for improperly NaN-boxed register values).
 . To give more resilience in systems which mix CHERI IPs from different sources due to possible incompatibilities.
 . If the hart implements additional reliability features, it may wish to detect and report capabilities which lack integrity.
-
 ====
 
-The {ctag} is the only architectural state that distinguishes a capability from data, so every YLEN-bit value is either a _valid_ or an _invalid_ capability.
-xref:table_cap_states[xrefstyle=short] also names the corrupted states a valid capability can be in after a memory error, physical glitch, or interaction with incompatible IP.
+xref:table_cap_states[xrefstyle=short] summarizes the possible states of a capability register or memory location, including the corrupted states a valid capability can only reach through memory errors, logic glitches, or incompatible IP.
 
 .Summary of capability states
-[#table_cap_states,width="100%",options=header,cols="3,^1,^1,5"]
+[#table_cap_states,%unbreakable,width="100%",options=header,cols="3,^1,^1,5"]
 |=======================
 |State |{ctag_table} |Legal? |Description
 |Valid capability |1 |Yes |Passes all <<section_cap_integrity,integrity checks>> and has `top ≤ 2^XLEN^`.
