@@ -30,7 +30,7 @@ Access to <<xlen_csrs>> is as defined in Zicsr.
 +
 CSRRW accesses to <<ylen_csrs>> read YLEN bits into `{cd}` and write YLEN bits of `{cs1}` into the CSR.
 +
-When writing YLEN bits of `{cs1}`, if any <<section_cap_integrity,integrity>> checks fail then set the {ctag} to zero before writing to the CSR.
+In all cases, when writing YLEN bits of `{cs1}`, if any <<section_cap_integrity,integrity>> checks fail then invalidate the capability before writing to the CSR.
 +
 In all cases, when writing YLEN bits of `{cs1}`, if any <<section_cap_integrity,integrity>> checks fail then invalidate the capability before writing to the CSR.
 NOTE: Any <<ylen_csrs, YLEN-bit>> CSRs may have additional rules defined to determine the final written value of the metadata and/or to write zero to the {ctag}.
