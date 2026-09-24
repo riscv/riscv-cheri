@@ -5,8 +5,6 @@ from rvy_instruction_encodings import get_custom3_insts, RType, IType, SType, AM
 def generate_decodetree():
     instructions = get_custom3_insts()
     for insn in instructions:
-        if insn.name == "YHIW":
-            continue
         cells = sorted(insn.cells, key=lambda c: c.start, reverse=True)
 
         rd_is_c = False

@@ -198,3 +198,18 @@ def test_ymv():
         "]}",
     ]
     assert inst.as_wavedrom() == expected
+
+
+def test_yhiw():
+    inst = get_insn_def("YHIW")
+    expected = [
+        "{reg: [",
+        "  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},",
+        "  {bits:  5, name: '{cd}',       attr: ['5', 'dest'],             type: 2},",
+        "  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},",
+        "  {bits:  5, name: 'rs1',        attr: ['5', 'src1'],             type: 4},",
+        "  {bits:  5, name: 'rs2',        attr: ['5', 'src2'],             type: 4},",
+        "  {bits:  7, name: 'funct7',     attr: ['7', '{SCHI}=0000001'],   type: 3},",
+        "]}",
+    ]
+    assert inst.as_wavedrom() == expected
