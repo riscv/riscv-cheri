@@ -141,10 +141,12 @@ For capability loads and stores, provenance is preserved across memory:
 When a memory access fails a check, either due to software error or malicious intent, the operation raises an exception.
 For other instructions a failed check will typically set the resulting {ctag} to zero, the exact behavior is defined by each instruction.
 
-For a capability to be valid, the {ctag} must be set to one, otherwise a capability is invalid.
+* Valid capabilities have the {ctag} set to one.
+* Invalid capabilities have the {ctag} set to zero.
+** The term _invalidating a capability_ means deriving a new capability with identical metadata and address but the {ctag} set to zero.
 
 Using an invalid capability to dereference memory or authorize any operation raises an exception.
-All capabilities derived from invalid capabilities are themselves invalid, i.e., their {ctag}s are zero.
+All capabilities derived from invalid capabilities are themselves invalid.
 
 NOTE: Writing non-capability data into a register or memory location causes the {ctag} to be set to zero.
 When the {ctag} associated with the memory location is zero, the location contains non-capability data.
@@ -159,8 +161,11 @@ NOTE: Examples of such invalid operations include writing only the integer porti
 ==== {ctag_cap}s in Memory
 
 {ctag_cap}s are tracked through the memory subsystem: every naturally aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
-The implementation must set the {ctag} to zero if any byte in the naturally aligned YLEN-bit memory region is ever written using an operation other than a store of a capability operand.
-For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, including `{cs2}` 's {ctag} being set to one, but <<ldst,SW>> will always set the stored {ctag} to zero.
+The implementation must set the {ctag} to zero if any byte in the naturally aligned YLEN-bit memory region is ever written using an operation other than the successful store of a capability operand.
+
+For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, including `{cs2}` being a valid capability, but <<ldst,SW>> will always set the stored {ctag} to zero.
+
+NOTE: A failed SC will leave the {ctag} in memory unmodified.
 
 NOTE: All system memory and caches that store capabilities must preserve this abstraction, handling the {ctag}s atomically with the data.
 
@@ -192,7 +197,7 @@ A compressed format is used to encode the bounds with a scheme similar to floati
 Therefore, small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
 The standard bounds encoding format for {rv64y_uni_base_name} is based upon the compressed bounds encoding scheme cite:[woodruff2019cheri] and is defined in <<section_cap_bounds>>.
 
-NOTE: Future CHERI bases may use encoding formats with different bounds encoding schemes (see <<sec_cap_encoding_formats>>).
+NOTE: Future CHERI bases may use capability-encoding formats with different bounds encoding schemes (see <<sec_cap_encoding_formats>>).
 
 Software can query the bounds of a capability held in a general-purpose register using the following instructions:
 
@@ -202,10 +207,15 @@ Software can query the bounds of a capability held in a general-purpose register
 
 NOTE: The _length_ and _top_ are (XLEN+1)-bit values, so <<GCLEN>> and <<GCTOP>> saturate their result to the maximum XLEN-bit value (2^XLEN^-1) when it overflows an XLEN-bit register.
 
+anchor:infinite_bounds[]
+
+Infinite bounds::
+Capabilities which allow access to every byte in memory have _infinite bounds_.
+
 ==== Deriving New Bounds
 
-Upon initialization, the execution environment defines how the <<root-cap>> capabilities are made available to the execution context.
-All capabilities with smaller bounds are derived from these.
+Upon initialization, the execution environment defines how capabilities are made available to the execution context.
+All capabilities with smaller bounds are derived from these, or from capabilities in memory accessible by these.
 
 The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions.
 
@@ -267,7 +277,7 @@ Address arithmetic is modulo 2^XLEN^, so the byte at address 2^XLEN^ - 1 is adja
 A capability's <<section_cap_representable_check>> is also circular, so address 0 is within the <<section_cap_representable_check>> of a capability where address 2^XLEN^ - 1 is within the bounds.
 
 However, the decoded top bound address of a capability is XLEN + 1 bits wide and does *not* wrap.
-For example, a hypothetical capability with base 2^XLEN^ - 1 and top 2^XLEN^ + 1 is not a subset of the infinite capability and authorizes access to the last byte of the address space only, and does not authorize access to the byte at address 0.
+For example, a hypothetical capability with base 2^XLEN^ - 1 and top 2^XLEN^ + 1 authorizes access to the last byte of the address space only, and does not authorize access to the byte at address 0.
 A capability with architectural top > 2^XLEN^ cannot be generated by any valid capability derivation and is only possible due to a logic or memory fault.
 
 Unlike <<section_cap_malformed,malformed bounds>>, an architectural top > 2^XLEN^ is not special-cased in bounds decoding to return zero base and top; normal bounds check rules apply.
@@ -294,23 +304,35 @@ ifndef::cheri_ratification_v1_only[All CHERI systems must support unsealed capab
 [#sealed_cap,reftext="sealed capability"]
 Sealed capabilities::
 Capabilities with `CT{ne}0` are sealed against modification and cannot be dereferenced to access memory.
-Instructions that operate on capabilities will produce a result with the {ctag} set to zero if the source capability is sealed and the operation would result in altered address, bounds, or permissions.
+Instructions that operate on capabilities will produce an invalid capability if the source capability is sealed and the operation would result in altered address, bounds, or permissions.
 ifndef::cheri_ratification_v1_only[Extensions that extend the capability metadata must describe their interaction(s) with sealed capabilities.]
 
 Sealing::
 Given a capability with `CT=0`,
 deriving a capability with `CT{ne}0` is termed
-ifdef::cheri_ratification_v1_only[_sealing_.]
-ifndef::cheri_ratification_v1_only[_sealing_ (or _sealing with type ``x``_ when a particular output ``CT=x`` is meant).]
-This is achieved using <<SENTRY>>.
+ifdef::cheri_ratification_v1_only[_sealing_. +]
+ifndef::cheri_ratification_v1_only[_sealing_ (or _sealing with type ``x``_ when a particular output ``CT=x`` is meant). +]
+This is achieved using YSEALx instructions. +
++
+* The <<SENTRY>> instruction copies `{cs1}` to `{cd}` and seals it as a <<sentry_cap>>. +
+
+ifdef::cheri_ratification_v1_only[NOTE: Future extensions will add more YSEAL``x`` instructions such as seal by type.]
 
 Unsealing::
 Given a capability with `CT{ne}0`,
 deriving a capability with `CT=0` is termed
-ifdef::cheri_ratification_v1_only[_unsealing_.]
-ifndef::cheri_ratification_v1_only[_unsealing_ (or _unsealing from type ``x``_ when a particular input ``CT=x`` is meant).]
-ifdef::cheri_ratification_v1_only[This is achieved using <<YSUNSEAL>>.]
-ifndef::cheri_ratification_v1_only[This is achieved using <<YSUNSEAL>> (or <<YUNSEAL>> if <<section_zyseal>> is implemented).]
+ifdef::cheri_ratification_v1_only[_unsealing_. +]
+ifndef::cheri_ratification_v1_only[_unsealing_ (or _unsealing from type ``x``_ when a particular input ``CT=x`` is meant). +]
+ifdef::cheri_ratification_v1_only[]
+This is achieved using YUNSEALx instructions. +
++
+* The <<YSUNSEAL>> instruction authorizes the unsealing of `{cs2}` into `{cd}` with a superset capability in `{cs1}` (the S suffix represents superset).
+endif::[]
+ifndef::cheri_ratification_v1_only[]
++
+* This is achieved using <<YSUNSEAL>> (or <<YUNSEAL>> if <<section_zyseal>> is implemented).
+endif::[]
+ifdef::cheri_ratification_v1_only[NOTE: Future extensions will add more YUNSEAL``x`` instructions such as unseal by type.]
 
 [#sentry_cap,reftext="{sentry_cap_uc}"]
 {sentry_cap_uc}::
@@ -411,7 +433,7 @@ Future extensions and capability-encoding formats may declare new <<CT-field>> v
 ==== Architectural Permissions (AP)
 
 This metadata field encodes architecturally defined permissions of the capability.
-Permissions grant access subject to the <<cap_valid_tag>> being set to one, the capability being unsealed, and bounds checks passing.
+Permissions grant access subject to the capability being valid, the capability being unsealed, and bounds checks passing.
 
 NOTE: Any memory operation is also contingent on requirements imposed by other RISC-V architectural features, such as virtual memory, PMP, and PMAs, even if the capability grants sufficient permissions.
 
@@ -456,7 +478,7 @@ If <<c_perm>> is missing then the {ctag}s for capability loads and stores are re
 Load Mutable Permission (LM):: Allow preserving the <<w_perm>> of capabilities loaded from memory.
 If a capability grants <<r_perm>> and <<c_perm>>, but no <<lm_perm>>, then a capability loaded via this authorizing capability will have <<w_perm>> and <<lm_perm>> removed.
 +
-The permission stripping behavior _only_ applies to loaded capabilities with their {ctag} set to one and that are not sealed after all other checks.
+The permission stripping behavior _only_ applies to valid loaded capabilities and that are not sealed after all other checks.
 This ensures that capability loads of non-capability data do not modify the loaded value, and that sealed capabilities are not modified.
 
 NOTE: Clearing a capability's <<lm_perm>> and <<w_perm>> allows sharing a read-only version of a data structure without making a copy.
@@ -540,34 +562,39 @@ NOTE: Software is completely free to define the usage of these bits.
 [#section_special_caps]
 ==== Special Capabilities
 
+
+
 [#root-cap,reftext="Root"]
-Root Capabilities::
-_Root_ capabilities are those provided by the execution environment upon initialization.
-In some capability-encoding formats there is a single _Infinite_ capability value,
-which grants all permissions and has bounds covering the whole 2^XLEN^ address space;
-in such systems, _root_ capabilities are often _Infinite_.
-+
-Other capability-encoding formats may have a set of _root_ capabilities distinguishing between data and executable capabilities as shown below.
-+
-Upon initialization, the execution environment defines how root capabilities are made available to software.
-+
-NOTE: Implementations are not required to provide access to the entire address space to a single hart, the _root_ capabilities may be restricted to only cover a subset of the entire address space, or to remove certain permissions.
+===== Root Capabilities
+
+_Root_ capabilities are the set of capability encodings for the maximum set of bounds, covering the whole 2^XLEN^ address space, and that grant all encodable permissions.
 
 [#root-rx-cap,reftext="Root Executable"]
 Root Executable Capability::
-An unsealed capability that has bounds nominally covering all addresses
-and grants at least all of <<x_perm>>, <<r_perm>>, <<c_perm>>, <<lm_perm>>, and <<asr_perm>>.
-Extensions introducing new permissions may require these to be provided by root executable capabilities.
+An unsealed capability that has <<infinite_bounds,infinite bounds>> and grants at least all of <<x_perm>>, <<r_perm>>, <<c_perm>>, <<lm_perm>>, and <<asr_perm>>.
 
 [#root-rw-cap,reftext="Root Data"]
 Root Data Capability::
-An unsealed capability that has bounds nominally covering all addresses
-and grants at least all of <<r_perm>>, <<w_perm>>, <<c_perm>>, and <<lm_perm>>.
-Extensions introducing new permissions may require these to be provided by root data capabilities.
+An unsealed capability that has <<infinite_bounds,infinite bounds>> and grants at least all of <<r_perm>>, <<w_perm>>, <<c_perm>>, and <<lm_perm>>.
+
+NOTE: Extensions introducing new permissions may require these to be provided by <<root-rx-cap>> and/or <<root-rw-cap>> capabilities.
+
+Upon initialization, the execution environment defines how the initial set of capabilities are made available to software.
+
+The definitions of <<root-rx-cap>> and <<root-rw-cap>> are the maximum possible encodable values.
+
+Implementations are not required to provide access to the entire address space to a single hart or even to provide all permissions.
+As such, where a root capability value is specified, harts may specify implementation defined values instead with reduced bounds and/or permissions as required.
+
+NOTE: The hart specific initial capabilities may be the maximum that the hart can ever have access to, but there could also be capabilities in memory with greater bounds or permissions.
+
+NOTE: Some capability-encoding formats like {rv64y_uni_base_name} provide an <<section_infinite_cap_encoding,Infinite>> capability which provides all the characteristics of the full set of root capabilities in a single encoding.
+
+NOTE: Future extensions may add additional root capabilities for purposes such as sealing and unsealing.
 
 [#null-cap,reftext="NULL"]
-NULL Capability::
-A capability with all-zero metadata, its {ctag} set to zero, and an address of zero is referred to as the _NULL_ capability.
+===== NULL Capability
+An invalid capability with all-zero metadata and address is referred to as the <<section_null_cap_encoding,NULL>> capability.
 This capability grants no permissions and any dereference raises an exception.
 
 [#sec_cap_encoding_formats, reftext="capability-encoding format"]
@@ -631,41 +658,50 @@ NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability-en
 CHERI defines the following integrity check rules:
 
 . The bounds are not malformed (a capability encoding format-specific check; see xref:section_cap_malformed[xrefstyle=short] for {rv64y_uni_base_name}).
-. The capability metadata does not have any bits, or fields, set to a value reserved by the implemented extensions.
+. The capability metadata does not have any bits or fields set to a value reserved by the implemented extensions.
 
 NOTE: An example of a reserved field value is an illegal set of permissions such as <<asr_perm>> without <<x_perm>>.
 Future extensions may allocate values that are reserved in {cheri_base_ext_name}; capabilities using those values will fail integrity checks on harts that do not implement that extension.
 
-If any of the above rules do not hold for a capability with the {ctag} set to one, it indicates either:
+If any of the above rules do not hold for a valid capability, it indicates either:
 
-* State corruption due to memory or logic faults, or
-* The presence of incompatible or faulty CHERI IP within the system.
+* State corruption due to memory errors or logic glitches, or
+* The presence of incompatible or defective CHERI IP within the system.
 
-NOTE: These checks are much less rigorous than parity or ECC protection, and are only
-used to detect simple problems with the capability metadata.
+NOTE: These checks are much less rigorous than parity or ECC protection, and are only used to detect simple problems with the capability metadata.
 
-NOTE: While a capability whose decoded bounds exceed 2^XLEN^ also represents a loss of integrity resulting from a fault or incompatible IP, detecting this condition requires full bounds decoding and is not included in the capability integrity checks due to implementation cost.
+NOTE: While a capability whose decoded bounds exceed 2^XLEN^ also represents a loss of integrity resulting from state corruption or incompatible IP, detecting this condition requires full bounds decoding and is not included in the capability integrity checks due to implementation cost.
 As described in xref:cap_memory_space[xrefstyle=short], hardware instead relies on fail-closed bounds checking and <<CBLD>> subset enforcement.
 Detecting such conditions is deferred to future reliability extensions.
 
-Instructions that are defined to accept arbitrary input bit patterns, and can write an output with the {ctag} set to one, _must_ perform an integrity check on the input capability if its {ctag} is set to zero.
+Valid capabilities are guaranteed to satisfy all integrity rules unless state corruption or incompatible IP is present, as valid capability derivation preserves integrity.
+Integrity checks are therefore _optional_ by default: performing an integrity check on a valid capability never alters execution on a correctly functioning system.
+However, instructions that can produce a valid capability from an invalid input capability _must_ perform an integrity check on that input, since an invalid capability can hold arbitrary bit patterns.
 
-NOTE: In the {cheri_base_ext_name} ISA this only affects <<CBLD>>.
-
-All other integrity checks are optional as a valid capability can always be assumed to satisfy these integrity rules, because it could only have been produced by a valid derivation.
-Consequently, in the absence of logic faults or incompatible IPs, an integrity check can only change the result of an operation when it is performed on an invalid input capability (i.e. whose {ctag} is zero).
-
-Therefore, unless stated otherwise, all integrity checks in this specification are _optional_.
+NOTE: In the {cheri_base_ext_name} ISA, this mandatory integrity check only applies to the `{cs2}` input to <<CBLD>>.
 
 [NOTE]
 ====
 Implementations may choose to enforce optional integrity checks for a number of reasons:
 
-. Instruction level verification is simpler as the behavior is precisely specified for all 2^(YLEN+1)^ input values.
+. Instruction-level verification is simpler as deterministic behavior is specified for all 2^(YLEN+1)^ input values (similar to how the D extension defines deterministic behavior for improperly NaN-boxed register values).
 . To give more resilience in systems which mix CHERI IPs from different sources due to possible incompatibilities.
 . If the hart implements additional reliability features, it may wish to detect and report capabilities which lack integrity.
-
 ====
+
+xref:table_cap_states[xrefstyle=short] summarizes the possible states of a capability register or memory location, including the corrupted states a valid capability can only reach through memory errors, logic glitches, or incompatible IP.
+
+.Summary of capability states
+[#table_cap_states,%unbreakable,width="100%",options=header,cols="3,^1,^1,5"]
+|=======================
+|State |{ctag_table} |Legal? |Description
+|Valid capability |1 |Yes |Passes all <<section_cap_integrity,integrity checks>> and has `top ≤ 2^XLEN^`.
+|Invalid capability |0 |Yes |Holds an arbitrary YLEN-bit payload and cannot authorize operations unless used as the `{cs2}` input to <<CBLD>>.
+|Corrupted valid capability +
+(integrity failure) |1 |No |Metadata has a reserved value or <<section_cap_malformed,malformed>> bounds, which is detected by optional integrity checks.
+|Corrupted valid capability +
+(`top > 2^XLEN^`) |1 |No |Not detected by integrity checks, as decoded `top > 2^XLEN^` is safely handled by existing bounds-checking logic.
+|=======================
 
 === Extended State
 
@@ -715,7 +751,7 @@ The hardware performs the following checks on <<pcc>> for each instruction
 executed in addition to the checks already required by the base RISC-V ISA.
 A failing check raises a CHERI exception.
 
-* The {ctag} must be set to one.
+* The capability must be valid.
 * The capability must not be sealed.
 * The capability must grant <<x_perm>>.
 * All bytes of the instruction must be in bounds.
@@ -829,16 +865,19 @@ In <<clen_access_summary_base>>, when there is no read or write width shown, the
 
 Every memory access must be authorized by a valid capability.
 
-Instruction fetches and data memory accesses raise an exception if the access is out of <<sec_cap_bounds_overview,bounds>>, or if the authorizing capability is missing the required <<AP-field,permissions>>:
+Instruction fetches and data memory accesses raise a CHERI exception if any of the following checks fail on the authorizing capability:
 
-* All load instructions require <<r_perm>> and are authorized by the capability in `{cs1}`
-* All store instructions require <<w_perm>> and are authorized by the capability in `{cs1}`
-* All AMO instructions require <<r_perm>> and <<w_perm>>, and are authorized by the capability in `{cs1}`
-* All instruction fetches require <<x_perm>> in <<pcc>>
-
-Instruction fetches are authorized by the program counter (<<pcc>>) which {cheri_base_ext_name} widens to a capability.
-
-NOTE: This allows code fetch to be bounded, preventing a wide range of attacks that subvert control flow with non-capability data.
+* The {ctag} must be set to one.
+** All memory access instruction encodings with `{cs1}={creg}0` are _reserved_ (since dereferencing <<null-cap>> in `{creg}0` always faults due to its {ctag} being zero).
+* The authorizing capability must not be sealed.
+* All <<section_cap_integrity,integrity>> checks on the authorizing capability must pass.
+* All bytes of the access must be in <<sec_cap_bounds_overview,bounds>>.
+* The virtual address in the authorizing capability must not be invalid if virtual memory is enabled.
+* The authorizing capability must grant the required <<AP-field,permissions>>:
+** All instruction fetches require <<x_perm>> in <<pcc>>.
+** All load instructions require <<r_perm>> and are authorized by the capability in `{cs1}`.
+** All store instructions require <<w_perm>> and are authorized by the capability in `{cs1}`.
+** All AMO instructions require both <<r_perm>> and <<w_perm>>, and are authorized by the capability in `{cs1}`.
 
 E.g., `lw t0, 16({abi_creg}sp)` loads a word from memory, getting the address, bounds, and permissions from the `{abi_creg}sp` (capability stack pointer) register.
 
@@ -907,7 +946,7 @@ The definition is:
 . `cap2` 's base bound address is greater than or equal to `cap1` 's base bound address, and
 . `cap1` and `cap2` pass all <<section_cap_integrity,integrity>> checks
 
-NOTE: A capability whose {ctag} is set to one is assumed to satisfy the <<section_cap_integrity,integrity>> checks, so this rule can only affect the result for an operand whose {ctag} is set to zero.
+NOTE: A valid capability is assumed to satisfy the <<section_cap_integrity,integrity>> checks, so this rule can only affect the result for an operand whose {ctag} is set to zero.
 Among the instructions that use the subset relation, this is only material for the `{cs2}` operand of <<CBLD>> (which can set a {ctag} on an arbitrary bit pattern) and for <<SCSS>> (which can compare operands whose {ctag}s are set to zero).
 
 .Summary of {cheri_base_ext_name} instructions that create a modified capability
@@ -916,7 +955,7 @@ Among the instructions that use the subset relation, this is only material for t
 |Mnemonic     |Description
 |<<CLRPERM>>  | {CLRPERM_DESC}
 |<<CMV>>      | {CMV_DESC}
-|<<SCHI>>^1^  | {SCHI_DESC}
+|<<SCHI>>     | {SCHI_DESC}
 |<<SCBNDSI>>  | {SCBNDSI_DESC}
 |<<SCBNDS>>   | {SCBNDS_DESC}
 |<<SCBNDSR>>  | {SCBNDSR_DESC}
@@ -924,8 +963,6 @@ Among the instructions that use the subset relation, this is only material for t
 |<<CBLD>>     | {CBLD_DESC}
 |<<SENTRY>>   | {SENTRY_DESC}
 |=======================
-
-^1^ <<SCHI>> is a pseudoinstruction for <<SCHI_BASE>>
 
 include::insns/acperm_32bit.adoc[leveloffset=+1]
 include::insns/cmv_32bit.adoc[leveloffset=+1]
@@ -969,7 +1006,7 @@ These instructions either directly read bit fields from the metadata or {ctag}, 
 |<<GCTAG>>  | {GCTAG_DESC}
 |<<GCPERM>> | {GCPERM_DESC}
 |<<GCTYPE>> | {GCTYPE_DESC}
-|<<GCHI>>^1^| {GCHI_DESC}
+|<<GCHI>>  | {GCHI_DESC}
 |=======================
 
 
@@ -1003,7 +1040,7 @@ include::insns/cram_32bit.adoc[leveloffset=+1]
 New loads and stores are introduced to handle capability data, <<LOAD_CAP>> and <<STORE_CAP>>.
 These capability load and store instructions atomically access YLEN bits of data and the associated {ctag}.
 
-In addition to the common load and store authorization checks (see <<sec_cap_checks>>), capability memory accesses check for <<c_perm>> in the authorizing capability in `{cs1}`.
+In addition to the common authorization checks for memory access instructions (see <<sec_cap_checks>>), capability memory accesses check for <<c_perm>> in the authorizing capability in `{cs1}`.
 
 If <<c_perm>> is granted then:
 
@@ -1081,28 +1118,10 @@ All load and store instructions behave as described in <<ldst>> with one fundame
 
 * For a load instruction, the lower XLEN bits of the result written to the destination register are the same as in the RV32[IE]/RV64[IE] specification.
 
-All load and store instructions authorized by `{cs1}` raise exceptions if any of these checks fail:
-
-* `{cs1}` must not be `{creg}0`^1^
-* The {ctag} (`{cs1}.tag`) must be set to one.
-* `{cs1}` must be unsealed.
-ifdef::invalid_address_viol[]
-* The virtual address in `{cs1}` must not be invalid if virtual memory is enabled.
-endif::[]
-* For loads, <<r_perm>> must be granted in `{cs1}`.
-* For stores, <<w_perm>> must be granted in `{cs1}`.
-* All <<section_cap_integrity,integrity>> checks on `{cs1}` must pass.
-
-^1^ All load/store encodings are _reserved_ if `{cs1}={creg}0` (since dereferencing <<null-cap>> always faults).
-
 All load instructions, except for <<LOAD_CAP>>, always set the {ctag} and the metadata of the result register to zero.
 
 All store instructions, except for <<STORE_CAP>>, always write zero to the {ctag} or {ctag}s associated with the memory locations that are written to.
 Therefore, misaligned stores may clear up to two associated {ctag}s.
-
-The changed interpretation of the base register also applies to all loads, stores, and all other memory operations defined in later chapters of this specification with a base operand of `rs1` unless stated otherwise.
-
-IMPORTANT: Under {cheri_base_ext_name} _all_ loads and stores are authorized by `{cs1}`.
 
 These rules affect the following <<rv32,base ISA>> instructions listed in <<tab_cap_base_ldst_summary>>, and also apply to instructions added by other extensions, e.g.,:
 
