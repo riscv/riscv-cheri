@@ -638,7 +638,9 @@ C.ADDI adds the non-zero sign-extended 6-bit immediate to the value in
 register _rd_ then writes the result to _rd_. C.ADDI expands into
 `addi rd, rd, imm`.
 If the base architecture is _not_ {cheri_base_ext_name}, the code
-points with _rd_≠0 and _imm_=0 are HINTs.
+points with _rd_≠0 and _imm_=0 are HINTs. +
+If the base architecture _is_ {cheri_base_ext_name}, the code
+points with _rd_≠0 and _imm_=0 are reserved. +
 The code points with _rd_=`x0` encode the C.NOP instruction, of
 which the code points with _imm_≠0 are HINTs.
 
@@ -694,9 +696,9 @@ the value in register _rd_ then writes the result to _rd_. The shift
 amount is encoded in the _shamt_ field.
 C.SLLI expands into `slli rd, rd, shamt[5:0]`.
 
-The C.SLLI code points with _shamt_=0 or with _rd_=`x0` are HINTs.
-
-If the base architecture is {cheri_base_ext_name}, only the C.SLLI code points with _rd_=`x0` are HINTs.
+If the base architecture is _not_ {cheri_base_ext_name} the C.SLLI code points with _shamt_=0 or with _rd_=`x0` are HINTs. +
+If the base architecture _is_ {cheri_base_ext_name}, only the C.SLLI code points with _rd_=`x0` are HINTs. +
+The code points with _shamt_=0 or with __rd__{ne}``x0`` are reserved.
 
 For RV32C, _shamt[5]_ must be zero; the code points with _shamt[5]_=1
 are designated for custom extensions.
@@ -712,7 +714,8 @@ the value in register _rd′_ then writes the result to
 _rd′_. The shift amount is encoded in the _shamt_ field.
 C.SRLI expands into `srli rd′, rd′, shamt`.
 
-The C.SRLI code points with _shamt_=0 are HINTs.
+If the base architecture is _not_ {cheri_base_ext_name} the C.SRLI code points with _shamt_=0 are HINTs. +
+if the base architecture _is_ {cheri_base_ext_name} those code points are reserved.
 
 For RV32C, _shamt[5]_ must be zero; the code points with _shamt[5]_=1
 are designated for custom extensions.
@@ -934,11 +937,44 @@ no standard HINTs will ever be defined in this subspace.
 
 |C.ADD | _rd_=`x0`, _rs2_=`x2-x5` |4|(rs2=x2) C.NTL.P1 (rs2=x3) C.NTL.PALL (rs2=x4) C.NTL.S1 (rs2=x5) C.NTL.ALL
 
-|C.SLLI |_rd_=`x0` or _imm_=0 |63 (RV32), 95 (RV64)  .3+.^|_Designated for custom use_
+|C.SLLI |_rd_=`x0` or _shamt_=0 |63 (RV32), 95 (RV64)  .3+.^|_Designated for custom use_
 
-|C.SRLI | _imm_=0 |8
+|C.SRLI | _shamt_=0 |8
 
-|C.SRAI | _imm_=0 |8
+|C.SRAI | _shamt_=0 |8
+|===
+
+If the base architecture is {cheri_base_ext_name} then only HINTs with _rd_=`x0` are HINTs, as adding zero or shifting by zero places causes the metadata and {ctag} to be set to zero.
+
+As a result, the reduced set of available hints for {cheri_base_ext_name} is in <<rvc-rvy-t-hints>>, and encodings which are HINTs for RVI but not for {cheri_base_ext_name} are _reserved_.
+
+[[rvc-rvy-t-hints]]
+.RVC HINT instructions for {cheri_base_ext_name} base architectures.
+[cols="<,<,>,<",options="header",]
+|===
+|Instruction |Constraints |Code Points |Purpose
+
+|C.NOP |_imm_≠0 |63 |_Designated for future standard use_
+
+|C.ADDI | _rd_≠`x0`, _imm_=0 |31|_Reserved_
+
+|C.LI | _rd_=`x0` |64 .4+.^|_Designated for future standard use_
+
+|C.LUI | _rd_=`x0`, _imm_≠0 |63
+
+|C.MV | _rd_=`x0`, _rs2_≠`x0` |31
+
+|C.ADD | _rd_=`x0`, _rs2_≠`x0`, _rs2_≠`x2-x5` | 27
+
+|C.ADD | _rd_=`x0`, _rs2_=`x2-x5` |4|(rs2=x2) C.NTL.P1 (rs2=x3) C.NTL.PALL (rs2=x4) C.NTL.S1 (rs2=x5) C.NTL.ALL
+
+|C.SLLI |_rd_=`x0` |32 (RV32), 64 (RV64)  |_Designated for custom use_
+
+|C.SLLI |_rd_{ne}``x0`` and _shamt_=0 |31 (RV32), 31 (RV64)  .3+.^|_Reserved_
+
+|C.SRLI | _shamt_=0 |8
+
+|C.SRAI | _shamt_=0 |8
 |===
 
 === RVC Instruction Set Listings
