@@ -44,7 +44,7 @@ class Custom3Funct3(Funct3):
     SY = 0b010, "SY", "{STORE_CAP_NAME}"
     AMO = 0b011, "AMO", "RVY-AMO"
     YADDI = 0b100, "YADDI", "{CADDI}"
-    MISC = 0b101, "MISC IMM (SRLIY/YBNDSWI)", "RVY-MISC"
+    MISC = 0b101, "MISC IMM (YBNDSWI)", "RVY-MISC"
     RES6 = 0b110, "*Unallocated*", "RVY-RES6"
     RES7 = 0b111, "*Unallocated*", "RVY-RES7"
 
@@ -296,10 +296,7 @@ def insn_xref(i: Instruction, use_guards: bool = True) -> str:
         anchor = "LOAD_CAP"
     elif name == "SY":
         anchor = "STORE_CAP"
-    # YHIR/YHIW are pseudoinstructions for SRLIY/PACKY; mark them as such so
-    # the encoding overview does not look like a double allocation.
-    display = f"{name} (pseudo)" if name in ("YHIR", "YHIW") else name
-    xref = f"<<{anchor},{display}>>" if anchor else f"<<{display}>>"
+    xref = f"<<{anchor},{name}>>" if anchor else f"<<{name}>>"
     if use_guards and i.is_post_v1:
         return f"\nifndef::cheri_ratification_v1_only[]\n{xref}\nendif::[]\n"
     return xref
@@ -518,18 +515,15 @@ def get_custom3_insts():
         ),
         next_rtype("YADDRW", rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label="address"),
         next_rtype("YPERMC", rs1="{cs1}", rd="{cd}", rs1_label="src", rs2_label="mask"),
-        next_rtype("PACKY", rs1="rs1", rd="{cd}"),
-        # YHIW is a pseudoinstruction for PACKY; list it like YHIR so the
-        # encoding overview covers both pseudo aliases.
-        RVYRType3Op("YHIW", f7=last_r3_f7_idx, rs1="rs1", rd="{cd}"),
+        next_rtype("YHIW", rs1="rs1", rd="{cd}"),
         next_rtype("YBNDSW", rs1="{cs1}", rd="{cd}"),
         next_rtype("YBNDSRW", rs1="{cs1}", rd="{cd}"),
         next_rtype("YEQ", rs1="{cs1}", rs2="{cs2}", rd="rd"),
         next_rtype("YSS", rs1="{cs1}", rs2="{cs2}", rd="rd"),
-        next_rtype("YSUNSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
+        next_rtype("YUNSEALS", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
         next_rtype("YBLD", rs1="{cs1}", rs2="{cs2}", rd="{cd}"),
-        next_rtype("YSENTRY", rs1="{cs1}=0", rs2="{cs2}", rd="{cd}", rs1_label="src1=0"),
-        next_rtype("YUNSEAL", rs1="{cs1}", rs2="{cs2}", rd="{cd}", ext="Zyseal"),
+        next_rtype("YSEALE", rs1="{cs1}=0", rs2="{cs2}", rd="{cd}", rs1_label="src1=0"),
+        next_rtype("YUNSEALT", rs1="{cs1}", rs2="{cs2}", rd="{cd}", ext="Zyseal"),
         next_rtype("YMODEW", rs1="{cs1}", rd=f"{{cd}}{NEQ}0", ext="Zyhybrid"),
         RVYRType3Op(
             "YMODESWY",
@@ -574,6 +568,7 @@ def get_custom3_insts():
         next_r2type("YTYPER", rs1="{cs1}", rd="rd"),
         next_r2type("YAMASK", rs1="rs1", rd="rd"),
         next_r2type("YMODER", rs1="{cs1}", rd="rd", ext="Zyhybrid"),
+        next_r2type("YHIR", rs1="{cs1}", rd="rd"),
     ]
     # Sort by register selector bits (0:2) first and the the instruction index)
     regular_3op_insns.sort(key=lambda i: (i.f7.val & 7, i.f7.val >> 3))
@@ -652,17 +647,6 @@ def get_custom3_insts():
             ),
         ],
         misc_insns=[
-            IType(
-                "YHIR",
-                op=MajorOpcode.RVY_A,
-                f3=Custom3Funct3.MISC,
-                imm="shamt=XLEN",
-                fixed="0" * 5,
-                rs1="{cs1}",
-                rd="rd",
-                imm_label="shamt=XLEN",
-            ),
-            IType("SRLIY", op=MajorOpcode.RVY_A, f3=Custom3Funct3.MISC, rs1="{cs1}", imm="shamt=XLEN", fixed="0" * 5),
             IType(
                 "YBNDSWI",
                 op=MajorOpcode.RVY_A,
