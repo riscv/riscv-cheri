@@ -1246,22 +1246,16 @@ include::insns/jalr_16bit.adoc[]
 
 endif::[]
 
-==== Zca HINT and _reserved_ Instructions
+==== Zca HINT Encodings
 
-For {cheri_base_ext_name} _all_ arithmetic HINT instructions require _rd_=`x0`.
+In RVI/RVE, several Zca arithmetic encodings with _rd_{ne}``x0`` and a zero immediate (`C.ADDI` with _imm_=0, and `C.SLLI`, `C.SRLI`, and `C.SRAI` with _shamt_=0) are defined as HINTs because they do not modify the integer value in _rd_.
+In {cheri_base_ext_name}, however, integer arithmetic instructions that write _rd_{ne}``x0`` clear the capability metadata and {ctag}, so these encodings would have an architectural side effect.
+Therefore, for {cheri_base_ext_name}, only Zca HINT encodings with _rd_=`x0` remain HINTs, and the following encodings with _rd_{ne}``x0`` are _reserved_:
 
-This is because the metadata and {ctag} are set to zero by arithmetic instuctions which do not affect the integer data value.
-
-As a result, many encodings in Zca declared as HINTs in RVI/RVE are _reserved_ for {cheri_base_ext_name}.
-
-Specifically the following encodings are _reserved_:
-
-* C.ADDI with __rd__{ne}x0 and __imm__=0.
-* C.SLLI with __rd__{ne}x0 and __shamt__=0.
-* C.SRLI with __shamt__=0.
-* C.SRAI with __shamt__=0.
-
-NOTE: 32-bit arithmetic HINT instructions are unaffected by this rule as all have _rd_=`x0`.
+* `C.ADDI` with _rd_{ne}``x0`` and _imm_=0
+* `C.SLLI` with _rd_{ne}``x0`` and _shamt_=0
+* `C.SRLI` with _shamt_=0
+* `C.SRAI` with _shamt_=0
 
 [#rvy_zalrsc_insn_table, reftext="{rvy_zalrsc_ext_name}"]
 == {rvy_zalrsc_ext_name}
