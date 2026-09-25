@@ -1248,9 +1248,9 @@ endif::[]
 
 ==== Zca HINT Encodings
 
-In RVI/RVE, several Zca arithmetic encodings with _rd_{ne}``x0`` and a zero immediate (`C.ADDI` with _imm_=0, and `C.SLLI`, `C.SRLI`, and `C.SRAI` with _shamt_=0) are defined as HINTs because they do not modify the integer value in _rd_.
-In {cheri_base_ext_name}, however, integer arithmetic instructions that write _rd_{ne}``x0`` clear the capability metadata and {ctag}, so these encodings would have an architectural side effect.
-Therefore, for {cheri_base_ext_name}, only Zca HINT encodings with _rd_=`x0` remain HINTs, and the following encodings with _rd_{ne}``x0`` are _reserved_:
+Zca HINT encodings with _rd_{ne}``x0`` are _reserved_ instead of HINTs, because executing an integer arithmetic instruction that writes _rd_{ne}``x0`` sets the destination register's metadata and {ctag} to zero (leaving only the 32 (RV32) or 64 (RV64) C.SLLI code points with _rd_=`x0` as HINTs).
+
+Therefore the following encodings are _reserved_ instead of HINTs:
 
 * `C.ADDI` with _rd_{ne}``x0`` and _imm_=0
 * `C.SLLI` with _rd_{ne}``x0`` and _shamt_=0
