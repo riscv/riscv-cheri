@@ -27,12 +27,12 @@ Its reset value is nominally a <<root-rx-cap>> capability.
 
 NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of a <<root-rx-cap>> capability after reset.
 
-.Machine-mode trap-vector base-capability register
+.Machine trap-vector base-capability register
 include::img/mtveccreg.edn[]
 
 NOTE: Implementations may use the WARL behavior to restrict the metadata to only values valid for code pointers.
 
-When a trap is taken into machine mode, the capability in <<mtvec_y>> is installed in the <<pcc>>, with the address determined by the standard `mtvec` behavior.
+When a trap is taken into M-mode, the capability in <<mtvec_y>> is installed in the <<pcc>>, with the address determined by the standard `mtvec` behavior.
 
 As in the standard `mtvec` definition, the address observed through <<mtvec_y>> is not simply the stored base address:
 
@@ -70,7 +70,7 @@ The `mscratch` register is widened to a capability.
 
 {TAG_RESET_MCSR}
 
-.Machine-mode scratch capability register
+.Machine scratch capability register
 include::img/mscratchcreg.edn[]
 
 [#mepc_y,reftext="mepc ({cheri_base_ext_name})"]
@@ -126,7 +126,7 @@ On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_
 [#mtidc,reftext="mtidc"]
 ==== Machine Thread Identifier Capability (mtidc)
 
-The <<mtidc>> register is used to identify the current software thread in machine mode, using the method defined in the section for the unprivileged <<utidc>> CSR.
+The <<mtidc>> register is used to identify the current software thread in M-mode, using the method defined in the section for the unprivileged <<utidc>> CSR.
 
 {TAG_RESET_MCSR}
 
@@ -167,7 +167,7 @@ The definitions of the following fields are furnished by the <<section_cheri_pri
 * The Capability Read Generation Enable bit ({pte_cap_fc_enable}).
 
 [#mstatusreg_pte]
-.Machine-mode status (*mstatus*) register for {cheri_base64_ext_name}
+.Machine status (*mstatus*) register for {cheri_base64_ext_name}
 [wavedrom, ,svg,subs=attributes+]
 ....
 {reg: [
@@ -309,7 +309,7 @@ ifdef::cheri_standalone_spec[]
 ==== Machine Trap Delegation Register (medeleg)
 
 Bits {cheri_excep_cause_list} of *medeleg* refer to valid CHERI exceptions and so can be used to
-delegate CHERI exceptions to supervisor mode.
+delegate CHERI exceptions to S-mode.
 
 ==== "Smstateen" Integration
 The TIDC bit in `mstateen0` controls access to the <<stidc>>,
@@ -453,11 +453,11 @@ Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE
 
 endif::support_varxlen[]
 
-=== Machine-Mode YLEN CSR Summary
+=== M-mode YLEN CSR Summary
 
-<<all_capability_CSRs_m>> shows all YLEN Machine-mode CSRs added or modified by {cheri_base_ext_name}.
+<<all_capability_CSRs_m>> shows all YLEN M-mode CSRs added or modified by {cheri_base_ext_name}.
 
-.All {cheri_base_ext_name} Machine-Mode CSRs.
+.All {cheri_base_ext_name} M-mode CSRs.
 [#all_capability_CSRs_m]
 [width="100%",options=header,cols="3,3,2,2,3,3,5"]
 |==============================================================================
@@ -467,7 +467,7 @@ include::{generated_dir}/csr_permission_m_table_body.adoc[]
 NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are the maximum possible values.
 The platform may reset those CSRs to a smaller memory range, or to grant fewer permissions.
 
-.Action taken on writing to YLEN-bit and extended Machine-Mode CSRs
+.Action taken on writing to YLEN-bit and extended M-mode CSRs
 [#extended_CSR_writing_m]
 [width="100%",options=header,cols="1,1,1,2,2"]
 |==============================================================================
@@ -476,7 +476,7 @@ include::{generated_dir}/csr_alias_action_m_table_body.adoc[]
 
 Code pointers and data pointers in <<CSR_exevectors_m>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
 
-.YLEN-wide Machine-Mode CSRs storing code pointers or data pointers
+.YLEN-wide M-mode CSRs storing code pointers or data pointers
 [#CSR_exevectors_m]
 [width="100%",options=header,cols="1,1,1,1,1"]
 |==============================================================================
@@ -498,13 +498,13 @@ The WARL `stvec` register is widened to a capability.
 .Supervisor trap-vector base-capability register
 include::img/stveccreg.edn[]
 
-The handling of <<stvec_y>> is identical to <<mtvec_y>>, but in supervisor mode.
+The handling of <<stvec_y>> is identical to <<mtvec_y>>, but in S-mode.
 
 [#sstatus_y, reftext="sstatus ({cheri_base_ext_name})"]
 ==== Supervisor Status Registers (sstatus)
 
 [#sstatusreg_pte]
-.Supervisor-mode status (*sstatus*) register when SXLEN=64
+.Supervisor status (*sstatus*) register when SXLEN=64
 [wavedrom, ,svg,subs=attributes+]
 ....
 {reg: [
@@ -563,7 +563,7 @@ The WARL `sepc` register is widened to a capability.
 
 {ROOT_RX_RESET_SCSR}
 
-The handling of <<sepc_y>> is identical to <<mepc_y>>, but in supervisor mode (i.e. applying to <<SRET_CHERI>>).
+The handling of <<sepc_y>> is identical to <<mepc_y>>, but in S-mode (i.e. applying to <<SRET_CHERI>>).
 
 .Supervisor exception program counter capability register
 include::img/sepccreg.edn[]
@@ -574,7 +574,7 @@ include::img/sepccreg.edn[]
 [#stidc,reftext="stidc"]
 ==== Supervisor Thread Identifier Capability (stidc)
 
-The <<stidc>> register is used to identify the current software thread in supervisor mode, using the method defined in the section for the unprivileged <<utidc>> CSR.
+The <<stidc>> register is used to identify the current software thread in S-mode, using the method defined in the section for the unprivileged <<utidc>> CSR.
 
 {TAG_RESET_SCSR}
 
@@ -619,18 +619,18 @@ See <<utidc>> for a description of the usage.
 
 include::insns/mret_sret.adoc[]
 
-=== Supervisor-Mode YLEN CSR Summary
+=== S-mode YLEN CSR Summary
 
-<<all_capability_CSRs_s>> shows all YLEN Supervisor-mode CSRs added or modified by {cheri_base_ext_name}.
+<<all_capability_CSRs_s>> shows all YLEN S-mode CSRs added or modified by {cheri_base_ext_name}.
 
-.All {cheri_base_ext_name} Supervisor-Mode CSRs.
+.All {cheri_base_ext_name} S-mode CSRs.
 [#all_capability_CSRs_s]
 [width="100%",options=header,cols="3,3,2,2,3,3,5"]
 |==============================================================================
 include::{generated_dir}/csr_permission_s_table_body.adoc[]
 |==============================================================================
 
-.Action taken on writing to YLEN-bit and extended Supervisor-Mode CSRs
+.Action taken on writing to YLEN-bit and extended S-mode CSRs
 [#extended_CSR_writing_s]
 [width="100%",options=header,cols="1,1,1,2,2"]
 |==============================================================================
@@ -639,7 +639,7 @@ include::{generated_dir}/csr_alias_action_s_table_body.adoc[]
 
 Code pointers and data pointers in <<CSR_exevectors_s>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
 
-.YLEN-wide Supervisor-Mode CSRs storing code pointers or data pointers
+.YLEN-wide S-mode CSRs storing code pointers or data pointers
 [#CSR_exevectors_s]
 [width="100%",options=header,cols="1,1,1,1,1"]
 |==============================================================================
@@ -918,7 +918,7 @@ per-privilege enable bits.
 
 endif::[]
 
-When using a system with {cheri_default_ext_name}, it may be desirable to configure privilege levels below Machine-mode such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
+When using a system with {cheri_default_ext_name}, it may be desirable to configure privilege levels below M-mode such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
 
 {cheri_default_ext_name} includes the ability to disable CHERI by making the {CRE} bit of <<menvcfg_y>> and <<senvcfg_y>> writable.
 
@@ -926,11 +926,11 @@ When using a system with {cheri_default_ext_name}, it may be desirable to config
 
 The effective CHERI-enable for the current privilege is:
 
-* Machine-mode:    always enabled
-* Supervisor-mode: `<<menvcfg_y,menvcfg>>.{CRE}`
-* User-mode:       `<<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}`
+* M-mode:    always enabled
+* S-mode: `<<menvcfg_y,menvcfg>>.{CRE}`
+* U-mode:       `<<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}`
 
-To allow standard RVI/RVE code to run at privilege levels below Machine-mode the registers are initialized as follows:
+To allow standard RVI/RVE code to run at privilege levels below M-mode the registers are initialized as follows:
 
 * `<<menvcfg_y,menvcfg>>.{CRE}=0`
 * `<<senvcfg_y,senvcfg>>.{CRE}=0`
