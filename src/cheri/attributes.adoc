@@ -17,15 +17,17 @@
 :cheri_base_ext_name_lc:   pass:quotes[rvy]
 // CHERI extension adding support for integer pointer mode (and mode bit)
 :cheri_default_ext_name:   Zyhybrid
+:cheri_default_sext_name:  Ssyhybrid
+:cheri_default_mext_name:  Smyhybrid
 :cheri_mode_name:          CHERI Pointer Mode
-:cheri_priv_m_ext: Machine-Level ISA ({cheri_base_ext_name})
-:cheri_priv_m_reg_enable_ext: {cheri_default_ext_name} for Privileged Architectures
+:cheri_priv_m_ext: Smy
+:cheri_priv_hybrid_exts: {cheri_default_mext_name} and {cheri_default_sext_name}
 ifdef::support_varxlen[]
 :cheri_priv_m_dyn_xlen_ext: Smyvarxlen
 endif::support_varxlen[]
-:cheri_priv_s_ext: Supervisor-Level ISA ({cheri_base_ext_name})
+:cheri_priv_s_ext: Ssy
 :cheri_priv_h_ext: "H" Extension for Hypervisor Support ({cheri_base_ext_name})
-:cheri_priv_vmem_ext: Supervisor-Level ISA for Virtual Memory ({cheri_base64_ext_name})
+:cheri_priv_vmem_ext: Sv39/Sv48/Sv57 ({cheri_base_ext_name})
 :cheri_priv_debug_trig: Sdtrig ({cheri_base_ext_name})
 
 // 32-bit encodings added by RVY

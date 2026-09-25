@@ -1,7 +1,8 @@
 [#section_priv_cheri]
-== "Machine-Level ISA ({cheri_base_ext_name})" Extensions, Version 1.0
+== "{cheri_priv_m_ext}" Extension for Machine-Level Architecture, Version 1.0
 
 This chapter describes integration of {cheri_base_ext_name} with the RISC-V privileged architecture.
+{cheri_priv_m_ext} is mandatory for all {cheri_base_ext_name} implementations.
 
 === Machine-Level CSRs widened by {cheri_base_ext_name}
 
@@ -483,7 +484,10 @@ Code pointers and data pointers in <<CSR_exevectors_m>> are WARL CSRs that do no
 include::{generated_dir}/csr_exevectors_m_table_body.adoc[]
 |==============================================================================
 
-== "Supervisor-Level ISA ({cheri_base_ext_name})" Extensions, Version 1.0
+[#section_priv_s_cheri]
+== "{cheri_priv_s_ext}" Extension for Supervisor-Level Architecture, Version 1.0
+
+{cheri_priv_s_ext} is mandatory for all {cheri_base_ext_name} implementations that support S-mode.
 
 [#supervisor-level-widened-csrs-section]
 === Supervisor-Level CSRs widened by {cheri_base_ext_name}
@@ -647,7 +651,9 @@ include::{generated_dir}/csr_exevectors_s_table_body.adoc[]
 |==============================================================================
 
 [#section_priv_cheri_vmem]
-== "{cheri_priv_vmem_ext}" Extension, Version 1.0
+== "{cheri_priv_vmem_ext}" Page-Based Virtual-Memory Extensions, Version 1.0
+
+When the base architecture is {cheri_base64_ext_name}, the Sv39, Sv48, and Sv57 page-based virtual-memory extensions allocate the `{cheri_base_ext_name}` PTE field to control capability stores.
 
 CHERI checks are made on the effective address according to the current translation scheme.
 I.e., on the virtual address if translation is enabled or the physical address if translation is disabled.
@@ -910,7 +916,7 @@ Capabilities which allow access to every byte in memory have _infinite bounds_.
 endif::[]
 
 [#section_cheri_disable]
-== "{cheri_priv_m_reg_enable_ext}" Extension, Version 1.0
+== "{cheri_priv_hybrid_exts}" Extensions, Version 1.0
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* This feature is new and different from CHERI v9's
@@ -920,15 +926,16 @@ endif::[]
 
 When using a system with {cheri_default_ext_name}, it may be desirable to configure privilege levels below M-mode such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
 
-{cheri_default_ext_name} includes the ability to disable CHERI by making the {CRE} bit of <<menvcfg_y>> and <<senvcfg_y>> writable.
+{cheri_default_mext_name} is mandatory for all {cheri_default_ext_name} implementations.
+{cheri_default_mext_name} adds the ability to disable CHERI in lower privilege modes by making the `{CRE}` bit of <<menvcfg_y>> and `<<misa_y,misa>>.{CRE}` writable, and adds <<ddc>> to the registers that must have the capability metadata set to the reset value for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
 
-{cheri_default_ext_name} adds <<ddc>> to the registers that must have the capability metadata set to the reset value for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
+{cheri_default_sext_name} is mandatory for all {cheri_default_ext_name} implementations that support S-mode, and adds the ability to disable CHERI in U-mode by making the `{CRE}` bit of <<senvcfg_y>> writable.
 
 The effective CHERI-enable for the current privilege is:
 
-* M-mode:    always enabled
+* M-mode: always enabled
 * S-mode: `<<menvcfg_y,menvcfg>>.{CRE}`
-* U-mode:       `<<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}`
+* U-mode: `<<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}` (or `<<menvcfg_y,menvcfg>>.{CRE}` if S-mode is not implemented)
 
 To allow standard RVI/RVE code to run at privilege levels below M-mode the registers are initialized as follows:
 
