@@ -18,7 +18,7 @@ There are two types of bus connections used in SoCs which contain CHERI CPUs:
 .. Reads of tagged memory will not read the {ctag}.
 .. Writes to tagged memory will set the {ctag} of any naturally aligned YLEN-bit memory location to zero where any byte is overwritten by the memory write.
 
-The fundamental rule for any CHERI system is that the {ctag} and data are always accessed atomically. For every naturally aligned YLEN-wide memory location, it must never be possible to:
+The fundamental rule for any CHERI system is that the {ctag} and data are always accessed atomically. For every naturally aligned YLEN-bit memory location, it must never be possible to:
 
 . Update any data bytes without also writing the {ctag}
 .. This implies setting the {ctag} to zero if a non-CHERI aware bus master overwrites a capability in memory
