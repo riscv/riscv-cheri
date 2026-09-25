@@ -24,7 +24,7 @@ from which it can derive a capability to access the data structures at the targe
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
 The WARL `mtvec` register is widened to a capability.
-Its reset value is nominally a <<root-rx-cap>> capability.
+The suggested reset value is a <<root-rx-cap>> capability.
 
 NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a source of a <<root-rx-cap>> capability after reset.
 
@@ -32,6 +32,9 @@ NOTE: <<mtvec_y>> exists in all CHERI implementations, and so may be used as a s
 include::img/mtveccreg.edn[]
 
 NOTE: Implementations may use the WARL behavior to restrict the metadata to only values valid for code pointers.
+
+NOTE: Examples of WARL behavior include always setting <<x_perm>> to 1 and setting the reserved fields to zero, otherwise the capability is unusable.
+ Another example is to partially or fully restrict the bounds to constant values.
 
 When a trap is taken into M-mode, the capability in <<mtvec_y>> is installed in the <<pcc>>, with the address determined by the standard `mtvec` behavior.
 
@@ -78,7 +81,7 @@ include::img/mscratchcreg.edn[]
 ==== Machine Exception Program Counter Capability (mepc)
 
 The WARL `mepc` register is widened to a capability.
-Its reset value is nominally a <<root-rx-cap>> capability.
+The suggested reset value is a <<root-rx-cap>> capability.
 
 .Machine exception program counter capability register
 include::img/mepccreg.edn[]
@@ -460,7 +463,7 @@ endif::support_varxlen[]
 
 .All {cheri_base_ext_name} M-mode CSRs.
 [#all_capability_CSRs_m]
-[width="100%",options=header,cols="3,3,2,2,3,3,5"]
+[width="100%",options=header,cols="3,3,2,3,3,5"]
 |==============================================================================
 include::{generated_dir}/csr_permission_m_table_body.adoc[]
 |==============================================================================
@@ -468,9 +471,9 @@ include::{generated_dir}/csr_permission_m_table_body.adoc[]
 NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are the maximum possible values.
 The platform may reset those CSRs to a smaller memory range, or to grant fewer permissions.
 
-.Action taken on writing to YLEN-bit and extended M-mode CSRs
+.Action taken on writing to YLEN-bit M-mode CSRs
 [#extended_CSR_writing_m]
-[width="100%",options=header,cols="1,1,1,2,2"]
+[width="100%",options=header,cols="1,1,2,2"]
 |==============================================================================
 include::{generated_dir}/csr_alias_action_m_table_body.adoc[]
 |==============================================================================
@@ -629,14 +632,14 @@ include::insns/mret_sret.adoc[]
 
 .All {cheri_base_ext_name} S-mode CSRs.
 [#all_capability_CSRs_s]
-[width="100%",options=header,cols="3,3,2,2,3,3,5"]
+[width="100%",options=header,cols="3,3,2,3,3,5"]
 |==============================================================================
 include::{generated_dir}/csr_permission_s_table_body.adoc[]
 |==============================================================================
 
-.Action taken on writing to YLEN-bit and extended S-mode CSRs
+.Action taken on writing to YLEN-bit S-mode CSRs
 [#extended_CSR_writing_s]
-[width="100%",options=header,cols="1,1,1,2,2"]
+[width="100%",options=header,cols="1,1,2,2"]
 |==============================================================================
 include::{generated_dir}/csr_alias_action_s_table_body.adoc[]
 |==============================================================================
@@ -949,7 +952,7 @@ The following occurs when executing code in a privilege mode that has CHERI disa
 
 * Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces
 ** Therefore, {cheri_base_ext_name} instructions are no longer available.
-* No natively YLEN CSRs are available.
+* No CSRs added by {cheri_base_ext_name} are available.
 * Only XLEN CSR access is permitted.
 ** This is identical to {cheri_int_mode_name} access.
 
@@ -972,8 +975,8 @@ xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart 
 |==============================================================================
 |                                      | {CRE}^1^=0        | {CRE}=1, P-bit={int_mode_value} | {CRE}=1, P-bit={cap_mode_value}
 | Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
-| Natively YLEN CSRs available         | ✘                 | ✔                     | ✔
-| Extended YLEN CSR access width       | XLEN              | XLEN                  | YLEN
+| {cheri_base_ext_name} CSRs available | ✘                 | ✔                     | ✔
+| Widened CSR access width             | XLEN              | XLEN                  | YLEN
 | 16-bit {cheri_base_ext_name} instructions available  | ✘                 | ✘                     | ✔
 | Wider {cheri_base_ext_name} instructions available   | ✘                 | ✔                     | ✔
 | _custom-1/2/3_ available for custom use| ✔                 | ✘                     | ✘
