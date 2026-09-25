@@ -1252,6 +1252,18 @@ include::insns/jalr_16bit.adoc[]
 
 endif::[]
 
+==== Zca HINT Encodings
+
+In RVI/RVE, Zca arithmetic encodings with _rd_{ne}``x0`` and a zero immediate or shift amount are defined as HINTs because they leave the integer value in _rd_ unchanged.
+In {cheri_base_ext_name}, executing an integer arithmetic instruction that writes _rd_{ne}``x0`` sets the destination register's metadata and {ctag} to zero, so the following encodings are instead _reserved_ (leaving only Zca HINT encodings with _rd_=`x0` as HINTs):
+
+* `C.ADDI` with _rd_{ne}``x0`` and _imm_=0
+* `C.SLLI` with _rd_{ne}``x0`` and _shamt_=0
+* `C.SRLI` with _shamt_=0
+* `C.SRAI` with _shamt_=0
+
+NOTE: Marking these encodings as _reserved_ allows future extensions to allocate these code points consistently across RVI/RVE and {cheri_base_ext_name}.
+
 [#rvy_zalrsc_insn_table, reftext="{rvy_zalrsc_ext_name}"]
 == {rvy_zalrsc_ext_name}
 
