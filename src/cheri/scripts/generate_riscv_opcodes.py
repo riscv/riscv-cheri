@@ -5,8 +5,6 @@ from rvy_instruction_encodings import get_custom3_insts
 def generate_riscv_opcodes():
     instructions = get_custom3_insts()
     for insn in instructions:
-        if insn.name == "YHIW":
-            continue
         cells = sorted(insn.cells, key=lambda c: c.start, reverse=True)
 
         args = []
