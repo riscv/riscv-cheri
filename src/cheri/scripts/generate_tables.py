@@ -471,7 +471,7 @@ class csr_alias_action_u(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "U"
 
 class csr_perms_d(table):
-    cols = ["RVY CSR", "Extension", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Extension", "Width", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
