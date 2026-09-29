@@ -20,9 +20,9 @@ There are two types of bus connections used in SoCs which contain CHERI CPUs:
 
 The fundamental rule for any CHERI system is that the {ctag} and data are always accessed atomically. For every naturally aligned YLEN-bit memory location, it must never be possible to:
 
-. Update any data bytes without also writing the {ctag}
-.. This implies setting the {ctag} to zero if a non-CHERI-aware bus master overwrites a capability in memory
-. Read a {ctag} value with mismatched (stale or newer) data
+. Update any data bytes without also writing the {ctag}.
+.. This implies setting the {ctag} to zero if a non-CHERI-aware bus master overwrites a capability in memory.
+. Read a {ctag} value with mismatched (stale or newer) data.
 . Set a {ctag} to one without also atomically writing the associated data.
 
 NOTE: Clearing a {ctag} may be performed without changing the associated data, provided stale tagged data can never be observed.

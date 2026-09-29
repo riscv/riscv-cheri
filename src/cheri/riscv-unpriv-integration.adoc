@@ -174,7 +174,7 @@ NOTE: All system memory and caches that store capabilities must preserve this ab
 
 Capabilities encode memory bounds as a half-open byte range `[base, top)`, which is the range that may be accessed when the capability authorizes data memory access or instruction execution.
 
-Checking is on a byte-by-byte basis, so that it is possible for a memory access to be fully in-bounds, partially out-of-bounds or fully out-of-bounds.
+Checking is on a byte-by-byte basis, so that it is possible for a memory access to be fully in-bounds, partially out-of-bounds, or fully out-of-bounds.
 
 A partially or fully out-of-bounds data access or instruction fetch raises an exception.
 
@@ -191,7 +191,7 @@ NOTE: _Inclusive top_, with XLEN bits, was considered but rejected in favor of t
 Therefore, a memory location `A` in the range `base {le} A < top` is within bounds, and so valid to access.
 
 NOTE: Checking every byte of every executed instruction and every byte of every data memory access is fundamental to the memory safety which CHERI provides.
-In a typical load/store unit, the expansion of the bounds from `{cs1}` and bounds checking is in parallel with the address calculation, the memory translation and/or the PMA/PMP checking.
+In a typical load/store unit, the expansion of the bounds from `{cs1}` and bounds checking is in parallel with the address calculation, the memory translation, and/or the PMA/PMP checking.
 
 A compressed format is used to encode the bounds with a scheme similar to floating-point using an exponent and a mantissa.
 Therefore, small exponents can allow byte granularity on the bounds, but larger exponents give coarser granularity.
@@ -217,7 +217,7 @@ Capabilities which allow access to every byte in memory have _infinite bounds_.
 Upon initialization, the execution environment defines how capabilities are made available to the execution context.
 All capabilities with smaller bounds are derived from these, or from capabilities in memory accessible by these.
 
-The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>> and <<SCBNDSR>> instructions.
+The bounds are reduced using the <<SCBNDS>>, <<SCBNDSI>>, and <<SCBNDSR>> instructions.
 
 These bounds-reducing instructions all copy `{cs1}` to the output `{cd}`, set the _base_ bound address of `{cd}` to `{cs1}.address`, subject to encoding granularity constraints, and set the _length_ of `{cd}` from `rs2` or the immediate field depending on the instruction.
 
@@ -832,19 +832,15 @@ NOTE: Examples of WARL behavior for metadata are implementations requiring all f
 
 When accessing CSRs these rules are followed:
 
-. Accesses to <<xlen_csrs>> are as specified by Zicsr
+. Accesses to <<xlen_csrs>> are as specified by Zicsr.
 . Accesses to <<ylen_csrs>> using CSRRW will:
 .. Read YLEN bits
-<<<<<<< HEAD
 .. Write YLEN bits, and will invalidate the written capability if it fails any <<section_cap_integrity, integrity>> checks or cannot be written unmodified due to WARL fields.
-=======
-.. Write YLEN bits, and will invalidate the written capability if it fails any <<section_cap_integrity, integrity>> checks.
->>>>>>> df8795af (BASELINE: SQUASHED PR 1248)
 . Accesses to <<ylen_csrs>> using instructions other than CSRRW will:
-.. Read YLEN bits
+.. Read YLEN bits.
 .. For CSRRS/CSRRC, compute the XLEN-bit address field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN-bit source operand.
 .. For immediate forms, compute the XLEN-bit address field value using the standard Zicsr operation with the zero-extended `uimm` operand.
-.. Write the computed XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value
+.. Write the computed XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value.
 
 ifdef::cheri_standalone_spec[]
 NOTE: <<ylen_csrs>> are summarized in <<all_capability_CSRs_u>>, <<all_capability_CSRs_m>>, and <<all_capability_CSRs_s>>.
