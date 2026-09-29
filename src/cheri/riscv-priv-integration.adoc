@@ -115,8 +115,7 @@ In the following case the value of the {ctag} observable in the CSR depends on t
 
 The observable {ctag} is zero when IALIGN=32 and one when IALIGN=16.
 
-When a trap is taken into M-mode, the `pc` is written to `mepc.address` following the standard behavior.
-The {ctag} and metadata of the <<pcc>> are also written to <<mepc_y>>.
+When a trap is taken into M-mode, the <<pcc>> (including its {ctag} and metadata) is written to <<mepc_y>>, with `mepc.address` set to the `pc` of the interrupted or excepting instruction following the standard behavior.
 
 On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_y>> is unsealed if it is a <<sentry_cap>> and written to <<pcc>>.
 
