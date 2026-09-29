@@ -105,7 +105,8 @@ Prefetches are also checked against the appropriate CSR (<<ddc>> for <<PREFETCH_
 +
 NOTE: Authorization of prefetches is useful to mitigate against side channels, e.g., preventing userspace from fetching kernel memory into a cache.
 +
-Accesses to <<ylen_csrs>> are XLEN-bit and writes use the semantics of the <<SCADDR>> instruction, except for CSRs added by {cheri_base_ext_name} or its extensions (such as <<ddc>>), which remain YLEN-bit (see <<rvy_zicsr_mod_insn_table>>).
+Accesses to <<ylen_csrs>> added by {cheri_base_ext_name} or its extensions (such as <<ddc>>), remain YLEN-bit (see <<rvy_zicsr_mod_insn_table>>).
+Accesses to all other CSRs are XLEN-bit and writes use the semantics of the <<SCADDR>> instruction.
 
 The _<<cheri_execution_mode>>_ is key in providing backwards compatibility with the base RV32[IE]/RV64[IE] ISAs.
 
