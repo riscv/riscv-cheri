@@ -19,7 +19,7 @@ NOTE: The <<p_bit>> determines whether pointers are interpreted as standard RISC
 include::{generated_dir}/{rvy_hybrid_file_name}.adoc[]
 |==============================================================================
 
-This extension also adds the default data capability (<<ddc>>), an unprivileged CSR used to authorize data memory accesses when in {cheri_int_mode_name}.
+This extension also adds the default data capability (<<ddc>>), an unprivileged <<ylen_csrs, YLEN-bit CSR>> used to authorize data memory accesses when in {cheri_int_mode_name}.
 
 NOTE: Together with <<pcc>>, <<ddc>> enables confining execution to a compartment (or _sandbox_) where all memory accesses are bounded.
 These compartments provide binary compatibility for existing RV32[IE]/RV64[IE] code.
@@ -46,7 +46,7 @@ Instruction semantics are as defined in the {cheri_base_ext_name} base ISA.
 {cheri_int_mode_name}::
 All pointer operands to instructions are interpreted as for the RV32[IE]/RV64[IE] base ISA, i.e., as plain memory addresses without metadata.
 While the base ISA remains {cheri_base_ext_name} this mode provides backwards compatibility with RV32[IE]/RV64[IE].
-Operands are still checked against a capability, but instead of using the metadata from the full `YLEN` register, the bounds and permissions are obtained from <<ddc>> (for data accesses) or <<pcc>> (for instruction accesses).
+Operands are still checked against a capability, but instead of using the metadata from the full YLEN-bit register, the bounds and permissions are obtained from <<ddc>> (for data accesses) or <<pcc>> (for instruction accesses).
 +
 [IMPORTANT]
 ====
@@ -200,23 +200,23 @@ include::insns/modesw_32bit.adoc[]
 
 === Added State
 
-{cheri_default_ext_name} adds the YLEN-bit CSR shown in
+{cheri_default_ext_name} adds the <<ylen_csrs, YLEN-bit CSR>> shown in
 xref:unpriv-csrnames-added[xrefstyle=short].
 
 [[unpriv-csrnames-added]]
 .Unprivileged YLEN-bit CSRs added in {cheri_default_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|YLEN CSR|Permissions|Description
+|YLEN-bit CSR|Permissions|Description
 |<<ddc>>|URW|Default Data Capability
 |===
 
 [#ddc,reftext="ddc"]
 ==== Default Data Capability CSR (ddc)
 
-<<ddc>> is a read-write, U-mode accessible capability CSR.
+<<ddc>> is a read-write, U-mode accessible <<ylen_csrs, YLEN-bit CSR>>.
 It does not require <<asr_perm>> in <<pcc>> for writes or reads.
-Similarly to <<pcc>> authorizing all control flow and instruction fetches, this capability register is implicitly checked to authorize all data memory accesses  when the current CHERI mode is {cheri_int_mode_name}.
+Similarly to <<pcc>> authorizing all control flow and instruction fetches, this capability register is implicitly checked to authorize all data memory accesses when the current {cheri_mode_name} is {cheri_int_mode_name}.
 
 The EEI initializes <<ddc>> such that the program can run successfully (e.g., by setting it to be a <<root-rw-cap>> capability).
 

@@ -454,11 +454,11 @@ Setting the MBE, SBE, or UBE field to a value that is not the reset value of MBE
 
 endif::support_varxlen[]
 
-=== M-mode YLEN CSR Summary
+=== M-mode YLEN-bit CSR Summary
 
-<<all_capability_CSRs_m>> shows all YLEN M-mode CSRs added or modified by {cheri_base_ext_name}.
+<<all_capability_CSRs_m>> shows all YLEN-bit M-mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
 
-.All {cheri_base_ext_name} M-mode CSRs.
+.All YLEN-bit M-mode CSRs.
 [#all_capability_CSRs_m]
 [width="100%",options=header,cols="3,3,2,2,3,3,5"]
 |==============================================================================
@@ -623,11 +623,11 @@ See <<utidc>> for a description of the usage.
 
 include::insns/mret_sret.adoc[]
 
-=== S-mode YLEN CSR Summary
+=== S-mode YLEN-bit CSR Summary
 
-<<all_capability_CSRs_s>> shows all YLEN S-mode CSRs added or modified by {cheri_base_ext_name}.
+<<all_capability_CSRs_s>> shows all YLEN-bit S-mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
 
-.All {cheri_base_ext_name} S-mode CSRs.
+.All YLEN-bit S-mode CSRs.
 [#all_capability_CSRs_s]
 [width="100%",options=header,cols="3,3,2,2,3,3,5"]
 |==============================================================================
@@ -661,6 +661,10 @@ I.e., on the virtual address if translation is enabled or the physical address i
 Implicit memory accesses made by the page table walker are not subject to CHERI checks.
 
 NOTE: A future extension may add CHERI checks to the page table walker.
+
+NOTE: {cheri_base_ext_name} does not modify the behavior of SFENCE.\*, or SINVAL.*.
+Address operands passed to them are received as XLEN-bit values, and so the metadata and {ctag} are ignored.
+A future extension may add CHERI checks to these instructions.
 
 [#limit_cap_prop]
 === Limiting Capability Propagation
