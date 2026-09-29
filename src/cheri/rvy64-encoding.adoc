@@ -66,17 +66,9 @@ NOTE: T[13:12], T[2:0], and B[2:0] are not specified by the metadata fields and 
 
 NOTE: All values in <<rvy64_uni_base_name_param_summary>> match the default values specified in <<cap_encoding_param_default_summary>>.
 
-.{rv64y_uni_base_name} extension summary
-[#rvy64_uni_base_name_ext_summary,width="100%",options=header,]
-|==============================================================================
-| Extension                    | Comment
-| <<section_cheri_hybrid_ext>> | Compatible
-| <<section_zylevels1>>        | Compatible
 ifndef::cheri_ratification_v1_only[]
-| <<section_zyseal>>           | Will be compatible once new permissions are encoded
+NOTE: Compatibility with <<section_zyseal>> depends upon new permissions being encoded.
 endif::[]
-| All RV64Y versions of other standard extensions | Compatible
-|==============================================================================
 
 [#AP-field-encoding64, reftext="AP-field encoding"]
 ==== Architectural Permissions (AP) Encoding
@@ -171,7 +163,7 @@ are incompatible with the <<section_zyseal>> extension.
 endif::[]
 
 [#section_cap_bounds]
-==== Bounds (EF, T, TE, B, BE, L8) Encoding
+==== Bounds (EF, T, TE, B, BE, L~8~) Encoding
 
 ===== Concept
 
@@ -182,12 +174,9 @@ specification.
 endif::[]
 
 The bounds encode the _base_ and _top_ addresses that constrain memory accesses.
-The capability can be used to access any memory location A in the range base
-{le} A < top. The bounds are encoded in a compressed format, so it is not
-possible to encode any arbitrary combination of _base_ and _top_ addresses. An
-invalid capability is produced when attempting to construct a
-capability that is not _representable_ because its bounds cannot be correctly
-encoded.
+The capability can be used to access any memory location A in the range base {le} A < top.
+The bounds are encoded in a compressed format, so it is not possible to encode any arbitrary combination of _base_ and _top_ addresses.
+An invalid capability is produced when attempting to construct a capability that is not _representable_ because its bounds cannot be correctly encoded.
 
 The variables related to the bounds decoding are shown in <<rvy64_uni_base_name_bndsenc_param_summary>>.
 
@@ -202,23 +191,22 @@ The variables related to the bounds decoding are shown in <<rvy64_uni_base_name_
 | E         | Exponent that determines the position at which T and B are substituted into the capability's address.
 | L~8~^1^   | Value used to form either the MSB of the exponent or the MSB of the _top_ bound address.
 | EF        | Exponent format flag indicating the encoding for T, B, and E: +
-EF=0: The exponent is calculated from TE and BE, and conditionally L8, so it is 'internal'. +
-EF=1: The exponent is zero; TE, BE, and L8 form part of the address bounds.
+EF=0: The exponent is calculated from TE and BE, and conditionally L~8~, so it is 'internal'. +
+EF=1: The exponent is zero; TE, BE, and L~8~ form part of the address bounds.
 |==============================================================================
 
 ^1^ Only valid if `enableL8=1`.
 
 The variables in <<rvy64_uni_base_name_bndsenc_param_summary>> are either taken directly from the capability metadata (see <<cap_encoding_xlen64_field_table>>) or, in the case of the upper and lower bits of `T` and `B`, are calculated from it.
-These variables are used as shown in the <<bounds_variable_usage,pseudo-code>> below.
+These variables are used as shown in the <<bounds_variable_usage,pseudocode>> below.
 
 The bit widths of `T` and `B` are defined in terms of the mantissa width (`MW`) which
 is set depending on capability-encoding format as shown in
 xref:rvy64_uni_base_name_param_summary[xrefstyle=short].
 
-The exponent `E` indicates the position of `T` and `B` within the capability's
-address as described in xref:section_cap_bounds_format[xrefstyle=short]. The bit
-width of the exponent (`EW`) is set depending on the encoding. The
-maximum value of the exponent is calculated as follows:
+The exponent `E` indicates the position of `T` and `B` within the capability's address as described in xref:section_cap_bounds_format[xrefstyle=short].
+The bit width of the exponent (`EW`) is set depending on the encoding.
+The maximum value of the exponent is calculated as follows:
 
 [source]
 ----
@@ -249,20 +237,17 @@ When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base bound addresses respectively. +
 When EF=0, the exponent `E=CAP_MAX_E - ( enableL8 ? { L~8~, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
-and base bound addresses respectively. E is computed by subtracting from the maximum
-possible exponent CAP_MAX_E which can be efficiently implemented in hardware
-assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise
-shift right by E. In contrast, CHERI v9 implementations computed the top and
-base bound addresses by assuming that T and B are at bit 0 and performing a logical
-bitwise shift left by E.
+and base bound addresses respectively.
+E is computed by subtracting from the maximum possible exponent CAP_MAX_E which can be efficiently implemented in hardware assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise shift right by E.
+In contrast, CHERI v9 implementations computed the top and base bound addresses by assuming that T and B are at bit 0 and performing a logical bitwise shift left by E.
 endif::[]
 
 anchor:bounds_variable_usage[]
 
-In the pseudo-code below:
+In the pseudocode below:
 
 * `EF`, `T`, `TE`, `B` and `BE` are all encoded in the capability metadata, see <<cap_encoding_xlen64_field_table>>
-** `L8` is also a capability metadata field but only encoded if `enableL8=1`.
+** `L~8~` is also a capability metadata field but only encoded if `enableL8=1`.
 * `EW`, `MW`, `CAP_MAX_E` and `enableL8` are all capability-encoding format parameters, see <<rvy64_uni_base_name_param_summary>>.
 * `LCout` and `LMSB` are intermediate values used to reconstitute the top two bits of `T`, see below.
 
@@ -286,9 +271,9 @@ T and B are both MW bits wide, and are formed of different bit ranges:
 
 * `T[MW - 1:MW - 2]` is specified below.
 * `T[MW - 3:EW / 2]` is taken directly from the capability metadata.
-* `T[EW / 2 - 1:0]`  is as specified in the pseudo-code above.
+* `T[EW / 2 - 1:0]`  is as specified in the pseudocode above.
 * `B[MW - 1:EW / 2]` is taken directly from the capability metadata.
-* `B[EW / 2 - 1:0]`  is as specified in the pseudo-code above.
+* `B[EW / 2 - 1:0]`  is as specified in the pseudocode above.
 
 The design rationale for the two `EF` cases is as follows:
 
@@ -310,7 +295,7 @@ T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
 This derivation relies on the equality `T = B + L`, where `L` is the encoded length of the capability.
 `LMSB` is the value of `L[MW - 2]`, which is known from the values of `EF` and `E` (as well as L~8~ when `enableL8=1`).
 `LCout` is the carry out from the lower bits, which is implied by `T[MW - 3:0] < B[MW - 3:0]` since it is
-guaranteed that the _top_ bound address is larger than the _base_ bound address.
+guaranteed that the _top_ bound address is greater than or equal to the _base_ bound address.
 
 [#section_cap_bounds_format]
 ===== Format of the Bounds
@@ -506,23 +491,18 @@ The _top_ and _base_ capability bounds are formed of two or three sections:
 | EF=1, i.e., E=0 | address[XLEN-1:MW] + ct   2+| T[MW - 1:0]
 |==============================================================================
 
-The _representable range_ defines the range of addresses which do not corrupt
-the bounds encoding. The encoding was first introduced in
-xref:section_cap_bounds[xrefstyle=short], and is repeated in a different
-form in xref:comp_addr_bounds[xrefstyle=short] to aid this description.
+The _representable range_ defines the range of addresses which do not corrupt the bounds encoding.
+The encoding was first introduced in xref:section_cap_bounds[xrefstyle=short], and is repeated in a different form in xref:comp_addr_bounds[xrefstyle=short] to aid this description.
 
 For the address to be valid for the current bounds encoding, the value
 in the _Upper Section_ of xref:comp_addr_bounds[xrefstyle=short] _must
-not change_ as this will change the meaning of the bounds.  This
-is because `T`, `B` and `E` will be unchanged for the source and
-destination capabilities.  Therefore, the Middle and Lower sections
-of the bounds calculation are also unchanged for source and
-destination capabilities.
+not change_ as this will change the meaning of the bounds.
+This is because `T`, `B` and `E` will be unchanged for the source and destination capabilities.
+Therefore, the Middle and Lower sections of the bounds calculation are also unchanged for source and destination capabilities.
 
 When E > CAP_MAX_E - 2, the calculation of the _top_ bound address is entirely derived
-from `T` and `E`, which will be identical for both the source and destination
-capabilities, thus guaranteeing that `top == top'`.  Likewise, with such values of E, the
-_base_ bound address is entirely derived from `B` and `E` and therefore `base == base'`.
+from `T` and `E`, which will be identical for both the source and destination capabilities, thus guaranteeing that `top == top'`.
+Likewise, with such values of E, the _base_ bound address is entirely derived from `B` and `E` and therefore `base == base'`.
 
 The calculation of the MSB of the _top_ bound address may be inverted as specified
 in xref:t_bound_msb_inversion[xrefstyle=short].
@@ -560,8 +540,8 @@ Given that `top[XLEN]` is not part of the representable range check:
 
 * when `E == CAP_MAX_E - 2`, `top[XLEN-1:E] == T[MW-1:0]` and `base[XLEN-1:E] == B[MW-1:0]`.
 
-Therefore, `T` and `B` are both derived from the capabilities metadata and are
-therefore constant.  Therefore, the representable range check always passes in this case too.
+Therefore, `T` and `B` are both derived from the capabilities metadata and are therefore constant.
+Therefore, the representable range check always passes in this case too.
 
 As a result:
 
@@ -591,8 +571,8 @@ NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
 the difference between in-memory and architectural format.
 endif::[]
 
-The <<null-cap>> capability is represented with 0 in all fields. This implies
-that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}).
+The <<null-cap>> capability is represented with 0 in all fields.
+This implies that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}).
 The exponent value causes its bounds to cover the entire address space, but no permissions are granted and so it cannot successfully be used to grant authorization.
 
 .Field values of the NULL capability
