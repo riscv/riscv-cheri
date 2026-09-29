@@ -108,7 +108,7 @@ There are 9 bits in total allocated to the <<AP-field>> and the <<p_bit>>.
 * The total valid combinations of X, ASR, and P are 5.
 * The two groups are fully orthogonal.
 
-Therefore there are 90 valid combinations encoded in 9-bits.
+Therefore, there are 90 valid combinations encoded in 9 bits.
 
 Future extensions or capability-encoding formats may leverage these reserved patterns to implement a more compact joint <<AP-field>> and <<p_bit>> encoding that is fully _compatible for all software_ to increase the number of reserved bits.
 
@@ -291,8 +291,8 @@ T and B are both MW bits wide, and are formed of different bit ranges:
 
 The design rationale for the two `EF` cases is as follows:
 
-1. `EF = 1`: The exponent is 0. When `enableL8=1`, `L~8~` encodes the MSB of the length,
-which can be used to derive `T[MW-1:MW-2]`, forming a full MW-wide `T` field.
+1. `EF = 1`: The exponent is 0.
+When `enableL8=1`, L~8~ encodes the MSB of the length, which can be used to derive `T[MW-1:MW-2]`, forming a full MW-bit `T` field.
 2. `EF = 0`: The exponent is _internal_ with E stored in the lower bits of `T` and
 `B`, with `L~8~` used for the MSB of `E` when `enableL8=1`. `E` is chosen so that the most
 significant non-zero bit of the length of the region aligns with `T[MW - 2]` such
@@ -325,7 +325,7 @@ NOTE: XLEN and MW are constant parameters, but E is decoded from the capability 
 
 NOTE: The _top_ bound address has an additional bit so that the bounds can include the topmost byte of memory.
 
-.Decoding of the XLEN+1-wide _top_ bound address
+.Decoding of the (XLEN+1)-bit _top_ bound address
 [#top_bound_dec]
 include::img/top-bound-dec.edn[]
 
@@ -422,7 +422,8 @@ In summary, for either bound:
 
 A capability has <<infinite_bounds,infinite bounds>> if its bounds cover the entire address space
 such that _base_=0 and _top_{ge}2^XLEN^,
-i.e., _top_ is an XLEN + 1 bit value. However, _base_ is an
+i.e., _top_ is an (XLEN+1)-bit value.
+However, _base_ is an
 XLEN-bit value and this width mismatch introduces additional complications
 when decoding, so the following condition is required to correct _top_ for
 capabilities whose <<section_cap_representable_check>> wraps the edge of the address

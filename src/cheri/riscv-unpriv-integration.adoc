@@ -160,7 +160,7 @@ NOTE: Examples of such invalid operations include writing only the integer porti
 
 ==== {ctag_cap}s in Memory
 
-{ctag_cap}s are tracked through the memory subsystem: every naturally aligned YLEN-bit wide region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
+{ctag_cap}s are tracked through the memory subsystem: every naturally aligned YLEN-bit memory region has a non-addressable one-bit {ctag}, which the hardware manages atomically with the data.
 The implementation must set the {ctag} to zero if any byte in the naturally aligned YLEN-bit memory region is ever written using an operation other than the successful store of a capability operand.
 
 For example, the <<STORE_CAP>> instruction sets the {ctag} to one if all the instruction's prerequisites are met, including `{cs2}` being a valid capability, but <<ldst,SW>> will always set the stored {ctag} to zero.
@@ -842,7 +842,7 @@ When accessing CSRs these rules are followed:
 >>>>>>> df8795af (BASELINE: SQUASHED PR 1248)
 . Accesses to <<ylen_csrs>> using instructions other than CSRRW will:
 .. Read YLEN bits
-.. For CSRRS/CSRRC, compute the XLEN-bit address field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN source operand.
+.. For CSRRS/CSRRC, compute the XLEN-bit address field value using the standard Zicsr bitwise set or clear operation on the old CSR address field and the XLEN-bit source operand.
 .. For immediate forms, compute the XLEN-bit address field value using the standard Zicsr operation with the zero-extended `uimm` operand.
 .. Write the computed XLEN-bit value to the address field, and use the semantics of the <<SCADDR>> instruction to determine the final written value
 
