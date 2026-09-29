@@ -26,18 +26,18 @@ Encoding::
 include::wavedrom/csr-instr.adoc[]
 
 Description::
-These CSR instructions have extended functionality for accessing <<ylen_csrs>> and <<widened_csrs>>.
+These CSR instructions have extended functionality for accessing <<ylen_csrs>>.
 +
 Access to <<xlen_csrs>> is as defined in Zicsr.
 +
 Zicsr rules are followed when determining whether to read or write the CSR.
 Suppressed read or write actions have no side-effects on the CSR.
 +
-For the instructions on this page, all writes are XLEN bits only and use the semantics of the <<SCADDR>> instruction to determine the final write data.
+For the instructions on this page, all writes to <<ylen_csrs>> specify XLEN-bit write data only and use the semantics of the <<SCADDR>> instruction to determine the final write data.
 +
-Read data from <<ylen_csrs>> is always YLEN bits.
+Read data from <<ylen_csrs>> is YLEN bits.
 +
-Read data from <<widened_csrs>> is YLEN bits in {cheri_cap_mode_name} or XLEN bits in {cheri_int_mode_name}.
+However, if {cheri_default_ext_name} is implemented and the current mode is {cheri_int_mode_name}, read data is XLEN bits unless the CSR was added by {cheri_base_ext_name} or its extensions.
 
 Permissions::
 Accessing CSRs may require <<asr_perm>>.

@@ -55,15 +55,6 @@ NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pc
 
 Following the standard `mtvec` rules, <<mtvec_y>> need not be able to hold all possible <<section_invalid_addr_conv, invalid addresses>>.
 
-[#menvcfg_y,reftext="menvcfg ({cheri_base_ext_name})"]
-==== Machine Environment Configuration (`menvcfg`) Register
-
-<<section_cheri_hybrid_ext>> adds the {CRE} bit to *menvcfg*.
-The {CRE} bit can be used to disable or enable {cheri_base_ext_name} for privilege modes below M-mode, as described in xref:section_cheri_disable[xrefstyle=full].
-
-[#menvcfgmodereg]
-include::img/menvcfgmodereg.edn[]
-
 [#mscratch_y, reftext="mscratch ({cheri_base_ext_name})"]
 ==== Machine Scratch Capability Register (mscratch)
 
@@ -115,8 +106,7 @@ In the following case the value of the {ctag} observable in the CSR depends on t
 
 The observable {ctag} is zero when IALIGN=32 and one when IALIGN=16.
 
-When a trap is taken into M-mode, the `pc` is written to `mepc.address` following the standard behavior.
-The {ctag} and metadata of the <<pcc>> are also written to <<mepc_y>>.
+When a trap is taken into M-mode, the <<pcc>> (including its {ctag} and metadata) is written to <<mepc_y>>, with `mepc.address` set to the `pc` of the interrupted or excepting instruction following the standard behavior.
 
 On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_y>> is unsealed if it is a <<sentry_cap>> and written to <<pcc>>.
 
@@ -135,6 +125,16 @@ The <<mtidc>> register is used to identify the current software thread in M-mode
 include::img/mtidcreg.edn[]
 
 === Machine-Level CSRs modified by {cheri_base_ext_name}
+
+[#menvcfg_y,reftext="menvcfg ({cheri_base_ext_name})"]
+==== Machine Environment Configuration (`menvcfg`) Register
+
+{cheri_default_mext_name} adds the {CRE} bit to *menvcfg*.
+The {CRE} bit can be used to disable or enable {cheri_base_ext_name} for privilege modes below M-mode, as described in xref:section_cheri_disable[xrefstyle=full].
+
+.Machine environment configuration register (*menvcfg*)
+[#menvcfgmodereg]
+include::img/menvcfgmodereg.edn[]
 
 [#misa_y, reftext="misa ({cheri_base_ext_name})"]
 ==== Machine ISA (`misa`) Register
@@ -219,7 +219,7 @@ value of XLEN for S-mode and U-mode, must be read-only when the base architectur
   Only 1 and 2 are supported values.
 
 * The MBE, SBE, and UBE fields that control the memory system endianness for M-mode, S-mode, and U-mode must be read-only when the base architecture is {cheri_base_ext_name}.
-   SBE and UBE must be read only and equal to MBE, if S-mode or
+   SBE and UBE must be read-only and equal to MBE, if S-mode or
 U-mode, respectively, is implemented, or read-only zero otherwise.
 
 Changing XLEN or endianness would change the interpretation of all in-memory capabilities, so allowing these fields to change at runtime is prohibited.
@@ -228,7 +228,7 @@ NOTE: These restrictions may be relaxed by a future extension. Such an extension
 
 MXR has no effect on the CHERI permission checking.
 
-NOTE: CHERI does not need to make use of execute only memory for security reasons, and so MXR has no relevance.
+NOTE: CHERI does not need to make use of execute-only memory for security reasons, and so MXR has no relevance.
 
 ifndef::cheri_ratification_v1_only[]
 [#mstatush_y, reftext="mstatush ({cheri_base_ext_name})"]
@@ -456,11 +456,11 @@ endif::support_varxlen[]
 
 === M-mode YLEN-bit CSR Summary
 
-<<all_capability_CSRs_m>> shows all YLEN-bit M-mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
+<<all_capability_CSRs_m>> shows all <<ylen_csrs,YLEN-bit>> M-mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
 
 .All YLEN-bit M-mode CSRs.
 [#all_capability_CSRs_m]
-[width="100%",options=header,cols="3,3,2,2,3,3,5"]
+[width="100%",options=header,cols="3,3,2,3,3,5"]
 |==============================================================================
 include::{generated_dir}/csr_permission_m_table_body.adoc[]
 |==============================================================================
@@ -468,9 +468,9 @@ include::{generated_dir}/csr_permission_m_table_body.adoc[]
 NOTE: Where reset values are specified as a <<root-rx-cap>> or <<root-rw-cap>> they are the maximum possible values.
 The platform may reset those CSRs to a smaller memory range, or to grant fewer permissions.
 
-.Action taken on writing to YLEN-bit and extended M-mode CSRs
+.Action taken on writing to YLEN-bit M-mode CSRs
 [#extended_CSR_writing_m]
-[width="100%",options=header,cols="1,1,1,2,2"]
+[width="100%",options=header,cols="1,1,2,2"]
 |==============================================================================
 include::{generated_dir}/csr_alias_action_m_table_body.adoc[]
 |==============================================================================
@@ -590,7 +590,7 @@ include::img/stidcreg.edn[]
 [#senvcfg_y,reftext="senvcfg ({cheri_base_ext_name})"]
 ==== Supervisor Environment Configuration Register (senvcfg)
 
-<<section_cheri_hybrid_ext>> adds the {CRE} bit to *senvcfg*.
+{cheri_default_sext_name} adds the {CRE} bit to *senvcfg*.
 The {CRE} bit can be used to disable or enable {cheri_base_ext_name} for U-mode, as described in xref:section_cheri_disable[xrefstyle=full].
 
 .Supervisor environment configuration register (*senvcfg*)
@@ -625,18 +625,18 @@ include::insns/mret_sret.adoc[]
 
 === S-mode YLEN-bit CSR Summary
 
-<<all_capability_CSRs_s>> shows all YLEN-bit S-mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
+<<all_capability_CSRs_s>> shows all <<ylen_csrs,YLEN-bit>> S-mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
 
 .All YLEN-bit S-mode CSRs.
 [#all_capability_CSRs_s]
-[width="100%",options=header,cols="3,3,2,2,3,3,5"]
+[width="100%",options=header,cols="3,3,2,3,3,5"]
 |==============================================================================
 include::{generated_dir}/csr_permission_s_table_body.adoc[]
 |==============================================================================
 
-.Action taken on writing to YLEN-bit and extended S-mode CSRs
+.Action taken on writing to YLEN-bit S-mode CSRs
 [#extended_CSR_writing_s]
-[width="100%",options=header,cols="1,1,1,2,2"]
+[width="100%",options=header,cols="1,1,2,2"]
 |==============================================================================
 include::{generated_dir}/csr_alias_action_s_table_body.adoc[]
 |==============================================================================
@@ -734,9 +734,9 @@ However, the bounds encoding of capabilities depends on the address value if the
 
 Therefore, if the bounds are not <<infinite_bounds,infinite>>, implementations must not convert an invalid address to a different invalid address, except as permitted by the rules in the following subsections.
 
-If the bounds could not be decoded due to the address being invalid, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_ or _{cheri_excep_name_st}_ exception is raised as appropriate.
+If the bounds could not be decoded due to the address being invalid, then a _{cheri_excep_name_pc}_, _{cheri_excep_name_ld}_, or _{cheri_excep_name_st}_ exception is raised as appropriate.
 
-NOTE: Not requiring the implementation to decode the bounds for invalid addresses reduces the size of bounds comparators from 64-bits to the supported virtual address width.
+NOTE: Not requiring the implementation to decode the bounds for invalid addresses reduces the size of bounds comparators from 64 bits to the supported virtual address width.
 
 ==== Updating CSRs
 
@@ -888,6 +888,10 @@ YADDRW::
 {MODESW_INT}::
    See the unprivileged manual for the definition of {MODESW_INT}.
 
+[#ylen_csrs, reftext="YLEN-bit CSRs"]
+YLEN-bit CSRs::
+  See the unprivileged manual for the definition of YLEN-bit CSRs.
+
 [#unpriv-csrnames-added, reftext="Unprivileged YLEN-bit CSRs added in {cheri_default_ext_name}"]
 Unprivileged YLEN-bit CSRs added in {cheri_default_ext_name}::
   See the unprivileged manual for the table of these CSRs.
@@ -953,9 +957,8 @@ The following occurs when executing code in a privilege mode that has CHERI disa
 
 * Custom encoding spaces reallocated as standard encoding spaces for {cheri_base_ext_name} revert to being custom encoding spaces
 ** Therefore, {cheri_base_ext_name} instructions are no longer available.
-* No natively YLEN CSRs are available.
-* Only XLEN CSR access is permitted.
-** This is identical to {cheri_int_mode_name} access.
+* No CSRs added by {cheri_base_ext_name} or its extensions are available.
+* All CSR accesses are XLEN-bit, as in {cheri_int_mode_name}.
 
 Disabling CHERI has no effect on implicit accesses or security checks.
 
@@ -976,8 +979,8 @@ xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart 
 |==============================================================================
 |                                      | {CRE}^1^=0        | {CRE}=1, P-bit={int_mode_value} | {CRE}=1, P-bit={cap_mode_value}
 | Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
-| Natively YLEN CSRs available         | ✘                 | ✔                     | ✔
-| Extended YLEN CSR access width       | XLEN              | XLEN                  | YLEN
+| CSRs added by {cheri_base_ext_name} or its extensions available | ✘ | ✔                | ✔
+| Access width of other <<ylen_csrs>>                             | XLEN              | XLEN                  | YLEN
 | 16-bit {cheri_base_ext_name} instructions available  | ✘                 | ✘                     | ✔
 | Wider {cheri_base_ext_name} instructions available   | ✘                 | ✔                     | ✔
 | _custom-1/2/3_ available for custom use| ✔                 | ✘                     | ✘

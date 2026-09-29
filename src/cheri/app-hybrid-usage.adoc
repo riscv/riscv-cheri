@@ -11,16 +11,16 @@ There are three operating modes on an RVY-enabled core:
 
 RVI/RVE mode (`misa.Y`=0 or `__x__envcfg.{CRE}`=0)::
   The base ISA is RVI or RVE.
-  There is no access to extended YLEN registers.
+  There is no access to YLEN-bit registers.
   _custom_-1/2/3 major opcodes remain available for vendor extensions.
 
 RVY pure-capability mode (`misa.Y`=1 and `__x__envcfg.{CRE}`=1, and <<pcc>>.<<p_bit>> = {CAP_MODE_VALUE})::
   The base ISA is RVY, and _custom_-1/2/3 major opcodes are used for RVY instructions.
-  All loads and stores use a YLEN base register for permissions and bounds checks.
+  All loads and stores use a YLEN-bit base register for permissions and bounds checks.
 
 RVY in RVI compatibility mode (`misa.Y`=1 and `__x__envcfg.{CRE}`=1, and <<pcc>>.<<p_bit>> = {INT_MODE_VALUE})::
   The base ISA is RVY, and _custom_-1/2/3 major opcodes are used for RVY instructions.
-  However, all loads and stores use a XLEN base register and check <<ddc>> for permissions and bounds.
+  However, all loads and stores use an XLEN-bit base register and check <<ddc>> for permissions and bounds.
   This mode requires `Zyhybrid` support.
 
 === Example Usage Models
