@@ -29,11 +29,11 @@ Implementations of ZylevelsN may choose how many <<zylevelsN_cl_field>> bits (`L
 [#zylevelsN_sl_perm,reftext="SL-permission"]
 Store Level Permission (SL):: This field that allows limiting the propagation of capabilities using the following logic:
 +
-Capabilities with a <<zylevelsN_cl_field>> (see below) less than the inverse of the authorizing capability's <<zylevelsN_sl_perm>> will be stored with their {ctag}s set to zero.
+Capabilities with a <<zylevelsN_cl_field>> (see below) less than the inverse of the authorizing capability's <<zylevelsN_sl_perm>> will be stored with their {ctag}s set to 0.
 +
 In the base ISA this is a single bit comparison, behaving as follows:
 
-* If this field (as well as <<c_perm>> and <<w_perm>>) is set to one then capabilities may be stored via this capability regardless of their associated <<zylevelsN_cl_field>>.
+* If this field (as well as <<c_perm>> and <<w_perm>>) is set to 1 then capabilities may be stored via this capability regardless of their associated <<zylevelsN_cl_field>>.
 * If this field is zero, then any capability with a <<zylevelsN_cl_field>> of zero (i.e., _local_), will be invalidated before being stored.
 
 NOTE: Future extensions may make this field wider to enable more use cases.
