@@ -772,17 +772,17 @@ include::img/pccreg.edn[]
 xref:csrnames-added-y[xrefstyle=short].
 
 [[csrnames-added-y]]
-.Capability CSRs added in {cheri_base_ext_name}
+.Unprivileged YLEN-bit CSRs added in {cheri_base_ext_name}
 [%autowidth,float="center",align="center",cols="<,<,<",options="header"]
 |===
-|YLEN CSR|Permissions|Description
+|YLEN-bit CSR|Permissions|Description
 |<<utidc>>|RW, <<asr_perm>> required for writes, not reads|User Thread ID Capability
 |===
 
 [#utidc,reftext="utidc"]
 ===== User Thread Identifier Capability (utidc)
 
-The <<utidc>> register is an unprivileged CSR used to identify the current software thread.
+The <<utidc>> register is an unprivileged <<ylen_csrs, YLEN-bit CSR>> used to identify the current software thread.
 Any operation that modifies <<utidc>> raises an exception unless the <<asr_perm>> is set in the current <<pcc>>.
 
 {TAG_RESET_UCSR}
@@ -796,7 +796,7 @@ Each thread (as scheduled by the kernel) can have its own context stored in priv
 <<utidc>> allows compartment-switching code to determine the currently running thread without a call into the operating system.
 This is read-only without <<asr_perm>> to prevent a malicious compartment from tricking the switching mechanism into accessing data corresponding to the wrong thread.
 While the RISC-V ABI includes a _thread pointer (tp)_ register, it is not usable for the purpose of reliably identifying the current software thread because the tp register is a general-purpose register and can be changed arbitrarily by untrusted code.
-Widening <<utidc>> to a capability allows a data structure to be shared (guarded by e.g., the subset-sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
+Making <<utidc>> a capability allows a data structure to be shared (guarded by e.g., the subset-sealing mechanism), which allows for example efficient recovery of a trusted stack, without requiring additional indirection.
 =====
 
 [#rvy_csr_classes]
@@ -1380,11 +1380,11 @@ include::insns/prefetch.w.adoc[leveloffset=-1]
 <<<
 endif::[]
 
-== U-mode YLEN CSR Summary
+== U-mode YLEN-bit CSR Summary
 
-<<all_capability_CSRs_u>> shows all YLEN U-mode CSRs added or modified by {cheri_base_ext_name}.
+<<all_capability_CSRs_u>> shows all YLEN-bit U-mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
 
-.All {cheri_base_ext_name} U-mode CSRs.
+.All YLEN-bit U-mode CSRs.
 [#all_capability_CSRs_u]
 [width="100%",options=header,cols="3,3,2,2,3,3,5"]
 |==============================================================================

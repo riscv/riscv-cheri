@@ -240,7 +240,7 @@ include::img/drootcselreg.edn[]
 [#drootc,reftext="drootc"]
 ===== Debug Root Capability Register (drootc)
 
-<<drootc>> is a debug mode accessible capability CSR.
+<<drootc>> is a debug mode accessible YLEN-bit CSR.
 The address and access details are shown in xref:all_capability_CSRs_d[xrefstyle=short].
 It exposes the capability selected by <<drootcsel>>.
 
@@ -297,7 +297,7 @@ endif::[]
 [#dddc,reftext="dddc"]
 ==== Debug Default Data Capability CSR (dddc)
 
-<<dddc>> is a debug mode accessible capability CSR.
+<<dddc>> is a debug mode accessible YLEN-bit CSR.
 
 {TAG_RESET_DCSR}
 
@@ -318,9 +318,9 @@ A debugger may write <<dddc>> to change the hart's context.
 As shown in xref:CSR_exevectors_d[xrefstyle=short], <<dddc>> is a data pointer,
 so it does not need to be able to hold all possible invalid addresses.
 
-=== Debug Mode YLEN CSR Summary
+=== Debug Mode YLEN-bit CSR Summary
 
-The tables below show all debug mode CSRs added or modified by {cheri_base_ext_name}.
+The tables below show all debug mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
 
 .Action taken on writing to YLEN-bit and extended debug mode CSRs
 [#extended_CSR_writing_d]
@@ -331,14 +331,14 @@ include::{generated_dir}/csr_alias_action_d_table_body.adoc[]
 
 Code pointers and data pointers in <<CSR_exevectors_d>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to invalid address conversion on writing.
 
-.YLEN-bit Debug-Mode CSRs storing code pointers or data pointers
+.YLEN-bit debug mode CSRs storing code pointers or data pointers
 [#CSR_exevectors_d]
 [width="100%",options=header,cols="1,1,1,1,1"]
 |==============================================================================
 include::{generated_dir}/csr_exevectors_d_table_body.adoc[]
 |==============================================================================
 
-<<all_capability_CSRs_d>> shows all debug-mode CSRs added or modified by {cheri_base_ext_name}.
+<<all_capability_CSRs_d>> shows all debug mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
 
 .All {cheri_base_ext_name} debug mode CSRs.
 [#all_capability_CSRs_d]
