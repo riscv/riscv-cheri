@@ -1,7 +1,7 @@
 [#rv64y_cap_description, reftext="{rv64y_uni_base_name}"]
 == The {rv64y_uni_base_name} Capability Base for {cheri_base64_ext_name}
 
-This section describes the in-memory representation and properties of the capability-encoding format intended for {cheri_base64_ext_name}.
+This chapter describes the representation and properties of the {rv64y_uni_base_name} capability-encoding format for {cheri_base64_ext_name}.
 
 NOTE: The format is closely modeled upon features from CHERI v9 cite:[cheri-v9-spec], and the bounds encoding scheme is based upon CHERI Concentrate cite:[woodruff2019cheri].
 
@@ -14,7 +14,7 @@ include::img/cap-encoding-xlen64.edn[]
 
 NOTE: Reserved bits must be 0 in valid capabilities and are available for future extensions to {cheri_base_ext_name}.
 
-The encoding diagram above of the capability-encoding format includes some fields which depend upon the presence of extensions:
+<<cap_encoding_xlen64>> includes some fields which depend upon the presence of extensions:
 
 <<section_cheri_hybrid_ext>>::
 When <<section_cheri_hybrid_ext>> is implemented:
@@ -25,10 +25,9 @@ When <<section_cheri_hybrid_ext>> is implemented:
 When <<section_zylevels1>> is implemented:
 +
 * The <<zylevels1_gl_flag,GL>> flag is implemented, otherwise _reserved zero_.
-* The <<AP-field>> includes <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>.
-  Otherwise both are _reserved one_.
+* The <<AP-field>> includes <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>, otherwise both are _reserved zero_.
 
-The bit ranges in <<cap_encoding_xlen64_field_table>> are relative to the XLEN-bit metadata, i.e., the upper half of the in-memory representation.
+The bit ranges in <<cap_encoding_xlen64_field_table>> are relative to the XLEN-bit metadata, i.e., the upper XLEN bits of the capability.
 
 .{rv64y_uni_base_name} capability-encoding format metadata fields
 [#cap_encoding_xlen64_field_table,width="100%",options=header,cols="1,1,4"]
@@ -44,7 +43,7 @@ The bit ranges in <<cap_encoding_xlen64_field_table>> are relative to the XLEN-b
 | TE         | 16:14     | Top bound address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | B[13:3]    | 13:3      | Base bound address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | BE         | 2:0       | Base bound address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
-3+| All other fields are _reserved_
+3+| All other bits are _reserved_
 |==============================================================================
 
 NOTE: T[13:12], T[2:0], and B[2:0] are not specified by the metadata fields and are calculated as shown in <<section_cap_bounds_decoding>>.
@@ -58,7 +57,7 @@ NOTE: T[13:12], T[2:0], and B[2:0] are not specified by the metadata fields and 
 | MW          | {cap_rv64_mw_width}  | Mantissa width for the bounds encoding
 | EW          | {cap_rv64_exp_width} | Exponent width for the bounds encoding
 | CAP_MAX_E   | {cap_rv64_exp_max}   | Maximum exponent value
-| enableL8    | 0                    | Whether the encoding format includes the `L~8~` bit
+| enableL8    | 0                    | Whether the encoding format includes the L~8~ bit
 | AP_MAX      | All ones             | Value of the <<AP-field>> giving maximum permissions
 | AP_ENC      | full1                | Encoding scheme for the <<AP-field>> - all combinations are representable
 | REP_RANGE   | rc1                  | Whether out-of-bounds addresses are representable
@@ -127,7 +126,7 @@ The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> value
 this field directly encodes the values `0` and `1`:
 
 * The encoded value `0` indicates an _unsealed_ type.
-* The encoded value `1` indicates a _sealed_ type which is _unsealed_ if passed to <<JALR_CHERI>> in `{cs1}`, and is used to _seal_ the capability written to `{cd}`.
+* The encoded value `1` indicates a <<sentry_cap>>.
 
 ifndef::cheri_ratification_v1_only[]
 ifdef::cheri_v9_annotations[]
@@ -200,8 +199,8 @@ EF=1: The exponent is zero; TE, BE, and L~8~ form part of the address bounds.
 The variables in <<rvy64_uni_base_name_bndsenc_param_summary>> are either taken directly from the capability metadata (see <<cap_encoding_xlen64_field_table>>) or, in the case of the upper and lower bits of `T` and `B`, are calculated from it.
 These variables are used as shown in the <<bounds_variable_usage,pseudocode>> below.
 
-The bit widths of `T` and `B` are defined in terms of the mantissa width (`MW`) which
-is set depending on capability-encoding format as shown in
+The bit widths of `T` and `B` are defined in terms of the mantissa width (`MW`), which
+is set depending on the capability-encoding format as shown in
 xref:rvy64_uni_base_name_param_summary[xrefstyle=short].
 
 The exponent `E` indicates the position of `T` and `B` within the capability's address as described in xref:section_cap_bounds_format[xrefstyle=short].
@@ -235,7 +234,7 @@ inverted to ensure that the <<null-cap>> capability is encoded as zero without t
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base bound addresses respectively. +
-When EF=0, the exponent `E=CAP_MAX_E - ( enableL8 ? { L~8~, TE, BE } : { TE, BE } )`,
+When EF=0, the exponent `E=CAP_MAX_E - ( enableL8 ? { L8, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
 and base bound addresses respectively.
 E is computed by subtracting from the maximum possible exponent CAP_MAX_E which can be efficiently implemented in hardware assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise shift right by E.
@@ -246,9 +245,9 @@ anchor:bounds_variable_usage[]
 
 In the pseudocode below:
 
-* `EF`, `T`, `TE`, `B` and `BE` are all encoded in the capability metadata, see <<cap_encoding_xlen64_field_table>>
-** `L~8~` is also a capability metadata field but only encoded if `enableL8=1`.
-* `EW`, `MW`, `CAP_MAX_E` and `enableL8` are all capability-encoding format parameters, see <<rvy64_uni_base_name_param_summary>>.
+* `EF`, `T`, `TE`, `B`, and `BE` are all encoded in the capability metadata, see <<cap_encoding_xlen64_field_table>>.
+** L~8~ is also a capability metadata field, but only encoded if `enableL8=1`.
+* `EW`, `MW`, `CAP_MAX_E`, and `enableL8` are all capability-encoding format parameters, see <<rvy64_uni_base_name_param_summary>>.
 * `LCout` and `LMSB` are intermediate values used to reconstitute the top two bits of `T`, see below.
 
 [source]
@@ -277,12 +276,10 @@ T and B are both MW bits wide, and are formed of different bit ranges:
 
 The design rationale for the two `EF` cases is as follows:
 
-1. `EF = 1`: The exponent is 0.
+* `EF = 1`: The exponent is 0.
 When `enableL8=1`, L~8~ encodes the MSB of the length, which can be used to derive `T[MW-1:MW-2]`, forming a full MW-bit `T` field.
-2. `EF = 0`: The exponent is _internal_ with E stored in the lower bits of `T` and
-`B`, with `L~8~` used for the MSB of `E` when `enableL8=1`. `E` is chosen so that the most
-significant non-zero bit of the length of the region aligns with `T[MW - 2]` such
-that this bit is implied by `E`.
+* `EF = 0`: The exponent is _internal_ with `E` stored in the lower bits of `T` and `B`, with L~8~ used for the MSB of `E` when `enableL8=1`.
+`E` is chosen so that the most significant non-zero bit of the length of the region aligns with `T[MW - 2]` such that this bit is implied by `E`.
 
 To save space in the encoding metadata, the top two bits of `T` are not stored directly but reconstituted as follows:
 
@@ -328,7 +325,7 @@ include ranges which may not be present when the bounds are decoded:
 * If `E+MW>XLEN` then neither top section exists, and so the bounds are calculated
  with no dependency on the address field _a_.
 
-The compressed bounds encoding allows the address to roam over the _representable range_, (`range~R~` in <<cap_bounds_map>> and <<capformat_correction_illustration>>), while maintaining the original bounds.
+The compressed bounds encoding allows the address to roam over the _representable range_ (range~R~ in <<cap_bounds_map>> and <<capformat_correction_illustration>>) while maintaining the original bounds.
 The overall effect is that the address can roam at least `2^E+MW^/4` bytes below the _base_ bound address and at least `2^E+MW^/4` bytes above the _top_ bound address while still allowing the bounds to be correctly decoded.
 
 [#section_cap_bounds_correction_factors, reftext="Correction Factors"]
@@ -342,20 +339,20 @@ If `B`/`T` and the capability address lie in _different_ _s_-aligned blocks then
 The _correction factors_ are _c~b~_ for the _base_ bound address and _c~t~_ for the _top_ bound address.
 
 In the example shown in <<capformat_correction_illustration>>, the _top_ bound address and the capability address lie in the same _s_-aligned block, but the _base_ bound address does not; it is in the block below.
-Therefore _c~t~_ is zero, but _c~b~_ is set to -1 to move the _base_ bound address down into the _s_-aligned block below (i.e. from space~U~ to space~L~).
+Therefore, _c~t~_ is zero, but _c~b~_ is set to -1 to move the _base_ bound address down into the _s_-aligned block below (i.e., from space~U~ to space~L~).
 
-Therefore adding the _correction factor_ moves the computed bound into the correct _s_-aligned block.
-Each _correction factor_ can have values of -1, 0, or +1, so that it is possible to move computed bound up or down by one _s_-aligned block.
+Therefore, adding the _correction factor_ moves the computed bound into the correct _s_-aligned block.
+Each _correction factor_ can have values of -1, 0, or +1, so that it is possible to move the computed bound up or down by one _s_-aligned block.
 
 [#capformat_correction_illustration]
-.Example capability bounds that use the correction. The _base_ bound address is an s-aligned block below the address, meaning the upper bits (above the mantissa) of the _base_ bound address are smaller than the upper bits of the address. Therefore _c~b~_=-1. The address and _top_ are in the same region, so _c~t~_=0.
+.Example capability bounds that use the correction. The _base_ bound address is an _s_-aligned block below the address, meaning the upper bits (above the mantissa) of the _base_ bound address are smaller than the upper bits of the address. Therefore, _c~b~_=-1. The address and _top_ are in the same region, so _c~t~_=0.
 image::../cheri/img/capformat-correction-illustration.png[width=80%,align=center]
 
 ====== Correction Factor Calculations
 
 `R` marks the lower boundary of the <<section_cap_representable_check,representable range>> (shown as r~base~ in <<capformat_correction_illustration>>).
 
-If `B`, `T` or `A` is less than `R`, it is inferred that they lie in the space above the s-alignment boundary straddled by the representable region, labeled space~U~ in xref:capformat_correction_illustration[xrefstyle=short].
+If `B`, `T`, or `A` is less than `R`, it is inferred that they lie in the space above the _s_-alignment boundary straddled by the representable region, labeled space~U~ in xref:capformat_correction_illustration[xrefstyle=short].
 
 `A` and `R` are calculated as follows.
 
@@ -386,8 +383,8 @@ NOTE: Mathematically, `B < R` requires `B[MW-1:MW-2] = 0`.
 |==============================================================================
 
 ^1^ Since `B[MW-1:MW-2] = 0` in these cases, `R[MW-1:MW-2] = 3` as the value has wrapped. +
-As a result `T[MW-1:MW-2]` is at most 2 if LMSB and LCout are both 1 (according to this <<formula_top_bits_of_t,formula>>). +
-Therefore `T < R` always holds when `B < R`, ruling out _c~t~_=-1,_c~b~_=0 and _c~t~_=0,_c~b~_=+1.
+As a result, `T[MW-1:MW-2]` is at most 2 if LMSB and LCout are both 1 (according to this <<formula_top_bits_of_t,formula>>). +
+Therefore, `T < R` always holds when `B < R`, ruling out _c~t~_=-1, _c~b~_=0 and _c~t~_=0, _c~b~_=+1.
 
 <<capformat_correction_cases>> shows the six reachable combinations of _c~t~_ and _c~b~_ that arise from this table.
 
@@ -433,7 +430,7 @@ equivalent to _base_=0 and _top_{ge}2^XLEN^.
 
 A capability is _malformed_ if its bounds cannot be correctly decoded.
 The following check indicates whether a capability is malformed.
-If `enableL8=1` the `L~8~` bit is available in the capability-encoding format for extra precision when `EF=1`.
+If `enableL8=1`, the L~8~ bit is available in the capability-encoding format for extra precision when `EF=1`.
 
 [source]
 ----
@@ -448,8 +445,8 @@ NOTE: The above includes a special case for encodings where `enableL8=1`.
 
 Capabilities with malformed bounds:
 
-. Return both _base_ and _top_ bound addresses as zero, which affects instructions like <<GCBASE>>.
-. Cause certain manipulation instructions like <<CADDI>> to always set the {ctag} of the result to zero.
+* Return both _base_ and _top_ bound addresses as zero, which affects instructions like <<GCBASE>>.
+* Cause certain manipulation instructions like <<CADDI>> to always set the {ctag} of the result to zero.
 
 [#section_cap_representable_check, reftext="Representable Range"]
 === Representable Range Check
@@ -470,7 +467,7 @@ If the address _a'_ is outside the _representable range_, then the derived capab
 An artifact of the bounds encoding is that if the new address
 causes `top != top'`, then it is also the case that `base != base'`.
 
-The converse is also true, if `base != base'` then `top != top'`.
+The converse is also true: if `base != base'`, then `top != top'`.
 
 Therefore, for representable range checking, it is acceptable
 to either check `top == top'` or `base == base'`.
@@ -487,7 +484,7 @@ The _top_ and _base_ capability bounds are formed of two or three sections:
 [#comp_addr_bounds,options=header,align="center",cols="2,4,2,2"]
 |==============================================================================
 | Configuration   | Upper Section (if E + MW < XLEN) | Middle Section | Lower Section
-| EF=0            | address[XLEN-1:E + MW] + ct | T[MW - 1:0] | zeroes(E)
+| EF=0            | address[XLEN-1:E + MW] + ct | T[MW - 1:0] | zeros(E)
 | EF=1, i.e., E=0 | address[XLEN-1:MW] + ct   2+| T[MW - 1:0]
 |==============================================================================
 
@@ -506,7 +503,7 @@ Likewise, with such values of E, the _base_ bound address is entirely derived fr
 
 The calculation of the MSB of the _top_ bound address may be inverted as specified
 in xref:t_bound_msb_inversion[xrefstyle=short].
-Assuming `(E < (CAP_MAX_E - 1))`, the truth-table for this inversion is as follows:
+Assuming `(E < (CAP_MAX_E - 1))`, the truth table for this inversion is as follows:
 
 .Top bound address MSB inversion truth table
 [#t_bound_msb_inversion_truth_table]
@@ -530,7 +527,7 @@ that `output_top[XLEN]` does not depend on `input_top[XLEN]` as:
 
 This leads to the conclusions:
 
-* If `top[XLEN-1] == top'[XLEN-1]` and `base[XLEN-1] == base'[XLEN-1]`, then it is guaranteed `top[XLEN] == top'[XLEN]`.
+* If `top[XLEN-1] == top'[XLEN-1]` and `base[XLEN-1] == base'[XLEN-1]`, then it is guaranteed that `top[XLEN] == top'[XLEN]`.
 * If `top[XLEN-1] != top'[XLEN-1]` or `base[XLEN-1] != base'[XLEN-1]`, then the representable check will fail regardless of checking `top[XLEN] == top'[XLEN]`.
 
 Therefore, for the purpose of representable range checking, it is not
@@ -538,15 +535,14 @@ required to check that `top[XLEN]==top'[XLEN]`.
 
 Given that `top[XLEN]` is not part of the representable range check:
 
-* when `E == CAP_MAX_E - 2`, `top[XLEN-1:E] == T[MW-1:0]` and `base[XLEN-1:E] == B[MW-1:0]`.
+* When `E == CAP_MAX_E - 2`, `top[XLEN-1:E] == T[MW-1:0]` and `base[XLEN-1:E] == B[MW-1:0]`.
 
-Therefore, `T` and `B` are both derived from the capabilities metadata and are therefore constant.
-Therefore, the representable range check always passes in this case too.
+Since `T` and `B` are both derived from the capability's metadata and are constant, the representable range check always passes in this case too.
 
 As a result:
 
 * If E > CAP_MAX_E - 3, then the representability check always passes, _even
-though the bounds are only <<infinite_bounds,infinite>> if E = CAP_MAX_E_
+though the bounds are only <<infinite_bounds,infinite>> if E = CAP_MAX_E_.
 
 This gives a range of `s=2^E+MW^`, as shown in
 xref:cap_bounds_map[xrefstyle=short].
@@ -586,9 +582,9 @@ The exponent value causes its bounds to cover the entire address space, but no p
 | EF       | zero   | Internal exponent format
 | L~8~^1^  | zero   | Top bound address reconstruction bit
 | T        | zeros  | Top bound address bits
-| T~E~     | zeros  | Exponent bits
+| TE       | zeros  | Exponent bits
 | B        | zeros  | Base bound address bits
-| B~E~     | zeros  | Exponent bits
+| BE       | zeros  | Exponent bits
 | Address  | zeros  | Capability address
 | Reserved | zeros  | All reserved fields
 |==============================================================================
@@ -614,16 +610,16 @@ This encoding is for an _Infinite Capability_ value, which grants all permission
 | EF            | zero  | Internal exponent format
 | L~8~^1^       | zero  | Top bound address reconstruction bit
 | T             | zeros | Top bound address bits
-| T~E~          | zeros | Exponent bits
+| TE            | zeros | Exponent bits
 | B             | zeros | Base bound address bits
-| B~E~          | zeros | Exponent bits
+| BE            | zeros | Exponent bits
 | Address       | any^2^ | Capability address
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
 ^1^ Only present if `enableL8=1` as defined by the capability-encoding format.
 
-^2^If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to 0.
- If the address field is non-zero then it is still referred to as the _Infinite Capability_, and it still has the authority to authorize all memory accesses.
+^2^ If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to 0.
+If the address field is non-zero, then it is still referred to as the _Infinite Capability_, and it still authorizes all memory accesses.
 
 NOTE: Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed present in the _Infinite Capability_, which may involve redefining the AP_MAX value.
