@@ -230,7 +230,7 @@ These bounds-reducing instructions all copy `{cs1}` to the output `{cd}`, set th
 * <<CRAM>> can be used to calculate the nearest precisely encodable _length_ and _base_ values for a given size.
 
 The bounds are encoded relative to the address field, using some upper bits of the address combined with bits from the capability metadata.
-The exact method for encoding the bounds varies by capability encoding format.
+The exact method for encoding the bounds varies by capability-encoding format.
 See xref:section_cap_bounds[xrefstyle=short] for the method used for {rv64y_uni_base_name}.
 
 [#section_rep_check_concept]
@@ -584,9 +584,9 @@ Upon initialization, the execution environment defines how the initial set of ca
 The definitions of <<root-rx-cap>> and <<root-rw-cap>> are the maximum possible encodable values.
 
 Implementations are not required to provide access to the entire address space to a single hart or even to provide all permissions.
-As such, where a root capability value is specified, harts may specify implementation defined values instead with reduced bounds and/or permissions as required.
+As such, where a root capability value is specified, harts may specify implementation-defined values instead with reduced bounds and/or permissions as required.
 
-NOTE: The hart specific initial capabilities may be the maximum that the hart can ever have access to, but there could also be capabilities in memory with greater bounds or permissions.
+NOTE: The hart-specific initial capabilities may be the maximum that the hart can ever have access to, but there could also be capabilities in memory with greater bounds or permissions.
 
 NOTE: Some capability-encoding formats like {rv64y_uni_base_name} provide an <<section_infinite_cap_encoding,Infinite>> capability which provides all the characteristics of the full set of root capabilities in a single encoding.
 
@@ -629,7 +629,7 @@ NOTE: The default settings all match <<rv64y_cap_description>>.
 | EW          | integer values       | {cap_rv64_exp_width} | Exponent width for the bounds encoding
 | CAP_MAX_E   | integer values       | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8    | 0/1                  | 0                    | Whether the encoding format includes the L~8~ bit
-| REP_RANGE   | rc1/r0               | rc1                  | Whether out of bounds addresses are representable
+| REP_RANGE   | rc1/r0               | rc1                  | Whether out-of-bounds addresses are representable
 4+| *Parameters used for permissions encoding in the <<AP-field>>*
 | AP_MAX      | integer values       | all ones             | Value of the <<AP-field>> giving maximum permissions
 | AP_ENC      | full<suffix>/ part<suffix>| full1             | Encoding scheme for the <<AP-field>>
@@ -657,7 +657,7 @@ NOTE: For {cheri_base64_ext_name}, the number of spare bits in the capability-en
 
 CHERI defines the following integrity check rules:
 
-. The bounds are not malformed (a capability encoding format-specific check; see xref:section_cap_malformed[xrefstyle=short] for {rv64y_uni_base_name}).
+. The bounds are not malformed (a capability-encoding-format-specific check; see xref:section_cap_malformed[xrefstyle=short] for {rv64y_uni_base_name}).
 . The capability metadata does not have any bits, or fields, set to a value that is not valid for the implemented extensions.
 
 NOTE: An example of a value that is not valid for {cheri_base_ext_name} is an illegal set of permissions such as <<asr_perm>> without <<x_perm>>.
