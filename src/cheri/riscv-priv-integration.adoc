@@ -55,15 +55,6 @@ NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pc
 
 Following the standard `mtvec` rules, <<mtvec_y>> need not be able to hold all possible <<section_invalid_addr_conv, invalid addresses>>.
 
-[#menvcfg_y,reftext="menvcfg ({cheri_base_ext_name})"]
-==== Machine Environment Configuration (`menvcfg`) Register
-
-{cheri_default_mext_name} adds the {CRE} bit to *menvcfg*.
-The {CRE} bit can be used to disable or enable {cheri_base_ext_name} for privilege modes below M-mode, as described in xref:section_cheri_disable[xrefstyle=full].
-
-[#menvcfgmodereg]
-include::img/menvcfgmodereg.edn[]
-
 [#mscratch_y, reftext="mscratch ({cheri_base_ext_name})"]
 ==== Machine Scratch Capability Register (mscratch)
 
@@ -134,6 +125,16 @@ The <<mtidc>> register is used to identify the current software thread in M-mode
 include::img/mtidcreg.edn[]
 
 === Machine-Level CSRs modified by {cheri_base_ext_name}
+
+[#menvcfg_y,reftext="menvcfg ({cheri_base_ext_name})"]
+==== Machine Environment Configuration (`menvcfg`) Register
+
+{cheri_default_mext_name} adds the {CRE} bit to *menvcfg*.
+The {CRE} bit can be used to disable or enable {cheri_base_ext_name} for privilege modes below M-mode, as described in xref:section_cheri_disable[xrefstyle=full].
+
+.Machine environment configuration register (*menvcfg*)
+[#menvcfgmodereg]
+include::img/menvcfgmodereg.edn[]
 
 [#misa_y, reftext="misa ({cheri_base_ext_name})"]
 ==== Machine ISA (`misa`) Register
