@@ -58,6 +58,7 @@ NOTE: T[13:12], T[2:0], and B[2:0] are not specified by the metadata fields and 
 | EW          | {cap_rv64_exp_width} | Exponent width for the bounds encoding
 | CAP_MAX_E   | {cap_rv64_exp_max}   | Maximum exponent value
 | enableL8    | 0                    | Whether the encoding format includes the L~8~ bit
+| SDPLEN      | {cap_rv64_sdp_width} | Width of the <<SDP-field>>.
 | AP_MAX      | All ones             | Value of the <<AP-field>> giving maximum permissions
 | AP_ENC      | full1                | Encoding scheme for the <<AP-field>> - all combinations are representable
 | REP_RANGE   | rc1                  | Whether out-of-bounds addresses are representable
@@ -114,7 +115,7 @@ Future extensions or capability-encoding formats may leverage these reserved pat
 [#SDP-field64, reftext="SDP-field"]
 ==== Software-Defined Permissions (SDP) Encoding
 
-The <<SDP-field64>> is {cap_rv64_sdp_width} bits wide.
+The <<SDP-field64>> is {cap_rv64_sdp_width} bits wide, and is denoted by SDPLEN in <<rvy64_uni_base_name_param_summary>>.
 The value of the <<SDP-field64>> bits of the <<GCPERM>> result maps 1:1 to the <<SDP-field64>> in the capability.
 
 [#section_cap_sealed]
