@@ -684,20 +684,20 @@ even though the load value is discarded.#
 
 [NOTE]
 ====
-[[norm:ldst_endian_byte_op]]
+//[[norm:ldst_endian_byte_op]]
 In a system for which endianness is byte-address invariant, the
 following property holds: if a byte is stored to memory at some address
 in some endianness, then a byte-sized load from that address in any
 endianness returns the stored value.
 
-[[norm:ldst_little_endian_op]]
+//[[norm:ldst_little_endian_op]]
 In a little-endian configuration, multibyte stores write the
 least-significant register byte at the lowest memory byte address,
 followed by the other register bytes in ascending order of their
 significance. Loads similarly transfer the contents of the lesser memory
 byte addresses to the less-significant register bytes.
 
-[[norm:ldst_big_endian_op]]
+//[[norm:ldst_big_endian_op]]
 In a big-endian configuration, multibyte stores write the
 most-significant register byte at the lowest memory byte address,
 followed by the other register bytes in descending order of their
@@ -866,7 +866,7 @@ store operations in the `FENCE.TSO's` predecessor set unordered with
 
 [NOTE]
 ====
-[[norm:fence-tso_ordering_rw_rw_ok]]
+//[[norm:fence-tso_ordering_rw_rw_ok]]
 Because `FENCE RW,RW` imposes a superset of the orderings that `FENCE.TSO`
 imposes, it is correct to ignore the _fm_ field and implement `FENCE.TSO` as `FENCE RW,RW`.
 ====
@@ -883,7 +883,7 @@ non-reserved configurations.
 
 [NOTE]
 ====
-[[norm:fence_cons_ok]]
+//[[norm:fence_cons_ok]]
 We chose a relaxed memory model to allow high performance from simple
 machine implementations and from likely future coprocessor or
 accelerator extensions. We separate out I/O ordering from memory R/W
@@ -1000,7 +1000,7 @@ _rs1_ and _rs2_ fields encode arguments to the HINT. However, a simple
 implementation can simply execute the HINT as an ADD of _rs1_ and _rs2_
 that writes `x0`, which has no architecturally visible effect.
 
-[[norm:fence_null_pred_succ_inter]]
+//[[norm:fence_null_pred_succ_inter]]
 As another example, a FENCE instruction with a zero _pred_ field and a
 zero _fm_ field is a HINT; the _succ_, _rs1_, and _rd_ fields encode the
 arguments to the HINT. A simple implementation can simply execute the
