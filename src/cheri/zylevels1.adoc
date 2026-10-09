@@ -5,7 +5,7 @@
 
 It adds:
 
-* One new "level" metadata bit (the <<zylevels1_gl_flag>>) to classify capabilities as either *global* or *local*.
+* One new "level" metadata bit (the <<zylevels1_gl_flag>>) to classify capabilities as either *local* or *global*.
 * Checks to memory operations to control how capabilities can be shared.
 * Two new level-related permissions, <<zylevels1_sl_perm,Store Local (SL)>> and <<zylevels1_lg_perm,Load Global (LG)>>.
 
@@ -16,7 +16,7 @@ NOTE: The behavior is an extension as it may be replaced by a future scheme with
 [#zylevels1_ap_field_summary,width="100%",options=header,halign=center,cols="2,2,5"]
 |==============================================================================
 | Bit                    | Type                   | Comment
-| <<zylevels1_gl_flag>>  | Information flow label | Used to classify capabilities as global or local.
+| <<zylevels1_gl_flag>>  | Information flow label | Used to classify capabilities as local or global.
 | <<zylevels1_sl_perm>>  | Data memory permission | Used to filter the {ctag}s of stored capabilities.
 | <<zylevels1_lg_perm>>  | Data memory permission | Used to filter the permissions of loaded capabilities.
 |==============================================================================
@@ -26,10 +26,10 @@ NOTE: The <<zylevels1_gl_flag>> and <<zylevels1_sl_perm>> are as in CHERI v9, Mo
 The <<zylevels1_lg_perm>> is as in CHERIoT v1.
 endif::[]
 
-[#zylevels1_gl_flag,reftext="GL flag"]
-==== The Capability Global (GL) Flag
+[#zylevels1_gl_flag,reftext="G flag"]
+==== The Capability Global (G) Flag
 
-The Global (GL) flag is a metadata bit used to track and control the propagation of capabilities.
+The Global (G) flag is a metadata bit used to track and control the propagation of capabilities.
 It works in conjunction with <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>> to enforce information flow boundaries.
 
 [#levels_globalcap,reftext="global capability"]
@@ -55,7 +55,7 @@ If the authorizing capability lacks <<zylevels1_sl_perm>>, then any stored <<lev
 ==== Load Global Permission (LG)
 
 Load Global Permission (LG) controls whether <<levels_globalcap, global capabilities>> can be loaded from memory.
-Loading a capability using an authorizing capability that lacks <<zylevels1_lg_perm>> clears the <<zylevels1_gl_flag>> bit of the loaded capability, making it into a <<levels_localcap>>.
+Loading a capability using an authorizing capability that lacks <<zylevels1_lg_perm>> clears the <<zylevels1_gl_flag>> of the loaded capability, making it into a <<levels_localcap>>.
 If the loaded capability is unsealed, its <<zylevels1_lg_perm>> is also cleared.
 
 NOTE: This behavior is similar to how <<lm_perm>> affects loaded capabilities (but note the difference in interaction with seals).
@@ -139,7 +139,7 @@ NOTE: While a lack of <<zylevels1_lg_perm>> restricts flow by reducing permissio
 [#zylevels1_store_summary,width="100%",options=header,halign=center,cols="1,1,1,1,5"]
 |==============================================================================
    3+|Auth cap field       | Data cap field |
-    h|*W*    h|*C* h|*SL* h|*GL*           h| Notes
+    h|*W*    h|*C* h|*SL* h|*G*            h| Notes
 .3+.^|1  .3+.^| 1   | 1    | X              | Store unmodified data capability
                .2+.^| 0    | 1              | Store unmodified data capability
                            | 0              | Store invalidated data capability
