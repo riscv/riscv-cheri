@@ -57,7 +57,7 @@ NOTE: T[13:12], T[2:0], and B[2:0] are not specified by the metadata fields and 
 | MW          | {cap_rv64_mw_width}  | Mantissa width for the bounds encoding
 | EW          | {cap_rv64_exp_width} | Exponent width for the bounds encoding
 | CAP_MAX_E   | {cap_rv64_exp_max}   | Maximum exponent value
-| ENABLE_L8   | 0                    | Whether the encoding format includes the <<rvy64_uni_base_name_bndsenc_param_summary,L8>> bit
+| ENABLE_MSB  | 0                    | Whether the encoding format includes the <<rvy64_uni_base_name_bndsenc_param_summary,MSB>> bit
 | SDPLEN      | {cap_rv64_sdp_width} | Width of the <<SDP-field>>.
 | AP_MAX      | All ones             | Value of the <<AP-field>> giving maximum permissions
 | AP_ENC      | full1                | Encoding scheme for the <<AP-field>> - all combinations are representable
@@ -163,7 +163,7 @@ are incompatible with the <<section_zyseal>> extension.
 endif::[]
 
 [#section_cap_bounds]
-==== Bounds (EF, T, TE, B, BE, L8) Encoding
+==== Bounds (EF, T, TE, B, BE, MSB) Encoding
 
 ===== Concept
 
@@ -189,14 +189,20 @@ The variables related to the bounds decoding are shown in <<rvy64_uni_base_name_
 | B         | Value substituted into the capability's address to decode the _base_ bound address.
 | BE        | Value either substituted into the exponent or the _base_ bound address depending on EF.
 | E         | Exponent that determines the position at which T and B are substituted into the capability's address.
-| L8^1^     | Value used to form either the MSB of the exponent or the MSB of the _top_ bound address.
+| MSB^1^     | Value used to form either the MSB of the exponent or the MSB of the _top_ bound address.
 | EF        | Exponent format flag indicating the encoding for T, B, and E: +
-EF=0: The exponent is calculated from TE and BE, and conditionally L8, so it is 'internal'. +
-EF=1: The exponent is zero; TE, BE, and L8 form part of the address bounds.
+EF=0: The exponent is calculated from TE and BE, and conditionally MSB, so it is 'internal'. +
+EF=1: The exponent is zero; TE, BE, and MSB form part of the address bounds.
 |==============================================================================
 
-^1^ Only present in capability-encoding formats where `ENABLE_L8=1` (see <<sec_cap_encoding_formats>>), in which case `L8` is stored as a 1-bit field in the capability metadata.
-In {rv64y_uni_base_name}, `EW=6` is even (`TE` and `BE` are 3 bits each) so a separate `L8` metadata bit is not used (`ENABLE_L8=0`); the bounds decoding equations are parameterized by `ENABLE_L8` so that they also apply to {cheri_base32_ext_name} capability-encoding formats that include an `L8` metadata bit for an odd exponent width (`EW`) and an extra bit of bounds precision when `EF=1`.
+^1^ Only present in capability-encoding formats where `ENABLE_MSB=1` (see <<sec_cap_encoding_formats>>), in which case `MSB` is stored as a 1-bit field in the capability metadata, which is primarily intended for use by {cheri_base32_ext_name}. +
+
+NOTE: In {rv64y_uni_base_name}, `EW=6` is even (`TE` and `BE` are 3 bits each) and the exponent is fully encoded in the least significant bits of `TE` and `BE` when `EF=0`. +
+For future {cheri_base32_ext_name} capability-encoding formats, only a 5-bit exponent is needed, and as exponent bits are shared equally between `TE` and `BE` fields, an extra bit is necessary.
+Therefore the `MSB` field is used as the most significant bit when the exponent is encoded within the metadata (`EF=0`).
+Additionally, `MSB` is used to increase the length of the capability when `EF=1`.
+
+In {rv64y_uni_base_name}, `EW=6` is even (`TE` and `BE` are 3 bits each) so a separate `MSB` metadata bit is not used (`ENABLE_MSB=0`); the bounds decoding equations are parameterized by `ENABLE_MSB` so that they also apply to {cheri_base32_ext_name} capability-encoding formats that include an `MSB` metadata bit for an odd exponent width (`EW`) and an extra bit of bounds precision when `EF=1`.
 
 The variables in <<rvy64_uni_base_name_bndsenc_param_summary>> are either taken directly from the capability metadata (see <<cap_encoding_xlen64_field_table>>) or, in the case of the upper and lower bits of `T` and `B`, are calculated from it.
 These variables are used as shown in the <<bounds_variable_usage,pseudocode>> below.
@@ -236,7 +242,7 @@ inverted to ensure that the <<null-cap>> capability is encoded as zero without t
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base bound addresses respectively. +
-When EF=0, the exponent `E=CAP_MAX_E - ( ENABLE_L8 ? { L8, TE, BE } : { TE, BE } )`,
+When EF=0, the exponent `E=CAP_MAX_E - ( ENABLE_MSB ? { MSB, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
 and base bound addresses respectively.
 E is computed by subtracting from the maximum possible exponent CAP_MAX_E which can be efficiently implemented in hardware assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise shift right by E.
@@ -248,8 +254,8 @@ anchor:bounds_variable_usage[]
 In the pseudocode below:
 
 * `EF`, `T`, `TE`, `B`, and `BE` are all encoded in the capability metadata, see <<cap_encoding_xlen64_field_table>>.
-** `L8` is also a capability metadata field, but only encoded if `ENABLE_L8=1`.
-* `EW`, `MW`, `CAP_MAX_E`, and `ENABLE_L8` are all capability-encoding format parameters, see <<rvy64_uni_base_name_param_summary>>.
+** `MSB` is also a capability metadata field, but only encoded if `ENABLE_MSB=1`.
+* `EW`, `MW`, `CAP_MAX_E`, and `ENABLE_MSB` are all capability-encoding format parameters, see <<rvy64_uni_base_name_param_summary>>.
 * `LCout` and `LMSB` are intermediate values used to reconstitute the top two bits of `T`, see below.
 
 [source]
@@ -259,9 +265,9 @@ If EF = 1:
     T[EW / 2 - 1:0] = TE
     B[EW / 2 - 1:0] = BE
     LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
-    LMSB            = ENABLE_L8 ? L8 : 0
+    LMSB            = ENABLE_MSB ? MSB : 0
 else:
-    E               = CAP_MAX_E - ( ENABLE_L8 ? { L8, TE, BE } : { TE, BE } )
+    E               = CAP_MAX_E - ( ENABLE_MSB ? { MSB, TE, BE } : { TE, BE } )
     T[EW / 2 - 1:0] = 0
     B[EW / 2 - 1:0] = 0
     LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
@@ -279,8 +285,8 @@ else:
 The design rationale for the two `EF` cases is as follows:
 
 * `EF = 1`: The exponent is 0.
-When `ENABLE_L8=1`, `L8` encodes the MSB of the length, which can be used to derive `T[MW-1:MW-2]`, forming a full `MW`-bit `T` field.
-* `EF = 0`: The exponent is _internal_ with `E` stored in the lower bits of `T` and `B`, with `L8` used for the MSB of `E` when `ENABLE_L8=1`.
+When `ENABLE_MSB=1`, `MSB` encodes the MSB of the length, which can be used to derive `T[MW-1:MW-2]`, forming a full `MW`-bit `T` field.
+* `EF = 0`: The exponent is _internal_ with `E` stored in the lower bits of `T` and `B`, with `MSB` used for the MSB of `E` when `ENABLE_MSB=1`.
 `E` is chosen so that the most significant non-zero bit of the length of the region aligns with `T[MW - 2]` such that this bit is implied by `E`.
 
 To save space in the encoding metadata, the top two bits of `T` are not stored directly but reconstituted as follows:
@@ -292,7 +298,7 @@ T[MW - 1:MW - 2] = B[MW - 1:MW - 2] + LCout + LMSB
 ----
 
 This derivation relies on the equality `T = B + L`, where `L` is the encoded length of the capability.
-`LMSB` is the value of `L[MW - 2]`, which is known from the values of `EF` and `E` (as well as `L8` when `ENABLE_L8=1`).
+`LMSB` is the value of `L[MW - 2]`, which is known from the values of `EF` and `E` (as well as `MSB` when `ENABLE_MSB=1`).
 `LCout` is the carry out from the lower bits, which is implied by `T[MW - 3:0] < B[MW - 3:0]` since it is
 guaranteed that the _top_ bound address is greater than or equal to the _base_ bound address.
 
@@ -432,18 +438,18 @@ equivalent to _base_=0 and _top_{ge}2^XLEN^.
 
 A capability is _malformed_ if its bounds cannot be correctly decoded.
 The following check indicates whether a capability is malformed.
-If `ENABLE_L8=1`, the `L8` bit is available in the capability-encoding format for extra precision when `EF=1`.
+If `ENABLE_MSB=1`, the `MSB` bit is available in the capability-encoding format for extra precision when `EF=1`.
 
 [source]
 ----
 malformedMSB =  (E == CAP_MAX_E     && B         != 0)
              || (E == CAP_MAX_E - 1 && B[MW - 1] != 0)
-malformedLSB =  (E  < 0) || (E == 0 && ENABLE_L8)
+malformedLSB =  (E  < 0) || (E == 0 && ENABLE_MSB)
 malformed    =  !EF && (malformedMSB || malformedLSB)
 ----
-NOTE: The above includes a special case for encodings where `ENABLE_L8=1`.
-      In this case, an `EF=0` encoding that decodes to `E=0` (with its implied `LMSB` of one) expresses the same bounds as the `EF=1` format with the `L8` bit set to 1.
-      The `EF=0`, `E=0` encodings are therefore redundant, so they are declared malformed when `ENABLE_L8=1`, leaving `EF=1` as the canonical encoding.
+NOTE: The above includes a special case for encodings where `ENABLE_MSB=1`.
+      In this case, an `EF=0` encoding that decodes to `E=0` (with its implied `LMSB` of one) expresses the same bounds as the `EF=1` format with the `MSB` bit set to 1.
+      The `EF=0`, `E=0` encodings are therefore redundant, so they are declared malformed when `ENABLE_MSB=1`, leaving `EF=1` as the canonical encoding.
 
 Capabilities with malformed bounds:
 
@@ -582,7 +588,7 @@ The exponent value causes its bounds to cover the entire address space, but no p
 | <<AP-field,AP>>          | zeros  | Grants no permissions
 | CT       | zero   | Unsealed
 | EF       | zero   | Internal exponent format
-| L8^1^    | zero   | Top bound address reconstruction bit
+| MSB^1^    | zero   | Top bound address reconstruction bit
 | T        | zeros  | Top bound address bits
 | TE       | zeros  | Exponent bits
 | B        | zeros  | Base bound address bits
@@ -591,7 +597,7 @@ The exponent value causes its bounds to cover the entire address space, but no p
 | Reserved | zeros  | All reserved fields
 |==============================================================================
 
-^1^ Only present if `ENABLE_L8=1` as defined by the capability-encoding format.
+^1^ Only present if `ENABLE_MSB=1` as defined by the capability-encoding format.
 
 Permissions added by extensions (such as those of <<section_zylevels1>>) are presumed absent in NULL capabilities.
 
@@ -610,7 +616,7 @@ This encoding is for an _Infinite Capability_ value, which grants all permission
 | <<AP-field,AP>>     | AP_MAX | Grants all permissions
 | CT            | zero  | Unsealed
 | EF            | zero  | Internal exponent format
-| L8^1^         | zero  | Top bound address reconstruction bit
+| MSB^1^         | zero  | Top bound address reconstruction bit
 | T             | zeros | Top bound address bits
 | TE            | zeros | Exponent bits
 | B             | zeros | Base bound address bits
@@ -619,7 +625,7 @@ This encoding is for an _Infinite Capability_ value, which grants all permission
 | Reserved      | zeros | All reserved fields
 |==============================================================================
 
-^1^ Only present if `ENABLE_L8=1` as defined by the capability-encoding format.
+^1^ Only present if `ENABLE_MSB=1` as defined by the capability-encoding format.
 
 ^2^ If an infinite capability is used as a constant in either hardware or software, then the address field will typically be set to 0.
 If the address field is non-zero, then it is still referred to as the _Infinite Capability_, and it still authorizes all memory accesses.
