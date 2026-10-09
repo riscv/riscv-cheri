@@ -27,7 +27,7 @@ The bit ranges in <<cap_encoding_xlen32_field_table>> are relative to the 32-bit
 | SDP        | 31:30     | <<SDP-field, Software-Defined Permissions>>.
 | AP         | 29:25     | <<AP-field-encoding32, Architectural Permissions>> (includes fields for <<section_cheri_hybrid_ext>> and <<section_zylevels1>>).
 | GL         | 24        | <<zylevels1_gl_flag, Global (GL) flag>> (<<section_zylevels1>> only).
-| CT         | 20        | <<CT-field, Capability Type field>>.
+| CT         | 20        | <<sec_cap_type, Capability Type field>>.
 | EF         | 19        | Exponent format for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | L8         | 18        | Exponent or top bound address MSB for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | T[7:2]     | 17:12     | Top bound address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
@@ -68,7 +68,7 @@ endif::[]
 | All RV32Y versions of other standard extensions | Compatible
 |==============================================================================
 
-[#AP-field-encoding32, reftext="Compressed AP-field"]
+[#AP-field-encoding32, reftext="Compressed AP field"]
 ==== Architectural Permissions (AP) Encoding - `part1_rv32ya_1`
 
 The <<AP-field>> is {cap_rv32_perms_width} bits wide and does not encode all possible permission combinations.
@@ -78,7 +78,7 @@ The <<AP-field>> is split into four quadrants.
 The quadrant number is taken from AP[4:3].
 The meanings of bits AP[2:0] for each quadrant are shown in <<cap_perms_encoding_nolevels32>>.
 
-NOTE: Extensions which allocate new permissions need to specify modifications to the AP-fields and the <<CLRPERM>> rules to reduce the permissions to maintain an encodable set.
+NOTE: Extensions which allocate new permissions need to specify modifications to the AP fields and the <<CLRPERM>> rules to reduce the permissions to maintain an encodable set.
  The recommendation is for new permissions added to existing entries in quadrant 0 _must not_ be granted as that quadrant includes the <<null-cap>> capability.
  New permissions added to quadrant 1 entry 0 _must_ be granted as this represents both of the <<root-rx-cap>> and <<root-rw-cap>> capabilities.
 

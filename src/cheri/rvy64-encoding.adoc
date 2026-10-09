@@ -24,7 +24,7 @@ The bit ranges in <<cap_encoding_xlen64_field_table>> are relative to the 64-bit
 | AP         | 52:45     | <<AP-field, Architectural Permissions>>, see <<cap_perms_encoding64>>.
 | P          | 44        | <<p_bit, Pointer Mode>> (<<section_cheri_hybrid_ext>> only).
 | GL         | 43        | <<zylevels1_gl_flag, Global (GL) flag>> (<<section_zylevels1>> only).
-| CT         | 27        | <<CT-field, Capability Type field>>.
+| CT         | 27        | <<sec_cap_type, Capability Type field>>.
 | EF         | 26        | Exponent format for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | T[11:3]    | 25:17     | Top bound address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | TE         | 16:14     | Top bound address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
@@ -70,7 +70,7 @@ ifndef::cheri_ratification_v1_only[]
 NOTE: Compatibility with <<section_zyseal>> depends upon new permissions being encoded.
 endif::[]
 
-[#AP-field-encoding64, reftext="AP-field encoding"]
+[#AP-field-encoding64, reftext="AP field encoding"]
 ==== Architectural Permissions (AP) Encoding
 
 The permissions field is {cap_rv64_perms_width} bits wide and is encoded using one bit per architectural permission as shown in xref:cap_perms_encoding64[xrefstyle=short].
@@ -112,7 +112,7 @@ Future extensions or capability-encoding formats may leverage these reserved pat
 
 ====
 
-[#SDP-field64, reftext="SDP-field"]
+[#SDP-field64, reftext="SDP field"]
 ==== Software-Defined Permissions (SDP) Encoding
 
 The <<SDP-field64>> is {cap_rv64_sdp_width} bits wide.
@@ -129,7 +129,7 @@ The 1-bit <<sec_cap_type>> is as specified in <<table_capability_types>>.
 ifndef::cheri_ratification_v1_only[]
 ifdef::cheri_v9_annotations[]
 WARNING: *CHERI v9:* There is now a 1-bit otype (sentry or unsealed) and the old CHERI v9 otype no longer exists.
-The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<CT-field>>=1 for sealed entry (sentry) capabilities.
+The base CHERI-RISC-V standard does not have support for CHERI v9 CSEAL for sealed capabilities with object types and only has <<sec_cap_type>>=1 for sealed entry (sentry) capabilities.
 endif::[]
 
 The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> values;
