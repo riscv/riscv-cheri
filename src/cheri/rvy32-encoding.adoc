@@ -18,10 +18,10 @@ include::img/cap-encoding-xlen32.edn[]
 
 ==== Capability-Encoding Format Summary
 
-The bit ranges in <<cap_encoding_xlen32_field_table>> are relative to the XLEN-bit metadata, i.e., the upper half of the in-memory representation.
+The bit ranges in <<cap_encoding_xlen32_field_table>> are relative to the 32-bit metadata, i.e., the upper 32 bits of the capability.
 
 .{rv32y_uni_base_name} capability-encoding format metadata fields
-[#cap_encoding_xlen32_field_table,width="100%",options=header,cols="1,1,4"]
+[#cap_encoding_xlen32_field_table,width="100%",options=header,cols="1,>1,4"]
 |==============================================================================
 | Field      | Bit range | Comment
 | SDP        | 31:30     | <<SDP-field, Software-Defined Permissions>>.
@@ -37,10 +37,10 @@ The bit ranges in <<cap_encoding_xlen32_field_table>> are relative to the XLEN-b
 3+| All other fields are _reserved_
 |==============================================================================
 
-NOTE: T[9:8], T[1:0] and B[1:0] are not specified by the metadata fields and are calculated as shown in <<section_cap_bounds_decoding>>.
+NOTE: The 10-bit bounds fields T[9:0] and B[9:0] are partly specified in the metadata (T[7:2] and B[9:2]) and partly calculated (T[9:8], T[1:0], and B[1:0]) as shown in <<section_cap_bounds_decoding>>.
 
 .{rv32y_uni_base_name} parameter summary
-[#rvy32_uni_base_name_param_summary,width="100%",options=header,cols="1,1,4"]
+[#rvy32_uni_base_name_param_summary,width="100%",options=header,cols="1,>1,4"]
 |==============================================================================
 | Parameter   | Value               | Comment
 | MW          | {cap_rv32_mw_width} | Mantissa width
