@@ -97,8 +97,8 @@ NOTE: Future extensions which define new permissions must augment <<cap_perms_en
 
 There are 9 bits in total allocated to the <<AP-field>> and the <<p_bit>>.
 
-* The total valid combinations of C, W, R, LM, LG, and SL are 18.
-* The total valid combinations of X, ASR, and P are 5.
+* There are 18 valid combinations of C, W, R, LM, LG, and SL.
+* There are 5 valid combinations of X, ASR, and P.
 * The two groups are fully orthogonal.
 
 Therefore, there are 90 valid combinations encoded in 9 bits.
@@ -116,15 +116,12 @@ Future extensions or capability-encoding formats may leverage these reserved pat
 ==== Software-Defined Permissions (SDP) Encoding
 
 The <<SDP-field64>> is {cap_rv64_sdp_width} bits wide.
-The value of the <<SDP-field64>> bits of the <<GCPERM>> result maps 1:1 to the <<SDP-field64>> in the capability.
+The value of the <<SDP-field64>> bits of the <<GCPERM>> result is equal to the <<SDP-field64>> in the capability.
 
 [#section_cap_sealed]
 ==== Capability Type (CT) Encoding
 
-The <<sec_cap_type>> is as specified in <<table_capability_types>>.
-
-The capabilities of this chapter define a 1-bit field for <<sec_cap_type>> values;
-this field directly encodes the values `0` and `1`:
+The 1-bit <<sec_cap_type>> is as specified in <<table_capability_types>>.
 
 * The encoded value `0` indicates an _unsealed_ type.
 * The encoded value `1` indicates a <<sentry_cap>>.
