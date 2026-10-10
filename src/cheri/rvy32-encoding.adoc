@@ -6,6 +6,7 @@ This format is based upon the <<rv64y_cap_description,{rv64y_uni_base_name}>> fo
 
 * The width, or presence, of fields in the encoding are changed as defined in <<rvy32_uni_base_name_param_summary>>.
 * The architectural permissions (AP) field is compressed to save encoding space, and so rules are defined for removing permissions.
+* The <<section_cap_bounds32,bounds encoding>> includes an additional 1-bit `LE` (length or exponent MSB) metadata field because the exponent width (`EW=5`) is odd.
 
 [#section_cap_encoding32]
 === Capability-Encoding Format
@@ -29,7 +30,7 @@ The bit ranges in <<cap_encoding_xlen32_field_table>> are relative to the 32-bit
 | GL         | 24        | <<zylevels1_gl_flag, Global (GL) flag>> (<<section_zylevels1>> only).
 | CT         | 20        | <<sec_cap_type, Capability Type field>>.
 | EF         | 19        | Exponent format for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
-| L8         | 18        | Exponent or top bound address MSB for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
+| LE         | 18        | Length (`L[8]`) or exponent (`E[4]`) MSB field for the <<section_cap_bounds32,capability bounds>> decoding.
 | T[7:2]     | 17:12     | Top bound address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | TE         | 11:10     | Top bound address or exponent field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
 | B[9:2]     | 9:2       | Base bound address field for the <<section_cap_bounds,capability bounds>> decoding, see <<rvy64_uni_base_name_bndsenc_param_summary>>.
@@ -37,7 +38,7 @@ The bit ranges in <<cap_encoding_xlen32_field_table>> are relative to the 32-bit
 3+| All other fields are _reserved_
 |==============================================================================
 
-NOTE: The 10-bit bounds fields T[9:0] and B[9:0] are partly specified in the metadata (T[7:2] and B[9:2]) and partly calculated (T[9:8], T[1:0], and B[1:0]) as shown in <<section_cap_bounds_decoding>>.
+NOTE: The 10-bit bounds fields T[9:0] and B[9:0] are partly specified in the metadata (T[7:2] and B[9:2]) and partly calculated (T[9:8], T[1:0], and B[1:0]) as shown in <<section_cap_bounds_decoding>> and <<section_cap_bounds32>>.
 
 .{rv32y_uni_base_name} parameter summary
 [#rvy32_uni_base_name_param_summary,width="100%",options=header,cols=">1,>1,4"]
@@ -46,7 +47,6 @@ NOTE: The 10-bit bounds fields T[9:0] and B[9:0] are partly specified in the met
 | MW          | {cap_rv32_mw_width} | Mantissa width
 | EW          | {cap_rv32_exp_width}| Exponent width
 | CAP_MAX_E   | {cap_rv32_exp_max}  | Maximum exponent value
-| enableL8    | 1                   | Whether the encoding format includes the L~8~ bit
 | SDPLEN      | {cap_rv32_sdp_width} | Width of the <<SDP-field>>.
 | AP_MAX      | 0x8^1^              | Value of the <<AP-field>> giving maximum permissions
 | AP_ENC      | part_rv32lya        | Encoding scheme for the <<AP-field>> - not all combinations are representable
@@ -133,6 +133,43 @@ When encoding permissions the following rules are run once _in order_:
 | `RV32-base-6`    | X            | (C and LM) or not (C or LM)
 | `RV32-base-7`    | ASR          | W and C and X (supersedes <<perm_req:base:asr:x>>)
 |===
+
+[#section_cap_bounds32]
+==== Bounds (EF, LE, T, TE, B, BE) Encoding
+
+Bounds decoding for {rv32y_uni_base_name} follows <<section_cap_bounds>>, with the addition of the 1-bit `LE` (length or exponent MSB) metadata field.
+Because {rv32y_uni_base_name} has an odd exponent width (`EW=5`) while `TE` (`T[1:0]`) and `BE` (`B[1:0]`) each provide 2 bits (`EW / 2`), `LE` encodes the most significant bit of the 5-bit internal exponent (`E[4]`) when `EF=0`.
+When `EF=1` (`E=0`), `LE` instead provides `LMSB` (`L[8]`, i.e., `L[MW - 2]` for `MW=10`), giving an extra bit of length precision for reconstituting `T[9:8]` in <<formula_top_bits_of_t,the top-bound formula>>.
+
+For {rv32y_uni_base_name}, the variable calculation in <<section_cap_bounds_decoding>> is modified to use `LE`:
+
+[source]
+----
+If EF = 1:
+    E               = 0
+    T[EW / 2 - 1:0] = TE
+    B[EW / 2 - 1:0] = BE
+    LCout           = (T[MW - 3:0] < B[MW - 3:0]) ? 1 : 0
+    LMSB            = LE
+else:
+    E               = CAP_MAX_E - { LE, TE, BE }
+    T[EW / 2 - 1:0] = 0
+    B[EW / 2 - 1:0] = 0
+    LCout           = (T[MW - 3:EW / 2] < B[MW - 3:EW / 2]) ? 1 : 0
+    LMSB            = 1
+----
+
+In the <<section_cap_malformed,malformed capability bounds check>>, `malformedLSB` is modified to also treat `E == 0` as malformed when `EF=0`:
+
+[source]
+----
+malformedLSB = (E <= 0)
+----
+
+NOTE: An `EF=0` encoding that decodes to `E=0` (with its implied `LMSB` of 1) expresses the same bounds as the `EF=1` encoding with `LE=1`.
+The `EF=0`, `E=0` encodings are therefore redundant in {rv32y_uni_base_name} and declared malformed, leaving `EF=1` as the canonical encoding.
+
+In both the <<section_null_cap_encoding,NULL>> and <<section_infinite_cap_encoding,Infinite>> capability encodings, `LE` is set to zero.
 
 === {cheri_default_ext_name} Support
 
