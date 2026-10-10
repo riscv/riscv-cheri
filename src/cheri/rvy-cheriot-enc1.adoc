@@ -65,7 +65,7 @@ and its <<zylevels1_lg_perm,GL>> and <<zylevels1_sl_perm,SL>> permissions are en
 ifdef::cheri_standalone_spec[]
 <<section_zyseal>>::
 This encoding supports <<section_zyseal>>.
-The <<zyseal_se_perm,SE>> and <<zyseal_us_perm,US>> permissions are encoded in the P field.
+The <<zyseal_se_perm,S>> and <<zyseal_us_perm,U>> permissions are encoded in the P field.
 endif::[]
 
 ==== Capability Encoding Parameter Summary
@@ -134,8 +134,8 @@ The meaning for bits [2:0] are shown in <<cheriot_perms_encoding>>.
 4+| P[4:0] 12+| Decoded Permissions
 | P[4:3] | P[2] | P[1] | P[0]
   |<<r_perm,R>>|  <<w_perm,W>>  |<<c_perm,C>>|<<zylevels1_sl_perm,SL>>|<<lm_perm,LM>>       |<<zylevels1_lg_perm,LG>>
-  |<<x_perm,X>>|<<asr_perm,ASR>>|   <<zycheriot_u0_perm,U0>>     | <<zyseal_se_perm,SE>>  |<<zyseal_us_perm,US>>| Notes
-| 00     | <<zycheriot_u0_perm,U0>> |<<zyseal_se_perm,SE>>|<<zyseal_us_perm,US>>
+  |<<x_perm,X>>|<<asr_perm,ASR>>|   <<zycheriot_u0_perm,U0>>     | <<zyseal_se_perm,S>>   |<<zyseal_us_perm,U>> | Notes
+| 00     | <<zycheriot_u0_perm,U0>> |<<zyseal_se_perm,S>>|<<zyseal_us_perm,U>>
   |            |                |            |                        |                     |
   |            |                | P[2]       | P[1]                   | P[0]                | Sealing
 | 01     |<<asr_perm,ASR>>|<<lm_perm,LM>>|<<zylevels1_lg_perm,LG>>
@@ -158,7 +158,7 @@ The meaning for bits [2:0] are shown in <<cheriot_perms_encoding>>.
 For example, if P[4:3] = 01 and P[2:0] = 101 then the decoded permissions are <<r_perm,R>>, <<c_perm,C>>, <<x_perm,X>>, <<zylevels1_lg_perm,LG>>, and <<asr_perm,ASR>>.
 Note that there is no encoding for an "Infinite" capability with all permissions.
 In particular there is no overlap between the software and sealing permissions
-(`U0`, <<zyseal_se_perm,SE>>, <<zyseal_us_perm,US>>) and any other permissions
+(`U0`, <<zyseal_se_perm,S>>, <<zyseal_us_perm,U>>) and any other permissions
 (recall <<perm_req:zycheriot:mem-nand-ct>> from <<sec_zycheriot_unpriv_permission_roots>>)
 and <<x_perm,X>> is mutually exclusive with <<w_perm,W>>
 (recall <<perm_req:zycheriot:w-nand-x>>).
@@ -170,7 +170,7 @@ To encode a set of permissions resulting from <<CLRPERM>>, the first of the foll
 3. If the permissions include <<r_perm,R>> and <<c_perm,C>> then encode <<lm_perm,LM>> and <<zylevels1_lg_perm,LG>> using the Cap RO format (P[4:2] = 101).
 4. If the permissions include <<w_perm,W>> and <<c_perm,C>> then encode using the Cap WO format (P[4:0] = 10000).
 5. If the permissions include <<r_perm,R>> or <<w_perm,W>> then encode using the Data RW format (P[4:0] = 100RW).
-6. Encode <<zycheriot_u0_perm,U0>>, <<zyseal_se_perm,SE>> and <<zyseal_us_perm,US>> using the sealing format (P[4:3] = 00).
+6. Encode <<zycheriot_u0_perm,U0>>, <<zyseal_se_perm,S>> and <<zyseal_us_perm,U>> using the sealing format (P[4:3] = 00).
 
 This procedure will automatically apply the rules defined in <<sec_zycheriot_unpriv_permission_transitions>> to legalize permission sets.
 If any of the requested permissions cannot be represented using the chosen format, then the they are dropped.
@@ -182,7 +182,7 @@ have permissions encodings as shown in <<tab_cheriot_enc1_root_caps>>.
 [#tab_cheriot_enc1_root_caps,width="100%",options=header,cols="1,1,2",align="center",reftext="CHERIoT root capabilities table"]
 |===
 | Root name       | P[4:0]  | Permissions
-| Sealing         | `00111` | `U0`, <<zyseal_se_perm,SE>>, <<zyseal_us_perm,US>>
+| Sealing         | `00111` | `U0`, <<zyseal_se_perm,S>>, <<zyseal_us_perm,U>>
 | <<root-rx-cap>> | `01111` | <<x_perm,X>>, <<r_perm,R>>, <<c_perm,C>>, <<lm_perm,LM>>, <<zylevels1_lg_perm,LG>>, <<asr_perm,ASR>>
 | <<root-rw-cap>> | `11111` | <<w_perm,W>>, <<r_perm,R>>, <<c_perm,C>>, <<lm_perm,LM>>, <<zylevels1_lg_perm,LG>>, <<zylevels1_sl_perm,SL>>
 |===
