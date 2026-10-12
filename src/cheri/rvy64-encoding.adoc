@@ -239,7 +239,7 @@ inverted to ensure that the <<null-cap>> capability is encoded as zero without t
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base bound addresses respectively. +
-When EF=0, the exponent `E=CAP_MAX_E - { MSB, TE, BE }`,
+When EF=0, the exponent `E=CAP_MAX_E - ( enableL8 ? { L8, TE, BE } : { TE, BE } )`,
 so the address bits a[E + MW - 1:E] are replaced with T and B to form the top
 and base bound addresses respectively.
 E is computed by subtracting from the maximum possible exponent CAP_MAX_E which can be efficiently implemented in hardware assuming that T and B are at bit CAP_MAX_E and performing a logical bitwise shift right by E.
