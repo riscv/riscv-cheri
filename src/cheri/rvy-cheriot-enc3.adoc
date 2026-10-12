@@ -21,16 +21,16 @@ The 8-bit L is expanded to 9 bits by adding a leading implicit one bit, except i
 
 [source]
 ----
-// Decode L8 and exponent
+// Decode MSB and exponent
 e = (E == 31) ? 0 : E
-L8 = (e == 31) ? 0 : 1
+MSB = (e == 31) ? 0 : 1
 
 // Decode base (same as <<rv32y_cheriot_encoding1_name>>)
 c_b = (A[e + 8 : e]) < B ? -1 : 0
 base = ((A[31 : e + 9] + c_b) @ B) << e
 
 // Compute top from base and length
-top = base + ((L8 @ L) << e)
+top = base + ((MSB @ L) << e)
 ----
 
 All other aspects of the capability encoding are identical to {rv32y_cheriot_encoding2_name}.
