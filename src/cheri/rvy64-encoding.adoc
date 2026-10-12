@@ -228,7 +228,7 @@ NOTE: The pseudocode is intentionally simpler than the equivalent definitions in
 
 ifdef::cheri_v9_annotations[]
 NOTE: *CHERI v9 Note:* The IE bit from CHERI v9 is renamed EF and its value is
-inverted to ensure that the <<null-cap>> capability is encoded as zero without the
+inverted to ensure that the <<section_null_cap_encoding,NULL>> capability is encoded as zero without the
 need for CHERI v9's in-memory format. +
 When EF=1, the exponent E=0, so the address bits a[MW - 1:0] are replaced
 with T and B to form the top and base bound addresses respectively. +
@@ -561,11 +561,11 @@ is _representable_.
 ==== NULL Capability Encoding
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
+NOTE: *CHERI v9 Note:* Encoding <<section_null_cap_encoding,NULL>> as zeros removes the need for
 the difference between in-memory and architectural format.
 endif::[]
 
-The <<null-cap>> capability is represented with 0 in all fields.
+The NULL capability is represented with 0 in all fields.
 This implies that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}).
 The exponent value causes its bounds to cover the entire address space, but no permissions are granted and so it cannot successfully be used to grant authorization.
 
@@ -589,7 +589,7 @@ The exponent value causes its bounds to cover the entire address space, but no p
 
 ^1^ Only present if `enableL8=1` as defined by the capability-encoding format.
 
-Extensions that add permissions (such as <<section_zylevels1>>) must encode them such that the all-zero <<null-cap>> capability grants no permissions.
+Extensions that add permissions (such as <<section_zylevels1>>) must encode them such that the all-zero <<section_null_cap_encoding,NULL>> capability grants no permissions.
 
 [#section_infinite_cap_encoding]
 ==== Infinite Capability Encoding

@@ -596,6 +596,7 @@ NOTE: Future extensions may add additional root capabilities for purposes such a
 ===== NULL Capability
 An invalid capability with all-zero metadata and address is referred to as the <<section_null_cap_encoding,NULL>> capability.
 This capability grants no permissions and any dereference raises an exception.
+For more details see xref:section_null_cap_encoding[xrefstyle=short].
 
 [#sec_cap_encoding_formats, reftext="capability-encoding format"]
 === Capability-Encoding Formats
@@ -738,7 +739,7 @@ The <<gprs,XLEN-bit integer registers>> (e.g., `x1`, `x2`) are all widened to YL
 // The register can be referred to either way - as `{creg}1` accessing all YLEN bits or as `{creg}1` accessing only the address field (i.e., the lower XLEN bits).
 // For the ABI register names the `y` prefix is added, e.g., `{abi_creg}sp` to refer to all YLEN bits, and so the assembler can refer to either `sp` or `{abi_creg}sp` depending on the instruction operand.
 
-The zero register (`x0`) is extended with zero metadata and its {ctag} set to 0: this is called the <<null-cap>> capability.
+The zero register (`x0`) is extended with zero metadata and its {ctag} set to 0: this is called the <<section_null_cap_encoding,NULL>> capability.
 
 [#pcc,reftext="{pcc}"]
 ==== The Program Counter Capability (`{pcc}`)
@@ -883,7 +884,7 @@ Every memory access must be authorized by a valid capability.
 Instruction fetches and data memory accesses raise a CHERI exception if any of the following checks fail on the authorizing capability:
 
 * The {ctag} must be set to 1.
-** All memory access instruction encodings with `{cs1}={creg}0` are _reserved_ (since dereferencing <<null-cap>> in `{creg}0` always faults due to its {ctag} being zero).
+** All memory access instruction encodings with `{cs1}={creg}0` are _reserved_ (since dereferencing <<section_null_cap_encoding,NULL>> in `{creg}0` always faults due to its {ctag} being zero).
 * The authorizing capability must not be sealed.
 * All <<section_cap_integrity,integrity>> checks on the authorizing capability must pass.
 * All bytes of the access must be in <<sec_cap_bounds_overview,bounds>>.
