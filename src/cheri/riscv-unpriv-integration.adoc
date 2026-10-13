@@ -586,6 +586,8 @@ The definitions of <<root-rx-cap>> and <<root-rw-cap>> are the maximum possible 
 Implementations are not required to provide access to the entire address space to a single hart or even to provide all permissions.
 As such, where a root capability value is specified, harts may specify implementation-defined values instead with reduced bounds and/or permissions as required.
 
+Capability-encoding formats are required to specify the encoding of all root capabilities.
+
 NOTE: The hart-specific initial capabilities may be the maximum that the hart can ever have access to, but there could also be capabilities in memory with greater bounds or permissions.
 
 NOTE: Some capability-encoding formats like {rv64y_uni_base_name} provide an <<section_infinite_cap_encoding,Infinite>> capability which provides all the characteristics of the full set of root capabilities in a single encoding.
@@ -594,9 +596,15 @@ NOTE: Future extensions may add additional root capabilities for purposes such a
 
 [#null-cap,reftext="NULL"]
 ===== NULL Capability
-An invalid capability with all-zero metadata and address is referred to as the <<section_null_cap_encoding,NULL>> capability.
+An invalid capability with all-zero metadata and address is referred to as the NULL capability.
 This capability grants no permissions and any dereference raises an exception.
-For more details see xref:section_null_cap_encoding[xrefstyle=short].
+
+The NULL capability is represented with 0 in _all_ fields in _all_ capability-encoding formats.
+
+Extensions that add permissions (such as <<section_zylevels1>>) must encode them such that the all-zero NULL capability grants no permissions.
+
+NOTE: As `E=0`, the decoded exponent is CAP_MAX_E ({cap_rv64_exp_max}).
+ This exponent value causes its bounds to cover the entire address space, but no permissions are granted, and the capability is invalid, and so it cannot successfully be used to grant authorization.
 
 [#sec_cap_encoding_formats, reftext="capability-encoding format"]
 === Capability-Encoding Formats
@@ -739,7 +747,7 @@ The <<gprs,XLEN-bit integer registers>> (e.g., `x1`, `x2`) are all widened to YL
 // The register can be referred to either way - as `{creg}1` accessing all YLEN bits or as `{creg}1` accessing only the address field (i.e., the lower XLEN bits).
 // For the ABI register names the `y` prefix is added, e.g., `{abi_creg}sp` to refer to all YLEN bits, and so the assembler can refer to either `sp` or `{abi_creg}sp` depending on the instruction operand.
 
-The zero register (`x0`) is extended with zero metadata and its {ctag} set to 0: this is called the <<section_null_cap_encoding,NULL>> capability.
+The zero register (`x0`) is extended with zero metadata and its {ctag} set to 0: this is called the <<null-cap>> capability.
 
 [#pcc,reftext="{pcc}"]
 ==== The Program Counter Capability (`{pcc}`)
@@ -884,7 +892,7 @@ Every memory access must be authorized by a valid capability.
 Instruction fetches and data memory accesses raise a CHERI exception if any of the following checks fail on the authorizing capability:
 
 * The {ctag} must be set to 1.
-** All memory access instruction encodings with `{cs1}={creg}0` are _reserved_ (since dereferencing <<section_null_cap_encoding,NULL>> in `{creg}0` always faults due to its {ctag} being zero).
+** All memory access instruction encodings with `{cs1}={creg}0` are _reserved_ (since dereferencing <<null-cap>> in `{creg}0` always faults due to its {ctag} being zero).
 * The authorizing capability must not be sealed.
 * All <<section_cap_integrity,integrity>> checks on the authorizing capability must pass.
 * All bytes of the access must be in <<sec_cap_bounds_overview,bounds>>.
