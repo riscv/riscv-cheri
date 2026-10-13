@@ -551,32 +551,12 @@ is _representable_.
 ==== NULL Capability Encoding
 
 ifdef::cheri_v9_annotations[]
-NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for
-the difference between in-memory and architectural format.
+NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for the difference between in-memory and architectural format.
 endif::[]
 
-The <<null-cap>> capability is represented with 0 in all fields.
+The NULL capability is represented with 0 in all fields including the {ctag}.
 This implies that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}).
 The exponent value causes its bounds to cover the entire address space, but no permissions are granted and so it cannot successfully be used to grant authorization.
-
-.Field values of the NULL capability
-[#null-cap-encoding,reftext="NULL",options=header,align=center,width="70%",cols="25,23,52"]
-|==============================================================================
-| Field    | Value  | Comment
-| {ctag_title}             | zero   | Capability is not valid
-| <<SDP-field64,SDP>>        | zeros  | Grants no permissions
-| <<AP-field,AP>>          | zeros  | Grants no permissions
-| CT       | zero   | Unsealed
-| EF       | zero   | Internal exponent format
-| T        | zeros  | Top bound address bits
-| TE       | zeros  | Exponent bits
-| B        | zeros  | Base bound address bits
-| BE       | zeros  | Exponent bits
-| Address  | zeros  | Capability address
-| Reserved | zeros  | All reserved fields
-|==============================================================================
-
-Extensions that add permissions (such as <<section_zylevels1>>) must encode them such that the all-zero <<null-cap>> capability grants no permissions.
 
 [#section_infinite_cap_encoding]
 ==== Infinite Capability Encoding

@@ -586,6 +586,8 @@ The definitions of <<root-rx-cap>> and <<root-rw-cap>> are the maximum possible 
 Implementations are not required to provide access to the entire address space to a single hart or even to provide all permissions.
 As such, where a root capability value is specified, harts may specify implementation-defined values instead with reduced bounds and/or permissions as required.
 
+Capability-encoding formats are required to specify the encoding of all root capabilities.
+
 NOTE: The hart-specific initial capabilities may be the maximum that the hart can ever have access to, but there could also be capabilities in memory with greater bounds or permissions.
 
 NOTE: Some capability-encoding formats like {rv64y_uni_base_name} provide an <<section_infinite_cap_encoding,Infinite>> capability which provides all the characteristics of the full set of root capabilities in a single encoding.
@@ -594,8 +596,13 @@ NOTE: Future extensions may add additional root capabilities for purposes such a
 
 [#null-cap,reftext="NULL"]
 ===== NULL Capability
-An invalid capability with all-zero metadata and address is referred to as the <<section_null_cap_encoding,NULL>> capability.
+An invalid capability with all-zero metadata and address is referred to as the NULL capability.
 This capability grants no permissions and any dereference raises an exception.
+
+The NULL capability is represented with 0 in _all_ fields in _all_ capability-encoding formats.
+
+Extensions that add permissions (such as <<section_zylevels1>>) must encode them such that the all-zero NULL capability grants no permissions.
+
 
 [#sec_cap_encoding_formats, reftext="capability-encoding format"]
 === Capability-Encoding Formats
