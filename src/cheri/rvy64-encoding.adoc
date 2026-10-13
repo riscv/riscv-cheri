@@ -565,6 +565,8 @@ NOTE: *CHERI v9 Note:* Encoding <<null-cap>> as zeros removes the need for the d
 endif::[]
 
 The NULL capability is represented with 0 in all fields including the {ctag}.
+This implies that it has no permissions and its exponent E is CAP_MAX_E ({cap_rv64_exp_max}).
+The exponent value causes its bounds to cover the entire address space, but no permissions are granted and so it cannot successfully be used to grant authorization.
 
 [#section_infinite_cap_encoding]
 ==== Infinite Capability Encoding
