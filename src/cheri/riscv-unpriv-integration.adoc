@@ -73,6 +73,7 @@ While capabilities in general-purpose registers authorize data memory accesses, 
 Sequential execution, branches, and direct jumps update only the address field of <<pcc>> while retaining its metadata, whereas indirect jumps write a new capability from a general-purpose register into <<pcc>>.
 To support controlled transitions between distrusting code, a capability can be _sealed_ so that it cannot be modified or dereferenced, and can only be used as an indirect jump target that is automatically unsealed when written into <<pcc>>.
 Such a capability is known as a sealed entry point.
+
 {cheri_base_ext_name} specifies the minimum required fields that the capability-encoding format must support, and their semantics.
 This version of {cheri_base_ext_name} defines only little-endian capability memory layouts.
 The memory representation of capabilities is always `2*XLEN` (`YLEN`) bits wide and holds the address in the lower `XLEN` bits of memory and the metadata in the upper `XLEN` bits.
