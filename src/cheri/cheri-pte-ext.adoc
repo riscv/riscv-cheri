@@ -95,6 +95,9 @@ The implementation raises a {cheri_excep_name_pte_ld} when, in addition to the r
 
 ^1^ Implementations that trap conservatively may raise the fault regardless of the value of the loaded {ctag}, as shown in <<pte_rvy_load_summary>>.
 
+Since the {cheri_excep_name_pte_ld} may depend on the loaded {ctag}, it is determined after address translation (see <<sv32algorithm_rvy>>) and after the physical-address PMA and PMP checks succeed.
+It therefore has the lowest priority of all synchronous exceptions, as shown in <<exception-priority-cheri>>.
+
 [NOTE]
 ====
 
@@ -228,9 +231,11 @@ __a__=__pte__.__ppn__×PAGESIZE and go to step 2.
 
 . Determine if the requested memory access is allowed by the _pte_._r_, _pte_._w_, and _pte_._x_ bits. If not, stop and raise a page-fault exception corresponding to the original access type.
 
-. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, *or if the original memory access is a capability store with the to-be-stored {ctag} set to 1 and _pte_._{pte_cap_dirty_name_lc}_=0^1^*:
+. If _pte_._a_=0, or if the original memory access is a store and _pte_._d_=0, *or if the original memory access is a capability store with the to-be-stored {ctag} set to 1 and _pte_._{pte_cap_dirty_name_lc}_=0 (see <<sec_cap_dirty_tracking>>)*:
 
-* If the Svade extension is implemented, stop and raise a page-fault exception corresponding to the original access type.
+* If the Svade extension is implemented:
+** *If the original memory access is a capability store with the to-be-stored {ctag} set to 1 and _pte_._{pte_cap_dirty_name_lc}_=0, stop and raise a {cheri_excep_name_pte_st} exception.*
+** Otherwise, stop and raise a page-fault exception corresponding to the original access type.
 * If a store to the PTE at address __a__+__va.vpn__[__i__]×PTESIZE would violate a PMA or PMP check,
 raise an access-fault exception corresponding to the original access
 type.
@@ -245,4 +250,9 @@ given as follows:
 * If _i_>0, then this is a superpage translation and __pa.ppn__[__i__-1:0] = __va.vpn__[__i__-1:0].
 * _pa.ppn_[LEVELS-1:__i__] = _pte_._ppn_[LEVELS-1:__i__].
 
-*^1^ If {cheri_priv_crg_ext} is enabled ({cheri_base64_ext_name} only), then this condition causes capability dirty tracking.*
+[NOTE]
+====
+Checking for {cheri_excep_name_pte_st} before _pte_._w_ (step 7) and before _pte_._a_/_pte_._d_ under Svade (step 10) ensures that software receives the more specific fault.
+This allows the OS to handle copy-on-write (_pte_._w_=0) or software-managed A/D updates (_pte_._d_=0) alongside the capability store fault in a single trap.
+Otherwise, the trap handler would handle a standard store/AMO page fault first (without knowing a valid capability was being stored), return from the trap, and immediately take a {cheri_excep_name_pte_st} on the retried instruction.
+====
