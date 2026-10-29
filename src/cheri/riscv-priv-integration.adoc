@@ -149,6 +149,9 @@ NOTE: The list also includes <<ddc>> if <<section_cheri_hybrid_ext>> is implemen
 NOTE: This restriction ensures M-mode software cannot drop CHERI checks by modifying <<misa_y,misa>> once they have been configured.
  A simpler conforming implementation could prevent setting <<misa_y,misa>>.{CRE} to zero if the capability metadata of any of these registers has ever been written to, rather than dynamically checking the current metadata.
 
+NOTE: The behavior of {cheri_base_ext_name} specific state, such as the metadata and {ctag} of the <<pcc>> and `__x__tvec`, is UNSPECIFIED when <<misa_y,misa>>.{CRE} is set to 0.
+ If re-enabled, the recommendation is that all metadata and {ctag}s are retained of the state which is required for execution (<<pcc>>, <<ddc>>, <<mtvec_y,mtvec>>) and all other {ctag}s are set to 0.
+
 Either misa.I or misa.E is _also_ set to indicate whether 32 or 16 general-purpose registers are present.
 
 NOTE: Implementations which allow misa.C to be writable need to legalize `__x__epc`
