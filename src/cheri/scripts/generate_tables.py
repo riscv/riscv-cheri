@@ -92,80 +92,6 @@ class InsnTable(table):
         return row[self._extension_col_idx] == self.extension
 
 
-class illegal_insns(table):
-    cols = ["Mnemonic", "illegal insn if (1)", "OR illegal insn if (2)", "OR illegal insn if (3)"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write("|" + "|".join(self.cols) + "\n")
-        self.indices = []
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i == 0:
-                    outStr += "|" + insn_xref(row[i])
-                else:
-                    outStr += "|" + row[i]
-            self.write_row(row, outStr)
-
-    def check(self, row):
-        return row[self.header.index("illegal insn if (1)")] != ""
-
-
-class old_and_new_mnemonics(table):
-    cols = ["Mnemonic", "Old mnemonic", "Extension"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write("|" + "|".join(self.cols) + "\n")
-        self.indices = []
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i == 0:
-                    outStr += "|" + insn_xref(row[i])
-                else:
-                    outStr += "|" + row[i]
-            self.write_row(row, outStr)
-
-    def check(self, row):
-        return row[self.header.index("Old mnemonic")] != "N/A" and row[self.header.index("Old mnemonic")] != "same"
-
-
-class new_instructions(table):
-    cols = ["Mnemonic", "Old mnemonic", "Extension"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write("|" + "|".join(self.cols) + "\n")
-        self.indices = []
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i == 0:
-                    outStr += "|" + insn_xref(row[i])
-                else:
-                    outStr += "|" + row[i]
-            self.write_row(row, outStr)
-
-    def check(self, row):
-        return row[self.header.index("Old mnemonic")] == "N/A"
-
 def resolve_col_display_name(col_name):
     col_display_names = {"RVY CSR": "{cheri_base_ext_name} CSR", "Alias": "Extended CSR"}
 
@@ -195,34 +121,6 @@ class csr_renamed_purecap_mode_d(table):
 
     def check(self, row):
         return row[self.header.index("Alias")] != "" and row[self.header.index("Mode")] == "D"
-
-
-class csr_added_legacy(table):
-    cols = ["RVY CSR", "Width", "Address", "Prerequisites", "Permissions", "Description"]
-    indices = []
-
-    def __init__(self, filename, header):
-        super().__init__(filename, header)
-        self.file.write("|" + "|".join(self.cols) + "\n")
-        self.indices = []
-        for i in self.cols:
-            self.indices.append(self.header.index(i))
-
-    def update(self, row):
-        if self.check(row):
-            outStr = ""
-            for i in self.indices:
-                if i == 0 or i == 3:
-                    outStr += "|" + insn_xref(row[i])
-                else:
-                    outStr += "|" + row[i]
-            self.write_row(row, outStr)
-
-    def check(self, row):
-        return (
-            row[self.header.index("Alias")] == ""
-            and "{cheri_default_ext_name}" == row[self.header.index("Prerequisites")].strip()
-        )
 
 
 class csr_added_purecap_mode_d(table):
@@ -714,7 +612,6 @@ if __name__ == "__main__":
         tables.append(csr_alias_action_m(output_file(args, "csr_alias_action_m_table_body.adoc"), header))
         tables.append(csr_alias_action_s(output_file(args, "csr_alias_action_s_table_body.adoc"), header))
         tables.append(csr_alias_action_u(output_file(args, "csr_alias_action_u_table_body.adoc"), header))
-        tables.append(csr_added_legacy(output_file(args, "csr_added_hybrid_table_body.adoc"), header))
         tables.append(csr_perms_d(output_file(args, "csr_permission_d_table_body.adoc"), header))
         tables.append(csr_perms_m(output_file(args, "csr_permission_m_table_body.adoc"), header))
         tables.append(csr_perms_s(output_file(args, "csr_permission_s_table_body.adoc"), header))
@@ -741,23 +638,8 @@ if __name__ == "__main__":
                 header=header,
             ),
             InsnTable(
-                extension="{rvy_topr_insn_ext_name}",
-                filename=output_file(args, "Zytopr_insns_table_body.adoc"),
-                header=header,
-            ),
-            InsnTable(
-                extension="{rvy_bld_insn_ext_name}",
-                filename=output_file(args, "Zybld_insns_table_body.adoc"),
-                header=header,
-            ),
-            InsnTable(
                 extension="{rvy_bndsrdw_insn_ext_name}",
                 filename=output_file(args, "Zybndsrdw_insns_table_body.adoc"),
-                header=header,
-            ),
-            InsnTable(
-                extension="{cheri_seal_ext_name}",
-                filename=output_file(args, "Zyseal_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
@@ -798,9 +680,6 @@ if __name__ == "__main__":
             InsnTable(
                 extension="{rvy_h_ext_name}", filename=output_file(args, "RVY_H_insns_table_body.adoc"), header=header
             ),
-            InsnTable(extension="M", filename=output_file(args, "RVY_M_insns_table_body.adoc"), header=header),
-            InsnTable(extension="S", filename=output_file(args, "RVY_S_insns_table_body.adoc"), header=header),
-            InsnTable(extension="DRET", filename=output_file(args, "RVY_DRET_insns_table_body.adoc"), header=header),
             InsnTable(
                 extension="{rvy_zicbom_mod_ext_name}",
                 filename=output_file(args, "RVY_Zicbom_mod_insns_table_body.adoc"),
@@ -821,9 +700,6 @@ if __name__ == "__main__":
                 filename=output_file(args, "Zyhybrid_insns_table_body.adoc"),
                 header=header,
             ),
-            illegal_insns(filename=output_file(args, "illegal_insns_table_body.adoc"), header=header),
-            old_and_new_mnemonics(filename=output_file(args, "old_and_new_mnemonics_table_body.adoc"), header=header),
-            new_instructions(filename=output_file(args, "new_instructions_table_body.adoc"), header=header),
         ]
         for row in rows:
             for t in tables:
