@@ -165,6 +165,33 @@ The contents of <<vstidc>> never directly affect the behavior of the machine.
 .Virtual supervisor thread identifier capability register
 include::img/vstidcreg.edn[]
 
+=== Hypervisor YLEN-bit CSR Summary
+
+<<all_capability_CSRs_h>> shows all <<ylen_csrs,YLEN-bit>> VS-mode and hypervisor CSRs added or modified by {cheri_base_ext_name} or its extensions.
+
+.All YLEN-bit VS-mode and hypervisor CSRs.
+[#all_capability_CSRs_h]
+[width="100%",options=header,cols="3,3,2,3,3,5"]
+|==============================================================================
+include::{generated_dir}/csr_permission_h_table_body.adoc[]
+|==============================================================================
+
+.Action taken on writing to YLEN-bit VS-mode and hypervisor CSRs
+[#extended_CSR_writing_h]
+[width="100%",options=header,cols="1,1,2,2"]
+|==============================================================================
+include::{generated_dir}/csr_alias_action_h_table_body.adoc[]
+|==============================================================================
+
+Code pointers and data pointers in <<CSR_exevectors_h>> are WARL CSRs that do not need to store full 64-bit addresses on RV64, and so may be subject to <<section_invalid_addr_conv>> on writing.
+
+.YLEN-bit VS-mode and hypervisor CSRs storing code pointers or data pointers
+[#CSR_exevectors_h]
+[width="100%",options=header,cols="1,1,1,1,1"]
+|==============================================================================
+include::{generated_dir}/csr_exevectors_h_table_body.adoc[]
+|==============================================================================
+
 === "Smstateen/Ssstateen" Integration
 The TIDC bit controls access to the <<stidc>> (really <<vstidc>>) CSR.
 
