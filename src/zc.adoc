@@ -2587,24 +2587,28 @@ pc = InstMemory[table_address][XLEN-1:0]&~0x1;  // Clear bit 0.
 
 ----
 
-ifndef::cheri_ratification_v1_only[]
-
 === Zc* ({cheri_base_ext_name})
 
 When the base ISA is {cheri_base_ext_name}, some of the 16-bit encoding space is remapped for Zca YLEN-wide loads/store and therefore some Zc* ISA extensions are incompatible with {cheri_base_ext_name}.
-The mappings are shown in <<insn_remapping_16bit_rv32_b>> and <<insn_remapping_16bit_rv64_b>>
+The mappings are shown in
+ifndef::cheri_ratification_v1_only[]
+ <<insn_remapping_16bit_rv32_b>> and
+endif::[]
+ <<insn_remapping_16bit_rv64_b>>
 
 As a result:
 
-. Zcf and Zclsd      are incompatible with {cheri_base32_ext_name}.
-. Zcd, Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.
+ifndef::cheri_ratification_v1_only[]
+* Zcf and Zclsd      are incompatible with {cheri_base32_ext_name}.
+* Specifying {cheri_base32_ext_name} + C gives Zca.
+* Specifying {cheri_base32_ext_name} + Zce gives Zca, Zcb, Zcmp and Zcmt.
+endif::[]
 
-Therefore Zcmp and Zcmt are available for {cheri_base32_ext_name} only, and so:
+* Zcd, Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.
+* Specifying {cheri_base64_ext_name} + C gives Zca.
+* Specifying {cheri_base64_ext_name} + Zce gives Zca and Zcb.
 
-. Specifying {cheri_base64_ext_name} + C gives Zca.
-. Specifying {cheri_base32_ext_name} + C gives Zca.
-. Specifying {cheri_base64_ext_name} + Zce gives Zca and Zcb.
-. Specifying {cheri_base32_ext_name} + Zce gives Zca, Zcb, Zcmp and Zcmt.
+ifndef::cheri_ratification_v1_only[]
 
 [#ZCMP_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
 ==== Zcmp ({cheri_base32_ext_name})
