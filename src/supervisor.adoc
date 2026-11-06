@@ -711,7 +711,7 @@ If `stval` is written with a nonzero value when a
 {cheri_excep_name_ld},
 {cheri_excep_name_st},
 {cheri_excep_name_pte_ld}, or
-{cheri_excep_name_pte_st} exception occurs, then `mtval` will contain the virtual
+{cheri_excep_name_pte_st} exception occurs, then `stval` will contain the virtual
 address of the lowest byte of the access.
 
 On a breakpoint exception raised by an EBREAK or C.EBREAK instruction, `stval`
@@ -1646,7 +1646,7 @@ given as follows:
 
 [NOTE]
 ====
-Checking for {cheri_excep_name_pte_st} before _pte_._w_ (step 7) and before _pte_._a_/_pte_._d_ under Svade (step 10) ensures that software receives the more specific fault.
+Checking for {cheri_excep_name_pte_st} before _pte_._w_ (step 7) and before _pte_._a_/_pte_._d_ under Svade (step 10) ensures that software can use the fault type to emulate the behavior of Svadu.
 This allows the OS to handle copy-on-write (_pte_._w_=0) or software-managed A/D updates (_pte_._d_=0) alongside the capability store fault in a single trap.
 Otherwise, the trap handler would handle a standard store/AMO page fault first (without knowing a valid capability was being stored), return from the trap, and immediately take a {cheri_excep_name_pte_st} on the retried instruction.
 ====
