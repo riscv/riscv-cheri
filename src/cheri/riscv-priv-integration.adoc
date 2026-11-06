@@ -129,8 +129,9 @@ include::img/mtidcreg.edn[]
 [#menvcfg_y,reftext="menvcfg ({cheri_base_ext_name})"]
 ==== Machine Environment Configuration (`menvcfg`) Register
 
-{cheri_default_mext_name} adds the {CRE} bit to *menvcfg*.
-The {CRE} bit can be used to disable or enable {cheri_base_ext_name} for privilege modes below M-mode, as described in xref:section_cheri_disable[xrefstyle=full].
+The {CRE} bit in *menvcfg* controls whether {cheri_base_ext_name} is enabled for privilege modes below M-mode, as described in xref:section_cheri_disable[xrefstyle=full].
+If the base architecture is {cheri_base_ext_name}, `menvcfg.{CRE}` is writable if {cheri_default_mext_name} is implemented, and read-only one otherwise.
+For non-{cheri_base_ext_name} architectures, `menvcfg.{CRE}` is read-only zero.
 
 .Machine environment configuration register (*menvcfg*)
 [#menvcfgmodereg]
@@ -590,8 +591,9 @@ include::img/stidcreg.edn[]
 [#senvcfg_y,reftext="senvcfg ({cheri_base_ext_name})"]
 ==== Supervisor Environment Configuration Register (senvcfg)
 
-{cheri_default_sext_name} adds the {CRE} bit to *senvcfg*.
-The {CRE} bit can be used to disable or enable {cheri_base_ext_name} for U-mode, as described in xref:section_cheri_disable[xrefstyle=full].
+The {CRE} bit in *senvcfg* controls whether {cheri_base_ext_name} is enabled for U-mode, as described in xref:section_cheri_disable[xrefstyle=full].
+If the base architecture is {cheri_base_ext_name}, `senvcfg.{CRE}` is writable if {cheri_default_sext_name} is implemented, and read-only one otherwise.
+For non-{cheri_base_ext_name} architectures, `senvcfg.{CRE}` is read-only zero.
 
 .Supervisor environment configuration register (*senvcfg*)
 include::img/senvcfgreg.edn[]
@@ -935,7 +937,7 @@ endif::[]
 When using a system with {cheri_default_ext_name}, it may be desirable to configure privilege levels below M-mode such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
 
 {cheri_default_mext_name} is mandatory for all {cheri_default_ext_name} implementations.
-{cheri_default_mext_name} adds the ability to disable CHERI in lower privilege modes by making the `{CRE}` bit of <<menvcfg_y>> and `<<misa_y,misa>>.{CRE}` writable, and adds <<ddc>> to the registers that must have the capability metadata set to the reset value for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
+{cheri_default_mext_name} adds the ability to disable CHERI in lower privilege modes by making the `{CRE}` bit of <<menvcfg_y>> writable, and adds <<ddc>> to the registers that must have the capability metadata set to the reset value for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
 
 {cheri_default_sext_name} is mandatory for all {cheri_default_ext_name} implementations that support S-mode, and adds the ability to disable CHERI in U-mode by making the `{CRE}` bit of <<senvcfg_y>> writable.
 
@@ -944,6 +946,12 @@ The effective CHERI-enable for the current privilege is:
 * M-mode: always enabled
 * S-mode: `<<menvcfg_y,menvcfg>>.{CRE}`
 * U-mode: `<<menvcfg_y,menvcfg>>.{CRE} & <<senvcfg_y,senvcfg>>.{CRE}` (or `<<menvcfg_y,menvcfg>>.{CRE}` if S-mode is not implemented)
+
+[NOTE]
+====
+Clearing `<<menvcfg_y,menvcfg>>.{CRE}` does not affect the read or write behavior of `<<senvcfg_y,senvcfg>>.{CRE}`.
+In this case, the value of `<<senvcfg_y,senvcfg>>.{CRE}` has no effect on the effective CHERI-enable for U-mode.
+====
 
 To allow standard RVI/RVE code to run at privilege levels below M-mode the registers are initialized as follows:
 
