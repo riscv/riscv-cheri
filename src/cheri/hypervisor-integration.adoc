@@ -75,7 +75,8 @@ include::img/henvcfgreg.edn[]
 
 The {CRE} bit controls whether explicit access to CHERI registers is permitted when V=1.
 
-If {cheri_default_ext_name} is implemented then {CRE} becomes writeable, otherwise it is read-only one.
+If the base architecture is {cheri_base_ext_name}, `henvcfg.{CRE}` is writable if {cheri_default_ext_name} is implemented, and read-only one otherwise.
+For non-{cheri_base_ext_name} architectures, `henvcfg.{CRE}` is read-only zero.
 
 When <<henvcfg_y>>.{CRE}=1 and <<menvcfg_y>>.{CRE}=1 and <<misa_y>>.{CRE}=1, CHERI can be enabled by VS-mode and VU-mode.
 

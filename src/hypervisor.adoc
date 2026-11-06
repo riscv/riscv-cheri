@@ -741,14 +741,15 @@ XLEN=64.
 
 ifndef::cheri_ratification_v1_only[]
 
-If the base architecture is {cheri_base_ext_name} and {cheri_default_ext_name} is implemented,
-then the `{CRE}` field in `henvcfg` is defined.
 The {CRE} bit controls whether explicit access to CHERI
-registers is permitted when V=1. When `henvcfg`.{CRE}=1 and `menvcfg`.{CRE}=1
+registers is permitted when V=1.
+If the base architecture is {cheri_base_ext_name}, the `{CRE}` field in `henvcfg` is writable if {cheri_default_ext_name} is implemented, and read-only one otherwise.
+For non-{cheri_base_ext_name} architectures, the `{CRE}` field in `henvcfg` is read-only zero.
+When `henvcfg`.{CRE}=1 and `menvcfg`.{CRE}=1
 and `misa`.{CRE}=1, CHERI can be enabled by VS-mode and
 VU-mode. Otherwise, CHERI is disabled in VS-mode and
 VU-mode as described in xref:section_cheri_disable[xrefstyle=short].
-The reset value is 0 for backwards compatbility.
+When the field is writable, its reset value is 0 for backwards compatibility.
 
 endif::[]
 
