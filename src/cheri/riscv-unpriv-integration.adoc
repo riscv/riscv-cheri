@@ -1228,6 +1228,32 @@ Zcd (RV64) is incompatible with the {cheri_base_ext_name} base ISA, as its encod
 On harts that also implement {cheri_default_ext_name}, these encodings revert to Zcd when executing in {cheri_int_mode_name} (see xref:cheri_execution_mode[xrefstyle=full]).
 endif::[]
 
+As a result of the remapped 16-bit encodings (see
+ifndef::cheri_ratification_v1_only[]
+xref:insn_remapping_16bit_rv32_a[xrefstyle=short] and
+endif::[]
+xref:insn_remapping_16bit_rv64_a[xrefstyle=short]
+):
+
+ifndef::cheri_ratification_v1_only[]
+. Zcf and Zclsd      are incompatible with {cheri_base32_ext_name}.
+endif::[]
+. Zcd, Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.
+
+ifndef::cheri_ratification_v1_only[]
+Therefore Zcmp and Zcmt are available for {cheri_base32_ext_name} only, and so:
+endif::[]
+ifdef::cheri_ratification_v1_only[]
+Therefore Zcmp and Zcmt are not available for {cheri_base64_ext_name}, and so:
+endif::[]
+
+ifndef::cheri_ratification_v1_only[]
+. Specifying {cheri_base32_ext_name} + C gives Zca.
+. Specifying {cheri_base32_ext_name} + Zce gives Zca, Zcb, Zcmp and Zcmt.
+endif::[]
+. Specifying {cheri_base64_ext_name} + C gives Zca.
+. Specifying {cheri_base64_ext_name} + Zce gives Zca and Zcb.
+
 .{rvy_zca_ext_name} instruction extension
 [#{rvy_zca_file_name}]
 [width="100%",options=header,cols="2,5",]
