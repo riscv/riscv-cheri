@@ -110,20 +110,25 @@ The sequences below demonstrate how a debugger can read and write a {ctag} in `{
 
 [source,subs=attributes+]
 ----
-# Read the {ctag} into data0
+# Read {creg}1's {ctag} into data0
 csrrw  {creg}2, dscratch0, {creg}2
 {gctag_lc}  x2, {creg}1
 csrw   0xBF0, x2
 csrrw  {creg}2, dscratch0, {creg}2
 ebreak
 
-# Write the {ctag} (if nonzero)
+# Set {creg}1's {ctag} to 1 using {cbld}
 csrrw   {creg}2, dscratch0, {creg}2
 csrr    {creg}2, drootc
 {cbld_lc}    {creg}1, {creg}2, {creg}1
 csrrw   {creg}2, dscratch0, {creg}2
 ebreak
 ----
+
+The write sequence builds `{creg}1` using the root capability currently exposed by <<drootc>>.
+`{creg}1` 's {ctag} is only set if `{creg}1` is a _capability subset_ of that root.
+If it is not, and multiple roots are available, the debugger must first select a suitable root by writing <<drootcsel>>.
+The debugger can confirm that the sequence succeeded in setting the {ctag} to one by reading it back using the read sequence above.
 
 The `YLEN` bits of a capability (address and metadata) are read and written
 using normal Access Register abstract commands.
