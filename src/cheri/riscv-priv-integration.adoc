@@ -310,6 +310,15 @@ Load/store/AMO address misaligned
 
 NOTE: Full details of {cheri_excep_name_pc}, {cheri_excep_name_ld} and {cheri_excep_name_st} are in xref:cheri_exception_combs_descriptions[xrefstyle=short].
 
+If `__x__tval` is written with a nonzero value when a
+{cheri_excep_name_pc},
+{cheri_excep_name_ld},
+{cheri_excep_name_st},
+{cheri_excep_name_pte_ld}, or
+{cheri_excep_name_pte_st} exception occurs, then `__x__tval` will contain the virtual
+address of the lowest byte of the access.
+As for other exceptions, the platform specifies which of these exceptions set `__x__tval` informatively and which set it to zero.
+
 ifdef::cheri_standalone_spec[]
 ==== Machine Trap Delegation Register (medeleg)
 
