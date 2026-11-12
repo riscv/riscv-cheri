@@ -1,40 +1,24 @@
-.16-bit load/store instruction mapping in RV32I
-[#insn_remapping_16bit_rv32_a]
+.16-bit load/store instruction mapping in RV32I and {cheri_base32_ext_name}
+[#insn_remapping_16bit_rv32]
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    5+| Supported Extensions
-|[15:13]|[1:0]   |*Zca*   |*Zcf*    |*Zcd*|*Zcmp/ Zcmt*|*Zclsd*
-|111    |00      | N/A    | C.FSW   | N/A | N/A        |   C.SD
-|011    |00      | N/A    | C.FLW   | N/A | N/A        |   C.LD
-|111    |10      | N/A    | C.FSWSP | N/A | N/A        |   C.SDSP
-|011    |10      | N/A    | C.FLWSP | N/A | N/A        |   C.LDSP
+|[15:13]|[1:0]   |*{rvy_zcy_ext_name}* (see note) |*Zcf* (see note) |*Zclsd* (see note) |*Zcd*   |*Zcmp/ Zcmt*
+|111    |00      | {C_STORE_CAP_NAME}             | C.FSW            | C.SD               | N/A     | N/A
+|011    |00      | {C_LOAD_CAP_NAME}              | C.FLW            | C.LD               | N/A     | N/A
+|111    |10      | {C_STORE_CAP_SP_NAME}          | C.FSWSP          | C.SDSP             | N/A     | N/A
+|011    |10      | {C_LOAD_CAP_SP_NAME}           | C.FLWSP          | C.LDSP             | N/A     | N/A
 
-|101    |00      | N/A    | N/A     | C.FSD    | reserved       | N/A
-|001    |00      | N/A    | N/A     | C.FLD    | reserved       | N/A
-|101    |10      | N/A    | N/A     | C.FSDSP  | <<Zcmp,Zcmp>>/ <<Zcmt,Zcmt>> | N/A
-|001    |10      | N/A    | N/A     | C.FLDSP  | reserved       | N/A
-|==============================================================================
-
-.16-bit load/store instruction mapping in {cheri_base32_ext_name}
-[#insn_remapping_16bit_rv32_b]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    3+| Supported Extensions
-|[15:13]|[1:0]   |*Zca*   |*Zcd*|*Zcmp/ Zcmt*
-|111    |00    3+| {C_STORE_CAP_NAME}
-|111    |10    3+| {C_STORE_CAP_SP_NAME}
-|011    |10    3+| {C_LOAD_CAP_SP_NAME}
-|011    |00    3+| {C_LOAD_CAP_NAME}
-
-|101    |00      | N/A    | C.FSD    | reserved
-|001    |00      | N/A    | C.FLD    | reserved
+|101    |00      | N/A                            | N/A              | N/A                | C.FSD   | reserved
+|001    |00      | N/A                            | N/A              | N/A                | C.FLD   | reserved
 ifdef::cheri_ratification_v1_only[]
-|101    |10      | N/A    | C.FSDSP  | reserved for Zcmp / Zcmt ({cheri_base32_ext_name})
+|101    |10      | N/A                            | N/A              | N/A                | C.FSDSP | reserved for Zcmp / Zcmt ({cheri_base32_ext_name})
 endif::[]
 ifndef::cheri_ratification_v1_only[]
-|101    |10      | N/A    | C.FSDSP  | <<ZCMP_CHERI>>/ <<ZCMT_CHERI>>
+|101    |10      | N/A                            | N/A              | N/A                | C.FSDSP | <<ZCMP_CHERI>>/ <<ZCMT_CHERI>>
 endif::[]
-|001    |10      | N/A    | C.FLDSP  | reserved
+|001    |10      | N/A                            | N/A              | N/A                | C.FLDSP | reserved
 |==============================================================================
 
-NOTE: Zcf and Zclsd are incompatible with {cheri_base32_ext_name}.
+NOTE: {rvy_zcy_ext_name} is only available on {cheri_base32_ext_name} (and in {cheri_cap_mode_name} when {cheri_default_ext_name} is implemented).
+On {cheri_base32_ext_name}, {rvy_zcy_ext_name} reuses the encodings of Zcf and Zclsd, so Zcf and Zclsd are only available in {cheri_int_mode_name} when {cheri_default_ext_name} is implemented.

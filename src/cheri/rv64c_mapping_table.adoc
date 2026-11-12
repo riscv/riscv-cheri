@@ -1,35 +1,20 @@
-.16-bit load/store instruction mapping in RV64I
-[#insn_remapping_16bit_rv64_a]
+.16-bit load/store instruction mapping in RV64I and {cheri_base64_ext_name}
+[#insn_remapping_16bit_rv64]
 [width="100%",options=header]
 |==============================================================================
-2+|Encoding    3+| Supported Extensions
-|[15:13]|[1:0]   |*Zca*   |*Zcd*    |*Zcmp/ Zcmt*
-|111    |00      | C.SD   | N/A     | N/A
-|011    |00      | C.LD   | N/A     | N/A
-|111    |10      | C.SDSP | N/A     | N/A
-|011    |10      | C.LDSP | N/A     | N/A
+2+|Encoding    4+| Supported Extensions
+|[15:13]|[1:0]   |*Zca*   |*{rvy_zcy_ext_name}* (see note) |*Zcd* (see note) |*Zcmp/ Zcmt* (see note)
+|111    |00      | C.SD   | N/A                            | N/A              | N/A
+|011    |00      | C.LD   | N/A                            | N/A              | N/A
+|111    |10      | C.SDSP | N/A                            | N/A              | N/A
+|011    |10      | C.LDSP | N/A                            | N/A              | N/A
 
-|101    |00      | N/A    | C.FSD    | reserved
-|001    |00      | N/A    | C.FLD    | reserved
-|101    |10      | N/A    | C.FSDSP  | <<Zcmp,Zcmp>>/ <<Zcmt,Zcmt>>
-|001    |10      | N/A    | C.FLDSP  | reserved
+|101    |00      | N/A    | {C_STORE_CAP_NAME}             | C.FSD            | reserved
+|001    |00      | N/A    | {C_LOAD_CAP_NAME}              | C.FLD            | reserved
+|101    |10      | N/A    | {C_STORE_CAP_SP_NAME}          | C.FSDSP          | <<Zcmp,Zcmp>>/ <<Zcmt,Zcmt>>
+|001    |10      | N/A    | {C_LOAD_CAP_SP_NAME}           | C.FLDSP          | reserved
 |==============================================================================
 
-.16-bit load/store instruction mapping in {cheri_base64_ext_name}
-[#insn_remapping_16bit_rv64_b]
-[width="100%",options=header]
-|==============================================================================
-2+|Encoding    | Supported Extensions
-|[15:13]|[1:0] |*Zca*
-|111    |00    | C.SD
-|011    |00    | C.LD
-|111    |10    | C.SDSP
-|011    |10    | C.LDSP
-
-|101    |00    | {C_STORE_CAP_NAME}
-|001    |00    | {C_LOAD_CAP_NAME}
-|101    |10    | {C_STORE_CAP_SP_NAME}
-|001    |10    | {C_LOAD_CAP_SP_NAME}
-|==============================================================================
-
-NOTE: Zcd, Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.
+NOTE: {rvy_zcy_ext_name} is only available on {cheri_base64_ext_name} (and in {cheri_cap_mode_name} when {cheri_default_ext_name} is implemented).
+On {cheri_base64_ext_name}, {rvy_zcy_ext_name} reuses the encodings of Zcd, so Zcd is only available in {cheri_int_mode_name} when {cheri_default_ext_name} is implemented.
+Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.

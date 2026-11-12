@@ -76,12 +76,12 @@ In this naming scheme we want to show the difference in how hardware interprets 
 ////
 ====
 +
-If RVC encodings are supported, load/store encodings will revert to their _non-CHERI encodings_, such as {C_LOAD_CAP_NAME} reverting to C.FLD for RV64/{cheri_base64_ext_name}.
+If {rvy_zcy_ext_name} is implemented, the 16-bit encodings used by {rvy_zcy_ext_name} revert to their RVI definitions in {cheri_int_mode_name} (e.g., the {C_LOAD_CAP_NAME} encoding decodes as C.FLD on {cheri_base64_ext_name} if Zcd is implemented, and is reserved otherwise).
 This behavior is summarized in
 ifndef::cheri_ratification_v1_only[]
-<<insn_remapping_16bit_rv32_a>>, <<insn_remapping_16bit_rv32_b>>,
+<<insn_remapping_16bit_rv32>> and
 endif::[]
-<<insn_remapping_16bit_rv64_a>> and <<insn_remapping_16bit_rv64_b>>.
+<<insn_remapping_16bit_rv64>>.
 +
 Instructions which are _modified_ on an {cheri_base_ext_name} architecture (see <<{rvy_i_mod_file_name}>>) _revert to their standard RV32[IE]/RV64[IE] behavior_.
 +
