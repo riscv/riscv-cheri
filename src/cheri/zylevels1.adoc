@@ -16,7 +16,7 @@ NOTE: The behavior is an extension as it may be replaced by a future scheme with
 [#zylevels1_ap_field_summary,width="100%",options=header,halign=center,cols="2,2,5"]
 |==============================================================================
 | Bit                    | Type                   | Comment
-| <<zylevels1_gl_flag>>  | Information flow label | Used to classify capabilities as local or global.
+| <<zylevels1_gl_flag>>  | Information-flow label | Used to classify capabilities as local or global.
 | <<zylevels1_sl_perm>>  | Data memory permission | Used to filter the {ctag}s of stored capabilities.
 | <<zylevels1_lg_perm>>  | Data memory permission | Used to filter the permissions of loaded capabilities.
 |==============================================================================
@@ -66,11 +66,11 @@ NOTE: This behavior is similar to how <<lm_perm>> affects loaded capabilities (b
 
 The <<root-cap>> capability definitions are extended:
 
-* A <<root-rx-cap>> capability is required to grant <<zylevels1_lg_perm>> and to be a <<levels_globalcap>>.
+* A <<root-rx-cap>> capability is required to be a <<levels_globalcap>> and to grant <<zylevels1_lg_perm>>.
 
-* A <<root-rw-cap>> capability is required to grant both <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>> and to be a <<levels_globalcap>>.
+* A <<root-rw-cap>> capability is required to be a <<levels_globalcap>> and to grant both <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>.
 
-Therefore, in summary, an <<section_infinite_cap_encoding,Infinite>> capability is required to grant <<zylevels1_lg_perm>>, <<zylevels1_sl_perm>>, and to be a <<levels_globalcap>>.
+Therefore, in summary, an <<section_infinite_cap_encoding,Infinite>> capability is required to be a <<levels_globalcap>> and to grant <<zylevels1_lg_perm>> and <<zylevels1_sl_perm>>.
 
 === Interaction with <<CLRPERM>> and <<GCPERM>>
 
@@ -110,7 +110,7 @@ The permissions of the loaded capability may be reduced:
 
 * If the authorizing capability lacks <<zylevels1_lg_perm>> and the loaded capability is sealed, <<zylevels1_gl_flag>> is cleared in the result.
 +
-NOTE: The absence of <<zylevels1_lg_perm>> affects the <<zylevels1_gl_flag>> even of sealed capabilities because the latter is an information flow label rather than an architectural permission.
+NOTE: The absence of <<zylevels1_lg_perm>> affects the <<zylevels1_gl_flag>> even of sealed capabilities because the latter is an information-flow label rather than an architectural permission.
 
 .<<zylevels1_lg_perm>> effects for loading capabilities
 [#zylevels1_load_summary,width="100%",options=header,align="center",cols="1,1,1,1,1,6"]
@@ -147,7 +147,8 @@ NOTE: While a lack of <<zylevels1_lg_perm>> restricts flow by reducing permissio
 
 === Interaction with Capability Subsets
 
-The definition of <<cap_subset>> has an additional rule:
+A <<levels_globalcap>> is never a <<cap_subset>> of a <<levels_localcap>>, whereas a <<levels_localcap>> can be a <<cap_subset>> of either a <<levels_localcap>> or a <<levels_globalcap>>.
+Specifically, the definition of <<cap_subset>> has an additional rule:
 
 * The <<zylevels1_gl_flag>> of `cap2` is zero, or the <<zylevels1_gl_flag>> of `cap1` is one.
 
