@@ -742,8 +742,8 @@ if __name__ == "__main__":
                 header=header,
             ),
             InsnTable(
-                extension="{rvy_zca_ext_name}",
-                filename=output_file(args, "RVY_Zca_insns_table_body.adoc"),
+                extension="{rvy_zcy_ext_name}",
+                filename=output_file(args, "Zcy_insns_table_body.adoc"),
                 header=header,
             ),
             InsnTable(
