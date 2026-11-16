@@ -8,7 +8,7 @@ import re
 import sys
 from typing import Dict, List, Set
 
-from rvy_instruction_encodings import get_custom3_insts, Instruction, get_macro_to_insn_mapping, MajorOpcode
+from rvy_instruction_encodings import get_custom3_insts, Instruction, get_macro_to_insn_mapping
 
 _WARNING_TEXT = "WARNING: The instruction encoding is not final and is highly likely to change prior to v1.0"
 _WARNING_BLOCK = f"\n\n{_WARNING_TEXT}\n"
@@ -27,7 +27,7 @@ def _process_wavedrom_block(
     old_to_new: Dict[str, str],
     insn_map: Dict[str, Instruction],
     generated_insns: Set[Instruction]
-) -> tuple[str, bool]:
+) -> str:
     """Process a single wavedrom block and return the updated content."""
     used_macros = sorted(list(set(re.findall(r"\{([A-Z0-9_]+)\}", block))))
     target_insns: List[Instruction] = []
@@ -58,13 +58,12 @@ def _process_wavedrom_block(
             target_insns = [insn_map["SY"]]
 
     if not target_insns:
-        return prefix + content + suffix, False
+        return prefix + content + suffix
 
     for insn in target_insns:
         generated_insns.add(insn)
 
-    should_warn = any(insn.op.val in (MajorOpcode.RVY_A, MajorOpcode.RVY_B) for insn in target_insns)
-    return prefix + "\n".join(Instruction.as_merged_wavedrom(target_insns)) + suffix, should_warn
+    return prefix + "\n".join(Instruction.as_merged_wavedrom(target_insns)) + suffix
 
 
 def update_wavedrom_files(pretend: bool = False):
@@ -88,14 +87,9 @@ def update_wavedrom_files(pretend: bool = False):
         basename = os.path.basename(filename).replace(".adoc", "").upper()
 
         def _replace_wrapper(match: re.Match) -> str:
-            new_block, should_warn = _process_wavedrom_block(
+            return _process_wavedrom_block(
                 match.group(0), match.group(1), match.group(2), match.group(3), basename, old_to_new, insn_map, generated_insns
             )
-
-            if should_warn:
-                return new_block + _WARNING_BLOCK
-            else:
-                return new_block
 
         new_content = _WAVEDROM_PATTERN.sub(_replace_wrapper, content)
 
