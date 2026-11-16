@@ -273,7 +273,7 @@ class csr_added_purecap_mode_s(table):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "S"
 
 class csr_alias_action_d(table):
-    cols = ["RVY CSR", "Extension", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -297,7 +297,7 @@ class csr_alias_action_d(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "D"
 
 class csr_alias_action_m(table):
-    cols = ["RVY CSR", "Extension", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -321,7 +321,7 @@ class csr_alias_action_m(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "M"
 
 class csr_alias_action_s(table):
-    cols = ["RVY CSR", "Extension", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -345,7 +345,7 @@ class csr_alias_action_s(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "S"
 
 class csr_alias_action_u(table):
-    cols = ["RVY CSR", "Extension", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -369,7 +369,7 @@ class csr_alias_action_u(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "U"
 
 class csr_perms_d(table):
-    cols = ["RVY CSR", "Extension", "Width", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Added by", "Width", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -393,7 +393,7 @@ class csr_perms_d(table):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "D"
 
 class csr_perms_m(table):
-    cols = ["RVY CSR", "Extension", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Added by", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -417,7 +417,7 @@ class csr_perms_m(table):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "M"
 
 class csr_perms_s(table):
-    cols = ["RVY CSR", "Extension", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Added by", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -441,10 +441,10 @@ class csr_perms_s(table):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "S"
 
 class csr_perms_u(table):
-    cols = ["RVY CSR", "Extension", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Added by", "Address", "Permissions", "Reset Value", "Description"]
     # The unprivileged specification cannot talk about reset values, initial
     # values are defined by the EEI instead.
-    display_cols = ["RVY CSR", "Extension", "Address", "Permissions", "Initial Value", "Description"]
+    display_cols = ["RVY CSR", "Added by", "Address", "Permissions", "Initial Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -468,7 +468,7 @@ class csr_perms_u(table):
         return row[self.header.index("RVY CSR")] != "" and row[self.header.index("Mode")] == "U"
 
 class csr_exevectors_d(table):
-    cols = ["RVY CSR", "Extension", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["RVY CSR", "Added by", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -497,7 +497,7 @@ class csr_exevectors_d(table):
         ))
 
 class csr_exevectors_m(table):
-    cols = ["RVY CSR", "Extension", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["RVY CSR", "Added by", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -525,7 +525,7 @@ class csr_exevectors_m(table):
             or row[self.header.index("Data Pointer")] == "✔"
         ))
 class csr_exevectors_s(table):
-    cols = ["RVY CSR", "Extension", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["RVY CSR", "Added by", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -553,7 +553,7 @@ class csr_exevectors_s(table):
             or row[self.header.index("Data Pointer")] == "✔"
         ))
 class csr_exevectors_u(table):
-    cols = ["RVY CSR", "Extension", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["RVY CSR", "Added by", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
@@ -586,7 +586,7 @@ HYPERVISOR_MODES = ("VS", "H")
 
 
 class csr_alias_action_h(table):
-    cols = ["RVY CSR", "Extension", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -612,7 +612,7 @@ class csr_alias_action_h(table):
 
 
 class csr_perms_h(table):
-    cols = ["RVY CSR", "Extension", "Address", "Permissions", "Reset Value", "Description"]
+    cols = ["RVY CSR", "Added by", "Address", "Permissions", "Reset Value", "Description"]
     indices = []
 
     def __init__(self, filename, header):
@@ -638,7 +638,7 @@ class csr_perms_h(table):
 
 
 class csr_exevectors_h(table):
-    cols = ["RVY CSR", "Extension", "Code Pointer", "Data Pointer", "Unseal On Execution"]
+    cols = ["RVY CSR", "Added by", "Code Pointer", "Data Pointer", "Unseal On Execution"]
     indices = []
 
     def __init__(self, filename, header):
