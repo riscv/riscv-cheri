@@ -1,8 +1,8 @@
-=== "Zcmp", "Zcmt" ({cheri_base_ext_name})
+=== "Zcmp", "Zcmt" ({cheri_base32_ext_name})
 
 IMPORTANT: {not_v1_ratification_package_stable}
 
-[#ZCMP_CHERI,reftext="Zcmp ({cheri_base32_ext_name})"]
+[#ZCMP_CHERI,reftext="Zcmp"]
 === "Zcmp" Standard Extension For Code-Size Reduction
 
 The push (<<CM_PUSH_CHERI>>) and pop (<<CM_POP_CHERI>>, <<CM_POPRET_CHERI>>, <<CM_POPRETZ_CHERI>>) instructions are redefined in {cheri_cap_mode_name} to save/restore capability data.
@@ -37,7 +37,7 @@ include::insns/zcmp_cmvsa01.adoc[]
 include::insns/zcmp_cmva01s.adoc[]
 
 <<<
-[#ZCMT_CHERI,reftext="Zcmt ({cheri_base32_ext_name})"]
+[#ZCMT_CHERI,reftext="Zcmt"]
 === "Zcmt" Standard Extension For Code-Size Reduction
 
 The table jump instructions (<<CM_JT_CHERI>>, <<CM_JALT_CHERI>>) are _not_ redefined in {cheri_cap_mode_name} to have capabilities in the jump table. This is to prevent the code-size growth caused by doubling the size of the jump table.
@@ -52,8 +52,8 @@ NOTE: In {cheri_cap_mode_name} the instruction fetch bounds check is authorized 
 
 NOTE: In {cheri_cap_mode_name} the implementation does not need to expand and bounds check against <<jvt_y>> on every access, it is sufficient to decode the valid accessible range of entries after every write to <<jvt_y>>, and then check that the accessed entry is in that range.
 
-[#jvt_y,reftext="jvt ({cheri_base_ext_name})"]
-==== Jump Vector Table CSR (jvt)
+[#jvt_y,reftext="jvt"]
+==== Jump Vector Table CSR (jvt) ({cheri_base32_ext_name})
 
 The Zcmt <<jvt>> CSR is widened to be a full capability.
 
