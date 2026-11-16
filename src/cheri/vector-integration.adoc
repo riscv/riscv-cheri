@@ -1,7 +1,7 @@
-[#section_cheri_vector_integration, reftext="Vector \"V\" ({cheri_base_ext_name})"]
-== Vector "V" Extension ({cheri_base_ext_name})
+[#section_cheri_vector_integration, reftext="Vector \"V, Zve*\" ({cheri_base_ext_name})"]
+== Vector "V, Zve*" Extension Support ({cheri_base_ext_name})
 
-The Vector extension for {cheri_base_ext_name} does not support {ctag}s in the vector registers.
+Vector support for {cheri_base_ext_name} does not include {ctag}s in the vector registers.
 Consequently, vector stores will always set the associated {ctag}s in memory to zero.
 
 NOTE: A future extension may allow {ctag}s to be stored in vector registers.
@@ -11,7 +11,7 @@ NOTE: A future extension may allow {ctag}s to be stored in vector registers.
   because the vector registers do not hold capabilities, so the {ctag}s of any
   copied capabilities will be set to 0 in the destination memory.
 
-Under {cheri_base_ext_name}, vector loads and stores follow the standard rules for _active_ elements:
+Under {cheri_base_ext_name}, vector loads and stores from V and every Zve* extension follow the standard rules for _active_ elements:
 
 * Only _active_ elements are subject to CHERI exception checks.
 * CHERI exceptions are only raised on fault-only-first loads if element 0 is both _active_ and fails any exception checks.
