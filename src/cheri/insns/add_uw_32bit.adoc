@@ -1,0 +1,53 @@
+<<<
+
+[#ADD_UW_CHERI,reftext="{ADD_UW_CHERI}"]
+==== {ADD_UW_CHERI} ({cheri_base64_ext_name})
+
+Synopsis::
+Add unsigned word for address generation ({ADD_UW_CHERI})
+
+Mnemonic ({cheri_base64_ext_name})::
+`{add_uw_cheri_lc} {cd}, rs1, {cs2}`
+
+Encoding::
+[wavedrom, , svg,subs=attributes+]
+....
+{reg: [
+  {bits:  7, name: 'opcode',     attr: ['7', 'RVY-A=1111011'],    type: 8},
+  {bits:  5, name: '{cd}',       attr: ['5', 'dest'],             type: 2},
+  {bits:  3, name: 'funct3',     attr: ['3', 'RVY-R=000'],        type: 8},
+  {bits:  5, name: 'rs1',        attr: ['5', 'src1'],             type: 4},
+  {bits:  5, name: '{cs2}',      attr: ['5', 'src2'],             type: 4},
+  {bits:  7, name: 'funct7',     attr: ['7', '{ADD_UW_CHERI}=1000101'], type: 3},
+]}
+....
+
+Description::
+Copy the capability in `{cs2}` to `{cd}`.
++
+Increment `{cd}.address` by the unsigned word `rs1[31:0]`, zero-extended to XLEN.
++
+Set `{cd}.tag=0` if `{cs2}` is sealed.
++
+include::rep_range_check.adoc[]
++
+include::malformed_cs2_clear_tag.adoc[]
+
+NOTE: {ADD_UW_CHERI} is the {cheri_base_ext_name} equivalent of `add.uw`.
+It is the same as <<SH1ADD_UW_CHERI>> with a shift of zero.
+
+Prerequisites::
+Zba, {cheri_base64_ext_name}
+
+Operation::
+// Not in the Sail model yet, so this listing is manually maintained.
+
+NOTE: This listing is manually maintained rather than extracted from the Sail model.
+[source,SAIL,subs="verbatim,quotes"]
+----
+let rs1_val = X(rs1);
+let cs2_val = C(cs2);
+let result = incCapAddrChecked(cs2_val, zero_extend(rs1_val[31..0]));
+C(cd) = result;
+RETIRE_SUCCESS
+----
