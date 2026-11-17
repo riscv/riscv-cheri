@@ -558,6 +558,7 @@ def get_custom3_insts():
         next_rtype("YSH2ADD.UW", rs1="rs1", rs2="{cs2}", rd="{cd}", ext="Zba + RV64"),
         next_rtype("YSH3ADD.UW", rs1="rs1", rs2="{cs2}", rd="{cd}", ext="Zba + RV64"),
         next_rtype("YSH4ADD.UW", rs1="rs1", rs2="{cs2}", rd="{cd}", ext="Zba + RV64"),
+        next_rtype("YADD.UW", rs1="rs1", rs2="{cs2}", rd="{cd}", ext="Zba + RV64"),
     ]
     regular_2op_insns = [
         next_r2type("YBASER", rs1="{cs1}", rd="rd"),
