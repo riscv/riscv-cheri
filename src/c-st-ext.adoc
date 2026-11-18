@@ -930,14 +930,16 @@ no standard HINTs will ever be defined in this subspace.
 
 |C.ADD | _rd_=`x0`, _rs2_=`x2-x5` |4|(rs2=x2) C.NTL.P1 (rs2=x3) C.NTL.PALL (rs2=x4) C.NTL.S1 (rs2=x5) C.NTL.ALL
 
-|C.SLLI |_rd_=`x0` or _shamt_=0^1^ |63 (RV32), 95 (RV64)  .3+.^|_Designated for custom use_
+|C.SLLI |_rd_=`x0` or _shamt_=0^2^ |63 (RV32), 95 (RV64)  .3+.^|_Designated for custom use_
 
-|C.SRLI | _shamt_=0^1^ |8
+|C.SRLI | _shamt_=0^2^ |8
 
-|C.SRAI | _shamt_=0^1^ |8
+|C.SRAI | _shamt_=0^2^ |8
 |===
 
-^1^ If the base architecture is {cheri_base_ext_name}, encodings with _rd_{ne}``x0`` are _reserved_ instead of HINTs, because executing an integer arithmetic instruction that writes _rd_{ne}``x0`` sets the destination register's metadata and {ctag} to zero (leaving only the 32 (RV32) or 64 (RV64) C.SLLI code points with _rd_=`x0` as HINTs).
+^1^ If the base architecture is {cheri_base_ext_name}, this standard HINT is unaffected and remains a HINT, executing as a NOP.
+
+^2^ If the base architecture is {cheri_base_ext_name}, encodings with _rd_{ne}``x0`` are _reserved_ instead of custom HINTs, because executing an integer arithmetic instruction that writes _rd_{ne}``x0`` sets the metadata and {ctag} of _rd_ to zero (leaving only the 32 (RV32) or 64 (RV64) C.SLLI code points with _rd_=`x0` as custom HINTs).
 
 === RVC Instruction Set Listings
 
