@@ -2606,8 +2606,6 @@ In {cheri_int_mode_name} with {cheri_default_ext_name} (see xref:cheri_execution
 Zcd is therefore only available on {cheri_base64_ext_name} in {cheri_int_mode_name} with {cheri_default_ext_name}.
 endif::[]
 
-Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.
-
 For {cheri_base_ext_name}, the C and Zce extensions imply the following Zc* extensions:
 
 ifndef::cheri_ratification_v1_only[]
@@ -2617,6 +2615,10 @@ endif::[]
 
 * Specifying {cheri_base64_ext_name} + C implies Zca and {rvy_zcy_ext_name} (plus Zcd if D and {cheri_default_ext_name} are specified).
 * Specifying {cheri_base64_ext_name} + Zce implies Zca, {rvy_zcy_ext_name}, and Zcb.
+
+ifdef::cheri_ratification_v1_only[]
+NOTE: Zcmp and Zcmt versions for {cheri_base_ext_name} are not yet available, and so specifying Zce does not include them yet but may in the future.
+endif::[]
 
 ifndef::cheri_ratification_v1_only[]
 

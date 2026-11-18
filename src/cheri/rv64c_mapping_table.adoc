@@ -3,7 +3,7 @@
 [width="100%",options=header]
 |==============================================================================
 2+|Encoding    4+| Supported Extensions
-|[15:13]|[1:0]   |*Zca*   |*{rvy_zcy_ext_name}* (see note) |*Zcd* (see note) |*Zcmp/ Zcmt* (see note)
+|[15:13]|[1:0]   |*Zca*   |*{rvy_zcy_ext_name}* (see note) |*Zcd* (see note) |*Zcmp/ Zcmt*
 |111    |00      | C.SD   | N/A                            | N/A              | N/A
 |011    |00      | C.LD   | N/A                            | N/A              | N/A
 |111    |10      | C.SDSP | N/A                            | N/A              | N/A
@@ -11,10 +11,15 @@
 
 |101    |00      | N/A    | {C_STORE_CAP_NAME}             | C.FSD            | reserved
 |001    |00      | N/A    | {C_LOAD_CAP_NAME}              | C.FLD            | reserved
-|101    |10      | N/A    | {C_STORE_CAP_SP_NAME}          | C.FSDSP          | <<Zcmp,Zcmp>>/ <<Zcmt,Zcmt>>
+|101    |10      | N/A    | {C_STORE_CAP_SP_NAME}          | C.FSDSP          | Zcmp, Zcmt (future)
 |001    |10      | N/A    | {C_LOAD_CAP_SP_NAME}           | C.FLDSP          | reserved
 |==============================================================================
 
-NOTE: {rvy_zcy_ext_name} is only available on {cheri_base64_ext_name} (and in {cheri_cap_mode_name} when {cheri_default_ext_name} is implemented).
-On {cheri_base64_ext_name}, {rvy_zcy_ext_name} reuses the encodings of Zcd, so Zcd is only available in {cheri_int_mode_name} when {cheri_default_ext_name} is implemented.
-Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.
+[NOTE]
+====
+If {cheri_default_ext_name} is implemented:
+
+* {rvy_zcy_ext_name} is only available in {cheri_cap_mode_name}.
+* Zcd is only available in {cheri_int_mode_name}.
+* Zcmp and Zcmt are not yet available for {cheri_base64_ext_name}, and will only be available in {cheri_int_mode_name}.
+====
