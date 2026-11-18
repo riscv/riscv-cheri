@@ -1228,13 +1228,13 @@ ifndef::cheri_ratification_v1_only[]
 {rvy_zcy_ext_name} reuses the 16-bit encodings of Zcf and Zclsd on {cheri_base32_ext_name} (see xref:insn_remapping_16bit_rv32[xrefstyle=short]), and the 16-bit encodings of Zcd on {cheri_base64_ext_name} (see xref:insn_remapping_16bit_rv64[xrefstyle=short]).
 
 In {cheri_int_mode_name} with {cheri_default_ext_name} (see xref:cheri_execution_mode[xrefstyle=full]), the reused 16-bit encodings revert to their RVI definitions and are reserved if the corresponding RVI extension (Zcf or Zclsd on {cheri_base32_ext_name}, or Zcd on {cheri_base64_ext_name}) is not implemented.
-Zcf and Zclsd on {cheri_base32_ext_name}, and Zcd on {cheri_base64_ext_name}, are therefore only available in {cheri_int_mode_name} with {cheri_default_ext_name}.
+When {rvy_zcy_ext_name} is implemented, Zcf and Zclsd on {cheri_base32_ext_name}, and Zcd on {cheri_base64_ext_name}, are therefore only available in {cheri_int_mode_name} with {cheri_default_ext_name}.
 endif::[]
 ifdef::cheri_ratification_v1_only[]
 On {cheri_base64_ext_name}, {rvy_zcy_ext_name} reuses the 16-bit encodings of Zcd (see xref:insn_remapping_16bit_rv64[xrefstyle=short]).
 
 In {cheri_int_mode_name} with {cheri_default_ext_name} (see xref:cheri_execution_mode[xrefstyle=full]), the reused 16-bit encodings revert to their RV64I definitions and are reserved if Zcd is not implemented.
-Zcd is therefore only available on {cheri_base64_ext_name} in {cheri_int_mode_name} with {cheri_default_ext_name}.
+When {rvy_zcy_ext_name} is implemented, Zcd on {cheri_base64_ext_name} is therefore only available in {cheri_int_mode_name} with {cheri_default_ext_name}.
 endif::[]
 
 For {cheri_base_ext_name}, the C and Zce extensions imply the following Zc* extensions:
@@ -1254,8 +1254,13 @@ endif::[]
 * Specifying {cheri_base64_ext_name} + Zce implies:
 ** Zca, {rvy_zcy_ext_name}, and Zcb.
 
+`misa.C` is set if all extensions implied by {cheri_base_ext_name} + C are implemented.
+
 ifdef::cheri_ratification_v1_only[]
 NOTE: Zcmp and Zcmt versions for {cheri_base_ext_name} are not yet available, and so specifying Zce does not include them yet but may in the future.
+endif::[]
+ifndef::cheri_ratification_v1_only[]
+NOTE: Zcmp and Zcmt are not yet defined for {cheri_base64_ext_name}, so specifying {cheri_base64_ext_name} + Zce does not include Zcmp or Zcmt.
 endif::[]
 
 .{rvy_zcy_ext_name} instruction extension
