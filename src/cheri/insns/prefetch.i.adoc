@@ -17,7 +17,7 @@ Encoding::
   {bits: 7,  name: 'opcode',    attr: ['7','OP-IMM=0010011'],  type: 8},
   {bits: 5,  name: 'imm[4:0]',  attr: ['5','zero'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','ORI=110'],  type: 8},
-  {bits: 5,  name: 'rs1{ne}0',  attr: ['5','base'],     type: 4},
+  {bits: 5,  name: 'rs1',       attr: ['5','base'],     type: 4},
   {bits: 5,  name: 'funct5',    attr: ['5','PREFETCH.I=00000'],   type: 3},
   {bits: 7,  name: 'imm[11:5]', attr: ['7','offset[11:5]'],   type: 3},
 ]}
@@ -31,7 +31,6 @@ sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
 likely to be accessed by an instruction fetch in the near future.
 +
 The authorizing capability is `{cs1}`.
-This instruction does not raise any exceptions.
 +
 The following authorization checks are performed:
 
@@ -43,7 +42,9 @@ The following authorization checks are performed:
 
 If any of these checks fail, the instruction executes as a `nop` and no prefetch is performed.
 
-NOTE: Only one byte of the cache block is required to be within bounds because a hardware prefetcher is permitted to prefetch the same cache block in the background.
+NOTE: If `{cs1}=x0` the checks fail and so this instruction executes as a `nop`.
+
+NOTE: Only one byte of the cache block is required to be within bounds because any byte being in `{cs1}` bounds authorizes caching of the entire block.
 
 [NOTE]
 ====
@@ -51,8 +52,6 @@ _If the checks above pass, an implementation may opt to cache a copy of the cach
 accessed by an instruction fetch in order to improve memory access latency, but
 this behavior is not required._
 ====
-
-NOTE: If `{cs1}=x0` this instruction executes as a `nop`.
 
 Prerequisites::
 Zicbop, {cheri_base_ext_name}
