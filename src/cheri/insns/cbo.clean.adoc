@@ -25,10 +25,10 @@ Description::
 A CBO.CLEAN instruction performs a clean operation on the cache block whose effective address is the base address specified in `{cs1}`.
 The authorizing capability for this operation is `{cs1}`.
 +
-This instruction requires that at least one byte of the cache block is in `{cs1}` bounds.
+This instruction requires that `{cs1}` grants <<r_perm>> and <<w_perm>> and that at least one byte of the cache block is within the bounds of `{cs1}`.
 +
-NOTE: CBO.CLEAN only requires one byte of the cache block to be within the authorizing capability's bounds to allow software to clean all cache blocks associated with a memory buffer, even though all bytes of the cache blocks may not be in bounds.
- Even though data is not modified by CBO.CLEAN, requiring the bounds check allows cache side-channels to be reduced.
+NOTE: CBO.CLEAN only requires one byte of the cache block to be within the bounds of `{cs1}` so software can clean all cache blocks covering a memory buffer even when the buffer is not cache-block aligned.
+Even though data is not modified by CBO.CLEAN, requiring bounds and permission checks helps mitigate cache timing side channels.
 
 :cbo_clean_flush:
 include::cbo_exceptions.adoc[]
