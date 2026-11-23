@@ -20,7 +20,7 @@ Such software can be expected to hold suitable capabilities
 from which it can derive a capability to access the data structures at the target address.
 =====
 
-[#mtvec_y,reftext="mtvec ({cheri_base_ext_name})"]
+[#mtvec_y,reftext="mtvec"]
 ==== Machine Trap Vector Base Address Capability Register (mtvec)
 
 The WARL `mtvec` register is widened to a capability.
@@ -53,9 +53,9 @@ This has two consequences:
 
 NOTE: The capability in <<mtvec_y>> is _not_ unsealed when it is written to <<pcc>>, unlike other CSRs such as <<mepc_y>>.
 
-Following the standard `mtvec` rules, <<mtvec_y>> need not be able to hold all possible <<section_invalid_addr_conv, invalid addresses>>.
+As in RVI, <<mtvec_y>> need not be able to hold all possible <<section_invalid_addr_conv, invalid addresses>>.
 
-[#mscratch_y, reftext="mscratch ({cheri_base_ext_name})"]
+[#mscratch_y, reftext="mscratch"]
 ==== Machine Scratch Capability Register (mscratch)
 
 The `mscratch` register is widened to a capability.
@@ -65,7 +65,7 @@ The `mscratch` register is widened to a capability.
 .Machine scratch capability register
 include::img/mscratchcreg.edn[]
 
-[#mepc_y,reftext="mepc ({cheri_base_ext_name})"]
+[#mepc_y,reftext="mepc"]
 ==== Machine Exception Program Counter Capability (mepc)
 
 The WARL `mepc` register is widened to a capability.
@@ -110,7 +110,7 @@ When a trap is taken into M-mode, the <<pcc>> (including its {ctag} and metadata
 
 On execution of an <<MRET_CHERI>> instruction, the capability value from <<mepc_y>> is unsealed if it is a <<sentry_cap>> and written to <<pcc>>.
 
-<<mepc_y>> follows the rule from `mepc` about not needing to be able to hold all possible <<section_invalid_addr_conv,invalid addresses>>.
+As in RVI, <<mepc_y>> need not be able to hold all possible <<section_invalid_addr_conv,invalid addresses>>.
 
 === Machine-Level CSRs added by {cheri_base_ext_name}
 
@@ -126,7 +126,7 @@ include::img/mtidcreg.edn[]
 
 === Machine-Level CSRs modified by {cheri_base_ext_name}
 
-[#menvcfg_y,reftext="menvcfg ({cheri_base_ext_name})"]
+[#menvcfg_y,reftext="menvcfg"]
 ==== Machine Environment Configuration (`menvcfg`) Register
 
 The {CRE} bit in *menvcfg* controls whether {cheri_base_ext_name} is enabled for privilege modes below M-mode, as described in xref:section_cheri_disable[xrefstyle=full].
@@ -137,7 +137,7 @@ For non-{cheri_base_ext_name} architectures, `menvcfg.{CRE}` is read-only zero.
 [#menvcfgmodereg]
 include::img/menvcfgmodereg.edn[]
 
-[#misa_y, reftext="misa ({cheri_base_ext_name})"]
+[#misa_y, reftext="misa"]
 ==== Machine ISA (`misa`) Register
 
 When the base ISA is {cheri_base_ext_name}, the Y bit is one.
@@ -159,7 +159,7 @@ NOTE: Implementations which allow misa.C to be writable need to legalize `__x__e
  on _reading_ if the misa.C value has changed since the value was written as this
  can cause the read value of bit [1] to change state.
 
-[#mstatus_y, reftext="mstatus ({cheri_base_ext_name})"]
+[#mstatus_y, reftext="mstatus"]
 ==== Machine Status Registers (mstatus)
 
 `mstatus` includes the Userspace Capability Read Generation (U{pte_cap_crg_pte_name}) bit, the Supervisor version (S{pte_cap_crg_pte_name}) and the enable bit ({pte_cap_fc_enable}).
@@ -234,7 +234,7 @@ MXR has no effect on the CHERI permission checking.
 
 NOTE: CHERI does not need to make use of execute-only memory for security reasons, and so MXR has no relevance.
 
-[#mcause_y, reftext="mcause ({cheri_base_ext_name})"]
+[#mcause_y, reftext="mcause"]
 ==== Machine Cause Register (mcause)
 
 {cheri_base_ext_name} adds new exception codes for CHERI exceptions that *mcause* must be able to represent.
@@ -497,7 +497,7 @@ include::{generated_dir}/csr_exevectors_m_table_body.adoc[]
 [#supervisor-level-widened-csrs-section]
 === Supervisor-Level CSRs widened by {cheri_base_ext_name}
 
-[#stvec_y,reftext="stvec ({cheri_base_ext_name})"]
+[#stvec_y,reftext="stvec"]
 ==== Supervisor Trap Vector Base Address Capability Register (stvec)
 
 The WARL `stvec` register is widened to a capability.
@@ -509,7 +509,7 @@ include::img/stveccreg.edn[]
 
 The handling of <<stvec_y>> is identical to <<mtvec_y>>, but in S-mode.
 
-[#sstatus_y, reftext="sstatus ({cheri_base_ext_name})"]
+[#sstatus_y, reftext="sstatus"]
 ==== Supervisor Status Registers (sstatus)
 
 [#sstatusreg_pte]
@@ -547,7 +547,7 @@ The handling of <<stvec_y>> is identical to <<mtvec_y>>, but in S-mode.
 
 `sstatus` makes visible the U{pte_cap_crg_pte_name}, S{pte_cap_crg_pte_name} and {pte_cap_fc_enable} fields added to <<mstatus_y>>.
 
-[#sscratch_y, reftext="sscratch ({cheri_base_ext_name})"]
+[#sscratch_y, reftext="sscratch"]
 ==== Supervisor Scratch Capability Register (sscratch)
 
 The `sscratch` register is widened to a capability.
@@ -557,7 +557,7 @@ The `sscratch` register is widened to a capability.
 .Supervisor scratch capability register
 include::img/sscratchcreg.edn[]
 
-[#sepc_y,reftext="sepc ({cheri_base_ext_name})"]
+[#sepc_y,reftext="sepc"]
 ==== Supervisor Exception Program Counter Capability (sepc)
 
 The WARL `sepc` register is widened to a capability.
@@ -584,7 +584,7 @@ include::img/stidcreg.edn[]
 
 === Supervisor-Level CSRs modified by {cheri_base_ext_name}
 
-[#senvcfg_y,reftext="senvcfg ({cheri_base_ext_name})"]
+[#senvcfg_y,reftext="senvcfg"]
 ==== Supervisor Environment Configuration Register (senvcfg)
 
 The {CRE} bit in *senvcfg* controls whether {cheri_base_ext_name} is enabled for U-mode, as described in xref:section_cheri_disable[xrefstyle=full].
@@ -594,7 +594,7 @@ For non-{cheri_base_ext_name} architectures, `senvcfg.{CRE}` is read-only zero.
 .Supervisor environment configuration register (*senvcfg*)
 include::img/senvcfgreg.edn[]
 
-[#scause_y, reftext="scause ({cheri_base_ext_name})"]
+[#scause_y, reftext="scause"]
 ==== Supervisor Cause Register (scause)
 
 {cheri_base_ext_name} adds new exception codes for CHERI exceptions as in <<mcause_y>>.
@@ -842,7 +842,7 @@ Representable Range::
 
 [#JALR_CHERI, reftext="JALR"]
 JALR ({cheri_base_ext_name})::
-See the unprivileged manual for the behavior of CBO.INVAL for RVY.
+   See the unprivileged manual for the behavior of JALR for RVY.
 
 [#CBO_INVAL_CHERI, reftext="CBO.INVAL"]
 CBO.INVAL (RVY)::
