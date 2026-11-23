@@ -1,5 +1,5 @@
 
-[#section_cheri_hypervisor_integration, reftext="Hypervisor \"H\" ({cheri_base_ext_name})"]
+[#section_cheri_hypervisor_integration, reftext="Hypervisor \"H\""]
 == Hypervisor "H" Extension ({cheri_base_ext_name})
 
 IMPORTANT: {not_v1_ratification_package_experimental}
@@ -19,7 +19,7 @@ NOTE: {cheri_base_ext_name} does not modify the behavior of HFENCE.\*, or HINVAL
 Address operands passed to them are received as XLEN-bit values, and so the metadata and {ctag} are ignored.
 A future extension may add CHERI checks to these instructions.
 
-[#hstatus_y,reftext="hstatus ({cheri_base_ext_name})"]
+[#hstatus_y,reftext="hstatus"]
 
 NOTE: The {cheri_base_ext_name} field is not currently defined in G-stage PTEs and so remains reserved.
  A future extension may define this field to allow the hypervisor to control access to capabilities for guest OS translations.
@@ -64,7 +64,7 @@ If <<hstatus_y>>.{pte_cap_fc_enable} is changed, executing an HFENCE.VVMA instru
 ], config:{lanes: 4, hspace:1024}}
 ....
 
-[#henvcfg_y,reftext="henvcfg ({cheri_base_ext_name})"]
+[#henvcfg_y,reftext="henvcfg"]
 === Hypervisor Environment Configuration Register (henvcfg)
 
 The {CRE} bit is added to <<henvcfg_y>> as shown in xref:henvcfgreg[xrefstyle=short].
@@ -84,7 +84,7 @@ When <<henvcfg_y>>.{CRE}=0, CHERI is disabled in VS-mode and VU-mode as describe
 
 NOTE: To allow RV32[IE]/RV64[IE] based guest OSs to run unmodified, the {CRE} bit should be initialized to zero.
 
-[#hedeleg_y,reftext="hedeleg ({cheri_base_ext_name})"]
+[#hedeleg_y,reftext="hedeleg"]
 === Hypervisor Exception Delegation Register (hedeleg)
 
 Bits {cheri_excep_cause_list} of <<hedeleg_y>> refer to valid CHERI exceptions and so can be used to
@@ -140,7 +140,7 @@ Load/store/AMO address misaligned
 
 ^2^ {cheri_excep_name_pte_ld} is the lowest priority as determining whether to raise the exception may include checking the loaded {ctag}.
 
-[#vsstatus_y,reftext="vsstatus ({cheri_base_ext_name})"]
+[#vsstatus_y,reftext="vsstatus"]
 === Virtual Supervisor Status Register (vsstatus)
 
 [#vsstatusreg_pte]
@@ -178,7 +178,7 @@ When VSXLEN=64 only:
 * UXL and UBE follow the same restrictions as <<mstatus_y>>.UXL and <<mstatus_y>>.UBE respectively.
 * The {pte_cap_fc_enable}, S{pte_cap_crg_pte_name} and U{pte_cap_crg_pte_name} fields are defined by <<mstatus_y>>.
 
-[#vstvec_y,reftext="vstvec ({cheri_base_ext_name})"]
+[#vstvec_y,reftext="vstvec"]
 === Virtual Supervisor Trap Vector Base Address Capability Register (vstvec)
 
 The `vstvec` register is widened to a capability.
@@ -188,7 +188,7 @@ include::img/vstveccreg.edn[]
 
 The handling of <<vstvec_y>> is otherwise identical to <<mtvec_y>>, but in VS-mode.
 
-[#vsscratch_y,reftext="vsscratch ({cheri_base_ext_name})"]
+[#vsscratch_y,reftext="vsscratch"]
 === Virtual Supervisor Scratch Register (vsscratch)
 
 The `vsscratch` register is widened to a capability.
@@ -196,7 +196,7 @@ The `vsscratch` register is widened to a capability.
 .Virtual supervisor scratch capability register
 include::img/vsscratchcreg.edn[]
 
-[#vsepc_y,reftext="vsepc ({cheri_base_ext_name})"]
+[#vsepc_y,reftext="vsepc"]
 === Virtual Supervisor Exception Program Counter Capability (vsepc)
 
 The `vsepc` register is widened to a capability.
