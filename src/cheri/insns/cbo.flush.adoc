@@ -27,7 +27,8 @@ The authorizing capability for this operation is `{cs1}`.
 +
 This instruction requires that at least one byte of the cache block is in `{cs1}` bounds.
 +
-NOTE: CBO.FLUSH only requires one byte of the cache block to be within the authorizing capability's bounds because these operations do not reveal or modify any data, so performing them on a partially covered cache block is harmless.
+NOTE: CBO.FLUSH only requires one byte of the cache block to be within the authorizing capability's bounds to allow software to flush all cache blocks associated with a memory buffer, even though all bytes of the cache blocks may not be in bounds.
+ Even though data is not modified by CBO.FLUSH, requiring the bounds check allows cache side-channels to be reduced.
 
 :cbo_clean_flush:
 include::cbo_exceptions.adoc[]
