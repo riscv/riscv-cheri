@@ -2589,24 +2589,39 @@ pc = InstMemory[table_address][XLEN-1:0]&~0x1;  // Clear bit 0.
 
 === Zc* ({cheri_base_ext_name})
 
-When the base ISA is {cheri_base_ext_name}, some of the 16-bit encoding space is remapped for Zca YLEN-wide loads/store and therefore some Zc* ISA extensions are incompatible with {cheri_base_ext_name}.
-The mappings are shown in
+[#section_zcy,reftext="{rvy_zcy_ext_name}"]
+==== {rvy_zcy_ext_name}
+
+The {rvy_zcy_ext_name} extension adds the 16-bit compressed capability load and store instructions: {C_LOAD_CAP_NAME}, {C_STORE_CAP_NAME}, {C_LOAD_CAP_SP_NAME}, and {C_STORE_CAP_SP_NAME}.
+The {rvy_zcy_ext_name} extension depends on {cheri_base_ext_name} and <<Zca>>.
+
+On {cheri_base64_ext_name}, {rvy_zcy_ext_name} reuses the 16-bit encodings of Zcd (and Zcmp/Zcmt for {C_STORE_CAP_SP_NAME}; see <<insn_remapping_16bit_rv64>>).
+ifndef::cheri_ratification_v1_only[On {cheri_base32_ext_name}, {rvy_zcy_ext_name} reuses the 16-bit encodings of Zcf and Zclsd (see <<insn_remapping_16bit_rv32>>).]
+
+In {cheri_int_mode_name} with {cheri_default_ext_name} (see xref:cheri_execution_mode[xrefstyle=full]), the reused 16-bit encodings revert to their RVI definitions and are reserved if the corresponding RVI extension is not implemented.
+When {rvy_zcy_ext_name} is implemented, Zcd (as well as Zcmp and Zcmt) on {cheri_base64_ext_name} is therefore only available in {cheri_int_mode_name} with {cheri_default_ext_name}.
+ifndef::cheri_ratification_v1_only[Similarly, on {cheri_base32_ext_name}, Zcf and Zclsd are only available in {cheri_int_mode_name} with {cheri_default_ext_name} when {rvy_zcy_ext_name} is implemented.]
+
+For {cheri_base_ext_name}, the C and Zce extensions imply the following Zc* extensions:
+
 ifndef::cheri_ratification_v1_only[]
- <<insn_remapping_16bit_rv32_b>> and
+* Specifying {cheri_base32_ext_name} + C implies:
+** Zca and {rvy_zcy_ext_name}, and
+** if D is specified: Zcd, and
+** if F and {cheri_default_ext_name} are specified: Zcf in {cheri_int_mode_name}.
+* Specifying {cheri_base32_ext_name} + Zce implies:
+** Zca, {rvy_zcy_ext_name}, Zcb, Zcmp, Zcmt, and
+** if F and {cheri_default_ext_name} are specified: Zcf in {cheri_int_mode_name}.
 endif::[]
- <<insn_remapping_16bit_rv64_b>>
+* Specifying {cheri_base64_ext_name} + C implies:
+** Zca, {rvy_zcy_ext_name}, and
+** if D and {cheri_default_ext_name} are specified: Zcd in {cheri_int_mode_name}.
+* Specifying {cheri_base64_ext_name} + Zce implies:
+** Zca, {rvy_zcy_ext_name}, and Zcb.
 
-As a result:
+`misa.C` is set if all extensions implied by {cheri_base_ext_name} + C are implemented.
 
-ifndef::cheri_ratification_v1_only[]
-* Zcf and Zclsd      are incompatible with {cheri_base32_ext_name}.
-* Specifying {cheri_base32_ext_name} + C gives Zca.
-* Specifying {cheri_base32_ext_name} + Zce gives Zca, Zcb, Zcmp and Zcmt.
-endif::[]
-
-* Zcd, Zcmp and Zcmt are incompatible with {cheri_base64_ext_name}.
-* Specifying {cheri_base64_ext_name} + C gives Zca.
-* Specifying {cheri_base64_ext_name} + Zce gives Zca and Zcb.
+NOTE: Zcmp and Zcmt are not yet defined for {cheri_base64_ext_name} (and conflict with {C_STORE_CAP_SP_NAME} in {rvy_zcy_ext_name}), so specifying {cheri_base64_ext_name} + Zce does not include Zcmp or Zcmt.
 
 ifndef::cheri_ratification_v1_only[]
 
