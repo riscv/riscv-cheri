@@ -935,9 +935,9 @@ endif::[]
 When using a system with {cheri_default_ext_name}, it may be desirable to configure privilege levels below M-mode such that they operate as a standard RV32[IE]/RV64[IE] base architecture.
 
 {cheri_default_mext_name} is mandatory for all {cheri_default_ext_name} implementations.
-{cheri_default_mext_name} adds the ability to disable CHERI in lower privilege modes by making the `{CRE}` bit of <<menvcfg_y>> writable, and adds <<ddc>> to the registers that must have the capability metadata set to the reset value for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
+{cheri_default_mext_name} adds the ability to disable CHERI in lower privilege modes by making the `{CRE}` bit of <<menvcfg_y,menvcfg>> writable, and adds <<ddc>> to the registers that must have the capability metadata set to the reset value for `<<misa_y,misa>>.{CRE}` to be programmed to zero.
 
-{cheri_default_sext_name} is mandatory for all {cheri_default_ext_name} implementations that support S-mode, and adds the ability to disable CHERI in U-mode by making the `{CRE}` bit of <<senvcfg_y>> writable.
+{cheri_default_sext_name} is mandatory for all {cheri_default_ext_name} implementations that support S-mode, and adds the ability to disable CHERI in U-mode by making the `{CRE}` bit of <<senvcfg_y,senvcfg>> writable.
 
 The effective CHERI-enable for the current privilege is:
 
@@ -984,18 +984,20 @@ xref:cheri_behavior_cre_mode[xrefstyle=short] summarizes the behavior of a hart 
 [#cheri_behavior_cre_mode,width=100%,options=header,align=center,%autowidth,cols="40,20,20,20"]
 |==============================================================================
 |                                      | {CRE}^1^=0        | {CRE}=1, P-bit={int_mode_value} | {CRE}=1, P-bit={cap_mode_value}
+| Base architecture                    | RV32[IE]/RV64[IE] ^2^ | {cheri_base_ext_name}        | {cheri_base_ext_name}
 | Authorizing capability for data memory accesses | <<ddc>>| <<ddc>> | capability in `rs1`
 | CSRs added by {cheri_base_ext_name} or its extensions available | ✘ | ✔                | ✔
 | Access width of other <<ylen_csrs>>                             | XLEN              | XLEN                  | YLEN
 | 16-bit {cheri_base_ext_name} instructions available  | ✘                 | ✘                     | ✔
 | Wider {cheri_base_ext_name} instructions available   | ✘                 | ✔                     | ✔
 | _custom-1/2/3_ available for custom use| ✔                 | ✘                     | ✘
-| Summary                              | **_Fully RV32[IE]/RV64[IE] compatible_**^2^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
+| Summary                              | **_RV32[IE]/RV64[IE] with bounds checks_**^2^ | **{cheri_int_mode_name}** | **{cheri_cap_mode_name}**
 |==============================================================================
 
 ^1^ _{CRE}_ represents the effective CHERI enable for the current privilege mode.
 
-^2^ The hart is fully compatible with standard RISC-V when {CRE}=0 provided that <<pcc>>, `__x__tvec`, `__x__epc` and <<ddc>> have not been changed from their reset state.
+^2^ The hart is fully compatible with RV32[IE]/RV64[IE] when {CRE}=0 provided that <<pcc>>, `__x__tvec`, `__x__epc` and <<ddc>> have not been changed from their reset state.
+ Bounds checks against <<pcc>> and <<ddc>> are always enforced, but cannot fail while those capabilities hold their reset values.
 
 ifndef::cheri_standalone_spec[]
 [#sentry_cap,reftext="sealed entry point capability"]
