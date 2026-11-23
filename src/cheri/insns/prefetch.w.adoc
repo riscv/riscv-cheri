@@ -30,7 +30,6 @@ sign-extended offset encoded in imm[11:0], where imm[4:0] equals 0b00000, is
 likely to be accessed by a data write (i.e., store) in the near future.
 +
 The authorizing capability is `{cs1}`.
-This instruction does not raise any exceptions.
 +
 The following authorization checks are performed:
 
@@ -42,7 +41,7 @@ The following authorization checks are performed:
 
 If any of these checks fail, the instruction executes as a `nop` and no prefetch is performed.
 
-NOTE: Only one byte of the cache block is required to be within bounds because a hardware prefetcher is permitted to prefetch the same cache block in the background.
+NOTE: Only one byte of the cache block is required to be within bounds because permission to access one byte in a cache block already permits caching that block on a regular store.
 
 [NOTE]
 ====
