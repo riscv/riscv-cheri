@@ -63,24 +63,5 @@ endif::[]
 NOTE: A future extension may raise an exception on the <<JALR_CHERI>> instruction itself if the target <<pcc>> will raise a {cheri_excep_name_pc} at the target.
 
 Operation::
-// Adapted from the Sail JALR_capmode clause with the tag/seal/permission/bounds
-// checks removed (those are taken on fetch now).
-// Note: do not add the "quotes" substitution here - it corrupts the listing by
-// interpreting the underscores and comment markers as formatting pairs.
-
-NOTE: This listing is manually maintained rather than extracted from the Sail model.
-[source,SAIL]
-----
-let cs1_val = C(cs1);
-let off : xlenbits = sign_extend(imm);
-/* clear bit zero as for RISC-V JALR */
-let newPC = [cs1_val.address + off with 0 = bitzero];
-/* nextPC accounts for compressed instructions */
-let (_, linkCap) = setCapAddr(PCC, nextPC);
-C(cd) = sealCap(linkCap);
-set_next_pc(newPC);
-let (_, newPCC) = setCapAddr(cs1_val, newPC);
-set_next_pcc(unsealCap(newPCC));
-RETIRE_SUCCESS
-----
-//sail::execute[clause="JALR_capmode(_, _)",part=body,unindent]
++
+sail::execute[clause="JALR_capmode(_, _, _)",part=body,unindent]

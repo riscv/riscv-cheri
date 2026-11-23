@@ -25,18 +25,5 @@ include::malformed_return_0.adoc[]
 include::no_tag_affect.adoc[]
 
 Operation::
-// GCTOP is not in the Sail model yet, use the same logic as YLENR.
-
-NOTE: This listing is manually maintained rather than extracted from the Sail model.
-[source,SAIL,subs="verbatim,quotes"]
-----
-let capVal = C(cs1);
-X(rd) = match getCapBoundsBits(capVal) {
-  None() => zeros(),
-  Some(_, top) => {
-    let top_val = unsigned(top);
-    to_bits(xlen, if top_val > cap_max_addr then cap_max_addr else top_val)
-  }
-};
-RETIRE_SUCCESS
-----
++
+sail::execute[clause="YTOPR(_, _)",part=body,unindent]
