@@ -87,7 +87,7 @@ The minimum Program Buffer configuration to support {ctag} access in general-pur
 
 * `hartinfo` must be implemented.
 * `hartinfo.nscratch` is at least 1 and the <<dscratch0_y>> register is implemented.
-* `hartinfo.datasize` is at least 1 and `hartinfo.dataaccess` is 0.
+* `hartinfo.datasize` is at least 1.
 * `abstractcs.progbufsize` is at least 4 if `dmstatus.impebreak` is 1, or at least 5 if `dmstatus.impebreak` is 0.
 
 [NOTE]
@@ -101,7 +101,7 @@ These requirements may be relaxed if _Access Register_ abstract commands support
 The sequences below demonstrate how a debugger can read and write a {ctag} in `{creg}1` using the program buffer if:
 
 * `DXLEN` is 64, and
-* `hartinfo.dataaccess` is 0, and
+* `hartinfo.dataaccess` is 0 (so `data0` is accessible as a CSR), and
 * `hartinfo.dataaddr` is 0xBF0, and
 * `hartinfo.datasize` is 1, and
 * `hartinfo.nscratch` is at least 1, and
@@ -141,9 +141,9 @@ the _RISC-V Debug Specification_:
 
 +
 If <<dscratch0_y>> were known to be preserved between abstract commands,
-it would be possible to remove the requirements on `hartinfo.datasize`,
-`hartinfo.dataaccess`, and `abstractcs.progbufsize`, however, there is
-no way to discover the former property.
+it would be possible to remove the requirements on `hartinfo.datasize`
+and `abstractcs.progbufsize`, however, there is
+no way to discover that property.
 
 * Execution of Access Register abstract commands does not alter the values of `data`
   debug module registers (unless read of a register is explicitly requested by
