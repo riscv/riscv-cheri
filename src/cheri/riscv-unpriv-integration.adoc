@@ -1305,20 +1305,14 @@ endif::[]
 
 ==== Zca HINT Encodings
 
-In {cheri_base_ext_name}, executing a Zca HINT with _rd_{ne}``x0`` that adds zero to _rd_ or shifts _rd_ by zero places as ordinary arithmetic would overwrite _rd_ with the metadata and {ctag} set to zero.
-Therefore each of these encodings is either defined as below or _reserved_.
+In {cheri_base_ext_name}, executing a Zca HINT with _rd_{ne}``x0`` that adds zero to _rd_, or shifts _rd_ by zero places as ordinary arithmetic would overwrite _rd_ with the metadata and {ctag} set to zero.
 
-The standard Zca HINT with _rd_{ne}``x0`` remains a HINT in {cheri_base_ext_name} and executes as a NOP, leaving _rd_, including its metadata and {ctag}, unchanged:
+Therefore each of these encodings is redefined to execute as a NOP under {cheri_base_ext_name}, and so does not update any architectural state.
 
 * `C.ADDI` with _rd_{ne}``x0`` and _imm_=0
-
-The following encodings are custom HINTs in RVI/RVE and are instead _reserved_ in {cheri_base_ext_name}:
-
 * `C.SLLI` with _rd_{ne}``x0`` and _shamt_=0
 * `C.SRLI` with _shamt_=0
 * `C.SRAI` with _shamt_=0
-
-NOTE: Marking these encodings as _reserved_ allows future extensions to allocate these code points consistently across RVI/RVE and {cheri_base_ext_name}.
 
 [#rvy_zalrsc_insn_table, reftext="{rvy_zalrsc_ext_name}"]
 == {rvy_zalrsc_ext_name}
