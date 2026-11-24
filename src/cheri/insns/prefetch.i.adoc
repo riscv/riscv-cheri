@@ -17,7 +17,7 @@ Encoding::
   {bits: 7,  name: 'opcode',    attr: ['7','OP-IMM=0010011'],  type: 8},
   {bits: 5,  name: 'imm[4:0]',  attr: ['5','zero'],     type: 2},
   {bits: 3,  name: 'funct3',    attr: ['3','ORI=110'],  type: 8},
-  {bits: 5,  name: 'rs1{ne}0',  attr: ['5','base'],     type: 4},
+  {bits: 5,  name: 'rs1',       attr: ['5','base'],     type: 4},
   {bits: 5,  name: 'funct5',    attr: ['5','PREFETCH.I=00000'],   type: 3},
   {bits: 7,  name: 'imm[11:5]', attr: ['7','offset[11:5]'],   type: 3},
 ]}
@@ -51,7 +51,7 @@ accessed by an instruction fetch in order to improve memory access latency, but
 this behavior is not required._
 ====
 
-NOTE: If `{cs1}=x0` this instruction executes as a `nop`.
+NOTE: If `{cs1}=x0` this instruction executes as a `nop`, as required for a HINT encoding.
 
 Prerequisites::
 Zicbop, {cheri_base_ext_name}
