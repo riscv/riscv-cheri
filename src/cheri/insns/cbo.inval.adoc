@@ -1,6 +1,6 @@
 <<<
 
-[#CBO_INVAL_CHERI,reftext="CBO.INVAL ({cheri_base_ext_name})"]
+[#CBO_INVAL_CHERI,reftext="CBO.INVAL"]
 ==== CBO.INVAL ({cheri_base_ext_name})
 
 Synopsis::
@@ -25,9 +25,10 @@ Description::
 A CBO.INVAL instruction performs an invalidate operation on the cache block whose effective address is the base address specified in `{cs1}`.
 The authorizing capability for this instruction is `{cs1}`.
 +
-NOTE: Executing CBO.INVAL requires <<asr_perm>> in <<pcc>>, even when CSR state causes it to perform a flush operation instead of an invalidation.
+Executing CBO.INVAL requires <<asr_perm>> in <<pcc>>, even when CSR state causes it to perform a flush operation instead of an invalidation.
+An illegal instruction exception is raised if <<asr_perm>> is not granted.
 +
-NOTE: An illegal instruction exception is raised if <<asr_perm>> is not granted, matching the behavior of `__x__RET` and CSR accesses that require <<asr_perm>>.
+This instruction requires that `{cs1}` grants <<r_perm>> and <<w_perm>> and that the entire cache block is within the bounds of `{cs1}`.
 
 :cbo_inval:
 include::cbo_exceptions.adoc[]
@@ -40,7 +41,7 @@ CSR state controls whether CBO.INVAL performs cache block flushes instead of inv
 Invalidating a cache block can re-expose capabilities previously stored
 to it after the most recent flush, not just secret values. As such, CBO.INVAL
 has stricter checks on its use than CBO.FLUSH, and should only be made available to,
-and used by, sufficiently-trusted software.
+and used by, sufficiently trusted software.
 
 Untrusted software should use CBO.FLUSH instead as a minimum, and a sensible implementation choice for CHERI systems is to _always_ execute CBO.INVAL as CBO.FLUSH.
 ====
@@ -49,15 +50,5 @@ Prerequisites::
 Zicbom, {cheri_base_ext_name}
 
 Operation::
-// Not bundled in the JSON due to build system, inserted manually for now.
-
-NOTE: This listing is manually maintained rather than extracted from the Sail model.
-[source,SAIL,subs="verbatim,quotes"]
-----
-let cache_block_size = 2 ^ plat_cache_block_size_exp();
-let negative_offset = (X(cs1) & ~(zero_extend(ones(plat_cache_block_size_exp())))) - X(cs1);
-match ext_data_get_addr(cs1, negative_offset, Cache(Inval), cache_block_size) {
-  Ext_DataAddr_Error(e) => { ext_handle_data_check_error(e); RETIRE_FAIL },
-  Ext_DataAddr_OK(_)    => RETIRE_SUCCESS
-}
-----
++
+sail::execute[clause="ZICBOM(CBO_INVAL, _)",part=body,unindent]

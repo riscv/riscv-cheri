@@ -76,12 +76,12 @@ In this naming scheme we want to show the difference in how hardware interprets 
 ////
 ====
 +
-If RVC encodings are supported, load/store encodings will revert to their _non-CHERI encodings_, such as {C_LOAD_CAP_NAME} reverting to C.FLD for RV64/{cheri_base64_ext_name}.
+If {rvy_zcy_ext_name} is implemented, the 16-bit encodings used by {rvy_zcy_ext_name} revert to their RVI definitions in {cheri_int_mode_name}.
+For example, on {cheri_base64_ext_name}, the {C_LOAD_CAP_NAME} encoding decodes as C.FLD if Zcd is implemented, and is reserved otherwise.
+ifndef::cheri_ratification_v1_only[On {cheri_base32_ext_name}, the reused encodings decode as C.FLW/C.FSW (Zcf) or C.LD/C.SD (Zclsd) and their stack-pointer-relative forms if implemented, and are reserved otherwise.]
 This behavior is summarized in
-ifndef::cheri_ratification_v1_only[]
-<<insn_remapping_16bit_rv32_a>>, <<insn_remapping_16bit_rv32_b>>,
-endif::[]
-<<insn_remapping_16bit_rv64_a>> and <<insn_remapping_16bit_rv64_b>>.
+ifndef::cheri_ratification_v1_only[<<insn_remapping_16bit_rv32>> and]
+<<insn_remapping_16bit_rv64>>.
 +
 Instructions which are _modified_ on an {cheri_base_ext_name} architecture (see <<{rvy_i_mod_file_name}>>) _revert to their standard RV32[IE]/RV64[IE] behavior_.
 +
@@ -249,7 +249,7 @@ ifndef::cheri_ratification_v1_only[]
 ifndef::cheri_standalone_spec[]
 NOTE: `jvt` depends on Zcmt, and the {cheri_base32_ext_name} version of this standard extension is not available yet.
 
-[#jvt_y, reftext=jvt ({cheri_base_ext_name})]
+[#jvt_y, reftext="jvt"]
 *jvt for {cheri_base32_ext_name}*
 
 endif::[]

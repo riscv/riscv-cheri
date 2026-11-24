@@ -12,13 +12,7 @@ endif::[]
 | {cheri_excep_name_st} | {cheri_excep_desc_ytag}
 | {cheri_excep_name_st} | {cheri_excep_desc_seal}
 
-ifdef::cbo_clean_flush[]
-| {cheri_excep_name_st} | {cheri_excep_desc_perm} <<w_perm>> and <<r_perm>> are both required.
-endif::cbo_clean_flush[]
-
-ifdef::cbo_inval[]
-| {cheri_excep_name_st} | {cheri_excep_desc_perm} <<w_perm>>, <<r_perm>> are both required.
-endif::[]
+| {cheri_excep_name_st} | {cheri_excep_desc_perm} <<r_perm>> and <<w_perm>> are both required.
 ifdef::cbo_clean_flush[]
 | {cheri_excep_name_st} | None of the bytes accessed are within the bounds, or the bounds could not be decoded.
 endif::cbo_clean_flush[]
@@ -28,11 +22,6 @@ endif::cbo_inval[]
 | {cheri_excep_name_st} | {cheri_excep_desc_intg}
 
 |==============================================================================
-
-ifdef::cbo_clean_flush[]
-NOTE: CBO.CLEAN and CBO.FLUSH only require one byte of the cache block to be within the authorizing capability's bounds because these operations do not reveal or modify any data, so performing them on a partially covered cache block is harmless.
-CBO.INVAL and CBO.ZERO destroy or overwrite the contents of the entire cache block and therefore require every byte of the cache block to be within bounds.
-endif::cbo_clean_flush[]
 
 :!cbo_clean_flush:
 :!cbo_inval:

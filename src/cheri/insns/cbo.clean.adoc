@@ -1,6 +1,6 @@
 <<<
 
-[#CBO_CLEAN_CHERI,reftext="CBO.CLEAN ({cheri_base_ext_name})"]
+[#CBO_CLEAN_CHERI,reftext="CBO.CLEAN"]
 ==== CBO.CLEAN ({cheri_base_ext_name})
 
 Synopsis::
@@ -24,6 +24,11 @@ Encoding::
 Description::
 A CBO.CLEAN instruction performs a clean operation on the cache block whose effective address is the base address specified in `{cs1}`.
 The authorizing capability for this operation is `{cs1}`.
++
+This instruction requires that `{cs1}` grants <<r_perm>> and <<w_perm>> and that at least one byte of the cache block is within the bounds of `{cs1}`.
++
+NOTE: CBO.CLEAN only requires one byte of the cache block to be within the bounds of `{cs1}` so software can clean all cache blocks covering a memory buffer even when the buffer is not cache-block aligned.
+Even though data is not modified by CBO.CLEAN, requiring bounds and permission checks helps mitigate cache timing side channels.
 
 :cbo_clean_flush:
 include::cbo_exceptions.adoc[]
@@ -32,15 +37,7 @@ Prerequisites::
 Zicbom, {cheri_base_ext_name}
 
 Operation::
-// Not bundled in the JSON due to build system, inserted manually for now.
-
-NOTE: This listing is manually maintained rather than extracted from the Sail model.
-[source,SAIL,subs="verbatim,quotes"]
-----
-let cache_block_size = 2 ^ plat_cache_block_size_exp();
-let negative_offset = (X(cs1) & ~(zero_extend(ones(plat_cache_block_size_exp())))) - X(cs1);
-match ext_data_get_addr(cs1, negative_offset, Cache(CleanFlush), cache_block_size) {
-  Ext_DataAddr_Error(e) => { ext_handle_data_check_error(e); RETIRE_FAIL },
-  Ext_DataAddr_OK(_)    => RETIRE_SUCCESS
-}
-----
++
+sail::execute[clause="ZICBOM(CBO_CLEAN, _)",part=body,unindent]
++
+sail::process_clean_inval[]
