@@ -24,6 +24,11 @@ Encoding::
 Description::
 A CBO.FLUSH instruction performs a flush operation on the cache block whose effective address is the base address specified in `{cs1}`.
 The authorizing capability for this operation is `{cs1}`.
++
+This instruction requires that `{cs1}` grants <<r_perm>> and <<w_perm>> and that at least one byte of the cache block is within the bounds of `{cs1}`.
++
+NOTE: CBO.FLUSH only requires one byte of the cache block to be within the bounds of `{cs1}` so software can flush all cache blocks covering a memory buffer even when the buffer is not cache-block aligned.
+Even though data is not modified by CBO.FLUSH, requiring bounds and permission checks helps mitigate cache timing side channels.
 
 :cbo_clean_flush:
 include::cbo_exceptions.adoc[]
