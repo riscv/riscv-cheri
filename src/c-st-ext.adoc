@@ -937,7 +937,8 @@ no standard HINTs will ever be defined in this subspace.
 |C.SRAI | _shamt_=0^1^ |8
 |===
 
-^1^ If the base architecture is {cheri_base_ext_name}, encodings with _rd_{ne}``x0`` are _reserved_ instead of HINTs, because executing an integer arithmetic instruction that writes _rd_{ne}``x0`` sets the destination register's metadata and {ctag} to zero (leaving only the 32 (RV32) or 64 (RV64) C.SLLI code points with _rd_=`x0` as HINTs).
+^1^ In {cheri_base_ext_name}, executing a Zca HINT with _rd_{ne}``x0`` that adds zero to _rd_, or shifts _rd_ by zero places as ordinary arithmetic would overwrite _rd_ with the metadata and {ctag} set to zero.
+ Therefore each of these encodings is redefined to execute as a NOP under {cheri_base_ext_name}, and so does not update any architectural state.
 
 === RVC Instruction Set Listings
 
