@@ -273,7 +273,7 @@ class csr_added_purecap_mode_s(table):
         return row[self.header.index("Alias")] == "" and row[self.header.index("Mode")] == "S"
 
 class csr_alias_action_d(table):
-    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Value written on XLEN write", "Value written on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -297,7 +297,7 @@ class csr_alias_action_d(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "D"
 
 class csr_alias_action_m(table):
-    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Value written on XLEN write", "Value written on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -321,7 +321,7 @@ class csr_alias_action_m(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "M"
 
 class csr_alias_action_s(table):
-    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Value written on XLEN write", "Value written on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -345,7 +345,7 @@ class csr_alias_action_s(table):
         return row[self.header.index("Width")] == "YLEN" and row[self.header.index("Mode")] == "S"
 
 class csr_alias_action_u(table):
-    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Value written on XLEN write", "Value written on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
@@ -586,7 +586,7 @@ HYPERVISOR_MODES = ("VS", "H")
 
 
 class csr_alias_action_h(table):
-    cols = ["RVY CSR", "Added by", "Action on XLEN write", "Action on YLEN write"]
+    cols = ["RVY CSR", "Added by", "Value written on XLEN write", "Value written on YLEN write"]
     indices = []
 
     def __init__(self, filename, header):
