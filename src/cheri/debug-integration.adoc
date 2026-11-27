@@ -8,16 +8,53 @@ include::trigger-integration.adoc[]
 
 === Integrating {cheri_base_ext_name} with Sdext
 
-{cheri_base_ext_name} harts must provide a means for accessing capabilities in registers. This is achieved by supporting at least one of these features:
+[#caps_in_gprs]
+==== Accessing Capabilities in GPRs
+{cheri_base_ext_name} harts must provide a means for accessing capabilities in GPRs.
+This is achieved by supporting at least one of these features:
 
-. A Program Buffer configured as specified in <<progbuf_access_ctags>>.
-. Full capability access for Access Register abstract command (`aarsize=7`) for all registers able to hold a capability.
+. Full capability access for Access Register abstract commands (`aarsize=7`) for all GPRs, as defined in <<rvy_abstract_commands>>.
+. A Program Buffer configured to be able to access {ctag}s.
+
+<<progbuf_access_ctags>> gives a suitable configuration for the Program Buffer.
+
+NOTE: Future versions of this document may include more suitable Program Buffer configurations.
+
+==== Accessing Capabilities in CSRs
+
+{cheri_base_ext_name} harts must provide a means for accessing capabilities in CSRs by supporting at least one of these features:
+
+. Full capability access for Access Register abstract command (`aarsize=7`) for all CSRs able to hold a capability.
+. A Program Buffer (of any size).
+
+[NOTE]
+====
+If direct abstract access to capabilities in CSRs (`aarsize=7`) is not supported, the debugger can combine the Program Buffer and GPR access (from <<caps_in_gprs>>) to read or write capabilities in CSRs indirectly.
+====
+
+[NOTE]
+====
+If the `aarsize=7` is supported for Access Register abstract commands on GPRs, then even a minimum sized Program Buffer is sufficient to enable the debugger to access capabilities in CSRs.
+====
+
+==== Accessing Capabilities in Memory
 
 {cheri_base_ext_name} harts must also provide a means for accessing capabilities in memory by supporting at least one of these features:
 
-. A Program Buffer
 . Full capability access for Access Memory abstract command (`aamsize=7`).
+. A Program Buffer (of any size).
 
+[NOTE]
+====
+If direct abstract access to capabilities memory (`aamsize=7`) is not supported, the debugger can combine the Program Buffer and GPR access (from <<caps_in_gprs>>) to read or write capabilities in memory indirectly.
+====
+
+[NOTE]
+====
+If the `aarsize=7` is supported for Access Register abstract commands on GPRs, then even a minimum sized Program Buffer is sufficient to enable the debugger to access capabilities in the memory.
+====
+
+[#rvy_abstract_commands]
 ==== Abstract Commands
 
 Abstract commands are optionally extended to access full capabilities.
@@ -83,7 +120,7 @@ If `write=1` and `aamsize{ne}7` then {ctag}s are always written as zero.
 
 If a Program Buffer is implemented, this section shows how it can be configured and used to access the {ctag}s.
 
-The minimum Program Buffer configuration to support {ctag} access in general-purpose registers is as follows:
+The minimum Program Buffer configuration to support {ctag} access in GPRs is specified as follows:
 
 * `hartinfo` must be implemented.
 * `hartinfo.nscratch` is at least 1 and the <<dscratch0_y>> register is implemented.
@@ -257,9 +294,9 @@ include::img/drootcreg.edn[]
 include::insns/dret.adoc[leveloffset=+1]
 
 [#section_hybrid_debug_integration]
-=== Integrating {cheri_default_ext_name} with Sdext
+==== Integrating {cheri_default_ext_name} with Sdext
 
-=== Interaction with drootcsel
+===== Interaction with drootcsel
 
 The Root Executable capability exposed when <<drootcsel>> is `0` is further specified as follows:
 
@@ -273,7 +310,7 @@ The Root Executable capability exposed when <<drootcsel>> is `0` is further spec
 
 The `P-bit` of this capability is _only_ updated by executing `{MODESW_CAP}` or `{MODESW_INT}` from the program buffer.
 
-=== Interaction with CSRs
+===== Interaction with CSRs
 
 A new debug default data capability (<<dddc>>) CSR is added.
 
@@ -300,7 +337,7 @@ and the requirement to support them in debug mode is also new.
 endif::[]
 
 [#dddc,reftext="dddc"]
-==== Debug Default Data Capability CSR (dddc)
+===== Debug Default Data Capability CSR (dddc)
 
 <<dddc>> is a debug mode accessible YLEN-bit CSR.
 
@@ -323,7 +360,7 @@ A debugger may write <<dddc>> to change the hart's context.
 As shown in xref:CSR_exevectors_d[xrefstyle=short], <<dddc>> is a data pointer,
 so it does not need to be able to hold all possible invalid addresses.
 
-=== Debug Mode YLEN-bit CSR Summary
+==== Debug Mode YLEN-bit CSR Summary
 
 The tables below show all debug mode CSRs added or modified by {cheri_base_ext_name} or its extensions.
 
