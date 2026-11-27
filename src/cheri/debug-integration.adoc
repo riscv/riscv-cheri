@@ -225,10 +225,9 @@ all jumps, conditional branches and `AUIPC`. The exceptions are `{MODESW_CAP}` a
 which _are_ supported if {cheri_default_ext_name} is implemented, see <<drootc>>
 for details.
 
-As a result, the value of the `pc` is UNSPECIFIED in debug mode according
-to this specification. The `pc` metadata has no architectural effect in debug
-mode. Therefore, `ASR-permission` is implicitly granted for access to all CSRs for
-instruction execution.
+As a result, the value of the `pc` and its metadata are UNSPECIFIED in debug mode according to this specification.
+
+No {cheri_excep_name_pc}s are possible in debug mode unless the hart has attempted to change its `pc` metadata since the last debug mode entry or since the last exception raised in debug mode.
 
 On debug mode entry, <<dpc_y>> is updated with the capability in the `pc`, whose address field equals to the address of the next instruction to be executed upon debug mode exit as described in the _RISC-V Debug Specification_.
 
